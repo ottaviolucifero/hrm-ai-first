@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.5  
+Versione: 1.6  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -51,12 +51,12 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - Integrazione asset base Metronic Tailwind HTML
 - Shell layout Angular modulare (`app-shell`, `app-header`, `app-sidebar`)
 - Adattamento layout reale Metronic
+- Swagger / OpenAPI backend
 - DEC-012 frontend enterprise modulare
 
 ### Prossimo passo
 
-- TASK-009: Swagger / OpenAPI
-- Poi profili dev/test/prod
+- TASK-010: profili dev/test/prod
 
 ---
 
@@ -74,15 +74,27 @@ Completato:
 - Metronic asset base
 - Shell layout enterprise
 - Layout reale Metronic
+- Swagger / OpenAPI
 
 Da fare:
 
-- Swagger / OpenAPI
 - Profili dev/test/prod
 
 ---
 
-## 5. Fasi successive
+## 5. Backend / API / Documentazione tecnica
+
+Swagger / OpenAPI è integrato nel backend tramite springdoc.
+
+Validazione completata:
+
+- Swagger UI disponibile
+- `/v3/api-docs` restituisce JSON OpenAPI
+- Gli endpoint applicativi non esplicitamente pubblici restano protetti dalla security
+
+---
+
+## 6. Fasi successive
 
 ### Fase 2 - Modello dati
 
@@ -109,7 +121,7 @@ Da fare:
 
 ---
 
-## 6. Regola operativa
+## 7. Regola operativa
 
 Prima struttura, poi integrazione grafica reale, poi business.
 
@@ -117,10 +129,11 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 ---
 
-## 7. Cronologia versioni
+## 8. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.6 | 2026-05-01 | TASK-009 completato; Swagger/OpenAPI integrato, validato e documentato nella roadmap backend/API. |
 | 1.5 | 2026-05-01 | TASK-008 completato; roadmap aggiornata con layout reale Metronic completato e Swagger come prossimo step. |
 | 1.4 | 2026-05-01 | Riallineata roadmap dopo completamento TASK-006 e TASK-007; introdotto TASK-008 layout-6 reale. |
 | 1.3 | 2026-05-01 | Aggiornato avanzamento dopo TASK-005 e aggiunto step Metronic Angular prima di Swagger. |

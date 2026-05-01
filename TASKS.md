@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.4  
+Versione: 1.5  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -46,7 +46,7 @@ Legenda:
 
 ## 4. Stato attuale
 
-### TASK-001 → TASK-008
+### TASK-001 → TASK-009
 
 Stato: DONE
 
@@ -60,12 +60,13 @@ Completati:
 - Integrazione asset base Metronic Tailwind HTML
 - Shell layout Angular modulare
 - Adattamento layout reale Metronic
+- Swagger / OpenAPI backend
 
 ---
 
 ### TASK-009 - Configurare Swagger / OpenAPI
 
-Stato: TODO  
+Stato: DONE  
 Fase roadmap: Fase 1 - Fondazione tecnica
 
 Obiettivo:
@@ -83,6 +84,13 @@ Output atteso:
 
 - Swagger UI accessibile
 - Base governance API pronta
+
+Validazione:
+
+- springdoc OpenAPI integrato
+- Swagger UI disponibile
+- `/v3/api-docs` validato
+- Security mantenuta attiva sugli altri endpoint
 
 ---
 
@@ -172,6 +180,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.5 | 2026-05-01 | TASK-009 completato; Swagger/OpenAPI integrato e validato mantenendo la security attiva sugli altri endpoint. |
 | 1.4 | 2026-05-01 | TASK-008 completato; layout reale Metronic adattato; TASK-009 Swagger prossimo step. |
 | 1.3 | 2026-05-01 | Riallineati TASK-006 e TASK-007 come completati; introdotto TASK-008 per layout-6 reale. |
 | 1.2 | 2026-05-01 | Aggiornato stato dopo TASK-005 e aggiunto TASK-006 per integrazione Metronic Angular. |
