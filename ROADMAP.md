@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.2  
+Versione: 1.3  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -66,28 +66,23 @@ La roadmap deve rispettare:
 - Creato backend Spring Boot 3 / Java 21 in `backend`.
 - Configurato Maven Wrapper per il backend.
 - Configurato file backend `application.yml`.
-- Configurata base iniziale per:
-  - datasource PostgreSQL;
-  - JPA;
-  - server port;
-  - Actuator health/info.
+- Configurata base iniziale per datasource PostgreSQL, JPA, server port e Actuator health/info.
 - Aggiunta decisione `DEC-011` sull’uso di YAML per la configurazione backend.
-- Validato il backend con:
-
-```cmd
-mvnw.cmd clean install -DskipTests
-```
-
+- Validato il backend con `mvnw.cmd clean install -DskipTests`.
 - Installato e verificato Docker Desktop.
 - Creato `docker/docker-compose.yml`.
 - Configurato servizio PostgreSQL in Docker Compose.
 - Avviato container `hrm-postgres`.
 - Verificato accesso al database `hrm_db` con utente `hrm_user`.
+- Creato frontend Angular in `frontend`.
+- Configurato routing iniziale Angular.
+- Configurato SCSS per il frontend.
+- Validata build frontend con `npm run build`.
 
 ### In corso / prossimo passo
 
-- Aggiornamento documentazione operativa dopo TASK-004.
-- Prossimo task tecnico: preparare lo scheletro frontend Angular oppure configurare Swagger / OpenAPI.
+- Integrare template Metronic Angular nel frontend.
+- Dopo Metronic: configurare Swagger / OpenAPI.
 
 ---
 
@@ -124,7 +119,8 @@ Attività:
 - Configurare base backend - completato
 - Configurare PostgreSQL - completato
 - Configurare Docker Compose - completato
-- Creare frontend Angular - da fare
+- Creare frontend Angular - completato
+- Integrare template Metronic Angular - da fare
 - Configurare Swagger / OpenAPI - da fare
 - Configurare profili dev, test, prod - da fare
 
@@ -395,6 +391,7 @@ GitHub resta la fonte ufficiale del progetto. Le fonti del progetto ChatGPT serv
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.3 | 2026-05-01 | Aggiornato avanzamento dopo TASK-005 e aggiunto step Metronic Angular prima di Swagger. |
 | 1.2 | 2026-05-01 | Aggiornato avanzamento dopo TASK-004 Docker Compose PostgreSQL. |
 | 1.1 | 2026-05-01 | Aggiornato avanzamento dopo TASK-001, TASK-002 e TASK-003. |
 | 1.0 | 2026-05-01 | Prima versione roadmap MVP. |
