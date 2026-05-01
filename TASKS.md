@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.14  
+Versione: 1.15  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -1112,75 +1112,179 @@ Note architetturali:
 - Tutte le query business future devono essere tenant-aware
 - TASK-011 resta TODO
 
-### TASK-012 - Implementare sicurezza JWT base
+## FASE 2A - FOUNDATION DATA
+
+### TASK-012 - Implementare master tables globali foundation
 
 Stato: TODO
 
-### TASK-013 - Implementare ruoli base
+Include:
+
+- Country
+- Region
+- Area
+- GlobalZipCode
+- Currency
+- TimeZone
+- Gender
+- MaritalStatus
+- NationalIdentifierType
+- ApprovalStatus
+
+### TASK-013 - Implementare master tables HR/business
 
 Stato: TODO
 
-### TASK-014 - CRUD Employee backend
+Include:
+
+- Department
+- JobTitle
+- ContractType
+- EmploymentStatus
+- WorkMode
+- LeaveRequestType
+- DocumentType
+- DeviceType
+- DeviceBrand
+- DeviceStatus
+
+### TASK-014 - Implementare master tables governance/security
 
 Stato: TODO
 
-### TASK-015 - UI Employee
+Include:
+
+- Role
+- Permission
+- UserType
+- AuthenticationMethod
+- AuditActionType
+- DisciplinaryActionType
+- SmtpEncryptionType
+- CompanyProfileType
+- OfficeLocationType
+
+## FASE 2B - TENANT / COMPANY FOUNDATION
+
+### TASK-015 - Implementare Tenant, CompanyProfile e governance multi-company
 
 Stato: TODO
 
-### TASK-016 - CRUD Device backend
+### TASK-016 - Implementare OfficeLocation e SmtpConfiguration
 
 Stato: TODO
 
-### TASK-017 - UI Device
+## FASE 2C - EMPLOYEE CORE DOMAIN
+
+### TASK-017 - Implementare Employee entity enterprise completa
 
 Stato: TODO
 
-### TASK-018 - Upload PayrollDocument backend
+### TASK-018 - Implementare Contract governance e employment lifecycle
 
 Stato: TODO
 
-### TASK-019 - Download PayrollDocument protetto
+### TASK-019 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-020 - UI PayrollDocument
+## FASE 2D - IDENTITY / SECURITY
+
+### TASK-020 - Implementare UserAccount, email login e authentication governance
 
 Stato: TODO
 
-### TASK-021 - LeaveRequest backend
+### TASK-021 - Implementare RBAC governance
 
 Stato: TODO
 
-### TASK-022 - Workflow approvazione congedi
+Include:
+
+- UserRole
+- RolePermission
+- UserTenantAccess
+
+### TASK-022 - Implementare Security Admin UI
 
 Stato: TODO
 
-### TASK-023 - UI LeaveRequest
+Include:
+
+- utenti
+- MFA
+- tenant access
+- ruoli
+- permessi
+
+## FASE 2E - OPERATIONAL HR
+
+### TASK-023 - Implementare Device backend enterprise
 
 Stato: TODO
 
-### TASK-024 - HolidayCalendar backend
+### TASK-024 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-025 - UI HolidayCalendar
+### TASK-025 - Implementare PayrollDocument backend + document governance
 
 Stato: TODO
 
-### TASK-026 - Configurare audit log
+### TASK-026 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-027 - Configurare notifiche email
+### TASK-027 - Implementare LeaveRequest backend + approval workflow
 
 Stato: TODO
 
-### TASK-028 - Configurare logging applicativo
+### TASK-028 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-029 - Test MVP
+### TASK-029 - Implementare HolidayCalendar backend
+
+Stato: TODO
+
+### TASK-030 - Implementare UI HolidayCalendar
+
+Stato: TODO
+
+## FASE 2F - GOVERNANCE / COMPLIANCE
+
+### TASK-031 - Implementare AuditLog backend enterprise
+
+Stato: TODO
+
+### TASK-032 - Implementare Audit UI / compliance explorer
+
+Stato: TODO
+
+### TASK-033 - Implementare EmployeeDisciplinaryAction backend
+
+Stato: TODO
+
+### TASK-034 - Implementare UI disciplinary governance
+
+Stato: TODO
+
+## FASE 2G - PLATFORM OPERATIONS
+
+### TASK-035 - Implementare Platform Operator / Super Admin governance
+
+Stato: TODO
+
+### TASK-036 - Implementare Cross-tenant admin UI
+
+Stato: TODO
+
+## FASE 3 - STABILIZATION
+
+### TASK-037 - Configurare logging, monitoring e observability enterprise
+
+Stato: TODO
+
+### TASK-038 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -1190,6 +1294,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.15 | 2026-05-01 | Riorganizzazione completa TASK-012+ in execution slicing enterprise SaaS post TASK-011. |
 | 1.14 | 2026-05-01 | TASK-011 integrato con UserType, Platform Operator, Super Admin, UserTenantAccess, tenant switching e cross-tenant auditability. |
 | 1.13 | 2026-05-01 | TASK-011 integrato con email-first identity, AuthenticationMethod, strong auth opzionale, OTP email/app, unique tenant+email e MFA readiness. |
 | 1.12 | 2026-05-01 | TASK-011 integrato con PK/FK/relationships esplicite per tutte le tabelle e regole globali di relational governance tenant-scoped. |

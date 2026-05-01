@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.9  
+Versione: 1.10  
 Ultimo aggiornamento: 2026-05-01  
 Stato: Attivo
 
@@ -529,10 +529,49 @@ Il TASK-011 dovrà includere `UserType`, `UserTenantAccess`, strong authenticati
 
 ---
 
+### DEC-017 - Post-TASK-011 execution slicing and enterprise roadmap restructuring
+
+Data: 2026-05-01  
+Stato: Approvata
+
+Decisione:
+
+TASK-011 resta macro-epic documentale per la foundation dati enterprise SaaS. L'implementazione successiva viene riorganizzata in slice incrementali dal TASK-012 in avanti.
+
+Il piano operativo userà:
+
+- backend slicing;
+- UI slicing;
+- governance slicing;
+- incremental implementation;
+- domain modularity;
+- AI-safe execution planning.
+
+Motivazione:
+
+- Evitare mega-task;
+- ridurre rischio;
+- migliorare QA;
+- facilitare branch management;
+- preparare crescita enterprise.
+
+Alternative escluse:
+
+- implementare l'intero blueprint TASK-011 in un unico task;
+- mantenere la vecchia sequenza MVP lineare dopo l'espansione enterprise;
+- mescolare backend, UI, governance e compliance in branch non focalizzati.
+
+Impatto:
+
+TASK-012+ viene riorganizzato in fasi 2A-2G e Fase 3, mantenendo TASK-001 -> TASK-011 invariati.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.10 | 2026-05-01 | Aggiunta DEC-017 per riorganizzazione completa TASK-012+ in slicing enterprise SaaS post TASK-011. |
 | 1.9 | 2026-05-01 | Aggiunta DEC-016 per platform operator, super admin, cross-tenant governance, mandatory MFA e auditability. |
 | 1.8 | 2026-05-01 | Aggiunta DEC-015 per identity email-first, UserAccount authentication boundary, AuthenticationMethod, OTP readiness e MFA policy scalability. |
 | 1.7 | 2026-05-01 | DEC-013 e DEC-014 integrate con normalized relational governance, PK/FK explicit architecture e tenant-scoped relational integrity. |

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.14  
+Versione: 1.15  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -104,54 +104,37 @@ Profili Spring Boot configurati:
 
 ## 6. Fasi successive
 
-### Fase 2 - Modello dati
+### Fase 2A - Foundation Data
 
-- Foundation dati enterprise normalizzata
-- Multi-tenant SaaS architecture
-- Master architecture
-- Core architecture
-- Bridge architecture
-- Multi-country readiness
-- Tenant governance
-- Multi-company governance
-- Legal entity governance
-- Office hierarchy governance
-- Identity governance
-- Authentication governance
-- Platform operator governance
-- Super admin governance
-- Cross-tenant governance
-- Elevated security governance
-- MFA readiness
-- Email-first authentication
-- RBAC governance
-- SMTP governance
-- Geographic governance
-- Address governance
-- Audit governance
-- Disciplinary governance
-- Contract lifecycle
-- Payroll document lifecycle
-- HR core platform foundation
-- Migrazioni
-- Audit base
+- TASK-012 -> TASK-014
 
-### Fase 3 - Sicurezza
+### Fase 2B - Tenant / Company Foundation
 
-- JWT
-- Ruoli
-- Protezione API
+- TASK-015 -> TASK-016
 
-### Fase 4+
+### Fase 2C - Employee Core Domain
 
-- Employee
-- Device
-- Payroll
-- LeaveRequest
-- Holiday
-- Audit
-- Logging
-- Test
+- TASK-017 -> TASK-019
+
+### Fase 2D - Identity / Security
+
+- TASK-020 -> TASK-022
+
+### Fase 2E - Operational HR
+
+- TASK-023 -> TASK-030
+
+### Fase 2F - Governance / Compliance
+
+- TASK-031 -> TASK-034
+
+### Fase 2G - Platform Operations
+
+- TASK-035 -> TASK-036
+
+### Fase 3 - Stabilization
+
+- TASK-037 -> TASK-038
 
 ---
 
@@ -167,6 +150,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.15 | 2026-05-01 | Riorganizzazione completa TASK-012+ in fasi 2A-2G e Fase 3 dopo espansione enterprise foundation. |
 | 1.14 | 2026-05-01 | TASK-011 esteso con platform operator, super admin, cross-tenant governance, tenant switching e strong authentication obbligatoria per utenti elevati. |
 | 1.13 | 2026-05-01 | TASK-011 esteso con email-first authentication, identity governance, authentication governance e MFA readiness. |
 | 1.12 | 2026-05-01 | TASK-011 aggiornato a foundation SaaS multi-tenant con tenant/company hierarchy, legal entity, office hierarchy, audit e disciplinary governance. |
