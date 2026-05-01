@@ -2,9 +2,9 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.0  
+Versione: 1.1  
 Ultimo aggiornamento: 2026-05-01  
-Stato: Bozza
+Stato: In avanzamento
 
 ---
 
@@ -48,7 +48,7 @@ Legenda:
 
 ### TASK-001 - Creare struttura repository
 
-Stato: TODO  
+Stato: DONE  
 Fase roadmap: Fase 1 - Fondazione tecnica
 
 Obiettivo:
@@ -67,11 +67,15 @@ Output atteso:
 
 - Repository ordinato secondo `ARCHITECTURE.md`
 
+Validazione:
+
+- Struttura repository creata e pubblicata su GitHub.
+
 ---
 
 ### TASK-002 - Creare backend Spring Boot
 
-Stato: TODO  
+Stato: DONE  
 Fase roadmap: Fase 1 - Fondazione tecnica
 
 Obiettivo:
@@ -82,18 +86,86 @@ Attività:
 
 - Creare progetto Spring Boot 3
 - Usare Java 21
-- Configurare Maven o Gradle
+- Configurare Maven Wrapper
 - Creare package base
-- Creare endpoint `/health`
+- Configurare dipendenze backend iniziali
 
 Output atteso:
 
-- Backend avviabile
-- Endpoint health funzionante
+- Backend avviabile/buildabile
+
+Validazione:
+
+```cmd
+mvnw.cmd clean install -DskipTests
+```
 
 ---
 
-### TASK-003 - Creare frontend Angular
+### TASK-003 - Configurare base backend
+
+Stato: DONE  
+Fase roadmap: Fase 1 - Fondazione tecnica
+
+Obiettivo:
+
+Configurare la base applicativa backend.
+
+Attività:
+
+- Convertire `application.properties` in `application.yml`
+- Configurare datasource PostgreSQL
+- Configurare JPA base
+- Configurare porta server
+- Configurare Actuator health/info
+- Documentare decisione `DEC-011`
+
+Output atteso:
+
+- Configurazione backend iniziale pronta
+
+Validazione:
+
+```cmd
+mvnw.cmd clean install -DskipTests
+```
+
+---
+
+### TASK-004 - Configurare PostgreSQL e Docker Compose
+
+Stato: DONE  
+Fase roadmap: Fase 1 - Fondazione tecnica
+
+Obiettivo:
+
+Preparare ambiente locale database.
+
+Attività:
+
+- Creare `docker/docker-compose.yml`
+- Configurare servizio PostgreSQL
+- Configurare variabili ambiente
+- Avviare container PostgreSQL
+- Verificare accesso al database
+
+Output atteso:
+
+- Database avviabile
+- PostgreSQL disponibile su porta `5432`
+
+Validazione:
+
+```cmd
+cd C:\hrm-ai-first\docker
+docker compose up -d
+docker ps
+docker exec -it hrm-postgres psql -U hrm_user -d hrm_db
+```
+
+---
+
+### TASK-005 - Creare frontend Angular
 
 Stato: TODO  
 Fase roadmap: Fase 1 - Fondazione tecnica
@@ -108,6 +180,7 @@ Attività:
 - Configurare struttura `/core`, `/shared`, `/features`, `/layout`
 - Preparare layout base
 - Preparare routing iniziale
+- Predisporre uso template Metronic Angular
 
 Output atteso:
 
@@ -116,30 +189,7 @@ Output atteso:
 
 ---
 
-### TASK-004 - Configurare PostgreSQL e Docker Compose
-
-Stato: TODO  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Preparare ambiente locale.
-
-Attività:
-
-- Creare `docker-compose.yml`
-- Configurare servizio PostgreSQL
-- Configurare variabili ambiente
-- Collegare backend al database
-
-Output atteso:
-
-- Database avviabile
-- Backend collegato a PostgreSQL
-
----
-
-### TASK-005 - Configurare Swagger / OpenAPI
+### TASK-006 - Configurare Swagger / OpenAPI
 
 Stato: TODO  
 Fase roadmap: Fase 1 - Fondazione tecnica
@@ -160,7 +210,29 @@ Output atteso:
 
 ---
 
-### TASK-006 - Creare modello dati iniziale
+### TASK-007 - Configurare profili dev/test/prod
+
+Stato: TODO  
+Fase roadmap: Fase 1 - Fondazione tecnica
+
+Obiettivo:
+
+Preparare configurazioni separate per ambiente.
+
+Attività:
+
+- Creare profilo `dev`
+- Creare profilo `test`
+- Creare profilo `prod`
+- Separare configurazioni sensibili tramite variabili ambiente
+
+Output atteso:
+
+- Configurazioni ambiente ordinate e pronte per sviluppo
+
+---
+
+### TASK-008 - Creare modello dati iniziale
 
 Stato: TODO  
 Fase roadmap: Fase 2 - Modello dati
@@ -195,7 +267,7 @@ Output atteso:
 
 ---
 
-### TASK-007 - Implementare sicurezza JWT base
+### TASK-009 - Implementare sicurezza JWT base
 
 Stato: TODO  
 Fase roadmap: Fase 3 - Sicurezza
@@ -219,7 +291,7 @@ Output atteso:
 
 ---
 
-### TASK-008 - Implementare ruoli base
+### TASK-010 - Implementare ruoli base
 
 Stato: TODO  
 Fase roadmap: Fase 3 - Sicurezza
@@ -246,7 +318,7 @@ Output atteso:
 
 ---
 
-### TASK-009 - CRUD Employee backend
+### TASK-011 - CRUD Employee backend
 
 Stato: TODO  
 Fase roadmap: Fase 4 - Modulo Employee
@@ -270,7 +342,7 @@ Output atteso:
 
 ---
 
-### TASK-010 - UI Employee
+### TASK-012 - UI Employee
 
 Stato: TODO  
 Fase roadmap: Fase 4 - Modulo Employee
@@ -294,7 +366,7 @@ Output atteso:
 
 ---
 
-### TASK-011 - CRUD Device backend
+### TASK-013 - CRUD Device backend
 
 Stato: TODO  
 Fase roadmap: Fase 5 - Modulo Device
@@ -319,7 +391,7 @@ Output atteso:
 
 ---
 
-### TASK-012 - UI Device
+### TASK-014 - UI Device
 
 Stato: TODO  
 Fase roadmap: Fase 5 - Modulo Device
@@ -342,7 +414,7 @@ Output atteso:
 
 ---
 
-### TASK-013 - Upload PayrollDocument backend
+### TASK-015 - Upload PayrollDocument backend
 
 Stato: TODO  
 Fase roadmap: Fase 6 - Modulo PayrollDocument
@@ -367,7 +439,7 @@ Output atteso:
 
 ---
 
-### TASK-014 - Download PayrollDocument protetto
+### TASK-016 - Download PayrollDocument protetto
 
 Stato: TODO  
 Fase roadmap: Fase 6 - Modulo PayrollDocument
@@ -389,7 +461,7 @@ Output atteso:
 
 ---
 
-### TASK-015 - UI PayrollDocument
+### TASK-017 - UI PayrollDocument
 
 Stato: TODO  
 Fase roadmap: Fase 6 - Modulo PayrollDocument
@@ -412,7 +484,7 @@ Output atteso:
 
 ---
 
-### TASK-016 - LeaveRequest backend
+### TASK-018 - LeaveRequest backend
 
 Stato: TODO  
 Fase roadmap: Fase 7 - Modulo LeaveRequest
@@ -439,7 +511,7 @@ Output atteso:
 
 ---
 
-### TASK-017 - Workflow approvazione congedi
+### TASK-019 - Workflow approvazione congedi
 
 Stato: TODO  
 Fase roadmap: Fase 7 - Modulo LeaveRequest
@@ -462,7 +534,7 @@ Output atteso:
 
 ---
 
-### TASK-018 - UI LeaveRequest
+### TASK-020 - UI LeaveRequest
 
 Stato: TODO  
 Fase roadmap: Fase 7 - Modulo LeaveRequest
@@ -485,7 +557,7 @@ Output atteso:
 
 ---
 
-### TASK-019 - HolidayCalendar backend
+### TASK-021 - HolidayCalendar backend
 
 Stato: TODO  
 Fase roadmap: Fase 8 - Calendario festività
@@ -507,7 +579,7 @@ Output atteso:
 
 ---
 
-### TASK-020 - UI HolidayCalendar
+### TASK-022 - UI HolidayCalendar
 
 Stato: TODO  
 Fase roadmap: Fase 8 - Calendario festività
@@ -531,7 +603,7 @@ Output atteso:
 
 ## 5. Task tecnici trasversali
 
-### TASK-021 - Configurare audit log
+### TASK-023 - Configurare audit log
 
 Stato: TODO
 
@@ -547,7 +619,7 @@ Output atteso:
 
 ---
 
-### TASK-022 - Configurare notifiche email
+### TASK-024 - Configurare notifiche email
 
 Stato: TODO
 
@@ -564,7 +636,7 @@ Output atteso:
 
 ---
 
-### TASK-023 - Configurare logging applicativo
+### TASK-025 - Configurare logging applicativo
 
 Stato: TODO
 
@@ -581,7 +653,7 @@ Output atteso:
 
 ---
 
-### TASK-024 - Test MVP
+### TASK-026 - Test MVP
 
 Stato: TODO
 
@@ -603,4 +675,5 @@ Output atteso:
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.1 | 2026-05-01 | Aggiornato stato task dopo completamento TASK-001, TASK-002, TASK-003 e TASK-004. |
 | 1.0 | 2026-05-01 | Prima versione task operativi MVP. |
