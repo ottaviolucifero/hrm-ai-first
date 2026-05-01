@@ -282,6 +282,30 @@ Ogni modifica importante deve aggiornare i documenti rilevanti.
 
 ---
 
+### DEC-011 - Configurazione backend in YAML
+
+Data: 2026-05-01  
+Stato: Approvata
+
+Decisione:
+
+Il backend userà `application.yml` al posto di `application.properties` per la configurazione Spring Boot.
+
+Motivazione:
+
+YAML è più leggibile per configurazioni strutturate come datasource, JPA, server e actuator.
+
+Alternative escluse:
+
+- mantenere `application.properties`;
+- distribuire la configurazione iniziale su più file non necessari nel MVP.
+
+Impatto:
+
+Le future configurazioni backend devono essere aggiunte in `backend/src/main/resources/application.yml`, salvo diversa decisione documentata.
+
+---
+
 ## 4. Template per nuove decisioni
 
 ```markdown
@@ -306,3 +330,4 @@ Alternative escluse:
 Impatto:
 
 Descrivere conseguenze tecniche, funzionali o operative.
+```
