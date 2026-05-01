@@ -2,9 +2,9 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.0  
+Versione: 1.1  
 Ultimo aggiornamento: 2026-05-01  
-Stato: Bozza
+Stato: Attivo
 
 ---
 
@@ -303,6 +303,31 @@ Alternative escluse:
 Impatto:
 
 Le future configurazioni backend devono essere aggiunte in `backend/src/main/resources/application.yml`, salvo diversa decisione documentata.
+
+---
+
+### DEC-012 - Frontend enterprise con Angular standalone + shell modulare
+
+Data: 2026-05-01  
+Stato: Approvata
+
+Decisione:
+
+Il frontend HRM adotterà architettura enterprise basata su Angular standalone components, shell modulare (`app-shell`, `app-header`, `app-sidebar`) e integrazione progressiva del layout Metronic come riferimento grafico, non come copia integrale del template.
+
+Motivazione:
+
+Questa scelta riduce complessità iniziale, mantiene governance architetturale, migliora riuso componenti shared e permette adattamento controllato del design system Metronic senza importare codice superfluo.
+
+Alternative escluse:
+
+- copia integrale di pagine HTML Metronic;
+- uso di React/Tailwind template come base tecnica primaria;
+- struttura frontend monolitica.
+
+Impatto:
+
+Il frontend dovrà evolvere tramite componenti modulari, shared UI e layout progressivo. Le future integrazioni Metronic dovranno essere adattate al modello Angular esistente.
 
 ---
 
