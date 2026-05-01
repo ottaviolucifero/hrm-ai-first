@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: ${HRM_DB_URL}
+    username: ${HRM_DB_USERNAME}
+    password: ${HRM_DB_PASSWORD}
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+management:
+  endpoint:
+    health:
+      show-details: never

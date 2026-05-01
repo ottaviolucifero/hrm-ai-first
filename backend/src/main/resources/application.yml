@@ -1,11 +1,8 @@
 spring:
   application:
     name: hrm-backend
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/hrm_db
-    username: hrm_user
-    password: hrm_password
+  profiles:
+    default: dev
 
   jpa:
     hibernate:
