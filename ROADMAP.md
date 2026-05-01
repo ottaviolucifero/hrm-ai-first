@@ -2,9 +2,9 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.0  
+Versione: 1.1  
 Ultimo aggiornamento: 2026-05-01  
-Stato: Bozza
+Stato: In avanzamento
 
 ---
 
@@ -17,7 +17,9 @@ La roadmap deve rispettare:
 - il Manifesto AI-first;
 - la Macro-Analisi HRM;
 - `AGENTS.md`;
-- `ARCHITECTURE.md`.
+- `ARCHITECTURE.md`;
+- `TASKS.md`;
+- `DECISIONS.md`.
 
 ---
 
@@ -49,19 +51,56 @@ La roadmap deve rispettare:
 
 ---
 
-## 3. Roadmap operativa
+## 3. Stato avanzamento
+
+### Completato
+
+- Creata la struttura iniziale del repository Git.
+- Creati i documenti principali di governance:
+  - `AGENTS.md`
+  - `ARCHITECTURE.md`
+  - `ROADMAP.md`
+  - `TASKS.md`
+  - `DECISIONS.md`
+- Inseriti i documenti di analisi in `docs/analysis`.
+- Creato backend Spring Boot 3 / Java 21 in `backend`.
+- Configurato Maven Wrapper per il backend.
+- Configurato file backend `application.yml`.
+- Configurata base iniziale per:
+  - datasource PostgreSQL;
+  - JPA;
+  - server port;
+  - Actuator health/info.
+- Aggiunta decisione `DEC-011` sull’uso di YAML per la configurazione backend.
+- Validato il backend con:
+
+```cmd
+mvnw.cmd clean install -DskipTests
+```
+
+### In corso / prossimo passo
+
+- Installazione Docker Desktop.
+- Configurazione Docker Compose con PostgreSQL.
+- Preparazione ambiente database locale per sviluppo.
+
+---
+
+## 4. Roadmap operativa
 
 ### Fase 0 - Governance
+
+Stato: completata
 
 Obiettivo: preparare le regole del progetto.
 
 Attività:
 
-- Validare `AGENTS.md`
-- Validare `ARCHITECTURE.md`
-- Creare `ROADMAP.md`
-- Creare `TASKS.md`
-- Creare `DECISIONS.md`
+- Validare `AGENTS.md` - completato
+- Validare `ARCHITECTURE.md` - completato
+- Creare `ROADMAP.md` - completato
+- Creare `TASKS.md` - completato
+- Creare `DECISIONS.md` - completato
 
 Output: documentazione base pronta.
 
@@ -69,23 +108,28 @@ Output: documentazione base pronta.
 
 ### Fase 1 - Fondazione tecnica
 
+Stato: in corso
+
 Obiettivo: creare lo scheletro tecnico.
 
 Attività:
 
-- Creare repository Git
-- Creare backend Spring Boot 3 / Java 21
-- Creare frontend Angular
-- Configurare PostgreSQL
-- Configurare Docker Compose
-- Configurare Swagger / OpenAPI
-- Configurare profili dev, test, prod
+- Creare repository Git - completato
+- Creare backend Spring Boot 3 / Java 21 - completato
+- Configurare base backend - completato
+- Creare frontend Angular - da fare
+- Configurare PostgreSQL - in corso
+- Configurare Docker Compose - prossimo passo
+- Configurare Swagger / OpenAPI - da fare
+- Configurare profili dev, test, prod - da fare
 
 Output: progetto avviabile.
 
 ---
 
 ### Fase 2 - Modello dati
+
+Stato: da fare
 
 Obiettivo: creare il database iniziale.
 
@@ -103,6 +147,8 @@ Output: modello dati MVP pronto.
 ---
 
 ### Fase 3 - Sicurezza
+
+Stato: da fare
 
 Obiettivo: proteggere accessi e dati.
 
@@ -123,6 +169,8 @@ Output: sicurezza base funzionante.
 
 ### Fase 4 - Modulo Employee
 
+Stato: da fare
+
 Obiettivo: gestire l’anagrafica dipendenti.
 
 Attività:
@@ -140,6 +188,8 @@ Output: gestione dipendenti funzionante.
 
 ### Fase 5 - Modulo Device
 
+Stato: da fare
+
 Obiettivo: gestire dispositivi aziendali.
 
 Attività:
@@ -155,6 +205,8 @@ Output: gestione dispositivi funzionante.
 ---
 
 ### Fase 6 - Modulo PayrollDocument
+
+Stato: da fare
 
 Obiettivo: gestire documenti payroll.
 
@@ -173,6 +225,8 @@ Output: gestione documenti payroll funzionante.
 ---
 
 ### Fase 7 - Modulo LeaveRequest
+
+Stato: da fare
 
 Obiettivo: gestire richieste di congedo.
 
@@ -195,6 +249,8 @@ Output: workflow congedi MVP funzionante.
 
 ### Fase 8 - Calendario festività
 
+Stato: da fare
+
 Obiettivo: gestire festività e giorni lavorativi.
 
 Attività:
@@ -210,6 +266,8 @@ Output: calendario festività funzionante.
 ---
 
 ### Fase 9 - Notifiche email
+
+Stato: da fare
 
 Obiettivo: inviare notifiche essenziali.
 
@@ -227,6 +285,8 @@ Output: notifiche email MVP funzionanti.
 
 ### Fase 10 - Audit e logging
 
+Stato: da fare
+
 Obiettivo: tracciare operazioni critiche.
 
 Attività:
@@ -242,6 +302,8 @@ Output: tracciabilità MVP.
 ---
 
 ### Fase 11 - UI MVP
+
+Stato: da fare
 
 Obiettivo: creare interfaccia coerente e usabile.
 
@@ -259,6 +321,8 @@ Output: UI MVP pronta.
 ---
 
 ### Fase 12 - Test e validazione
+
+Stato: da fare
 
 Obiettivo: verificare il MVP.
 
@@ -280,6 +344,8 @@ Output: MVP validato.
 
 ### Fase 13 - Rilascio MVP
 
+Stato: da fare
+
 Obiettivo: preparare il primo rilascio.
 
 Attività:
@@ -294,7 +360,7 @@ Output: MVP pronto al rilascio.
 
 ---
 
-## 4. Post-MVP
+## 5. Post-MVP
 
 Da valutare dopo il MVP:
 
@@ -310,16 +376,19 @@ Da valutare dopo il MVP:
 
 ---
 
-## 5. Regola operativa
+## 6. Regola operativa
 
 Ogni fase della roadmap deve essere trasformata in task piccoli dentro `TASKS.md`.
 
 Gli agenti AI non devono implementare funzionalità fuori MVP senza istruzione esplicita.
 
+GitHub resta la fonte ufficiale del progetto. Le fonti del progetto ChatGPT servono solo come supporto e contesto operativo.
+
 ---
 
-## 6. Cronologia versioni
+## 7. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.1 | 2026-05-01 | Aggiornato avanzamento dopo TASK-001, TASK-002 e TASK-003. |
 | 1.0 | 2026-05-01 | Prima versione roadmap MVP. |
