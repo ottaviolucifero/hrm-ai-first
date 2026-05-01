@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.1  
+Versione: 1.2  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -78,11 +78,16 @@ La roadmap deve rispettare:
 mvnw.cmd clean install -DskipTests
 ```
 
+- Installato e verificato Docker Desktop.
+- Creato `docker/docker-compose.yml`.
+- Configurato servizio PostgreSQL in Docker Compose.
+- Avviato container `hrm-postgres`.
+- Verificato accesso al database `hrm_db` con utente `hrm_user`.
+
 ### In corso / prossimo passo
 
-- Installazione Docker Desktop.
-- Configurazione Docker Compose con PostgreSQL.
-- Preparazione ambiente database locale per sviluppo.
+- Aggiornamento documentazione operativa dopo TASK-004.
+- Prossimo task tecnico: preparare lo scheletro frontend Angular oppure configurare Swagger / OpenAPI.
 
 ---
 
@@ -117,9 +122,9 @@ Attività:
 - Creare repository Git - completato
 - Creare backend Spring Boot 3 / Java 21 - completato
 - Configurare base backend - completato
+- Configurare PostgreSQL - completato
+- Configurare Docker Compose - completato
 - Creare frontend Angular - da fare
-- Configurare PostgreSQL - in corso
-- Configurare Docker Compose - prossimo passo
 - Configurare Swagger / OpenAPI - da fare
 - Configurare profili dev, test, prod - da fare
 
@@ -390,5 +395,6 @@ GitHub resta la fonte ufficiale del progetto. Le fonti del progetto ChatGPT serv
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.2 | 2026-05-01 | Aggiornato avanzamento dopo TASK-004 Docker Compose PostgreSQL. |
 | 1.1 | 2026-05-01 | Aggiornato avanzamento dopo TASK-001, TASK-002 e TASK-003. |
 | 1.0 | 2026-05-01 | Prima versione roadmap MVP. |
