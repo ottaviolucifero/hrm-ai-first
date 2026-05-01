@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.2  
+Versione: 1.3  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -48,673 +48,192 @@ Legenda:
 
 ### TASK-001 - Creare struttura repository
 
-Stato: DONE  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Creare la struttura base del repository.
-
-Attività:
-
-- Creare cartelle `/backend`
-- Creare cartelle `/frontend`
-- Creare cartelle `/docs`
-- Creare cartella `/docker`
-- Posizionare documenti principali nella root o in `/docs`
-
-Output atteso:
-
-- Repository ordinato secondo `ARCHITECTURE.md`
-
-Validazione:
-
-- Struttura repository creata e pubblicata su GitHub.
-
----
+Stato: DONE
 
 ### TASK-002 - Creare backend Spring Boot
 
-Stato: DONE  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Creare lo scheletro backend.
-
-Attività:
-
-- Creare progetto Spring Boot 3
-- Usare Java 21
-- Configurare Maven Wrapper
-- Creare package base
-- Configurare dipendenze backend iniziali
-
-Output atteso:
-
-- Backend avviabile/buildabile
-
-Validazione:
-
-```cmd
-mvnw.cmd clean install -DskipTests
-```
-
----
+Stato: DONE
 
 ### TASK-003 - Configurare base backend
 
-Stato: DONE  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Configurare la base applicativa backend.
-
-Attività:
-
-- Convertire `application.properties` in `application.yml`
-- Configurare datasource PostgreSQL
-- Configurare JPA base
-- Configurare porta server
-- Configurare Actuator health/info
-- Documentare decisione `DEC-011`
-
-Output atteso:
-
-- Configurazione backend iniziale pronta
-
-Validazione:
-
-```cmd
-mvnw.cmd clean install -DskipTests
-```
-
----
+Stato: DONE
 
 ### TASK-004 - Configurare PostgreSQL e Docker Compose
 
-Stato: DONE  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Preparare ambiente locale database.
-
-Attività:
-
-- Creare `docker/docker-compose.yml`
-- Configurare servizio PostgreSQL
-- Configurare variabili ambiente
-- Avviare container PostgreSQL
-- Verificare accesso al database
-
-Output atteso:
-
-- Database avviabile
-- PostgreSQL disponibile su porta `5432`
-
-Validazione:
-
-```cmd
-cd C:\hrm-ai-first\docker
-docker compose up -d
-docker ps
-docker exec -it hrm-postgres psql -U hrm_user -d hrm_db
-```
-
----
+Stato: DONE
 
 ### TASK-005 - Creare frontend Angular
 
+Stato: DONE
+
+---
+
+### TASK-006 - Integrare asset base Metronic Tailwind HTML nel frontend Angular
+
 Stato: DONE  
 Fase roadmap: Fase 1 - Fondazione tecnica
 
 Obiettivo:
 
-Creare lo scheletro frontend.
+Integrare asset grafici e tecnici base del Metronic Tailwind HTML Starter Kit nel frontend Angular come fondazione UI.
 
 Attività:
 
-- Creare progetto Angular
-- Configurare routing iniziale
-- Configurare SCSS
+- Analizzare pacchetto Metronic disponibile localmente
+- Identificare starter kit corretto
+- Integrare asset CSS/JS essenziali
+- Configurare Angular per usare asset globali
+- Aggiornare budget build
 - Validare build frontend
 
 Output atteso:
 
-- Frontend Angular avviabile
-- Struttura base pronta per integrazione UI
-
-Validazione:
-
-```cmd
-cd C:\hrm-ai-first\frontend
-npm run build
-```
+- Base UI Metronic integrata
+- Build funzionante
 
 ---
 
-### TASK-006 - Integrare template Metronic Angular
+### TASK-007 - Creare shell layout Angular modulare
+
+Stato: DONE  
+Fase roadmap: Fase 1 - Fondazione tecnica
+
+Obiettivo:
+
+Creare architettura frontend enterprise modulare basata su shell, header e sidebar standalone.
+
+Attività:
+
+- Creare `app-shell`
+- Creare `app-header`
+- Creare `app-sidebar`
+- Aggiornare routing root
+- Preparare base shared/layout
+- Validare build e test
+
+Output atteso:
+
+- Layout shell enterprise pronto
+- Routing strutturale corretto
+
+---
+
+### TASK-008 - Adattare layout-6 Metronic reale alla shell Angular
 
 Stato: TODO  
 Fase roadmap: Fase 1 - Fondazione tecnica
 
 Obiettivo:
 
-Integrare il template Metronic Angular come base UI del frontend.
+Adattare progressivamente il layout-6 reale di Metronic dentro `app-shell`, `app-header` e `app-sidebar`.
 
 Attività:
 
-- Analizzare contenuto ZIP Metronic Angular disponibile localmente
-- Identificare struttura template, asset, layout e dipendenze
-- Integrare asset e stili necessari nel progetto Angular
-- Preparare layout base dell'applicazione HRM
-- Creare struttura frontend `/core`, `/shared`, `/features`, `/layout`
-- Predisporre componenti condivisi riutilizzabili
-- Mantenere il template adattato al progetto, evitando codice non necessario per il MVP
+- Estrarre header reale
+- Estrarre sidebar reale
+- Adattare wrapper principale
+- Integrare markup utile senza copia massiva
+- Preparare dashboard base HRM
+- Mantenere componentizzazione Angular
 
 Output atteso:
 
-- Frontend con base grafica Metronic integrata
-- Layout iniziale HRM pronto
-- Build frontend funzionante
-
-Validazione:
-
-```cmd
-cd C:\hrm-ai-first\frontend
-npm run build
-```
+- Layout enterprise reale integrato
+- Base dashboard HRM pronta
 
 ---
 
-### TASK-007 - Configurare Swagger / OpenAPI
-
-Stato: TODO  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Documentare le API REST.
-
-Attività:
-
-- Aggiungere dipendenza OpenAPI
-- Configurare Swagger UI
-- Esporre documentazione API
-
-Output atteso:
-
-- Swagger UI accessibile
-
----
-
-### TASK-008 - Configurare profili dev/test/prod
-
-Stato: TODO  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Preparare configurazioni separate per ambiente.
-
-Attività:
-
-- Creare profilo `dev`
-- Creare profilo `test`
-- Creare profilo `prod`
-- Separare configurazioni sensibili tramite variabili ambiente
-
-Output atteso:
-
-- Configurazioni ambiente ordinate e pronte per sviluppo
-
----
-
-### TASK-009 - Creare modello dati iniziale
-
-Stato: TODO  
-Fase roadmap: Fase 2 - Modello dati
-
-Obiettivo:
-
-Creare le entità principali del MVP.
-
-Attività:
-
-- Analizzare `Entities_With_Types_v11`
-- Creare entità:
-  - Employee
-  - Department
-  - User
-  - Role
-  - Device
-  - DeviceType
-  - PayrollDocument
-  - LeaveRequest
-  - LeaveType
-  - HolidayCalendar
-  - Holiday
-  - AuditLog
-- Usare UUID come chiave tecnica
-- Preparare migrazioni database
-
-Output atteso:
-
-- Entità MVP create
-- Migrazioni iniziali pronte
-
----
-
-### TASK-010 - Implementare sicurezza JWT base
-
-Stato: TODO  
-Fase roadmap: Fase 3 - Sicurezza
-
-Obiettivo:
-
-Implementare autenticazione base.
-
-Attività:
-
-- Configurare Spring Security
-- Creare login API
-- Generare JWT
-- Validare JWT
-- Proteggere API principali
-
-Output atteso:
-
-- Login funzionante
-- API protette
-
----
-
-### TASK-011 - Implementare ruoli base
-
-Stato: TODO  
-Fase roadmap: Fase 3 - Sicurezza
-
-Obiettivo:
-
-Gestire i ruoli MVP.
-
-Ruoli:
-
-- HR_ADMIN
-- MANAGER
-- EMPLOYEE
-
-Attività:
-
-- Creare enum/entità ruoli
-- Collegare utenti a ruoli
-- Applicare controlli base sulle API
-
-Output atteso:
-
-- Permessi base funzionanti
-
----
-
-### TASK-012 - CRUD Employee backend
-
-Stato: TODO  
-Fase roadmap: Fase 4 - Modulo Employee
-
-Obiettivo:
-
-Creare API backend per i dipendenti.
-
-Attività:
-
-- Repository Employee
-- Service Employee
-- DTO Employee
-- Mapper Employee
-- Controller REST Employee
-- Validazioni base
-
-Output atteso:
-
-- API CRUD Employee funzionanti
-
----
-
-### TASK-013 - UI Employee
-
-Stato: TODO  
-Fase roadmap: Fase 4 - Modulo Employee
-
-Obiettivo:
-
-Creare interfaccia dipendenti.
-
-Attività:
-
-- Lista dipendenti
-- Form creazione
-- Form modifica
-- Dettaglio dipendente
-- Filtri base
-- Uso componenti shared
-
-Output atteso:
-
-- UI Employee funzionante
-
----
-
-### TASK-014 - CRUD Device backend
-
-Stato: TODO  
-Fase roadmap: Fase 5 - Modulo Device
-
-Obiettivo:
-
-Creare API backend per dispositivi.
-
-Attività:
-
-- Repository Device
-- Service Device
-- DTO Device
-- Mapper Device
-- Controller REST Device
-- Gestione stato dispositivo
-- Collegamento a Employee
-
-Output atteso:
-
-- API CRUD Device funzionanti
-
----
-
-### TASK-015 - UI Device
-
-Stato: TODO  
-Fase roadmap: Fase 5 - Modulo Device
-
-Obiettivo:
-
-Creare interfaccia dispositivi.
-
-Attività:
-
-- Lista dispositivi
-- Form creazione/modifica
-- Dettaglio dispositivo
-- Assegnazione a dipendente
-- Filtri base
-
-Output atteso:
-
-- UI Device funzionante
-
----
-
-### TASK-016 - Upload PayrollDocument backend
-
-Stato: TODO  
-Fase roadmap: Fase 6 - Modulo PayrollDocument
-
-Obiettivo:
-
-Gestire upload documenti payroll.
-
-Attività:
-
-- API upload file
-- Salvataggio repository locale sicuro
-- Nome file anonimizzato
-- Checksum
-- Collegamento a Employee
-- Stato bozza/pubblicato
-- Audit upload
-
-Output atteso:
-
-- Upload payroll funzionante
-
----
-
-### TASK-017 - Download PayrollDocument protetto
-
-Stato: TODO  
-Fase roadmap: Fase 6 - Modulo PayrollDocument
-
-Obiettivo:
-
-Permettere download sicuro dei documenti.
-
-Attività:
-
-- API download
-- Controllo permessi per ruolo
-- Audit download
-- Gestione file non trovato
-
-Output atteso:
-
-- Download protetto funzionante
-
----
-
-### TASK-018 - UI PayrollDocument
-
-Stato: TODO  
-Fase roadmap: Fase 6 - Modulo PayrollDocument
-
-Obiettivo:
-
-Creare interfaccia documenti payroll.
-
-Attività:
-
-- Lista documenti
-- Upload documento
-- Stato documento
-- Download documento
-- Filtri per dipendente/periodo
-
-Output atteso:
-
-- UI PayrollDocument funzionante
-
----
-
-### TASK-019 - LeaveRequest backend
-
-Stato: TODO  
-Fase roadmap: Fase 7 - Modulo LeaveRequest
-
-Obiettivo:
-
-Gestire richieste di congedo.
-
-Attività:
-
-- CRUD LeaveRequest
-- Stati:
-  - inviato
-  - approvato
-  - rifiutato
-  - annullato
-- Flag urgente
-- Motivazione obbligatoria se urgente
-- Collegamento a Employee e LeaveType
-
-Output atteso:
-
-- API LeaveRequest funzionanti
-
----
-
-### TASK-020 - Workflow approvazione congedi
-
-Stato: TODO  
-Fase roadmap: Fase 7 - Modulo LeaveRequest
-
-Obiettivo:
-
-Gestire approvazione/rifiuto congedi.
-
-Attività:
-
-- API approvazione
-- API rifiuto
-- Controllo ruolo Manager/HR
-- Audit cambio stato
-- Notifica email base
-
-Output atteso:
-
-- Workflow congedi MVP funzionante
-
----
-
-### TASK-021 - UI LeaveRequest
-
-Stato: TODO  
-Fase roadmap: Fase 7 - Modulo LeaveRequest
-
-Obiettivo:
-
-Creare interfaccia congedi.
-
-Attività:
-
-- Lista richieste
-- Form nuova richiesta
-- Dettaglio richiesta
-- Azioni approva/rifiuta
-- Evidenza richieste urgenti
-
-Output atteso:
-
-- UI LeaveRequest funzionante
-
----
-
-### TASK-022 - HolidayCalendar backend
-
-Stato: TODO  
-Fase roadmap: Fase 8 - Calendario festività
-
-Obiettivo:
-
-Gestire calendari festivi.
-
-Attività:
-
-- CRUD HolidayCalendar
-- CRUD Holiday
-- Festività per paese/anno
-- Collegamento al calcolo congedi
-
-Output atteso:
-
-- API calendario festività funzionanti
-
----
-
-### TASK-023 - UI HolidayCalendar
-
-Stato: TODO  
-Fase roadmap: Fase 8 - Calendario festività
-
-Obiettivo:
-
-Creare interfaccia festività.
-
-Attività:
-
-- Lista calendari
-- Lista festività
-- Form creazione/modifica
-- Gestione festività mobili
-
-Output atteso:
-
-- UI festività funzionante
-
----
-
-## 5. Task tecnici trasversali
-
-### TASK-024 - Configurare audit log
+### TASK-009 - Configurare Swagger / OpenAPI
 
 Stato: TODO
 
-Attività:
-
-- Creare AuditLog
-- Tracciare operazioni critiche
-- Tracciare utente, data, azione, entità
-
-Output atteso:
-
-- Audit log base funzionante
-
----
-
-### TASK-025 - Configurare notifiche email
+### TASK-010 - Configurare profili dev/test/prod
 
 Stato: TODO
 
-Attività:
-
-- Configurare Spring Mail
-- Creare template base
-- Inviare notifiche congedi
-- Inviare notifiche payroll
-
-Output atteso:
-
-- Email MVP funzionanti
-
----
-
-### TASK-026 - Configurare logging applicativo
+### TASK-011 - Creare modello dati iniziale
 
 Stato: TODO
 
-Attività:
-
-- Logging strutturato
-- Log errori
-- Log operazioni principali
-- Predisposizione Grafana/Loki
-
-Output atteso:
-
-- Logging coerente
-
----
-
-### TASK-027 - Test MVP
+### TASK-012 - Implementare sicurezza JWT base
 
 Stato: TODO
 
-Attività:
+### TASK-013 - Implementare ruoli base
 
-- Test build backend
-- Test build frontend
-- Test API principali
-- Test permessi
-- Test workflow principali
+Stato: TODO
 
-Output atteso:
+### TASK-014 - CRUD Employee backend
 
-- MVP validato
+Stato: TODO
+
+### TASK-015 - UI Employee
+
+Stato: TODO
+
+### TASK-016 - CRUD Device backend
+
+Stato: TODO
+
+### TASK-017 - UI Device
+
+Stato: TODO
+
+### TASK-018 - Upload PayrollDocument backend
+
+Stato: TODO
+
+### TASK-019 - Download PayrollDocument protetto
+
+Stato: TODO
+
+### TASK-020 - UI PayrollDocument
+
+Stato: TODO
+
+### TASK-021 - LeaveRequest backend
+
+Stato: TODO
+
+### TASK-022 - Workflow approvazione congedi
+
+Stato: TODO
+
+### TASK-023 - UI LeaveRequest
+
+Stato: TODO
+
+### TASK-024 - HolidayCalendar backend
+
+Stato: TODO
+
+### TASK-025 - UI HolidayCalendar
+
+Stato: TODO
+
+### TASK-026 - Configurare audit log
+
+Stato: TODO
+
+### TASK-027 - Configurare notifiche email
+
+Stato: TODO
+
+### TASK-028 - Configurare logging applicativo
+
+Stato: TODO
+
+### TASK-029 - Test MVP
+
+Stato: TODO
 
 ---
 
-## 6. Cronologia versioni
+## 5. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.3 | 2026-05-01 | Riallineati TASK-006 e TASK-007 come completati; introdotto TASK-008 per layout-6 reale. |
 | 1.2 | 2026-05-01 | Aggiornato stato dopo TASK-005 e aggiunto TASK-006 per integrazione Metronic Angular. |
 | 1.1 | 2026-05-01 | Aggiornato stato task dopo completamento TASK-001, TASK-002, TASK-003 e TASK-004. |
 | 1.0 | 2026-05-01 | Prima versione task operativi MVP. |
