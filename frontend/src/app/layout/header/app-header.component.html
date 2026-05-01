@@ -1,3 +1,31 @@
-<header>
-  Header
+<header
+  id="header"
+  class="kt-header fixed start-0 end-0 top-0 z-10 flex items-center border-b border-border bg-background"
+>
+  <div class="kt-container-fluid flex items-center justify-between gap-4">
+    <div class="flex min-w-0 items-center gap-3">
+      <button
+        id="sidebar_toggle"
+        class="kt-btn kt-btn-icon kt-btn-ghost lg:hidden"
+        type="button"
+        aria-label="Toggle sidebar"
+      >
+        <span class="block h-4 w-4 rounded-sm border border-current"></span>
+      </button>
+
+      <div class="min-w-0">
+        <div class="text-sm font-semibold text-mono">HRM AI-first</div>
+        <div class="text-xs text-secondary-foreground">MVP workspace</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="kt-badge kt-badge-outline kt-badge-primary">MVP</span>
+      <img
+        class="size-9 rounded-full border border-border"
+        src="assets/media/avatars/blank.png"
+        alt="User avatar"
+      />
+    </div>
+  </div>
 </header>

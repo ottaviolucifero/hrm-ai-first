@@ -1,3 +1,76 @@
-<aside>
-  Sidebar
+<aside
+  id="sidebar"
+  class="kt-sidebar fixed bottom-0 start-0 top-0 z-20 hidden shrink-0 flex-col border-e border-border bg-background lg:flex"
+>
+  <div id="sidebar_wrapper" class="kt-sidebar-wrapper flex grow flex-col">
+    <div class="kt-sidebar-header flex items-center border-b border-border px-5">
+      <a class="kt-sidebar-logo flex items-center gap-3" href="/" aria-label="HRM home">
+        <img class="default-logo h-8" src="assets/media/app/default-logo.svg" alt="HRM" />
+        <img class="small-logo h-8" src="assets/media/app/mini-logo.svg" alt="HRM" />
+      </a>
+    </div>
+
+    <div id="sidebar_scrollable" class="kt-sidebar-content kt-scrollable-y-auto grow py-4">
+      <nav
+        id="sidebar_menu"
+        class="kt-menu kt-menu-default flex-col px-2"
+        data-kt-menu="true"
+        aria-label="Main navigation"
+      >
+        <div class="kt-menu-item active">
+          <a class="kt-menu-link" href="/">
+            <span class="kt-menu-bullet">
+              <span class="size-1.5 rounded-full bg-primary"></span>
+            </span>
+            <span class="kt-menu-title">Dashboard</span>
+          </a>
+        </div>
+
+        <div class="kt-menu-item">
+          <a class="kt-menu-link" href="/">
+            <span class="kt-menu-bullet">
+              <span class="size-1.5 rounded-full bg-muted"></span>
+            </span>
+            <span class="kt-menu-title">Employees</span>
+          </a>
+        </div>
+
+        <div class="kt-menu-item">
+          <a class="kt-menu-link" href="/">
+            <span class="kt-menu-bullet">
+              <span class="size-1.5 rounded-full bg-muted"></span>
+            </span>
+            <span class="kt-menu-title">Devices</span>
+          </a>
+        </div>
+
+        <div class="kt-menu-item">
+          <a class="kt-menu-link" href="/">
+            <span class="kt-menu-bullet">
+              <span class="size-1.5 rounded-full bg-muted"></span>
+            </span>
+            <span class="kt-menu-title">Payroll Documents</span>
+          </a>
+        </div>
+
+        <div class="kt-menu-item">
+          <a class="kt-menu-link" href="/">
+            <span class="kt-menu-bullet">
+              <span class="size-1.5 rounded-full bg-muted"></span>
+            </span>
+            <span class="kt-menu-title">Leave Requests</span>
+          </a>
+        </div>
+
+        <div class="kt-menu-item">
+          <a class="kt-menu-link" href="/">
+            <span class="kt-menu-bullet">
+              <span class="size-1.5 rounded-full bg-muted"></span>
+            </span>
+            <span class="kt-menu-title">Holiday Calendar</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </div>
 </aside>
