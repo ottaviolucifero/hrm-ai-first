@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.7  
+Versione: 1.14  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -57,7 +57,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-011: Creare modello dati iniziale
+- TASK-011: modello dati enterprise normalizzato multi-tenant
 
 ---
 
@@ -80,7 +80,7 @@ Completato:
 
 Da fare:
 
-- Modello dati iniziale
+- Modello dati enterprise normalizzato
 
 ---
 
@@ -106,7 +106,33 @@ Profili Spring Boot configurati:
 
 ### Fase 2 - Modello dati
 
-- Entità MVP
+- Foundation dati enterprise normalizzata
+- Multi-tenant SaaS architecture
+- Master architecture
+- Core architecture
+- Bridge architecture
+- Multi-country readiness
+- Tenant governance
+- Multi-company governance
+- Legal entity governance
+- Office hierarchy governance
+- Identity governance
+- Authentication governance
+- Platform operator governance
+- Super admin governance
+- Cross-tenant governance
+- Elevated security governance
+- MFA readiness
+- Email-first authentication
+- RBAC governance
+- SMTP governance
+- Geographic governance
+- Address governance
+- Audit governance
+- Disciplinary governance
+- Contract lifecycle
+- Payroll document lifecycle
+- HR core platform foundation
 - Migrazioni
 - Audit base
 
@@ -141,6 +167,13 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.14 | 2026-05-01 | TASK-011 esteso con platform operator, super admin, cross-tenant governance, tenant switching e strong authentication obbligatoria per utenti elevati. |
+| 1.13 | 2026-05-01 | TASK-011 esteso con email-first authentication, identity governance, authentication governance e MFA readiness. |
+| 1.12 | 2026-05-01 | TASK-011 aggiornato a foundation SaaS multi-tenant con tenant/company hierarchy, legal entity, office hierarchy, audit e disciplinary governance. |
+| 1.11 | 2026-05-01 | TASK-011 ridefinito come platform data foundation con master/core/bridge architecture, tenant, RBAC, SMTP, geographic, contract e document governance. |
+| 1.10 | 2026-05-01 | TASK-011 dettagliato come blueprint dati completo con master/core separation, demographic governance, lifecycle e multi-country governance. |
+| 1.9 | 2026-05-01 | TASK-011 esteso con master data governance, employee/device lifecycle e contact standardization. |
+| 1.8 | 2026-05-01 | TASK-011 aggiornato a foundation dati enterprise normalizzata con master data architecture, multi-country readiness e HR core domain foundation. |
 | 1.7 | 2026-05-01 | TASK-010 completato; profili dev/test/prod configurati e prossimo passo aggiornato al modello dati iniziale. |
 | 1.6 | 2026-05-01 | TASK-009 completato; Swagger/OpenAPI integrato, validato e documentato nella roadmap backend/API. |
 | 1.5 | 2026-05-01 | TASK-008 completato; roadmap aggiornata con layout reale Metronic completato e Swagger come prossimo step. |

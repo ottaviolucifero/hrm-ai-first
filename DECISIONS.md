@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.1  
+Versione: 1.9  
 Ultimo aggiornamento: 2026-05-01  
 Stato: Attivo
 
@@ -331,7 +331,221 @@ Il frontend dovrà evolvere tramite componenti modulari, shared UI e layout prog
 
 ---
 
-## 4. Template per nuove decisioni
+### DEC-013 - Enterprise normalized platform data model with master/core/bridge architecture, multi-country support, tenant governance, RBAC governance and lifecycle governance
+
+Data: 2026-05-01  
+Stato: Approvata
+
+Decisione:
+
+Il modello dati HRM sarà progettato come foundation enterprise scalabile e internazionale, con separazione esplicita tra master data, core domain e bridge tables. Employee non sarà limitato a un solo `fiscalCode` locale.
+
+Il dominio userà:
+
+- separazione Master / Core / Bridge;
+- `CompanyProfile` come foundation tenant / azienda;
+- `UserAccount` separato da `Employee`;
+- RBAC con `Role`, `Permission`, `UserRole` e `RolePermission`;
+- SMTP governance tramite configurazione dedicata;
+- Employee international profile;
+- geographic hierarchy;
+- `GlobalZipCode`;
+- contract governance;
+- `PayrollDocument` governance;
+- `FINAL_SETTLEMENT` tramite `DocumentType`;
+- lifecycle con `hireDate` e `terminationDate`;
+- normalized relational governance;
+- PK/FK explicit architecture;
+- tenant-scoped relational integrity;
+- priorità a governance, sicurezza, scalabilità, standardizzazione, reporting e riduzione refactor.
+
+Motivazione:
+
+- Preparare piattaforma enterprise reale;
+- evitare hardcode;
+- supportare multi-company futura;
+- supportare sicurezza enterprise;
+- supportare crescita enterprise internazionale;
+- preparare HRM robusto.
+
+Alternative escluse:
+
+- modello Employee basato solo su identificativo fiscale locale;
+- company profile non modellato;
+- utenze applicative fuse con employee;
+- RBAC gestito come stringhe o boolean;
+- SMTP non governato a livello dati;
+- payroll document non collegato al contratto;
+- valori HR core gestiti come stringhe libere;
+- stati employee/device/contract gestiti come boolean semplificati;
+- telefono employee gestito come singolo campo libero.
+
+Impatto:
+
+Il TASK-011 dovrà creare una foundation dati normalizzata con master/core/bridge architecture, supporto multi-country, tenant governance, RBAC governance, SMTP governance, geographic governance, contract governance, document governance e lifecycle governance coerenti con questa decisione.
+
+---
+
+### DEC-014 - Full SaaS multi-tenant architecture with tenant/company hierarchy, legal entity governance, disciplinary governance and audit governance
+
+Data: 2026-05-01  
+Stato: Approvata
+
+Decisione:
+
+La piattaforma HRM adotterà una architettura SaaS full multi-tenant. `Tenant` diventa il root boundary del cliente SaaS e ogni tenant può governare più `CompanyProfile`.
+
+Il modello dati userà:
+
+- `Tenant` come root architecture;
+- relazione Tenant 1:N `CompanyProfile`;
+- `CompanyProfileType` per distinguere legal entity, subsidiary, business unit, branch company o public entity;
+- `OfficeLocationType` per distinguere sede legale, sede operativa, branch, warehouse o remote hub;
+- relazione `CompanyProfile` 1:N `OfficeLocation`;
+- Employee scoped a tenant e company;
+- RBAC full tenant scoped;
+- email-first identity model;
+- UserAccount as authentication boundary;
+- optional strong authentication;
+- AuthenticationMethod governance;
+- email OTP readiness;
+- app OTP readiness;
+- MFA policy scalability;
+- audit governance tramite `AuditLog` e `AuditActionType`;
+- disciplinary governance tramite `EmployeeDisciplinaryAction` e `DisciplinaryActionType`;
+- normalized relational governance con primary keys, foreign keys e relationships esplicite;
+- integrità relazionale tenant-scoped per tutte le business tables;
+- SaaS scalability;
+- white-label readiness.
+
+Motivazione:
+
+- Preparare piattaforma SaaS reale;
+- supportare gruppi multi-company;
+- supportare compliance enterprise;
+- supportare audit e sicurezza;
+- evitare refactor strutturali futuri.
+
+Alternative escluse:
+
+- single-tenant implicito;
+- company unica per installazione;
+- sedi aziendali non tipizzate;
+- audit logging non tenant-aware;
+- disciplinary governance gestita solo come documenti generici.
+
+Impatto:
+
+Il TASK-011 dovrà modellare tenant/company hierarchy, legal entity governance, office hierarchy, audit governance e disciplinary governance come parte della foundation dati iniziale.
+
+---
+
+### DEC-015 - Email-first identity and optional strong authentication governance
+
+Data: 2026-05-01  
+Stato: Approvata
+
+Decisione:
+
+L'accesso alla piattaforma HRM avverrà tramite email, non tramite username. `UserAccount` diventa la entity enterprise-ready responsabile di identity e authentication boundary.
+
+Il modello dati userà:
+
+- email come login principale;
+- rimozione di `username`;
+- `passwordHash` obbligatorio;
+- unique constraint `(tenant + email)`;
+- `AuthenticationMethod` per governare PASSWORD_ONLY, EMAIL_OTP, APP_OTP e combinazioni future;
+- strong authentication opzionale tramite `strongAuthenticationRequired`;
+- email OTP readiness tramite `emailOtpEnabled`;
+- app OTP readiness tramite `appOtpEnabled` e `otpSecret` per TOTP;
+- `employee` nullable per account non-HR;
+- `companyProfile` nullable per tenant-level admins;
+- campi security per email verification, password change, failed login attempts e account lock;
+- campi localization e base audit fields;
+- MFA policy scalability.
+
+Motivazione:
+
+- Login moderno basato su email;
+- eliminare ambiguità da username;
+- supportare sicurezza enterprise e compliance;
+- preparare MFA opzionale;
+- supportare tenant security policy;
+- mantenere scalabilità futura senza introdurre SMS OTP, hardware keys, SSO enterprise o OAuth external IdP nel MVP.
+
+Alternative escluse:
+
+- username come login principale;
+- MFA hardcoded senza master governance;
+- SMS OTP nel MVP;
+- hardware keys nel MVP;
+- SSO enterprise o OAuth external IdP nel MVP.
+
+Impatto:
+
+Il TASK-011 dovrà modellare `UserAccount` come boundary identity/security email-first, includere `AuthenticationMethod`, OTP readiness, policy MFA tenant-ready e integrazione con SMTP per OTP email, password reset e system notifications.
+
+---
+
+### DEC-016 - Platform operator and super admin cross-tenant governance with mandatory strong authentication and auditability
+
+Data: 2026-05-01  
+Stato: Approvata
+
+Decisione:
+
+La piattaforma HRM introdurrà una governance esplicita per utenti tenant, tenant admin, platform operator e super admin tramite `UserType`.
+
+Il modello dati userà:
+
+- `UserType` per distinguere TENANT_USER, TENANT_ADMIN, PLATFORM_OPERATOR e SUPER_ADMIN;
+- `UserTenantAccess` per accessi multi-tenant espliciti;
+- cross-tenant governance;
+- tenant switching;
+- MFA obbligatoria per account elevati;
+- cross-tenant audit;
+- impersonation governance;
+- `AuditLog` esteso con acting tenant, target tenant e impersonation mode.
+
+Motivazione:
+
+- Preparare una piattaforma SaaS enterprise reale;
+- supportare operatori piattaforma;
+- garantire sicurezza elevata;
+- rendere auditabile ogni accesso cross-tenant;
+- evitare refactor futuri su identity, access control e audit.
+
+Alternative escluse:
+
+- super admin implicito senza modello dati;
+- accesso cross-tenant non auditato;
+- tenant switching non tracciato;
+- MFA opzionale per account elevati.
+
+Impatto:
+
+Il TASK-011 dovrà includere `UserType`, `UserTenantAccess`, strong authentication obbligatoria per PLATFORM_OPERATOR e SUPER_ADMIN, e auditabilità cross-tenant tramite `AuditLog`.
+
+---
+
+## 4. Cronologia versioni
+
+| Versione | Data | Descrizione |
+|---|---|---|
+| 1.9 | 2026-05-01 | Aggiunta DEC-016 per platform operator, super admin, cross-tenant governance, mandatory MFA e auditability. |
+| 1.8 | 2026-05-01 | Aggiunta DEC-015 per identity email-first, UserAccount authentication boundary, AuthenticationMethod, OTP readiness e MFA policy scalability. |
+| 1.7 | 2026-05-01 | DEC-013 e DEC-014 integrate con normalized relational governance, PK/FK explicit architecture e tenant-scoped relational integrity. |
+| 1.6 | 2026-05-01 | Aggiunta DEC-014 per architettura SaaS full multi-tenant con tenant/company hierarchy, legal entity, audit e disciplinary governance. |
+| 1.5 | 2026-05-01 | DEC-013 aggiornata a platform data model con master/core/bridge architecture, tenant, RBAC, SMTP, geographic, contract e document governance. |
+| 1.4 | 2026-05-01 | DEC-013 aggiornata con master/core separation, demographic governance, contact governance e blueprint HR-ready. |
+| 1.3 | 2026-05-01 | DEC-013 estesa con lifecycle governance, status lookup, contract type e standard employee contact fields. |
+| 1.2 | 2026-05-01 | Aggiunta DEC-013 per modello dati enterprise normalizzato con master tables e supporto multi-country. |
+| 1.1 | 2026-05-01 | Registrate decisioni iniziali di fondazione tecnica e frontend enterprise. |
+
+---
+
+## 5. Template per nuove decisioni
 
 ```markdown
 ### DEC-XXX - Titolo decisione
