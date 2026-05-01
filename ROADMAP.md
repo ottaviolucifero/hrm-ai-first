@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.4  
+Versione: 1.5  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -50,12 +50,13 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - Frontend Angular base
 - Integrazione asset base Metronic Tailwind HTML
 - Shell layout Angular modulare (`app-shell`, `app-header`, `app-sidebar`)
+- Adattamento layout reale Metronic
 - DEC-012 frontend enterprise modulare
 
 ### Prossimo passo
 
-- TASK-008: adattare layout-6 reale Metronic alla shell Angular
-- Poi Swagger / OpenAPI
+- TASK-009: Swagger / OpenAPI
+- Poi profili dev/test/prod
 
 ---
 
@@ -72,10 +73,10 @@ Completato:
 - Frontend Angular
 - Metronic asset base
 - Shell layout enterprise
+- Layout reale Metronic
 
 Da fare:
 
-- Layout-6 reale
 - Swagger / OpenAPI
 - Profili dev/test/prod
 
@@ -120,6 +121,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.5 | 2026-05-01 | TASK-008 completato; roadmap aggiornata con layout reale Metronic completato e Swagger come prossimo step. |
 | 1.4 | 2026-05-01 | Riallineata roadmap dopo completamento TASK-006 e TASK-007; introdotto TASK-008 layout-6 reale. |
 | 1.3 | 2026-05-01 | Aggiornato avanzamento dopo TASK-005 e aggiunto step Metronic Angular prima di Swagger. |
 | 1.2 | 2026-05-01 | Aggiornato avanzamento dopo TASK-004 Docker Compose PostgreSQL. |
