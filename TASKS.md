@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.3  
+Versione: 1.4  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -44,108 +44,47 @@ Legenda:
 
 ---
 
-## 4. Task iniziali
+## 4. Stato attuale
 
-### TASK-001 - Creare struttura repository
-
-Stato: DONE
-
-### TASK-002 - Creare backend Spring Boot
+### TASK-001 → TASK-008
 
 Stato: DONE
 
-### TASK-003 - Configurare base backend
+Completati:
 
-Stato: DONE
-
-### TASK-004 - Configurare PostgreSQL e Docker Compose
-
-Stato: DONE
-
-### TASK-005 - Creare frontend Angular
-
-Stato: DONE
+- Creazione repository
+- Backend Spring Boot
+- Configurazione backend YAML
+- PostgreSQL + Docker Compose
+- Frontend Angular
+- Integrazione asset base Metronic Tailwind HTML
+- Shell layout Angular modulare
+- Adattamento layout reale Metronic
 
 ---
 
-### TASK-006 - Integrare asset base Metronic Tailwind HTML nel frontend Angular
-
-Stato: DONE  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Integrare asset grafici e tecnici base del Metronic Tailwind HTML Starter Kit nel frontend Angular come fondazione UI.
-
-Attività:
-
-- Analizzare pacchetto Metronic disponibile localmente
-- Identificare starter kit corretto
-- Integrare asset CSS/JS essenziali
-- Configurare Angular per usare asset globali
-- Aggiornare budget build
-- Validare build frontend
-
-Output atteso:
-
-- Base UI Metronic integrata
-- Build funzionante
-
----
-
-### TASK-007 - Creare shell layout Angular modulare
-
-Stato: DONE  
-Fase roadmap: Fase 1 - Fondazione tecnica
-
-Obiettivo:
-
-Creare architettura frontend enterprise modulare basata su shell, header e sidebar standalone.
-
-Attività:
-
-- Creare `app-shell`
-- Creare `app-header`
-- Creare `app-sidebar`
-- Aggiornare routing root
-- Preparare base shared/layout
-- Validare build e test
-
-Output atteso:
-
-- Layout shell enterprise pronto
-- Routing strutturale corretto
-
----
-
-### TASK-008 - Adattare layout-6 Metronic reale alla shell Angular
+### TASK-009 - Configurare Swagger / OpenAPI
 
 Stato: TODO  
 Fase roadmap: Fase 1 - Fondazione tecnica
 
 Obiettivo:
 
-Adattare progressivamente il layout-6 reale di Metronic dentro `app-shell`, `app-header` e `app-sidebar`.
+Documentare e validare API REST backend.
 
 Attività:
 
-- Estrarre header reale
-- Estrarre sidebar reale
-- Adattare wrapper principale
-- Integrare markup utile senza copia massiva
-- Preparare dashboard base HRM
-- Mantenere componentizzazione Angular
+- Aggiungere dipendenza OpenAPI
+- Configurare Swagger UI
+- Esporre endpoint documentazione
+- Validare accesso locale
 
 Output atteso:
 
-- Layout enterprise reale integrato
-- Base dashboard HRM pronta
+- Swagger UI accessibile
+- Base governance API pronta
 
 ---
-
-### TASK-009 - Configurare Swagger / OpenAPI
-
-Stato: TODO
 
 ### TASK-010 - Configurare profili dev/test/prod
 
@@ -233,6 +172,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.4 | 2026-05-01 | TASK-008 completato; layout reale Metronic adattato; TASK-009 Swagger prossimo step. |
 | 1.3 | 2026-05-01 | Riallineati TASK-006 e TASK-007 come completati; introdotto TASK-008 per layout-6 reale. |
 | 1.2 | 2026-05-01 | Aggiornato stato dopo TASK-005 e aggiunto TASK-006 per integrazione Metronic Angular. |
 | 1.1 | 2026-05-01 | Aggiornato stato task dopo completamento TASK-001, TASK-002, TASK-003 e TASK-004. |
