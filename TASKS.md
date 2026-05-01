@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.5  
+Versione: 1.6  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -46,7 +46,7 @@ Legenda:
 
 ## 4. Stato attuale
 
-### TASK-001 → TASK-009
+### TASK-001 → TASK-010
 
 Stato: DONE
 
@@ -61,6 +61,7 @@ Completati:
 - Shell layout Angular modulare
 - Adattamento layout reale Metronic
 - Swagger / OpenAPI backend
+- Profili backend dev/test/prod
 
 ---
 
@@ -96,7 +97,14 @@ Validazione:
 
 ### TASK-010 - Configurare profili dev/test/prod
 
-Stato: TODO
+Stato: DONE
+
+Validazione:
+
+- Profili dev/test/prod configurati
+- Profilo dev validato con PostgreSQL Docker locale
+- Profilo test validato con Maven
+- Profilo prod configurato con variabili ambiente
 
 ### TASK-011 - Creare modello dati iniziale
 
@@ -180,6 +188,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.6 | 2026-05-01 | TASK-010 completato; profili backend dev/test/prod configurati e validati. |
 | 1.5 | 2026-05-01 | TASK-009 completato; Swagger/OpenAPI integrato e validato mantenendo la security attiva sugli altri endpoint. |
 | 1.4 | 2026-05-01 | TASK-008 completato; layout reale Metronic adattato; TASK-009 Swagger prossimo step. |
 | 1.3 | 2026-05-01 | Riallineati TASK-006 e TASK-007 come completati; introdotto TASK-008 per layout-6 reale. |

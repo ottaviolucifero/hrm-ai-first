@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: ${HRM_TEST_DB_URL:jdbc:postgresql://localhost:5432/hrm_db}
+    username: ${HRM_TEST_DB_USERNAME:hrm_user}
+    password: ${HRM_TEST_DB_PASSWORD:hrm_password}
+
+  jpa:
+    show-sql: false
+
+management:
+  endpoint:
+    health:
+      show-details: never

@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hrm_db
+    username: hrm_user
+    password: hrm_password
+
+  jpa:
+    show-sql: true
+
+management:
+  endpoint:
+    health:
+      show-details: always
