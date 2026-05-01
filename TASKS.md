@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.1  
+Versione: 1.2  
 Ultimo aggiornamento: 2026-05-01  
 Stato: In avanzamento
 
@@ -167,7 +167,7 @@ docker exec -it hrm-postgres psql -U hrm_user -d hrm_db
 
 ### TASK-005 - Creare frontend Angular
 
-Stato: TODO  
+Stato: DONE  
 Fase roadmap: Fase 1 - Fondazione tecnica
 
 Obiettivo:
@@ -177,19 +177,59 @@ Creare lo scheletro frontend.
 Attività:
 
 - Creare progetto Angular
-- Configurare struttura `/core`, `/shared`, `/features`, `/layout`
-- Preparare layout base
-- Preparare routing iniziale
-- Predisporre uso template Metronic Angular
+- Configurare routing iniziale
+- Configurare SCSS
+- Validare build frontend
 
 Output atteso:
 
-- Frontend avviabile
-- Struttura coerente con `ARCHITECTURE.md`
+- Frontend Angular avviabile
+- Struttura base pronta per integrazione UI
+
+Validazione:
+
+```cmd
+cd C:\hrm-ai-first\frontend
+npm run build
+```
 
 ---
 
-### TASK-006 - Configurare Swagger / OpenAPI
+### TASK-006 - Integrare template Metronic Angular
+
+Stato: TODO  
+Fase roadmap: Fase 1 - Fondazione tecnica
+
+Obiettivo:
+
+Integrare il template Metronic Angular come base UI del frontend.
+
+Attività:
+
+- Analizzare contenuto ZIP Metronic Angular disponibile localmente
+- Identificare struttura template, asset, layout e dipendenze
+- Integrare asset e stili necessari nel progetto Angular
+- Preparare layout base dell'applicazione HRM
+- Creare struttura frontend `/core`, `/shared`, `/features`, `/layout`
+- Predisporre componenti condivisi riutilizzabili
+- Mantenere il template adattato al progetto, evitando codice non necessario per il MVP
+
+Output atteso:
+
+- Frontend con base grafica Metronic integrata
+- Layout iniziale HRM pronto
+- Build frontend funzionante
+
+Validazione:
+
+```cmd
+cd C:\hrm-ai-first\frontend
+npm run build
+```
+
+---
+
+### TASK-007 - Configurare Swagger / OpenAPI
 
 Stato: TODO  
 Fase roadmap: Fase 1 - Fondazione tecnica
@@ -210,7 +250,7 @@ Output atteso:
 
 ---
 
-### TASK-007 - Configurare profili dev/test/prod
+### TASK-008 - Configurare profili dev/test/prod
 
 Stato: TODO  
 Fase roadmap: Fase 1 - Fondazione tecnica
@@ -232,7 +272,7 @@ Output atteso:
 
 ---
 
-### TASK-008 - Creare modello dati iniziale
+### TASK-009 - Creare modello dati iniziale
 
 Stato: TODO  
 Fase roadmap: Fase 2 - Modello dati
@@ -267,7 +307,7 @@ Output atteso:
 
 ---
 
-### TASK-009 - Implementare sicurezza JWT base
+### TASK-010 - Implementare sicurezza JWT base
 
 Stato: TODO  
 Fase roadmap: Fase 3 - Sicurezza
@@ -291,7 +331,7 @@ Output atteso:
 
 ---
 
-### TASK-010 - Implementare ruoli base
+### TASK-011 - Implementare ruoli base
 
 Stato: TODO  
 Fase roadmap: Fase 3 - Sicurezza
@@ -318,7 +358,7 @@ Output atteso:
 
 ---
 
-### TASK-011 - CRUD Employee backend
+### TASK-012 - CRUD Employee backend
 
 Stato: TODO  
 Fase roadmap: Fase 4 - Modulo Employee
@@ -342,7 +382,7 @@ Output atteso:
 
 ---
 
-### TASK-012 - UI Employee
+### TASK-013 - UI Employee
 
 Stato: TODO  
 Fase roadmap: Fase 4 - Modulo Employee
@@ -366,7 +406,7 @@ Output atteso:
 
 ---
 
-### TASK-013 - CRUD Device backend
+### TASK-014 - CRUD Device backend
 
 Stato: TODO  
 Fase roadmap: Fase 5 - Modulo Device
@@ -391,7 +431,7 @@ Output atteso:
 
 ---
 
-### TASK-014 - UI Device
+### TASK-015 - UI Device
 
 Stato: TODO  
 Fase roadmap: Fase 5 - Modulo Device
@@ -414,7 +454,7 @@ Output atteso:
 
 ---
 
-### TASK-015 - Upload PayrollDocument backend
+### TASK-016 - Upload PayrollDocument backend
 
 Stato: TODO  
 Fase roadmap: Fase 6 - Modulo PayrollDocument
@@ -439,7 +479,7 @@ Output atteso:
 
 ---
 
-### TASK-016 - Download PayrollDocument protetto
+### TASK-017 - Download PayrollDocument protetto
 
 Stato: TODO  
 Fase roadmap: Fase 6 - Modulo PayrollDocument
@@ -461,7 +501,7 @@ Output atteso:
 
 ---
 
-### TASK-017 - UI PayrollDocument
+### TASK-018 - UI PayrollDocument
 
 Stato: TODO  
 Fase roadmap: Fase 6 - Modulo PayrollDocument
@@ -484,7 +524,7 @@ Output atteso:
 
 ---
 
-### TASK-018 - LeaveRequest backend
+### TASK-019 - LeaveRequest backend
 
 Stato: TODO  
 Fase roadmap: Fase 7 - Modulo LeaveRequest
@@ -511,7 +551,7 @@ Output atteso:
 
 ---
 
-### TASK-019 - Workflow approvazione congedi
+### TASK-020 - Workflow approvazione congedi
 
 Stato: TODO  
 Fase roadmap: Fase 7 - Modulo LeaveRequest
@@ -534,7 +574,7 @@ Output atteso:
 
 ---
 
-### TASK-020 - UI LeaveRequest
+### TASK-021 - UI LeaveRequest
 
 Stato: TODO  
 Fase roadmap: Fase 7 - Modulo LeaveRequest
@@ -557,7 +597,7 @@ Output atteso:
 
 ---
 
-### TASK-021 - HolidayCalendar backend
+### TASK-022 - HolidayCalendar backend
 
 Stato: TODO  
 Fase roadmap: Fase 8 - Calendario festività
@@ -579,7 +619,7 @@ Output atteso:
 
 ---
 
-### TASK-022 - UI HolidayCalendar
+### TASK-023 - UI HolidayCalendar
 
 Stato: TODO  
 Fase roadmap: Fase 8 - Calendario festività
@@ -603,7 +643,7 @@ Output atteso:
 
 ## 5. Task tecnici trasversali
 
-### TASK-023 - Configurare audit log
+### TASK-024 - Configurare audit log
 
 Stato: TODO
 
@@ -619,7 +659,7 @@ Output atteso:
 
 ---
 
-### TASK-024 - Configurare notifiche email
+### TASK-025 - Configurare notifiche email
 
 Stato: TODO
 
@@ -636,7 +676,7 @@ Output atteso:
 
 ---
 
-### TASK-025 - Configurare logging applicativo
+### TASK-026 - Configurare logging applicativo
 
 Stato: TODO
 
@@ -653,7 +693,7 @@ Output atteso:
 
 ---
 
-### TASK-026 - Test MVP
+### TASK-027 - Test MVP
 
 Stato: TODO
 
@@ -675,5 +715,6 @@ Output atteso:
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.2 | 2026-05-01 | Aggiornato stato dopo TASK-005 e aggiunto TASK-006 per integrazione Metronic Angular. |
 | 1.1 | 2026-05-01 | Aggiornato stato task dopo completamento TASK-001, TASK-002, TASK-003 e TASK-004. |
 | 1.0 | 2026-05-01 | Prima versione task operativi MVP. |
