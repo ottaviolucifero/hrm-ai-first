@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: hrm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hrm_db
+      POSTGRES_USER: hrm_user
+      POSTGRES_PASSWORD: hrm_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - hrm_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  hrm_postgres_data:
