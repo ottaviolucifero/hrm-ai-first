@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.22  
+Versione: 1.23  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -33,7 +33,17 @@ Ogni task deve essere piccolo, chiaro, verificabile e coerente con:
 
 ---
 
-## 3. Stato task
+## 3. Execution rules / Process notes
+
+- Il riferimento operativo principale per i task correnti è `TASKS.md`.
+- I vecchi file di analisi iniziale, Excel e Word restano materiale storico/di contesto.
+- I vecchi file di analisi iniziale, Excel e Word non devono essere usati come fonte vincolante o come scope automatico dei task.
+- Se un campo, vincolo o comportamento non è esplicitamente presente nel task corrente di `TASKS.md`, non deve essere implementato automaticamente.
+- Ogni task deve essere implementato solo in base allo scope scritto nel task stesso, `ARCHITECTURE.md` e `DECISIONS.md`.
+
+---
+
+## 4. Stato task
 
 Legenda:
 
@@ -44,7 +54,7 @@ Legenda:
 
 ---
 
-## 4. Stato attuale
+## 5. Stato attuale
 
 ### TASK-001 → TASK-010
 
@@ -1314,7 +1324,7 @@ Employee core persistence foundation completed. API REST Employee, UI Employee, 
 
 ### TASK-018 - Implementare Contract governance e employment lifecycle
 
-Stato: TODO
+Stato: DONE
 
 Dipendenze:
 
@@ -1322,6 +1332,21 @@ Dipendenze:
 - Richiede TASK-012 per Currency
 - Richiede TASK-015 per Tenant e CompanyProfile
 - Richiede TASK-017 per Employee
+
+Completato:
+
+- Migrazione Flyway `V6__create_contract_governance_foundation.sql` creata
+- Tabella `contracts` introdotta con tenant, companyProfile, employee, contractType, currency, startDate, endDate, baseSalary, weeklyHours e active
+- FK reali aggiunte verso `tenants`, `company_profiles`, `employees`, `contract_types` e `currencies`
+- Indici creati su `tenant_id`, `company_profile_id`, `employee_id`, `contract_type_id`, `currency_id` e `active`
+- Check constraint minime aggiunte per date range, baseSalary e weeklyHours
+- Entity JPA `Contract` creata nel package contract
+- Repository JPA `ContractRepository` creato
+- Test backend aggiunti per migration V6 e persistenza Contract con relazioni foundation
+
+Nota architetturale:
+
+Contract governance and employment lifecycle foundation completed. Operational contract APIs, workflow HR, payroll integration, UserAccount/RBAC and UI remain fuori scope e differiti ai task successivi.
 
 ### TASK-019 - Implementare UI Employee management enterprise
 
@@ -1429,10 +1454,11 @@ Stato: TODO
 
 ---
 
-## 5. Cronologia versioni
+## 6. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.23 | 2026-05-02 | TASK-018 completato con Contract governance foundation, migration Flyway V6, entity/repository JPA, FK verso Tenant/CompanyProfile/Employee/ContractType/Currency e test JPA. |
 | 1.22 | 2026-05-02 | TASK-017 completato con Employee core persistence foundation documentata, migration Flyway V5, entity/repository JPA e test di persistenza/unique constraint. |
 | 1.21 | 2026-05-02 | TASK-016 completato con validation hardening, DTO read-only, service layer, API foundation endpoints, error handling, OpenAPI verification e DEC-022. |
 | 1.20 | 2026-05-02 | TASK-015 completato con Tenant reale, CompanyProfile, OfficeLocation, SmtpConfiguration, FK hardening da V2/V3 e migration Flyway V4. |
