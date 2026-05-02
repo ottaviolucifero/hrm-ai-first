@@ -41,14 +41,12 @@ public class SmtpConfiguration extends BaseMasterEntity {
 	@Column(name = "port", nullable = false)
 	private Integer port;
 
-	@NotBlank
 	@Size(max = 150)
-	@Column(name = "username", nullable = false, length = 150)
+	@Column(name = "username", length = 150)
 	private String username;
 
-	@NotBlank
 	@Size(max = 500)
-	@Column(name = "password_encrypted", nullable = false, length = 500)
+	@Column(name = "password_encrypted", length = 500)
 	private String passwordEncrypted;
 
 	@NotNull

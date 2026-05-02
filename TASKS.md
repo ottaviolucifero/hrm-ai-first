@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.20  
+Versione: 1.21  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1249,7 +1249,7 @@ Placeholder tenant foundation converted into real Tenant domain. Multi-company a
 
 ### TASK-016 - Consolidare Tenant / Company / Office / SMTP validation e API readiness
 
-Stato: TODO
+Stato: DONE
 
 Dipendenze:
 
@@ -1262,6 +1262,28 @@ Nota:
 
 Le tabelle OfficeLocation e SmtpConfiguration sono state anticipate e implementate come foundation dati in TASK-015 su istruzione umana. TASK-016 resta come step futuro per service validation, API readiness e regole operative, senza reintrodurre strutture parallele.
 
+Completato:
+
+- Bean Validation SMTP allineata alla nullability schema: `username` e `passwordEncrypted` opzionali
+- DTO read-only foundation creati per evitare esposizione diretta delle entity JPA
+- Service layer minimo `FoundationReadService` creato con transazioni read-only
+- Controller REST read-only creato sotto `/api/foundation`
+- Endpoint disponibili:
+  - `GET /api/foundation/tenants`
+  - `GET /api/foundation/tenants/{id}`
+  - `GET /api/foundation/company-profiles`
+  - `GET /api/foundation/offices`
+  - `GET /api/foundation/smtp-configurations`
+- `passwordEncrypted` non esposto nelle response API SMTP
+- Gestione errori base aggiunta per 404, validation error e constraint violation
+- OpenAPI/Swagger verificato per gli endpoint foundation
+- DEC-022 aggiunta per boundary API foundation read-only basato su DTO/service
+- Test backend completati per context, Flyway V1/V2/V3/V4, seed, endpoint API e OpenAPI
+
+Nota architetturale:
+
+Tenant / Company / Office / SMTP foundation API readiness completed. Operational write APIs, admin CRUD, tenant provisioning, Employee, UserAccount and RBAC bridge remain deferred to future tasks.
+
 ## FASE 2C - EMPLOYEE CORE DOMAIN
 
 ### TASK-017 - Implementare Employee entity enterprise completa
@@ -1273,7 +1295,7 @@ Dipendenze:
 - Richiede TASK-012 per master globali geografici e demografici
 - Richiede TASK-013 per Department, JobTitle, ContractType, EmploymentStatus e WorkMode tenant-scoped
 - Richiede TASK-015 per Tenant e CompanyProfile
-- Richiede TASK-016 per OfficeLocation
+- Richiede TASK-016 per OfficeLocation API readiness e foundation validation
 
 ### TASK-018 - Implementare Contract governance e employment lifecycle
 
@@ -1396,6 +1418,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.21 | 2026-05-02 | TASK-016 completato con validation hardening, DTO read-only, service layer, API foundation endpoints, error handling, OpenAPI verification e DEC-022. |
 | 1.20 | 2026-05-02 | TASK-015 completato con Tenant reale, CompanyProfile, OfficeLocation, SmtpConfiguration, FK hardening da V2/V3 e migration Flyway V4. |
 | 1.19 | 2026-05-02 | TASK-014 completato con master tables governance/security globali e tenant-scoped, migration Flyway V3, DEC-020 e test smoke backend. |
 | 1.18 | 2026-05-02 | Hardening documentale post TASK-013: chiarite note architetturali, DEC-019, tenant placeholder strategy e dipendenze TASK-014 -> TASK-018. |

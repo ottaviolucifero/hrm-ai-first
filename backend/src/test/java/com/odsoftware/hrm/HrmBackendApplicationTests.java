@@ -26,12 +26,20 @@ import com.odsoftware.hrm.repository.master.WorkModeRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
 class HrmBackendApplicationTests {
 
 	@Autowired
@@ -103,6 +111,9 @@ class HrmBackendApplicationTests {
 	@Autowired
 	private SmtpConfigurationRepository smtpConfigurationRepository;
 
+	@Autowired
+	private MockMvc mockMvc;
+
 	@Test
 	void contextLoads() {
 	}
@@ -144,6 +155,69 @@ class HrmBackendApplicationTests {
 		assertThat(companyProfileRepository.count()).isEqualTo(1);
 		assertThat(officeLocationRepository.count()).isEqualTo(1);
 		assertThat(smtpConfigurationRepository.count()).isEqualTo(1);
+	}
+
+	@Test
+	@WithMockUser
+	void foundationReadApiReturnsSeedData() throws Exception {
+		mockMvc.perform(get("/api/foundation/tenants"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].code").value("FOUNDATION_TENANT"))
+				.andExpect(jsonPath("$[0].defaultCountry.code").value("IT"))
+				.andExpect(jsonPath("$[0].defaultCurrency.code").value("EUR"));
+
+		mockMvc.perform(get("/api/foundation/company-profiles"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].code").value("FOUNDATION_LEGAL_ENTITY"))
+				.andExpect(jsonPath("$[0].tenant.code").value("FOUNDATION_TENANT"));
+
+		mockMvc.perform(get("/api/foundation/offices"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].code").value("HEADQUARTER"))
+				.andExpect(jsonPath("$[0].companyProfile.code").value("FOUNDATION_LEGAL_ENTITY"));
+	}
+
+	@Test
+	@WithMockUser
+	void foundationSmtpApiDoesNotExposeEncryptedPassword() throws Exception {
+		mockMvc.perform(get("/api/foundation/smtp-configurations"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].code").value("DEFAULT_SMTP"))
+				.andExpect(jsonPath("$[0].smtpEncryptionType.code").value("STARTTLS"))
+				.andExpect(jsonPath("$[0].passwordEncrypted").doesNotExist());
+	}
+
+	@Test
+	@WithMockUser
+	void foundationTenantApiReturnsNotFoundForMissingTenant() throws Exception {
+		mockMvc.perform(get("/api/foundation/tenants/00000000-0000-0000-0000-000000000099"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.status").value(404))
+				.andExpect(jsonPath("$.message").value("Tenant not found: 00000000-0000-0000-0000-000000000099"));
+	}
+
+	@Test
+	@WithMockUser
+	void foundationTenantApiReturnsValidationErrorForInvalidId() throws Exception {
+		mockMvc.perform(get("/api/foundation/tenants/not-a-uuid"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.validationErrors.id").value("Invalid value"));
+	}
+
+	@Test
+	void openApiIncludesFoundationReadEndpoints() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.paths['/api/foundation/tenants']").exists())
+				.andExpect(jsonPath("$.paths['/api/foundation/tenants/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/foundation/company-profiles']").exists())
+				.andExpect(jsonPath("$.paths['/api/foundation/offices']").exists())
+				.andExpect(jsonPath("$.paths['/api/foundation/smtp-configurations']").exists());
 	}
 
 }

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.20  
+Versione: 1.21  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -58,16 +58,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-013 master tables HR/business tenant-scoped
 - TASK-014 governance/security master foundation
 - TASK-015 Tenant, CompanyProfile, OfficeLocation, SmtpConfiguration foundation and FK hardening
+- TASK-016 Foundation validation and API readiness
 
 ### Prossimo passo
 
-- TASK-016: Tenant / Company / Office / SMTP validation and API readiness
+- TASK-017: Employee core domain foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Foundation dati enterprise + tenant HR/business masters
+Stato: Foundation dati enterprise + tenant/company API readiness
 
 Completato:
 
@@ -86,15 +87,18 @@ Completato:
 - Master tables governance/security foundation
 - Tenant + CompanyProfile + OfficeLocation + SmtpConfiguration foundation
 - FK hardening from tenant-scoped master data to real Tenant domain
+- Read-only foundation API readiness for Tenant, CompanyProfile, OfficeLocation and SmtpConfiguration
+- DTO/service boundary for foundation API responses
 
 Nota:
 
 Tenant placeholder strategy converted into full Tenant domain in TASK-015.
 Governance/security split active: global authentication standards are shared, while roles, permissions and operational classifications remain tenant-scoped.
+Foundation API readiness active through read-only DTO responses; operational write APIs remain deferred.
 
 Da fare:
 
-- Tenant / Company / Office / SMTP validation and API readiness
+- Employee core domain foundation
 
 ---
 
@@ -164,6 +168,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.21 | 2026-05-02 | TASK-016 completato con foundation validation, DTO/service API boundary, endpoint read-only e OpenAPI verification; prossimo passo aggiornato a TASK-017 Employee core domain foundation. |
 | 1.20 | 2026-05-02 | TASK-015 completato con Tenant reale, CompanyProfile, OfficeLocation, SmtpConfiguration e FK hardening; prossimo passo aggiornato a TASK-016 validation/API readiness. |
 | 1.19 | 2026-05-02 | TASK-014 completato; prossimo passo aggiornato a TASK-015 Tenant + CompanyProfile foundation. |
 | 1.18 | 2026-05-02 | Hardening roadmap post TASK-013: fase corrente aggiornata, nota tenant placeholder strategy e prossimo passo confermato su TASK-014. |

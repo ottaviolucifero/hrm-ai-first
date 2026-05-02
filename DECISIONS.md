@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.14  
+Versione: 1.15  
 Ultimo aggiornamento: 2026-05-02  
 Stato: Attivo
 
@@ -790,10 +790,48 @@ Le future implementazioni tenant-scoped dovranno referenziare `tenants.id` con F
 
 ---
 
+### DEC-022 - Read-only foundation API boundary with DTO projection and service-layer mapping
+
+Data: 2026-05-02  
+Stato: Approvata
+
+Decisione:
+
+TASK-016 introduce una boundary API foundation read-only per esporre `Tenant`, `CompanyProfile`, `OfficeLocation` e `SmtpConfiguration` senza serializzare direttamente le entity JPA.
+
+Il modello API usa:
+
+- DTO response espliciti per la foundation;
+- service layer read-only transazionale per mapping e lettura dati;
+- controller REST dedicato sotto `/api/foundation`;
+- error handling standard per not found, validation error e constraint violation;
+- esclusione di `passwordEncrypted` dalle response SMTP.
+
+Motivazione:
+
+- evitare accoppiamento diretto tra API pubbliche ed entity persistence;
+- prevenire leak di campi sensibili SMTP;
+- preparare Swagger/OpenAPI con contratti stabili;
+- mantenere TASK-016 limitato alla readiness API senza anticipare CRUD, Employee, UserAccount o RBAC operativo.
+
+Alternative escluse:
+
+- esporre direttamente entity JPA dai controller;
+- introdurre API write/admin CRUD in TASK-016;
+- esporre credenziali SMTP cifrate nelle response;
+- creare nuove macro-entita domain fuori scope.
+
+Impatto:
+
+Le future API foundation dovranno preferire DTO espliciti e service-layer mapping. Le entity JPA restano modello persistence, non contratto REST pubblico.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.15 | 2026-05-02 | Aggiunta DEC-022 per boundary API foundation read-only con DTO, service layer e protezione campi SMTP sensibili. |
 | 1.14 | 2026-05-02 | Aggiunta DEC-021 per attivazione dominio Tenant reale, FK hardening SaaS e credenziali SMTP opzionali. |
 | 1.13 | 2026-05-02 | Aggiunta DEC-020 per split governance/security tra standard globali e governance operativa tenant-scoped. |
 | 1.12 | 2026-05-02 | Aggiunta DEC-019 per strategia temporanea tenant foundation su master data tenant-scoped prima della tabella Tenant. |
