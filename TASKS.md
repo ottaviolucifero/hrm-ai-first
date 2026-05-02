@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.24  
+Versione: 1.25  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1373,7 +1373,31 @@ Completato:
 
 ### TASK-020 - Implementare UserAccount identity/security foundation
 
-Stato: TODO
+Stato: DONE
+
+Dipendenze:
+
+- Richiede TASK-014 per UserType e AuthenticationMethod
+- Richiede TASK-015 per Tenant e CompanyProfile
+- Richiede TASK-017 per Employee
+- Richiede TASK-019 per strategia backend-first
+- Deve rispettare DEC-015, DEC-016 e DEC-023
+
+Completato:
+
+- Migrazione Flyway `V7__create_user_account_identity_security_foundation.sql` creata
+- Tabella `user_accounts` introdotta con identity email-first, authentication governance, OTP readiness, strong authentication flag, localization e audit fields
+- FK reali aggiunte verso `tenants`, `company_profiles`, `employees`, `user_types`, `authentication_methods`, `time_zones` e primary tenant
+- Self-FK opzionali aggiunte per `created_by` e `updated_by`
+- Unique constraint `(tenant_id, email)` applicata
+- Check constraint minima aggiunta su `failed_login_attempts`
+- Entity JPA `UserAccount` creata nel package identity
+- Repository JPA `UserAccountRepository` creato
+- Test backend aggiunti per migration V7, persistenza UserAccount, nullable company/employee, strong authentication persistence e unique constraint tenant + email
+
+Nota architetturale:
+
+UserAccount identity/security persistence foundation completed. Login JWT, password reset, OTP runtime, MFA runtime, API REST, UI, UserRole, RolePermission and UserTenantAccess remain fuori scope e differiti ai task successivi.
 
 ### TASK-021 - Implementare RBAC bridge foundation
 
@@ -1517,6 +1541,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.25 | 2026-05-02 | TASK-020 completato con UserAccount identity/security foundation, migration Flyway V7, entity/repository JPA, FK identity governance e test persistence/unique constraint. |
 | 1.24 | 2026-05-02 | TASK-019 completato come riorganizzazione documentale backend-first: backlog futuro riallineato, implementazioni tecniche spostate da TASK-020 e UI operative posticipate. |
 | 1.23 | 2026-05-02 | TASK-018 completato con Contract governance foundation, migration Flyway V6, entity/repository JPA, FK verso Tenant/CompanyProfile/Employee/ContractType/Currency e test JPA. |
 | 1.22 | 2026-05-02 | TASK-017 completato con Employee core persistence foundation documentata, migration Flyway V5, entity/repository JPA e test di persistenza/unique constraint. |

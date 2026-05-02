@@ -6,9 +6,12 @@ import com.odsoftware.hrm.repository.core.SmtpConfigurationRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.entity.contract.Contract;
 import com.odsoftware.hrm.entity.employee.Employee;
+import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.master.ContractType;
+import com.odsoftware.hrm.entity.master.TimeZone;
 import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
+import com.odsoftware.hrm.repository.identity.UserAccountRepository;
 import com.odsoftware.hrm.repository.master.ApprovalStatusRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.AuditActionTypeRepository;
@@ -27,6 +30,7 @@ import com.odsoftware.hrm.repository.master.OfficeLocationTypeRepository;
 import com.odsoftware.hrm.repository.master.PermissionRepository;
 import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.master.SmtpEncryptionTypeRepository;
+import com.odsoftware.hrm.repository.master.TimeZoneRepository;
 import com.odsoftware.hrm.repository.master.UserTypeRepository;
 import com.odsoftware.hrm.repository.master.WorkModeRepository;
 import org.junit.jupiter.api.Test;
@@ -134,12 +138,20 @@ class HrmBackendApplicationTests {
 	private ContractRepository contractRepository;
 
 	@Autowired
+	private TimeZoneRepository timeZoneRepository;
+
+	@Autowired
+	private UserAccountRepository userAccountRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COMPANY_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_OFFICE_ID = UUID.fromString("81000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_CURRENCY_ID = UUID.fromString("10000000-0000-0000-0000-000000000001");
+	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
+	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
 
 	@Test
 	void contextLoads() {
@@ -195,6 +207,11 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void flywayMigrationCreatesUserAccountIdentitySecurityFoundation() {
+		assertThatCode(() -> userAccountRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
 	void employeeRepositoryPersistsEmployee() {
 		Employee employee = newEmployee("EMP-001");
 
@@ -245,6 +262,46 @@ class HrmBackendApplicationTests {
 		assertThat(saved.getWeeklyHours()).isEqualByComparingTo("40.00");
 		assertThat(saved.getActive()).isTrue();
 		assertThat(contractRepository.findByTenant_IdAndEmployee_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+	}
+
+	@Test
+	void userAccountRepositoryPersistsTenantLevelAccountWithNullableCompanyAndEmployee() {
+		TimeZone timeZone = timeZoneRepository.saveAndFlush(newTimeZone("Europe/Rome"));
+
+		UserAccount userAccount = newUserAccount("tenant.admin@example.com");
+		userAccount.setPasswordHash(null);
+		userAccount.setCompanyProfile(null);
+		userAccount.setEmployee(null);
+		userAccount.setPrimaryTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		userAccount.setTimeZone(timeZone);
+		userAccount.setPreferredLanguage("it");
+		userAccount.setStrongAuthenticationRequired(true);
+		userAccount.setEmailOtpEnabled(true);
+		userAccount.setFailedLoginAttempts(2);
+
+		UserAccount saved = userAccountRepository.saveAndFlush(userAccount);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getCreatedAt()).isNotNull();
+		assertThat(saved.getUpdatedAt()).isNotNull();
+		assertThat(saved.getCompanyProfile()).isNull();
+		assertThat(saved.getEmployee()).isNull();
+		assertThat(saved.getPasswordHash()).isNull();
+		assertThat(saved.getStrongAuthenticationRequired()).isTrue();
+		assertThat(saved.getEmailOtpEnabled()).isTrue();
+		assertThat(saved.getAppOtpEnabled()).isFalse();
+		assertThat(saved.getFailedLoginAttempts()).isEqualTo(2);
+		assertThat(saved.getLocked()).isFalse();
+		assertThat(saved.getActive()).isTrue();
+		assertThat(userAccountRepository.findByTenant_IdAndEmail(FOUNDATION_TENANT_ID, "tenant.admin@example.com")).isPresent();
+	}
+
+	@Test
+	void userAccountRepositoryEnforcesUniqueTenantEmail() {
+		userAccountRepository.saveAndFlush(newUserAccount("duplicate.user@example.com"));
+
+		assertThatThrownBy(() -> userAccountRepository.saveAndFlush(newUserAccount("duplicate.user@example.com")))
+				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
 	@Test
@@ -360,6 +417,24 @@ class HrmBackendApplicationTests {
 		contractType.setCode(code);
 		contractType.setName("Task 018 Contract");
 		return contractType;
+	}
+
+	private TimeZone newTimeZone(String code) {
+		TimeZone timeZone = new TimeZone();
+		timeZone.setCode(code);
+		timeZone.setName("Europe Rome");
+		timeZone.setUtcOffset("+01:00");
+		return timeZone;
+	}
+
+	private UserAccount newUserAccount(String email) {
+		UserAccount userAccount = new UserAccount();
+		userAccount.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		userAccount.setUserType(userTypeRepository.findById(TENANT_ADMIN_USER_TYPE_ID).orElseThrow());
+		userAccount.setAuthenticationMethod(authenticationMethodRepository.findById(PASSWORD_ONLY_AUTHENTICATION_METHOD_ID).orElseThrow());
+		userAccount.setEmail(email);
+		userAccount.setPasswordHash("hashed-password-placeholder");
+		return userAccount;
 	}
 
 }
