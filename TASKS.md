@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.25  
+Versione: 1.26  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1401,13 +1401,31 @@ UserAccount identity/security persistence foundation completed. Login JWT, passw
 
 ### TASK-021 - Implementare RBAC bridge foundation
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
 - UserRole
 - RolePermission
 - UserTenantAccess
+
+Completato:
+
+- Migration Flyway V8 `V8__create_rbac_bridge_foundation.sql`
+- Tabelle `user_roles`, `role_permissions` e `user_tenant_accesses`
+- FK reali verso `tenants`, `user_accounts`, `roles` e `permissions`
+- Unique constraint minime:
+  - `user_roles`: `(tenant_id, user_account_id, role_id)`
+  - `role_permissions`: `(tenant_id, role_id, permission_id)`
+  - `user_tenant_accesses`: `(user_account_id, tenant_id)`
+- Entity JPA create nel package `rbac`
+- Repository JPA dedicati creati
+- `UserTenantAccess.accessRole` implementato come `VARCHAR(50) NOT NULL`, senza enum, FK a ruoli o logica applicativa
+- Test backend aggiunti per migration V8, repository boot, persistenza bridge e unique constraint
+
+Nota architetturale:
+
+RBAC bridge persistence foundation completed. API REST, DTO, service layer, login/JWT runtime, Spring Security RBAC runtime, tenant switching, impersonation, audit runtime and UI remain fuori scope e differiti ai task successivi.
 
 ## FASE 2E - BACKEND CORE HR FOUNDATION
 
@@ -1541,6 +1559,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.26 | 2026-05-02 | TASK-021 completato con RBAC bridge foundation, migration Flyway V8, entity/repository JPA, FK rigorose e test persistence/unique constraint. |
 | 1.25 | 2026-05-02 | TASK-020 completato con UserAccount identity/security foundation, migration Flyway V7, entity/repository JPA, FK identity governance e test persistence/unique constraint. |
 | 1.24 | 2026-05-02 | TASK-019 completato come riorganizzazione documentale backend-first: backlog futuro riallineato, implementazioni tecniche spostate da TASK-020 e UI operative posticipate. |
 | 1.23 | 2026-05-02 | TASK-018 completato con Contract governance foundation, migration Flyway V6, entity/repository JPA, FK verso Tenant/CompanyProfile/Employee/ContractType/Currency e test JPA. |
