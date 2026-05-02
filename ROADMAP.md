@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.15  
-Ultimo aggiornamento: 2026-05-01  
+Versione: 1.16  
+Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
 ---
@@ -54,10 +54,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - Swagger / OpenAPI backend
 - Profili backend dev/test/prod
 - DEC-012 frontend enterprise modulare
+- TASK-012 master tables globali foundation
 
 ### Prossimo passo
 
-- TASK-011: modello dati enterprise normalizzato multi-tenant
+- TASK-013: master tables HR/business
 
 ---
 
@@ -77,10 +78,12 @@ Completato:
 - Layout reale Metronic
 - Swagger / OpenAPI
 - Profili dev/test/prod
+- Master tables globali foundation
 
 Da fare:
 
-- Modello dati enterprise normalizzato
+- Master tables HR/business
+- Master tables governance/security
 
 ---
 
@@ -150,6 +153,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.16 | 2026-05-02 | TASK-012 completato con master tables globali foundation, migration Flyway, seed minimo e test smoke backend. |
 | 1.15 | 2026-05-01 | Riorganizzazione completa TASK-012+ in fasi 2A-2G e Fase 3 dopo espansione enterprise foundation. |
 | 1.14 | 2026-05-01 | TASK-011 esteso con platform operator, super admin, cross-tenant governance, tenant switching e strong authentication obbligatoria per utenti elevati. |
 | 1.13 | 2026-05-01 | TASK-011 esteso con email-first authentication, identity governance, authentication governance e MFA readiness. |

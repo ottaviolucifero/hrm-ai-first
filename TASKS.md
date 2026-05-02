@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.15  
-Ultimo aggiornamento: 2026-05-01  
+Versione: 1.16  
+Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
 ---
@@ -1122,7 +1122,7 @@ Note architetturali:
 
 ### TASK-012 - Implementare master tables globali foundation
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -1136,6 +1136,14 @@ Include:
 - MaritalStatus
 - NationalIdentifierType
 - ApprovalStatus
+
+Completato:
+
+- Entity JPA global master tables create
+- Repository JPA creati
+- Migrazione Flyway `V1__create_global_master_tables.sql` creata
+- Seed minimo inserito per Country, Currency, Gender, MaritalStatus e ApprovalStatus
+- Test smoke backend per context load, migration e seed completato
 
 ### TASK-013 - Implementare master tables HR/business
 
@@ -1300,6 +1308,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.16 | 2026-05-02 | TASK-012 completato con master tables globali foundation, migration Flyway, seed minimo e test smoke backend. |
 | 1.15 | 2026-05-01 | Riorganizzazione completa TASK-012+ in execution slicing enterprise SaaS post TASK-011. |
 | 1.14 | 2026-05-01 | TASK-011 integrato con UserType, Platform Operator, Super Admin, UserTenantAccess, tenant switching e cross-tenant auditability. |
 | 1.13 | 2026-05-01 | TASK-011 integrato con email-first identity, AuthenticationMethod, strong auth opzionale, OTP email/app, unique tenant+email e MFA readiness. |
