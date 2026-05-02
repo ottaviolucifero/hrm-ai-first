@@ -33,7 +33,17 @@ Ogni task deve essere piccolo, chiaro, verificabile e coerente con:
 
 ---
 
-## 3. Stato task
+## 3. Execution rules / Process notes
+
+- Il riferimento operativo principale per i task correnti è `TASKS.md`.
+- I vecchi file di analisi iniziale, Excel e Word restano materiale storico/di contesto.
+- I vecchi file di analisi iniziale, Excel e Word non devono essere usati come fonte vincolante o come scope automatico dei task.
+- Se un campo, vincolo o comportamento non è esplicitamente presente nel task corrente di `TASKS.md`, non deve essere implementato automaticamente.
+- Ogni task deve essere implementato solo in base allo scope scritto nel task stesso, `ARCHITECTURE.md` e `DECISIONS.md`.
+
+---
+
+## 4. Stato task
 
 Legenda:
 
@@ -44,7 +54,7 @@ Legenda:
 
 ---
 
-## 4. Stato attuale
+## 5. Stato attuale
 
 ### TASK-001 → TASK-010
 
@@ -1429,7 +1439,7 @@ Stato: TODO
 
 ---
 
-## 5. Cronologia versioni
+## 6. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
