@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.10  
-Ultimo aggiornamento: 2026-05-01  
+Versione: 1.11  
+Ultimo aggiornamento: 2026-05-02  
 Stato: Attivo
 
 ---
@@ -567,10 +567,103 @@ TASK-012+ viene riorganizzato in fasi 2A-2G e Fase 3, mantenendo TASK-001 -> TAS
 
 ---
 
+### DEC-018 - Geographic hierarchy governance with denormalized query-friendly master structure and application-level consistency validation
+
+Data: 2026-05-02  
+Stato: Approvata
+
+Decisione:
+
+Si approva una struttura geografica parzialmente denormalizzata per le master tables introdotte con TASK-012:
+
+- `Country`;
+- `Region`;
+- `Area`;
+- `GlobalZipCode`.
+
+Il modello mantiene riferimenti multipli:
+
+- `Region` -> `Country`;
+- `Area` -> `Country` + `Region`;
+- `GlobalZipCode` -> `Country` + `Region` + `Area`.
+
+Questa ridondanza intenzionale favorisce:
+
+- query piÃ¹ semplici;
+- filtri diretti;
+- reporting enterprise;
+- performance applicativa;
+- flessibilitÃ  multi-country;
+- import di dataset geografici eterogenei, inclusi dataset CAP da Excel.
+
+La consistenza gerarchica, ad esempio `Area` appartenente alla `Region` corretta e `Region` appartenente al `Country` corretto, non sarÃ  forzata esclusivamente tramite schema SQL complesso.
+
+La governance della consistenza sarÃ  gestita tramite:
+
+- validation service layer;
+- business rules;
+- import validation;
+- admin CRUD validation.
+
+Motivazione:
+
+- Ridurre complessitÃ  query;
+- facilitare data import;
+- supportare dataset incompleti o eterogenei;
+- evitare over-engineering prematuro;
+- migliorare performance su filtri geografici;
+- consentire futura estensione globale.
+
+Alternative escluse:
+
+- modello geografico strettamente normalizzato con sole dipendenze transitive;
+- enforcement completo della coerenza geografica tramite vincoli SQL complessi;
+- hardcode geografico applicativo;
+- blocco degli import in presenza di dataset parziali.
+
+Trade-off:
+
+Pro:
+
+- simplicity;
+- reporting;
+- import practicality;
+- scalability.
+
+Contro:
+
+- possibile incoerenza se la validation applicativa Ã¨ assente;
+- governance applicativa obbligatoria;
+- maggiore responsabilitÃ  lato backend.
+
+Mitigazioni:
+
+- service validation obbligatoria;
+- DTO validation;
+- import validator;
+- admin UI controlled selects;
+- future integrity audits.
+
+Note future:
+
+Possibili evoluzioni:
+
+- stricter normalized mode;
+- geo consistency audit jobs;
+- external geo datasets;
+- advanced geolocation.
+
+Impatto:
+
+Le future implementazioni backend e UI che modificano dati geografici dovranno applicare validazioni esplicite di consistenza gerarchica e non potranno assumere che la coerenza sia garantita solo dal database.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.11 | 2026-05-02 | Aggiunta DEC-018 per governance geografica parzialmente denormalizzata con validation applicativa obbligatoria. |
 | 1.10 | 2026-05-01 | Aggiunta DEC-017 per riorganizzazione completa TASK-012+ in slicing enterprise SaaS post TASK-011. |
 | 1.9 | 2026-05-01 | Aggiunta DEC-016 per platform operator, super admin, cross-tenant governance, mandatory MFA e auditability. |
 | 1.8 | 2026-05-01 | Aggiunta DEC-015 per identity email-first, UserAccount authentication boundary, AuthenticationMethod, OTP readiness e MFA policy scalability. |
