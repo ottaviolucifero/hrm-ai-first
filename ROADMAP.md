@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.23  
+Versione: 1.24  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -61,16 +61,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-016 Foundation validation and API readiness
 - TASK-017 Employee core domain foundation
 - TASK-018 Contract governance and employment lifecycle foundation
+- TASK-019 Backend-first backlog reorganization
 
 ### Prossimo passo
 
-- TASK-019: UI Employee management enterprise
+- TASK-020: UserAccount identity/security foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Contract governance and employment lifecycle foundation
+Stato: Backend-first backlog governance
 
 Completato:
 
@@ -93,6 +94,7 @@ Completato:
 - DTO/service boundary for foundation API responses
 - Employee core persistence foundation with tenant/company/office relational integrity and documented Employee foundation fields
 - Contract governance foundation with tenant/company/employee/contract type/currency relational integrity and lifecycle dates
+- Backend-first backlog reorganization from TASK-019 onward
 
 Nota:
 
@@ -101,10 +103,11 @@ Governance/security split active: global authentication standards are shared, wh
 Foundation API readiness active through read-only DTO responses; operational write APIs remain deferred.
 Employee persistence foundation is available with documented core fields; Employee REST API, UI and operational workflows remain deferred.
 Contract persistence foundation is available with start/end dates and active lifecycle flag; contract APIs, HR workflows and payroll integration remain deferred.
+Backlog execution is now backend-first: core technical foundations and API readiness precede operational UI tasks.
 
 Da fare:
 
-- UI Employee management enterprise
+- UserAccount identity/security foundation
 
 ---
 
@@ -142,23 +145,23 @@ Profili Spring Boot configurati:
 
 ### Fase 2D - Identity / Security
 
-- TASK-020 -> TASK-022
+- TASK-020 -> TASK-021
 
-### Fase 2E - Operational HR
+### Fase 2E - Backend Core HR Foundation
 
-- TASK-023 -> TASK-030
+- TASK-022 -> TASK-028
 
-### Fase 2F - Governance / Compliance
+### Fase 2F - UI Admin / Operations
 
-- TASK-031 -> TASK-034
+- TASK-029 -> TASK-037
 
 ### Fase 2G - Platform Operations
 
-- TASK-035 -> TASK-036
+- TASK-038 -> TASK-039
 
 ### Fase 3 - Stabilization
 
-- TASK-037 -> TASK-038
+- TASK-040 -> TASK-041
 
 ---
 
@@ -174,6 +177,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.24 | 2026-05-02 | TASK-019 completato come riorganizzazione documentale backend-first; prossimo passo aggiornato a TASK-020 UserAccount identity/security foundation. |
 | 1.23 | 2026-05-02 | TASK-018 completato con Contract governance foundation, migration V6, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-019 UI Employee management enterprise. |
 | 1.22 | 2026-05-02 | TASK-017 completato con Employee core domain persistence documentata, migration V5, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-018 Contract governance. |
 | 1.21 | 2026-05-02 | TASK-016 completato con foundation validation, DTO/service API boundary, endpoint read-only e OpenAPI verification; prossimo passo aggiornato a TASK-017 Employee core domain foundation. |

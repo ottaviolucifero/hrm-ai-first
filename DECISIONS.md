@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.15  
+Versione: 1.16  
 Ultimo aggiornamento: 2026-05-02  
 Stato: Attivo
 
@@ -827,10 +827,53 @@ Le future API foundation dovranno preferire DTO espliciti e service-layer mappin
 
 ---
 
+### DEC-023 - Backend-first execution strategy before enterprise UI implementation
+
+Data: 2026-05-02  
+Stato: Approvata
+
+Decisione:
+
+Il backlog futuro della piattaforma HRM sarà eseguito con strategia backend-first.
+
+L'ordine di implementazione approvato è:
+
+- completare prima backend entities, persistence, repository, migration Flyway e test per le entità core e bridge tables rimanenti;
+- consolidare poi API readiness tramite DTO, service layer, controller REST e validazioni applicative;
+- implementare solo dopo le UI enterprise operative;
+- evitare che le UI anticipino entità, relazioni, migration o backend foundation non ancora presenti;
+- introdurre la UI Master Data Admin dopo API readiness, come interfaccia di gestione delle master/lookup tables già fondate.
+
+La UI Master Data Admin dovrà essere progettata per governare master e lookup tables già introdotte nella foundation, inclusi master geografici, HR/business, governance/security e tenant-scoped classifications.
+
+Motivazione:
+
+- ridurre refactor tra dominio, API e frontend;
+- evitare UI mock premature non allineate al modello dati reale;
+- mantenere coerenza tra persistence model, API contract e interfacce enterprise;
+- proteggere la qualità della foundation backend prima di esporre operazioni utente;
+- semplificare test, regressione e avanzamento incrementale del backlog;
+- mantenere disciplina AI-safe con task piccoli e verificabili.
+
+Alternative escluse:
+
+- implementare UI operative prima delle rispettive entità backend;
+- costruire schermate basate su mock come scope principale dei task;
+- introdurre API o frontend senza migration e repository coerenti;
+- mescolare backend foundation, API readiness e UI nello stesso task;
+- anticipare master data admin UI prima della disponibilità delle API necessarie.
+
+Impatto:
+
+Da TASK-019 in avanti, le implementazioni tecniche dovranno privilegiare prima la foundation backend, poi API readiness e infine UI enterprise. Le UI future dovranno consumare contratti API stabili e non definire autonomamente il modello di dominio.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.16 | 2026-05-02 | Aggiunta DEC-023 per strategia backend-first: foundation persistence e API readiness prima delle UI enterprise. |
 | 1.15 | 2026-05-02 | Aggiunta DEC-022 per boundary API foundation read-only con DTO, service layer e protezione campi SMTP sensibili. |
 | 1.14 | 2026-05-02 | Aggiunta DEC-021 per attivazione dominio Tenant reale, FK hardening SaaS e credenziali SMTP opzionali. |
 | 1.13 | 2026-05-02 | Aggiunta DEC-020 per split governance/security tra standard globali e governance operativa tenant-scoped. |

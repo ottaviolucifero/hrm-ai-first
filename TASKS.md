@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.23  
+Versione: 1.24  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1348,17 +1348,34 @@ Nota architetturale:
 
 Contract governance and employment lifecycle foundation completed. Operational contract APIs, workflow HR, payroll integration, UserAccount/RBAC and UI remain fuori scope e differiti ai task successivi.
 
-### TASK-019 - Implementare UI Employee management enterprise
+### TASK-019 - Riorganizzare backlog backend-first
 
-Stato: TODO
+Stato: DONE
+
+Tipo: Documentale
+
+Obiettivo:
+
+- Riallineare il backlog futuro in modalita backend-first
+- Mantenere TASK-001 -> TASK-018 invariati
+- Fare partire le nuove implementazioni tecniche da TASK-020
+- Separare foundation backend, API readiness e UI operative
+
+Completato:
+
+- Backlog futuro rinumerato da TASK-019 in avanti
+- TASK-019 ridefinito come task documentale di riorganizzazione backlog
+- Sequenza backend-first introdotta per identity, RBAC, device, payroll, leave, holiday, audit e disciplinary foundation
+- UI operative rinviate dopo il consolidamento backend core HR
+- TASKS.md e ROADMAP.md riallineati
 
 ## FASE 2D - IDENTITY / SECURITY
 
-### TASK-020 - Implementare UserAccount, email login e authentication governance
+### TASK-020 - Implementare UserAccount identity/security foundation
 
 Stato: TODO
 
-### TASK-021 - Implementare RBAC governance
+### TASK-021 - Implementare RBAC bridge foundation
 
 Stato: TODO
 
@@ -1368,7 +1385,77 @@ Include:
 - RolePermission
 - UserTenantAccess
 
-### TASK-022 - Implementare Security Admin UI
+## FASE 2E - BACKEND CORE HR FOUNDATION
+
+### TASK-022 - Implementare Device backend foundation
+
+Stato: TODO
+
+### TASK-023 - Implementare PayrollDocument backend foundation
+
+Stato: TODO
+
+### TASK-024 - Implementare LeaveRequest backend foundation
+
+Stato: TODO
+
+### TASK-025 - Implementare HolidayCalendar backend foundation
+
+Stato: TODO
+
+### TASK-026 - Implementare AuditLog backend foundation
+
+Stato: TODO
+
+### TASK-027 - Implementare EmployeeDisciplinaryAction backend foundation
+
+Stato: TODO
+
+### TASK-028 - Consolidare API readiness backend core HR
+
+Stato: TODO
+
+## FASE 2F - UI ADMIN / OPERATIONS
+
+### TASK-029 - Implementare UI Master Data Admin
+
+Stato: TODO
+
+Include:
+
+- Country
+- Region
+- Area
+- GlobalZipCode
+- Currency
+- Department
+- JobTitle
+- ContractType
+- EmploymentStatus
+- WorkMode
+- Gender
+- MaritalStatus
+- NationalIdentifierType
+- LeaveRequestType
+- DocumentType
+- DeviceType
+- DeviceBrand
+- DeviceStatus
+- UserType
+- AuthenticationMethod
+- Role
+- Permission
+- AuditActionType
+- DisciplinaryActionType
+- SmtpEncryptionType
+- CompanyProfileType
+- OfficeLocationType
+
+### TASK-030 - Implementare UI Employee management enterprise
+
+Stato: TODO
+
+### TASK-031 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -1380,75 +1467,47 @@ Include:
 - ruoli
 - permessi
 
-## FASE 2E - OPERATIONAL HR
-
-### TASK-023 - Implementare Device backend enterprise
+### TASK-032 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-024 - Implementare UI Device governance
+### TASK-033 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-025 - Implementare PayrollDocument backend + document governance
+### TASK-034 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-026 - Implementare UI PayrollDocument
+### TASK-035 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-027 - Implementare LeaveRequest backend + approval workflow
+### TASK-036 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-028 - Implementare UI LeaveRequest
-
-Stato: TODO
-
-### TASK-029 - Implementare HolidayCalendar backend
-
-Stato: TODO
-
-### TASK-030 - Implementare UI HolidayCalendar
-
-Stato: TODO
-
-## FASE 2F - GOVERNANCE / COMPLIANCE
-
-### TASK-031 - Implementare AuditLog backend enterprise
-
-Stato: TODO
-
-### TASK-032 - Implementare Audit UI / compliance explorer
-
-Stato: TODO
-
-### TASK-033 - Implementare EmployeeDisciplinaryAction backend
-
-Stato: TODO
-
-### TASK-034 - Implementare UI disciplinary governance
+### TASK-037 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-035 - Implementare Platform Operator / Super Admin governance
+### TASK-038 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-036 - Implementare Cross-tenant admin UI
+### TASK-039 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-037 - Configurare logging, monitoring e observability enterprise
+### TASK-040 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-038 - Test integrato MVP enterprise completo
+### TASK-041 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -1458,6 +1517,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.24 | 2026-05-02 | TASK-019 completato come riorganizzazione documentale backend-first: backlog futuro riallineato, implementazioni tecniche spostate da TASK-020 e UI operative posticipate. |
 | 1.23 | 2026-05-02 | TASK-018 completato con Contract governance foundation, migration Flyway V6, entity/repository JPA, FK verso Tenant/CompanyProfile/Employee/ContractType/Currency e test JPA. |
 | 1.22 | 2026-05-02 | TASK-017 completato con Employee core persistence foundation documentata, migration Flyway V5, entity/repository JPA e test di persistenza/unique constraint. |
 | 1.21 | 2026-05-02 | TASK-016 completato con validation hardening, DTO read-only, service layer, API foundation endpoints, error handling, OpenAPI verification e DEC-022. |
