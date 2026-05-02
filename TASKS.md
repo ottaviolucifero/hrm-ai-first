@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.21  
+Versione: 1.22  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1286,9 +1286,9 @@ Tenant / Company / Office / SMTP foundation API readiness completed. Operational
 
 ## FASE 2C - EMPLOYEE CORE DOMAIN
 
-### TASK-017 - Implementare Employee entity enterprise completa
+### TASK-017 - Implementare Employee core domain foundation
 
-Stato: TODO
+Stato: DONE
 
 Dipendenze:
 
@@ -1296,6 +1296,21 @@ Dipendenze:
 - Richiede TASK-013 per Department, JobTitle, ContractType, EmploymentStatus e WorkMode tenant-scoped
 - Richiede TASK-015 per Tenant e CompanyProfile
 - Richiede TASK-016 per OfficeLocation API readiness e foundation validation
+
+Completato:
+
+- Migrazione Flyway `V5__create_employee_core_foundation.sql` creata
+- Tabella `employees` introdotta con tenant, company, office, residence address, national identity, birth data, demographic, contact, emergency contact, family, HR organization, lifecycle e consent governance foundation
+- FK reali aggiunte verso `tenants`, `company_profiles` e `office_locations`
+- Unique constraint `(tenant_id, employee_code)` applicata
+- Indici creati su `tenant_id`, `company_id`, `office_id` ed `employment_status`
+- Entity JPA `Employee` creata nel package employee
+- Repository JPA `EmployeeRepository` creato
+- Test backend aggiunti per migration, persistenza Employee con campi foundation estesi e unique constraint tenant + employee code
+
+Nota architetturale:
+
+Employee core persistence foundation completed. API REST Employee, UI Employee, UserAccount linkage, RBAC operativo, payroll, documenti e workflow HR restano fuori scope e differiti ai task successivi.
 
 ### TASK-018 - Implementare Contract governance e employment lifecycle
 
@@ -1418,6 +1433,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.22 | 2026-05-02 | TASK-017 completato con Employee core persistence foundation documentata, migration Flyway V5, entity/repository JPA e test di persistenza/unique constraint. |
 | 1.21 | 2026-05-02 | TASK-016 completato con validation hardening, DTO read-only, service layer, API foundation endpoints, error handling, OpenAPI verification e DEC-022. |
 | 1.20 | 2026-05-02 | TASK-015 completato con Tenant reale, CompanyProfile, OfficeLocation, SmtpConfiguration, FK hardening da V2/V3 e migration Flyway V4. |
 | 1.19 | 2026-05-02 | TASK-014 completato con master tables governance/security globali e tenant-scoped, migration Flyway V3, DEC-020 e test smoke backend. |
