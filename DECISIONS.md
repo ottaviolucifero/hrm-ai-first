@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.11  
+Versione: 1.13  
 Ultimo aggiornamento: 2026-05-02  
 Stato: Attivo
 
@@ -659,10 +659,101 @@ Le future implementazioni backend e UI che modificano dati geografici dovranno a
 
 ---
 
+### DEC-019 - Temporary tenant foundation strategy for tenant-scoped master data before Tenant entity implementation
+
+Data: 2026-05-02  
+Stato: Approvata
+
+Decisione:
+
+Le master tables HR/business introdotte con TASK-013 saranno tenant-scoped tramite campo strutturale `tenant_id UUID NOT NULL`, ma senza foreign key reale verso `Tenant` fino all'implementazione di TASK-015.
+
+Il modello userÃ :
+
+- `BaseTenantMasterEntity` come base JPA per master tenant-scoped;
+- `tenant_id` obbligatorio;
+- `code` obbligatorio;
+- `name` obbligatorio;
+- unique constraint `(tenant_id, code)` per ogni master table tenant-scoped;
+- seed iniziali associati al tenant placeholder tecnico `00000000-0000-0000-0000-000000000001`.
+
+Motivazione:
+
+- Tenant non Ã¨ ancora implementato nel database;
+- TASK-013 deve preparare dati tenant-scoped senza anticipare TASK-015;
+- evitare FK verso tabella inesistente;
+- mantenere una struttura future-proof per la futura introduzione della FK reale;
+- garantire fin da subito isolamento logico dei master business per tenant.
+
+Alternative escluse:
+
+- creare subito la tabella `Tenant` fuori scope TASK-013;
+- rendere le master HR/business globali;
+- usare code globalmente univoci senza tenant;
+- introdurre FK fittizie o placeholder table non governate.
+
+Impatto:
+
+Quando TASK-015 introdurrÃ  `Tenant`, le migration successive dovranno convertire `tenant_id` da campo strutturale a relazione governata tramite foreign key reale, preservando i dati seed e le unique constraint tenant-scoped.
+
+---
+
+### DEC-020 - Governance/security split between global authentication standards and tenant operational governance
+
+Data: 2026-05-02  
+Stato: Approvata
+
+Decisione:
+
+Il foundation governance/security introdotto con TASK-014 separa esplicitamente:
+
+- standard globali di autenticazione, audit, disciplina e SMTP;
+- governance operativa tenant-scoped per ruoli, permessi e tipologie organizzative.
+
+Il modello usa master globali per:
+
+- `UserType`;
+- `AuthenticationMethod`;
+- `AuditActionType`;
+- `DisciplinaryActionType`;
+- `SmtpEncryptionType`.
+
+Il modello usa master tenant-scoped per:
+
+- `Role`;
+- `Permission`;
+- `CompanyProfileType`;
+- `OfficeLocationType`.
+
+I pattern globali di autenticazione restano shared e governati a livello piattaforma, mentre ruoli, permessi e classificazioni operative restano isolati per tenant tramite `tenant_id` e unique constraint `(tenant_id, code)`.
+
+Motivazione:
+
+- mantenere coerenti gli standard di sicurezza piattaforma;
+- permettere governance operativa specifica per tenant;
+- evitare hardcode di ruoli e permessi;
+- preparare RBAC enterprise senza anticipare bridge tables;
+- preservare la temporary tenant placeholder strategy fino all'introduzione del dominio `Tenant`.
+
+Alternative escluse:
+
+- rendere tutti i master governance globali;
+- rendere i pattern di autenticazione tenant-specific giÃ  nel foundation;
+- creare subito `UserAccount`, `UserRole`, `RolePermission` o `Tenant`;
+- introdurre RBAC operativo prima della foundation dati.
+
+Impatto:
+
+Le bridge RBAC operative saranno introdotte in task successivi, mantenendo continuitÃ  con il tenant placeholder tecnico `00000000-0000-0000-0000-000000000001` finchÃ© TASK-015 non introdurrÃ  il dominio `Tenant` e il relativo FK hardening.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.13 | 2026-05-02 | Aggiunta DEC-020 per split governance/security tra standard globali e governance operativa tenant-scoped. |
+| 1.12 | 2026-05-02 | Aggiunta DEC-019 per strategia temporanea tenant foundation su master data tenant-scoped prima della tabella Tenant. |
 | 1.11 | 2026-05-02 | Aggiunta DEC-018 per governance geografica parzialmente denormalizzata con validation applicativa obbligatoria. |
 | 1.10 | 2026-05-01 | Aggiunta DEC-017 per riorganizzazione completa TASK-012+ in slicing enterprise SaaS post TASK-011. |
 | 1.9 | 2026-05-01 | Aggiunta DEC-016 per platform operator, super admin, cross-tenant governance, mandatory MFA e auditability. |

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.18  
+Versione: 1.19  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -56,10 +56,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - DEC-012 frontend enterprise modulare
 - TASK-012 master tables globali foundation
 - TASK-013 master tables HR/business tenant-scoped
+- TASK-014 governance/security master foundation
 
 ### Prossimo passo
 
-- TASK-014: master tables governance/security
+- TASK-015: Tenant + CompanyProfile foundation
 
 ---
 
@@ -81,14 +82,16 @@ Completato:
 - Profili dev/test/prod
 - Master tables globali foundation
 - Master tables HR/business tenant-scoped
+- Master tables governance/security foundation
 
 Nota:
 
 Tenant placeholder strategy active until TASK-015 introduces full Tenant domain and FK hardening.
+Governance/security split active: global authentication standards are shared, while roles, permissions and operational classifications remain tenant-scoped.
 
 Da fare:
 
-- Master tables governance/security
+- Tenant + CompanyProfile foundation
 
 ---
 
@@ -158,6 +161,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.19 | 2026-05-02 | TASK-014 completato; prossimo passo aggiornato a TASK-015 Tenant + CompanyProfile foundation. |
 | 1.18 | 2026-05-02 | Hardening roadmap post TASK-013: fase corrente aggiornata, nota tenant placeholder strategy e prossimo passo confermato su TASK-014. |
 | 1.17 | 2026-05-02 | TASK-013 completato con master tables HR/business tenant-scoped, BaseTenantMasterEntity, migration Flyway V2, seed placeholder e test smoke backend. |
 | 1.16 | 2026-05-02 | TASK-012 completato con master tables globali foundation, migration Flyway, seed minimo e test smoke backend. |
