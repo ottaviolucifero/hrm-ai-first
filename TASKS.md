@@ -432,6 +432,9 @@ CORE TABLES:
     - hireDate
     - terminationDate
     - active
+  - legal/emergency consent governance
+    - gdprConsentAt
+    - privacyPolicyAcceptedAt
 - Employee note:
   - Employee appartiene sempre a tenant + companyProfile
   - officeLocation select legge sedi della companyProfile
@@ -503,7 +506,10 @@ CORE TABLES:
   - name
   - type
   - brand
+  - model
   - serialNumber
+  - purchaseDate
+  - warrantyEndDate
   - deviceStatus
   - assignedTo
   - assignedAt
