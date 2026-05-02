@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.24  
+Versione: 1.25  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -62,16 +62,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-017 Employee core domain foundation
 - TASK-018 Contract governance and employment lifecycle foundation
 - TASK-019 Backend-first backlog reorganization
+- TASK-020 UserAccount identity/security foundation
 
 ### Prossimo passo
 
-- TASK-020: UserAccount identity/security foundation
+- TASK-021: RBAC bridge foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Backend-first backlog governance
+Stato: UserAccount identity/security foundation
 
 Completato:
 
@@ -95,6 +96,7 @@ Completato:
 - Employee core persistence foundation with tenant/company/office relational integrity and documented Employee foundation fields
 - Contract governance foundation with tenant/company/employee/contract type/currency relational integrity and lifecycle dates
 - Backend-first backlog reorganization from TASK-019 onward
+- UserAccount identity/security persistence foundation with email-first login identity, authentication method governance and strong authentication readiness
 
 Nota:
 
@@ -104,10 +106,11 @@ Foundation API readiness active through read-only DTO responses; operational wri
 Employee persistence foundation is available with documented core fields; Employee REST API, UI and operational workflows remain deferred.
 Contract persistence foundation is available with start/end dates and active lifecycle flag; contract APIs, HR workflows and payroll integration remain deferred.
 Backlog execution is now backend-first: core technical foundations and API readiness precede operational UI tasks.
+UserAccount persistence foundation is available; login runtime, JWT, OTP/MFA execution, API and RBAC bridge remain deferred.
 
 Da fare:
 
-- UserAccount identity/security foundation
+- RBAC bridge foundation
 
 ---
 
@@ -177,6 +180,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.25 | 2026-05-02 | TASK-020 completato con UserAccount identity/security foundation, migration V7, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-021 RBAC bridge foundation. |
 | 1.24 | 2026-05-02 | TASK-019 completato come riorganizzazione documentale backend-first; prossimo passo aggiornato a TASK-020 UserAccount identity/security foundation. |
 | 1.23 | 2026-05-02 | TASK-018 completato con Contract governance foundation, migration V6, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-019 UI Employee management enterprise. |
 | 1.22 | 2026-05-02 | TASK-017 completato con Employee core domain persistence documentata, migration V5, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-018 Contract governance. |
