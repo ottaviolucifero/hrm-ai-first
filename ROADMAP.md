@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.16  
+Versione: 1.18  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -55,16 +55,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - Profili backend dev/test/prod
 - DEC-012 frontend enterprise modulare
 - TASK-012 master tables globali foundation
+- TASK-013 master tables HR/business tenant-scoped
 
 ### Prossimo passo
 
-- TASK-013: master tables HR/business
+- TASK-014: master tables governance/security
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: in corso
+Stato: Foundation dati enterprise + tenant HR/business masters
 
 Completato:
 
@@ -79,10 +80,14 @@ Completato:
 - Swagger / OpenAPI
 - Profili dev/test/prod
 - Master tables globali foundation
+- Master tables HR/business tenant-scoped
+
+Nota:
+
+Tenant placeholder strategy active until TASK-015 introduces full Tenant domain and FK hardening.
 
 Da fare:
 
-- Master tables HR/business
 - Master tables governance/security
 
 ---
@@ -153,6 +158,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.18 | 2026-05-02 | Hardening roadmap post TASK-013: fase corrente aggiornata, nota tenant placeholder strategy e prossimo passo confermato su TASK-014. |
+| 1.17 | 2026-05-02 | TASK-013 completato con master tables HR/business tenant-scoped, BaseTenantMasterEntity, migration Flyway V2, seed placeholder e test smoke backend. |
 | 1.16 | 2026-05-02 | TASK-012 completato con master tables globali foundation, migration Flyway, seed minimo e test smoke backend. |
 | 1.15 | 2026-05-01 | Riorganizzazione completa TASK-012+ in fasi 2A-2G e Fase 3 dopo espansione enterprise foundation. |
 | 1.14 | 2026-05-01 | TASK-011 esteso con platform operator, super admin, cross-tenant governance, tenant switching e strong authentication obbligatoria per utenti elevati. |

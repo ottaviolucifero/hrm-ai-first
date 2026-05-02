@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.16  
+Versione: 1.18  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1147,7 +1147,7 @@ Completato:
 
 ### TASK-013 - Implementare master tables HR/business
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -1161,6 +1161,22 @@ Include:
 - DeviceType
 - DeviceBrand
 - DeviceStatus
+
+Completato:
+
+- `BaseTenantMasterEntity` creato per master data tenant-scoped
+- Entity JPA HR/business tenant-scoped create
+- Repository JPA creati
+- Migrazione Flyway `V2__create_tenant_hr_business_master_tables.sql` creata
+- Temporary tenant placeholder strategy documentata in DEC-019
+- `tenant_id UUID NOT NULL` introdotto come foundation strutturale temporanea senza FK reale fino a TASK-015
+- Unique constraint `(tenant_id, code)` applicata a tutte le tabelle TASK-013
+- Seed tenant placeholder inserito per WorkMode, DocumentType, DeviceType, DeviceBrand e DeviceStatus
+- Test smoke backend per context load, migration V1/V2 e seed completato
+
+Nota architetturale:
+
+Tenant-scoped HR/business master foundation completed. Full Tenant FK hardening deferred to TASK-015.
 
 ### TASK-014 - Implementare master tables governance/security
 
@@ -1178,15 +1194,35 @@ Include:
 - CompanyProfileType
 - OfficeLocationType
 
+Dipendenze:
+
+- Deve mantenere separazione rispetto ai master HR/business giÃ  completati in TASK-013
+- Deve rispettare tenant-scoped governance dove prevista dal blueprint TASK-011
+- Non deve introdurre `Tenant`, `CompanyProfile`, `UserAccount` o bridge RBAC fuori scope
+
 ## FASE 2B - TENANT / COMPANY FOUNDATION
 
 ### TASK-015 - Implementare Tenant, CompanyProfile e governance multi-company
 
 Stato: TODO
 
+Dipendenze:
+
+- Deve introdurre il dominio `Tenant`
+- Deve trasformare la temporary tenant foundation strategy di TASK-013 in governance tenant reale
+- Deve aggiungere FK hardening verso `Tenant` per le master tables tenant-scoped giÃ  create, dove applicabile
+- Deve preservare il tenant placeholder tecnico `00000000-0000-0000-0000-000000000001` o migrarlo in modo controllato
+
 ### TASK-016 - Implementare OfficeLocation e SmtpConfiguration
 
 Stato: TODO
+
+Dipendenze:
+
+- Richiede TASK-012 per master geografici globali
+- Richiede TASK-014 per `OfficeLocationType` e `SmtpEncryptionType`
+- Richiede TASK-015 per `Tenant` e `CompanyProfile`
+- Deve applicare la governance geografica DEC-018
 
 ## FASE 2C - EMPLOYEE CORE DOMAIN
 
@@ -1194,9 +1230,23 @@ Stato: TODO
 
 Stato: TODO
 
+Dipendenze:
+
+- Richiede TASK-012 per master globali geografici e demografici
+- Richiede TASK-013 per Department, JobTitle, ContractType, EmploymentStatus e WorkMode tenant-scoped
+- Richiede TASK-015 per Tenant e CompanyProfile
+- Richiede TASK-016 per OfficeLocation
+
 ### TASK-018 - Implementare Contract governance e employment lifecycle
 
 Stato: TODO
+
+Dipendenze:
+
+- Richiede TASK-013 per ContractType tenant-scoped
+- Richiede TASK-012 per Currency
+- Richiede TASK-015 per Tenant e CompanyProfile
+- Richiede TASK-017 per Employee
 
 ### TASK-019 - Implementare UI Employee management enterprise
 
@@ -1308,6 +1358,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.18 | 2026-05-02 | Hardening documentale post TASK-013: chiarite note architetturali, DEC-019, tenant placeholder strategy e dipendenze TASK-014 -> TASK-018. |
+| 1.17 | 2026-05-02 | TASK-013 completato con master tables HR/business tenant-scoped, BaseTenantMasterEntity, migration Flyway V2, seed placeholder e test smoke backend. |
 | 1.16 | 2026-05-02 | TASK-012 completato con master tables globali foundation, migration Flyway, seed minimo e test smoke backend. |
 | 1.15 | 2026-05-01 | Riorganizzazione completa TASK-012+ in execution slicing enterprise SaaS post TASK-011. |
 | 1.14 | 2026-05-01 | TASK-011 integrato con UserType, Platform Operator, Super Admin, UserTenantAccess, tenant switching e cross-tenant auditability. |
