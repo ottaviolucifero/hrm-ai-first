@@ -8,10 +8,16 @@ import com.odsoftware.hrm.entity.contract.Contract;
 import com.odsoftware.hrm.entity.employee.Employee;
 import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.master.ContractType;
+import com.odsoftware.hrm.entity.rbac.RolePermission;
+import com.odsoftware.hrm.entity.rbac.UserRole;
+import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.entity.master.TimeZone;
 import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
 import com.odsoftware.hrm.repository.identity.UserAccountRepository;
+import com.odsoftware.hrm.repository.rbac.RolePermissionRepository;
+import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
+import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
 import com.odsoftware.hrm.repository.master.ApprovalStatusRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.AuditActionTypeRepository;
@@ -144,6 +150,15 @@ class HrmBackendApplicationTests {
 	private UserAccountRepository userAccountRepository;
 
 	@Autowired
+	private UserRoleRepository userRoleRepository;
+
+	@Autowired
+	private RolePermissionRepository rolePermissionRepository;
+
+	@Autowired
+	private UserTenantAccessRepository userTenantAccessRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -152,6 +167,9 @@ class HrmBackendApplicationTests {
 	private static final UUID FOUNDATION_CURRENCY_ID = UUID.fromString("10000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
 	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
+	private static final UUID TENANT_ADMIN_ROLE_ID = UUID.fromString("75000000-0000-0000-0000-000000000001");
+	private static final UUID EMPLOYEE_READ_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000001");
+	private static final UUID EMPLOYEE_WRITE_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000002");
 
 	@Test
 	void contextLoads() {
@@ -209,6 +227,13 @@ class HrmBackendApplicationTests {
 	@Test
 	void flywayMigrationCreatesUserAccountIdentitySecurityFoundation() {
 		assertThatCode(() -> userAccountRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void flywayMigrationCreatesRbacBridgeFoundation() {
+		assertThatCode(() -> userRoleRepository.count()).doesNotThrowAnyException();
+		assertThatCode(() -> rolePermissionRepository.count()).doesNotThrowAnyException();
+		assertThatCode(() -> userTenantAccessRepository.count()).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -301,6 +326,42 @@ class HrmBackendApplicationTests {
 		userAccountRepository.saveAndFlush(newUserAccount("duplicate.user@example.com"));
 
 		assertThatThrownBy(() -> userAccountRepository.saveAndFlush(newUserAccount("duplicate.user@example.com")))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void rbacBridgeRepositoriesPersistBridgeRows() {
+		UserAccount userAccount = userAccountRepository.saveAndFlush(newUserAccount("rbac.user@example.com"));
+
+		UserRole userRole = userRoleRepository.saveAndFlush(newUserRole(userAccount));
+		RolePermission rolePermission = rolePermissionRepository.saveAndFlush(newRolePermission(EMPLOYEE_READ_PERMISSION_ID));
+		UserTenantAccess userTenantAccess = userTenantAccessRepository.saveAndFlush(newUserTenantAccess(userAccount));
+
+		assertThat(userRole.getId()).isNotNull();
+		assertThat(rolePermission.getId()).isNotNull();
+		assertThat(userTenantAccess.getId()).isNotNull();
+		assertThat(userTenantAccess.getAccessRole()).isEqualTo("TENANT_ADMIN");
+		assertThat(userTenantAccess.getCreatedAt()).isNotNull();
+		assertThat(userTenantAccess.getUpdatedAt()).isNotNull();
+		assertThat(userRoleRepository.findByTenant_IdAndUserAccount_Id(FOUNDATION_TENANT_ID, userAccount.getId())).hasSize(1);
+		assertThat(rolePermissionRepository.findByTenant_IdAndRole_Id(FOUNDATION_TENANT_ID, TENANT_ADMIN_ROLE_ID)).hasSize(1);
+		assertThat(userTenantAccessRepository.findByUserAccount_IdAndTenant_Id(userAccount.getId(), FOUNDATION_TENANT_ID)).isPresent();
+	}
+
+	@Test
+	void rbacBridgeRepositoriesEnforceUniqueConstraints() {
+		UserAccount userAccount = userAccountRepository.saveAndFlush(newUserAccount("rbac.unique@example.com"));
+
+		userRoleRepository.saveAndFlush(newUserRole(userAccount));
+		assertThatThrownBy(() -> userRoleRepository.saveAndFlush(newUserRole(userAccount)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+
+		rolePermissionRepository.saveAndFlush(newRolePermission(EMPLOYEE_WRITE_PERMISSION_ID));
+		assertThatThrownBy(() -> rolePermissionRepository.saveAndFlush(newRolePermission(EMPLOYEE_WRITE_PERMISSION_ID)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+
+		userTenantAccessRepository.saveAndFlush(newUserTenantAccess(userAccount));
+		assertThatThrownBy(() -> userTenantAccessRepository.saveAndFlush(newUserTenantAccess(userAccount)))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
@@ -435,6 +496,30 @@ class HrmBackendApplicationTests {
 		userAccount.setEmail(email);
 		userAccount.setPasswordHash("hashed-password-placeholder");
 		return userAccount;
+	}
+
+	private UserRole newUserRole(UserAccount userAccount) {
+		UserRole userRole = new UserRole();
+		userRole.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		userRole.setUserAccount(userAccount);
+		userRole.setRole(roleRepository.findById(TENANT_ADMIN_ROLE_ID).orElseThrow());
+		return userRole;
+	}
+
+	private RolePermission newRolePermission(UUID permissionId) {
+		RolePermission rolePermission = new RolePermission();
+		rolePermission.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		rolePermission.setRole(roleRepository.findById(TENANT_ADMIN_ROLE_ID).orElseThrow());
+		rolePermission.setPermission(permissionRepository.findById(permissionId).orElseThrow());
+		return rolePermission;
+	}
+
+	private UserTenantAccess newUserTenantAccess(UserAccount userAccount) {
+		UserTenantAccess userTenantAccess = new UserTenantAccess();
+		userTenantAccess.setUserAccount(userAccount);
+		userTenantAccess.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		userTenantAccess.setAccessRole("TENANT_ADMIN");
+		return userTenantAccess;
 	}
 
 }
