@@ -1,5 +1,9 @@
 package com.odsoftware.hrm;
 
+import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
+import com.odsoftware.hrm.repository.core.OfficeLocationRepository;
+import com.odsoftware.hrm.repository.core.SmtpConfigurationRepository;
+import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.repository.master.ApprovalStatusRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.AuditActionTypeRepository;
@@ -87,6 +91,18 @@ class HrmBackendApplicationTests {
 	@Autowired
 	private OfficeLocationTypeRepository officeLocationTypeRepository;
 
+	@Autowired
+	private TenantRepository tenantRepository;
+
+	@Autowired
+	private CompanyProfileRepository companyProfileRepository;
+
+	@Autowired
+	private OfficeLocationRepository officeLocationRepository;
+
+	@Autowired
+	private SmtpConfigurationRepository smtpConfigurationRepository;
+
 	@Test
 	void contextLoads() {
 	}
@@ -120,6 +136,14 @@ class HrmBackendApplicationTests {
 		assertThat(permissionRepository.count()).isEqualTo(5);
 		assertThat(companyProfileTypeRepository.count()).isEqualTo(2);
 		assertThat(officeLocationTypeRepository.count()).isEqualTo(3);
+	}
+
+	@Test
+	void flywayMigrationCreatesTenantCompanyOfficeAndSmtpFoundation() {
+		assertThat(tenantRepository.count()).isEqualTo(1);
+		assertThat(companyProfileRepository.count()).isEqualTo(1);
+		assertThat(officeLocationRepository.count()).isEqualTo(1);
+		assertThat(smtpConfigurationRepository.count()).isEqualTo(1);
 	}
 
 }

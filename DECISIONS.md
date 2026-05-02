@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.13  
+Versione: 1.14  
 Ultimo aggiornamento: 2026-05-02  
 Stato: Attivo
 
@@ -748,10 +748,53 @@ Le bridge RBAC operative saranno introdotte in task successivi, mantenendo conti
 
 ---
 
+### DEC-021 - Tenant domain activation and placeholder-to-real SaaS hardening strategy
+
+Data: 2026-05-02  
+Stato: Approvata
+
+Decisione:
+
+TASK-015 attiva il dominio `Tenant` reale e converte la foundation tenant placeholder in struttura SaaS governata.
+
+Il tenant placeholder tecnico `00000000-0000-0000-0000-000000000001` diventa record reale `FOUNDATION_TENANT`, preservando la continuita dei seed e dei dati tenant-scoped creati nei task precedenti.
+
+Il modello usa:
+
+- `Tenant` come root boundary SaaS reale;
+- foreign key reali da tutte le tabelle tenant-scoped V2/V3 verso `tenants.id`;
+- `CompanyProfile` come legal/business entity del tenant;
+- `OfficeLocation` come rappresentazione delle sedi legali e operative della company;
+- `SmtpConfiguration` come configurazione SMTP tenant-scoped.
+
+Le credenziali SMTP, in particolare `username` e `passwordEncrypted`, sono opzionali per supportare relay interni, test mode, autenticazione non basata su username/password e provider futuri.
+
+Motivazione:
+
+- trasformare il tenant placeholder in dominio operativo reale;
+- rafforzare l'integrita relazionale tenant-scoped;
+- preservare compatibilita con i seed esistenti;
+- preparare governance multi-company e multi-office;
+- evitare vincoli SMTP eccessivi nella foundation dati.
+
+Alternative escluse:
+
+- mantenere `tenant_id` come UUID strutturale senza FK oltre TASK-015;
+- creare un nuovo tenant seed diverso dal placeholder esistente;
+- rendere obbligatorie credenziali SMTP username/password a livello schema;
+- anticipare UserAccount, Employee, bridge RBAC o configurazioni SMTP operative avanzate.
+
+Impatto:
+
+Le future implementazioni tenant-scoped dovranno referenziare `tenants.id` con FK reale. Le validazioni applicative gestiranno eventuali regole SMTP specifiche senza imporre credenziali obbligatorie nello schema dati.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.14 | 2026-05-02 | Aggiunta DEC-021 per attivazione dominio Tenant reale, FK hardening SaaS e credenziali SMTP opzionali. |
 | 1.13 | 2026-05-02 | Aggiunta DEC-020 per split governance/security tra standard globali e governance operativa tenant-scoped. |
 | 1.12 | 2026-05-02 | Aggiunta DEC-019 per strategia temporanea tenant foundation su master data tenant-scoped prima della tabella Tenant. |
 | 1.11 | 2026-05-02 | Aggiunta DEC-018 per governance geografica parzialmente denormalizzata con validation applicativa obbligatoria. |
