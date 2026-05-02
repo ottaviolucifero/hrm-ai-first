@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.7  
-Ultimo aggiornamento: 2026-05-01  
+Versione: 1.16  
+Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
 ---
@@ -54,10 +54,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - Swagger / OpenAPI backend
 - Profili backend dev/test/prod
 - DEC-012 frontend enterprise modulare
+- TASK-012 master tables globali foundation
 
 ### Prossimo passo
 
-- TASK-011: Creare modello dati iniziale
+- TASK-013: master tables HR/business
 
 ---
 
@@ -77,10 +78,12 @@ Completato:
 - Layout reale Metronic
 - Swagger / OpenAPI
 - Profili dev/test/prod
+- Master tables globali foundation
 
 Da fare:
 
-- Modello dati iniziale
+- Master tables HR/business
+- Master tables governance/security
 
 ---
 
@@ -104,28 +107,37 @@ Profili Spring Boot configurati:
 
 ## 6. Fasi successive
 
-### Fase 2 - Modello dati
+### Fase 2A - Foundation Data
 
-- Entità MVP
-- Migrazioni
-- Audit base
+- TASK-012 -> TASK-014
 
-### Fase 3 - Sicurezza
+### Fase 2B - Tenant / Company Foundation
 
-- JWT
-- Ruoli
-- Protezione API
+- TASK-015 -> TASK-016
 
-### Fase 4+
+### Fase 2C - Employee Core Domain
 
-- Employee
-- Device
-- Payroll
-- LeaveRequest
-- Holiday
-- Audit
-- Logging
-- Test
+- TASK-017 -> TASK-019
+
+### Fase 2D - Identity / Security
+
+- TASK-020 -> TASK-022
+
+### Fase 2E - Operational HR
+
+- TASK-023 -> TASK-030
+
+### Fase 2F - Governance / Compliance
+
+- TASK-031 -> TASK-034
+
+### Fase 2G - Platform Operations
+
+- TASK-035 -> TASK-036
+
+### Fase 3 - Stabilization
+
+- TASK-037 -> TASK-038
 
 ---
 
@@ -141,6 +153,15 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.16 | 2026-05-02 | TASK-012 completato con master tables globali foundation, migration Flyway, seed minimo e test smoke backend. |
+| 1.15 | 2026-05-01 | Riorganizzazione completa TASK-012+ in fasi 2A-2G e Fase 3 dopo espansione enterprise foundation. |
+| 1.14 | 2026-05-01 | TASK-011 esteso con platform operator, super admin, cross-tenant governance, tenant switching e strong authentication obbligatoria per utenti elevati. |
+| 1.13 | 2026-05-01 | TASK-011 esteso con email-first authentication, identity governance, authentication governance e MFA readiness. |
+| 1.12 | 2026-05-01 | TASK-011 aggiornato a foundation SaaS multi-tenant con tenant/company hierarchy, legal entity, office hierarchy, audit e disciplinary governance. |
+| 1.11 | 2026-05-01 | TASK-011 ridefinito come platform data foundation con master/core/bridge architecture, tenant, RBAC, SMTP, geographic, contract e document governance. |
+| 1.10 | 2026-05-01 | TASK-011 dettagliato come blueprint dati completo con master/core separation, demographic governance, lifecycle e multi-country governance. |
+| 1.9 | 2026-05-01 | TASK-011 esteso con master data governance, employee/device lifecycle e contact standardization. |
+| 1.8 | 2026-05-01 | TASK-011 aggiornato a foundation dati enterprise normalizzata con master data architecture, multi-country readiness e HR core domain foundation. |
 | 1.7 | 2026-05-01 | TASK-010 completato; profili dev/test/prod configurati e prossimo passo aggiornato al modello dati iniziale. |
 | 1.6 | 2026-05-01 | TASK-009 completato; Swagger/OpenAPI integrato, validato e documentato nella roadmap backend/API. |
 | 1.5 | 2026-05-01 | TASK-008 completato; roadmap aggiornata con layout reale Metronic completato e Swagger come prossimo step. |

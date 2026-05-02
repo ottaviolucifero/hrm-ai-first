@@ -1,8 +1,9 @@
 spring:
   datasource:
-    url: ${HRM_TEST_DB_URL:jdbc:postgresql://localhost:5432/hrm_db}
-    username: ${HRM_TEST_DB_USERNAME:hrm_user}
-    password: ${HRM_TEST_DB_PASSWORD:hrm_password}
+    url: ${HRM_TEST_DB_URL:jdbc:h2:mem:hrm_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH}
+    username: ${HRM_TEST_DB_USERNAME:sa}
+    password: ${HRM_TEST_DB_PASSWORD:}
+    driver-class-name: ${HRM_TEST_DB_DRIVER:org.h2.Driver}
 
   jpa:
     show-sql: false

@@ -1,0 +1,42 @@
+package com.odsoftware.hrm.config;
+
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class FlywayConfig {
+
+	@Bean(initMethod = "migrate")
+	public Flyway flyway(DataSource dataSource) {
+		return Flyway.configure()
+				.dataSource(dataSource)
+				.locations("classpath:db/migration")
+				.load();
+	}
+
+	@Bean
+	public static BeanFactoryPostProcessor entityManagerFactoryDependsOnFlyway() {
+		return beanFactory -> addDependsOnFlyway(beanFactory, "entityManagerFactory");
+	}
+
+	private static void addDependsOnFlyway(ConfigurableListableBeanFactory beanFactory, String beanName) {
+		if (!beanFactory.containsBeanDefinition(beanName)) {
+			return;
+		}
+		BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+		String[] dependsOn = beanDefinition.getDependsOn();
+		if (dependsOn == null || dependsOn.length == 0) {
+			beanDefinition.setDependsOn("flyway");
+			return;
+		}
+		String[] updatedDependsOn = new String[dependsOn.length + 1];
+		System.arraycopy(dependsOn, 0, updatedDependsOn, 0, dependsOn.length);
+		updatedDependsOn[dependsOn.length] = "flyway";
+		beanDefinition.setDependsOn(updatedDependsOn);
+	}
+}
