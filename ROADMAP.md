@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.26  
+Versione: 1.27  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -64,16 +64,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-019 Backend-first backlog reorganization
 - TASK-020 UserAccount identity/security foundation
 - TASK-021 RBAC bridge foundation
+- TASK-022 Device backend foundation
 
 ### Prossimo passo
 
-- TASK-022: Device backend foundation
+- TASK-023: PayrollDocument backend foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: RBAC bridge foundation
+Stato: Device backend foundation
 
 Completato:
 
@@ -99,6 +100,7 @@ Completato:
 - Backend-first backlog reorganization from TASK-019 onward
 - UserAccount identity/security persistence foundation with email-first login identity, authentication method governance and strong authentication readiness
 - RBAC bridge persistence foundation with UserRole, RolePermission and UserTenantAccess relational integrity
+- Device backend persistence foundation with tenant/company/master device/employee assignment relational integrity
 
 Nota:
 
@@ -110,10 +112,11 @@ Contract persistence foundation is available with start/end dates and active lif
 Backlog execution is now backend-first: core technical foundations and API readiness precede operational UI tasks.
 UserAccount persistence foundation is available; login runtime, JWT, OTP/MFA execution and API remain deferred.
 RBAC bridge persistence foundation is available; runtime authorization, Spring Security RBAC, tenant switching, impersonation, service layer, API and UI remain deferred.
+Device persistence foundation is available; assignment workflow, service layer, API and UI remain deferred.
 
 Da fare:
 
-- Device backend foundation
+- PayrollDocument backend foundation
 
 ---
 
@@ -183,6 +186,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.27 | 2026-05-02 | TASK-022 completato con Device backend foundation, migration V9, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-023 PayrollDocument backend foundation. |
 | 1.26 | 2026-05-02 | TASK-021 completato con RBAC bridge foundation, migration V8, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-022 Device backend foundation. |
 | 1.25 | 2026-05-02 | TASK-020 completato con UserAccount identity/security foundation, migration V7, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-021 RBAC bridge foundation. |
 | 1.24 | 2026-05-02 | TASK-019 completato come riorganizzazione documentale backend-first; prossimo passo aggiornato a TASK-020 UserAccount identity/security foundation. |

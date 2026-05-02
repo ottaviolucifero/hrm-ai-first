@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.26  
+Versione: 1.27  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1431,7 +1431,21 @@ RBAC bridge persistence foundation completed. API REST, DTO, service layer, logi
 
 ### TASK-022 - Implementare Device backend foundation
 
-Stato: TODO
+Stato: DONE
+
+Completato:
+
+- Migration Flyway V9 `V9__create_device_backend_foundation.sql`
+- Tabella `devices` introdotta con relazioni tenant/company/master device/employee assignment opzionale
+- FK reali verso `tenants`, `company_profiles`, `device_types`, `device_brands`, `device_statuses` ed `employees`
+- Check constraint `warranty_end_date IS NULL OR warranty_end_date >= purchase_date`
+- Entity JPA `Device` creata nel package `device`
+- Repository JPA `DeviceRepository` creato
+- Test backend aggiunti per migration V9, persistenza Device assegnato, Device non assegnato e query repository tenant/company e tenant/employee
+
+Nota architetturale:
+
+Device backend persistence foundation completed. Device assignment workflow, API REST, DTO, service layer, frontend/UI and operational governance remain fuori scope e differiti ai task successivi.
 
 ### TASK-023 - Implementare PayrollDocument backend foundation
 
@@ -1559,6 +1573,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.27 | 2026-05-02 | TASK-022 completato con Device backend foundation, migration Flyway V9, entity/repository JPA, FK tenant/company/master/employee e test persistence. |
 | 1.26 | 2026-05-02 | TASK-021 completato con RBAC bridge foundation, migration Flyway V8, entity/repository JPA, FK rigorose e test persistence/unique constraint. |
 | 1.25 | 2026-05-02 | TASK-020 completato con UserAccount identity/security foundation, migration Flyway V7, entity/repository JPA, FK identity governance e test persistence/unique constraint. |
 | 1.24 | 2026-05-02 | TASK-019 completato come riorganizzazione documentale backend-first: backlog futuro riallineato, implementazioni tecniche spostate da TASK-020 e UI operative posticipate. |

@@ -5,6 +5,7 @@ import com.odsoftware.hrm.repository.core.OfficeLocationRepository;
 import com.odsoftware.hrm.repository.core.SmtpConfigurationRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.entity.contract.Contract;
+import com.odsoftware.hrm.entity.device.Device;
 import com.odsoftware.hrm.entity.employee.Employee;
 import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.master.ContractType;
@@ -13,6 +14,7 @@ import com.odsoftware.hrm.entity.rbac.UserRole;
 import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.entity.master.TimeZone;
 import com.odsoftware.hrm.repository.contract.ContractRepository;
+import com.odsoftware.hrm.repository.device.DeviceRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
 import com.odsoftware.hrm.repository.identity.UserAccountRepository;
 import com.odsoftware.hrm.repository.rbac.RolePermissionRepository;
@@ -50,6 +52,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -159,6 +162,9 @@ class HrmBackendApplicationTests {
 	private UserTenantAccessRepository userTenantAccessRepository;
 
 	@Autowired
+	private DeviceRepository deviceRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -170,6 +176,10 @@ class HrmBackendApplicationTests {
 	private static final UUID TENANT_ADMIN_ROLE_ID = UUID.fromString("75000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_READ_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_WRITE_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000002");
+	private static final UUID LAPTOP_DEVICE_TYPE_ID = UUID.fromString("62000000-0000-0000-0000-000000000001");
+	private static final UUID DELL_DEVICE_BRAND_ID = UUID.fromString("63000000-0000-0000-0000-000000000001");
+	private static final UUID AVAILABLE_DEVICE_STATUS_ID = UUID.fromString("64000000-0000-0000-0000-000000000001");
+	private static final UUID ASSIGNED_DEVICE_STATUS_ID = UUID.fromString("64000000-0000-0000-0000-000000000002");
 
 	@Test
 	void contextLoads() {
@@ -234,6 +244,11 @@ class HrmBackendApplicationTests {
 		assertThatCode(() -> userRoleRepository.count()).doesNotThrowAnyException();
 		assertThatCode(() -> rolePermissionRepository.count()).doesNotThrowAnyException();
 		assertThatCode(() -> userTenantAccessRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void flywayMigrationCreatesDeviceBackendFoundation() {
+		assertThatCode(() -> deviceRepository.count()).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -363,6 +378,39 @@ class HrmBackendApplicationTests {
 		userTenantAccessRepository.saveAndFlush(newUserTenantAccess(userAccount));
 		assertThatThrownBy(() -> userTenantAccessRepository.saveAndFlush(newUserTenantAccess(userAccount)))
 				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void deviceRepositoryPersistsAssignedDevice() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-DEVICE"));
+
+		Device device = newDevice("Foundation Laptop", "SN-DEVICE-001");
+		device.setAssignedTo(employee);
+		device.setAssignedAt(OffsetDateTime.now());
+		device.setDeviceStatus(deviceStatusRepository.findById(ASSIGNED_DEVICE_STATUS_ID).orElseThrow());
+
+		Device saved = deviceRepository.saveAndFlush(device);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getCreatedAt()).isNotNull();
+		assertThat(saved.getUpdatedAt()).isNotNull();
+		assertThat(saved.getAssignedTo().getId()).isEqualTo(employee.getId());
+		assertThat(saved.getAssignedAt()).isNotNull();
+		assertThat(saved.getActive()).isTrue();
+		assertThat(deviceRepository.findByTenant_IdAndCompanyProfile_Id(FOUNDATION_TENANT_ID, FOUNDATION_COMPANY_ID)).hasSize(1);
+		assertThat(deviceRepository.findByTenant_IdAndAssignedTo_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+	}
+
+	@Test
+	void deviceRepositoryPersistsUnassignedDevice() {
+		Device device = newDevice("Foundation Spare Laptop", "SN-DEVICE-002");
+
+		Device saved = deviceRepository.saveAndFlush(device);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getAssignedTo()).isNull();
+		assertThat(saved.getAssignedAt()).isNull();
+		assertThat(saved.getDeviceStatus().getId()).isEqualTo(AVAILABLE_DEVICE_STATUS_ID);
 	}
 
 	@Test
@@ -520,6 +568,21 @@ class HrmBackendApplicationTests {
 		userTenantAccess.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
 		userTenantAccess.setAccessRole("TENANT_ADMIN");
 		return userTenantAccess;
+	}
+
+	private Device newDevice(String name, String serialNumber) {
+		Device device = new Device();
+		device.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		device.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
+		device.setName(name);
+		device.setType(deviceTypeRepository.findById(LAPTOP_DEVICE_TYPE_ID).orElseThrow());
+		device.setBrand(deviceBrandRepository.findById(DELL_DEVICE_BRAND_ID).orElseThrow());
+		device.setModel("Latitude 7450");
+		device.setSerialNumber(serialNumber);
+		device.setPurchaseDate(LocalDate.of(2026, 5, 2));
+		device.setWarrantyEndDate(LocalDate.of(2029, 5, 2));
+		device.setDeviceStatus(deviceStatusRepository.findById(AVAILABLE_DEVICE_STATUS_ID).orElseThrow());
+		return device;
 	}
 
 }
