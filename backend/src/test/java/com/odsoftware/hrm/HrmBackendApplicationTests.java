@@ -4,12 +4,16 @@ import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.OfficeLocationRepository;
 import com.odsoftware.hrm.repository.core.SmtpConfigurationRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.entity.contract.Contract;
 import com.odsoftware.hrm.entity.employee.Employee;
+import com.odsoftware.hrm.entity.master.ContractType;
+import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
 import com.odsoftware.hrm.repository.master.ApprovalStatusRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.AuditActionTypeRepository;
 import com.odsoftware.hrm.repository.master.CompanyProfileTypeRepository;
+import com.odsoftware.hrm.repository.master.ContractTypeRepository;
 import com.odsoftware.hrm.repository.master.CountryRepository;
 import com.odsoftware.hrm.repository.master.CurrencyRepository;
 import com.odsoftware.hrm.repository.master.DeviceBrandRepository;
@@ -34,6 +38,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -123,11 +128,18 @@ class HrmBackendApplicationTests {
 	private EmployeeRepository employeeRepository;
 
 	@Autowired
+	private ContractTypeRepository contractTypeRepository;
+
+	@Autowired
+	private ContractRepository contractRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COMPANY_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_OFFICE_ID = UUID.fromString("81000000-0000-0000-0000-000000000001");
+	private static final UUID FOUNDATION_CURRENCY_ID = UUID.fromString("10000000-0000-0000-0000-000000000001");
 
 	@Test
 	void contextLoads() {
@@ -178,6 +190,11 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void flywayMigrationCreatesContractGovernanceFoundation() {
+		assertThatCode(() -> contractRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
 	void employeeRepositoryPersistsEmployee() {
 		Employee employee = newEmployee("EMP-001");
 
@@ -199,6 +216,35 @@ class HrmBackendApplicationTests {
 
 		assertThatThrownBy(() -> employeeRepository.saveAndFlush(newEmployee("EMP-DUP")))
 				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void contractRepositoryPersistsContract() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-CONTRACT"));
+		ContractType contractType = contractTypeRepository.saveAndFlush(newContractType("TASK_018_CONTRACT"));
+
+		Contract contract = new Contract();
+		contract.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		contract.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
+		contract.setEmployee(employee);
+		contract.setContractType(contractType);
+		contract.setCurrency(currencyRepository.findById(FOUNDATION_CURRENCY_ID).orElseThrow());
+		contract.setStartDate(LocalDate.of(2026, 5, 2));
+		contract.setEndDate(LocalDate.of(2027, 5, 1));
+		contract.setBaseSalary(new BigDecimal("42000.00"));
+		contract.setWeeklyHours(new BigDecimal("40.00"));
+
+		Contract saved = contractRepository.saveAndFlush(contract);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getCreatedAt()).isNotNull();
+		assertThat(saved.getUpdatedAt()).isNotNull();
+		assertThat(saved.getStartDate()).isEqualTo(LocalDate.of(2026, 5, 2));
+		assertThat(saved.getEndDate()).isEqualTo(LocalDate.of(2027, 5, 1));
+		assertThat(saved.getBaseSalary()).isEqualByComparingTo("42000.00");
+		assertThat(saved.getWeeklyHours()).isEqualByComparingTo("40.00");
+		assertThat(saved.getActive()).isTrue();
+		assertThat(contractRepository.findByTenant_IdAndEmployee_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
 	}
 
 	@Test
@@ -306,6 +352,14 @@ class HrmBackendApplicationTests {
 		employee.setWorkMode("HYBRID");
 		employee.setHireDate(LocalDate.of(2026, 5, 2));
 		return employee;
+	}
+
+	private ContractType newContractType(String code) {
+		ContractType contractType = new ContractType();
+		contractType.setTenantId(FOUNDATION_TENANT_ID);
+		contractType.setCode(code);
+		contractType.setName("Task 018 Contract");
+		return contractType;
 	}
 
 }
