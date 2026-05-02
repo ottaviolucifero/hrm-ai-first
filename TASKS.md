@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.19  
+Versione: 1.20  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1219,9 +1219,9 @@ Governance/security master foundation completed. Operational UserAccount, RBAC b
 
 ## FASE 2B - TENANT / COMPANY FOUNDATION
 
-### TASK-015 - Implementare Tenant, CompanyProfile e governance multi-company
+### TASK-015 - Implementare Tenant, CompanyProfile, OfficeLocation e SmtpConfiguration foundation
 
-Stato: TODO
+Stato: DONE
 
 Dipendenze:
 
@@ -1230,7 +1230,24 @@ Dipendenze:
 - Deve aggiungere FK hardening verso `Tenant` per le master tables tenant-scoped giÃ  create, dove applicabile
 - Deve preservare il tenant placeholder tecnico `00000000-0000-0000-0000-000000000001` o migrarlo in modo controllato
 
-### TASK-016 - Implementare OfficeLocation e SmtpConfiguration
+Completato:
+
+- Dominio `Tenant` reale introdotto
+- `CompanyProfile` foundation introdotto per legal entity principale
+- `OfficeLocation` foundation introdotto con sede `HEADQUARTER`
+- `SmtpConfiguration` foundation introdotto con password placeholder encrypted string
+- Migrazione Flyway `V4__create_tenant_company_office_smtp_foundation.sql` creata
+- Tenant placeholder `00000000-0000-0000-0000-000000000001` preservato come `FOUNDATION_TENANT`
+- FK reali aggiunte da tutte le tabelle tenant-scoped TASK-013 e TASK-014 verso `tenants.id`
+- FK reali aggiunte verso master globali e tenant-scoped coerenti: Country, Currency, CompanyProfileType, OfficeLocationType, SmtpEncryptionType
+- Seed foundation inserito per Tenant, CompanyProfile, OfficeLocation e SmtpConfiguration
+- Test smoke backend per context load, migration V1/V2/V3/V4, seed e FK hardening completato
+
+Nota architetturale:
+
+Placeholder tenant foundation converted into real Tenant domain. Multi-company and multi-office baseline is ready; operational APIs, service validation and advanced tenant administration remain future work.
+
+### TASK-016 - Consolidare Tenant / Company / Office / SMTP validation e API readiness
 
 Stato: TODO
 
@@ -1240,6 +1257,10 @@ Dipendenze:
 - Richiede TASK-014 per `OfficeLocationType` e `SmtpEncryptionType`
 - Richiede TASK-015 per `Tenant` e `CompanyProfile`
 - Deve applicare la governance geografica DEC-018
+
+Nota:
+
+Le tabelle OfficeLocation e SmtpConfiguration sono state anticipate e implementate come foundation dati in TASK-015 su istruzione umana. TASK-016 resta come step futuro per service validation, API readiness e regole operative, senza reintrodurre strutture parallele.
 
 ## FASE 2C - EMPLOYEE CORE DOMAIN
 
@@ -1375,6 +1396,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.20 | 2026-05-02 | TASK-015 completato con Tenant reale, CompanyProfile, OfficeLocation, SmtpConfiguration, FK hardening da V2/V3 e migration Flyway V4. |
 | 1.19 | 2026-05-02 | TASK-014 completato con master tables governance/security globali e tenant-scoped, migration Flyway V3, DEC-020 e test smoke backend. |
 | 1.18 | 2026-05-02 | Hardening documentale post TASK-013: chiarite note architetturali, DEC-019, tenant placeholder strategy e dipendenze TASK-014 -> TASK-018. |
 | 1.17 | 2026-05-02 | TASK-013 completato con master tables HR/business tenant-scoped, BaseTenantMasterEntity, migration Flyway V2, seed placeholder e test smoke backend. |
