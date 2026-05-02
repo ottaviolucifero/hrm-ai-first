@@ -4,6 +4,8 @@ import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.OfficeLocationRepository;
 import com.odsoftware.hrm.repository.core.SmtpConfigurationRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.entity.employee.Employee;
+import com.odsoftware.hrm.repository.employee.EmployeeRepository;
 import com.odsoftware.hrm.repository.master.ApprovalStatusRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.AuditActionTypeRepository;
@@ -27,11 +29,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -112,7 +120,14 @@ class HrmBackendApplicationTests {
 	private SmtpConfigurationRepository smtpConfigurationRepository;
 
 	@Autowired
+	private EmployeeRepository employeeRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
+
+	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+	private static final UUID FOUNDATION_COMPANY_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
+	private static final UUID FOUNDATION_OFFICE_ID = UUID.fromString("81000000-0000-0000-0000-000000000001");
 
 	@Test
 	void contextLoads() {
@@ -155,6 +170,35 @@ class HrmBackendApplicationTests {
 		assertThat(companyProfileRepository.count()).isEqualTo(1);
 		assertThat(officeLocationRepository.count()).isEqualTo(1);
 		assertThat(smtpConfigurationRepository.count()).isEqualTo(1);
+	}
+
+	@Test
+	void flywayMigrationCreatesEmployeeCoreFoundation() {
+		assertThatCode(() -> employeeRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void employeeRepositoryPersistsEmployee() {
+		Employee employee = newEmployee("EMP-001");
+
+		Employee saved = employeeRepository.saveAndFlush(employee);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getCreatedAt()).isNotNull();
+		assertThat(saved.getUpdatedAt()).isNotNull();
+		assertThat(saved.getHireDate()).isEqualTo(LocalDate.of(2026, 5, 2));
+		assertThat(saved.getResidenceCity()).isEqualTo("Rome");
+		assertThat(saved.getNationalIdentifierType()).isEqualTo("FISCAL_CODE");
+		assertThat(saved.getActive()).isTrue();
+		assertThat(employeeRepository.findByTenant_IdAndEmployeeCode(FOUNDATION_TENANT_ID, "EMP-001")).isPresent();
+	}
+
+	@Test
+	void employeeRepositoryEnforcesUniqueTenantEmployeeCode() {
+		employeeRepository.saveAndFlush(newEmployee("EMP-DUP"));
+
+		assertThatThrownBy(() -> employeeRepository.saveAndFlush(newEmployee("EMP-DUP")))
+				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
 	@Test
@@ -218,6 +262,50 @@ class HrmBackendApplicationTests {
 				.andExpect(jsonPath("$.paths['/api/foundation/company-profiles']").exists())
 				.andExpect(jsonPath("$.paths['/api/foundation/offices']").exists())
 				.andExpect(jsonPath("$.paths['/api/foundation/smtp-configurations']").exists());
+	}
+
+	private Employee newEmployee(String employeeCode) {
+		Employee employee = new Employee();
+		employee.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		employee.setCompany(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
+		employee.setOffice(officeLocationRepository.findById(FOUNDATION_OFFICE_ID).orElseThrow());
+		employee.setEmployeeCode(employeeCode);
+		employee.setFirstName("Foundation");
+		employee.setLastName("Employee");
+		employee.setFiscalCode("FISCAL-" + employeeCode);
+		employee.setEmail(employeeCode.toLowerCase() + "@example.com");
+		employee.setResidenceCountry("IT");
+		employee.setResidenceRegion("LAZIO");
+		employee.setResidenceArea("ROMA");
+		employee.setResidenceGlobalZipCode("00100");
+		employee.setResidenceCity("Rome");
+		employee.setResidenceAddressLine1("Foundation Street");
+		employee.setResidenceStreetNumber("1");
+		employee.setResidenceAddressLine2("Floor 1");
+		employee.setResidencePostalCode("00100");
+		employee.setNationalIdentifier("FISCAL-" + employeeCode);
+		employee.setNationalIdentifierType("FISCAL_CODE");
+		employee.setBirthDate(LocalDate.of(1990, 1, 1));
+		employee.setBirthCountry("IT");
+		employee.setBirthRegion("LAZIO");
+		employee.setBirthArea("ROMA");
+		employee.setBirthCity("Rome");
+		employee.setGender("OTHER");
+		employee.setMaritalStatus("SINGLE");
+		employee.setInternationalPhonePrefix("+39");
+		employee.setPhoneNumber("0000000001");
+		employee.setEmergencyContactName("Emergency Contact");
+		employee.setEmergencyContactPhonePrefix("+39");
+		employee.setEmergencyContactPhoneNumber("0000000002");
+		employee.setHasChildren(false);
+		employee.setChildrenCount(0);
+		employee.setDepartment("HR");
+		employee.setJobTitle("HR_SPECIALIST");
+		employee.setContractType("FULL_TIME");
+		employee.setEmploymentStatus("ACTIVE");
+		employee.setWorkMode("HYBRID");
+		employee.setHireDate(LocalDate.of(2026, 5, 2));
+		return employee;
 	}
 
 }

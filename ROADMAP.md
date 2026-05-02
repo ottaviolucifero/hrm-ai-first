@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.21  
+Versione: 1.22  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -59,16 +59,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-014 governance/security master foundation
 - TASK-015 Tenant, CompanyProfile, OfficeLocation, SmtpConfiguration foundation and FK hardening
 - TASK-016 Foundation validation and API readiness
+- TASK-017 Employee core domain foundation
 
 ### Prossimo passo
 
-- TASK-017: Employee core domain foundation
+- TASK-018: Contract governance and employment lifecycle
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Foundation dati enterprise + tenant/company API readiness
+Stato: Employee core persistence foundation
 
 Completato:
 
@@ -89,16 +90,18 @@ Completato:
 - FK hardening from tenant-scoped master data to real Tenant domain
 - Read-only foundation API readiness for Tenant, CompanyProfile, OfficeLocation and SmtpConfiguration
 - DTO/service boundary for foundation API responses
+- Employee core persistence foundation with tenant/company/office relational integrity and documented Employee foundation fields
 
 Nota:
 
 Tenant placeholder strategy converted into full Tenant domain in TASK-015.
 Governance/security split active: global authentication standards are shared, while roles, permissions and operational classifications remain tenant-scoped.
 Foundation API readiness active through read-only DTO responses; operational write APIs remain deferred.
+Employee persistence foundation is available with documented core fields; Employee REST API, UI and operational workflows remain deferred.
 
 Da fare:
 
-- Employee core domain foundation
+- Contract governance and employment lifecycle
 
 ---
 
@@ -168,6 +171,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.22 | 2026-05-02 | TASK-017 completato con Employee core domain persistence documentata, migration V5, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-018 Contract governance. |
 | 1.21 | 2026-05-02 | TASK-016 completato con foundation validation, DTO/service API boundary, endpoint read-only e OpenAPI verification; prossimo passo aggiornato a TASK-017 Employee core domain foundation. |
 | 1.20 | 2026-05-02 | TASK-015 completato con Tenant reale, CompanyProfile, OfficeLocation, SmtpConfiguration e FK hardening; prossimo passo aggiornato a TASK-016 validation/API readiness. |
 | 1.19 | 2026-05-02 | TASK-014 completato; prossimo passo aggiornato a TASK-015 Tenant + CompanyProfile foundation. |
