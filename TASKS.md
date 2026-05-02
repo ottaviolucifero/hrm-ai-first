@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.18  
+Versione: 1.19  
 Ultimo aggiornamento: 2026-05-02  
 Stato: In avanzamento
 
@@ -1180,7 +1180,7 @@ Tenant-scoped HR/business master foundation completed. Full Tenant FK hardening 
 
 ### TASK-014 - Implementare master tables governance/security
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -1199,6 +1199,23 @@ Dipendenze:
 - Deve mantenere separazione rispetto ai master HR/business giÃ  completati in TASK-013
 - Deve rispettare tenant-scoped governance dove prevista dal blueprint TASK-011
 - Non deve introdurre `Tenant`, `CompanyProfile`, `UserAccount` o bridge RBAC fuori scope
+
+Completato:
+
+- Master globali governance/security creati: UserType, AuthenticationMethod, AuditActionType, DisciplinaryActionType, SmtpEncryptionType
+- Master tenant-scoped creati: Role, Permission, CompanyProfileType, OfficeLocationType
+- Entity JPA create con `BaseMasterEntity` per global e `BaseTenantMasterEntity` per tenant-scoped
+- Repository JPA creati
+- Migrazione Flyway `V3__create_governance_security_master_tables.sql` creata
+- Unique constraint `code` applicata ai master globali
+- Unique constraint `(tenant_id, code)` applicata ai master tenant-scoped
+- Seed tenant placeholder inserito per Role, Permission, CompanyProfileType e OfficeLocationType
+- DEC-020 aggiunta per split governance/security tra standard globali e governance operativa tenant-scoped
+- Test smoke backend per context load, migration V1/V2/V3 e seed completato
+
+Nota architetturale:
+
+Governance/security master foundation completed. Operational UserAccount, RBAC bridge tables, Tenant FK hardening and platform audit runtime remain deferred to future tasks.
 
 ## FASE 2B - TENANT / COMPANY FOUNDATION
 
@@ -1358,6 +1375,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.19 | 2026-05-02 | TASK-014 completato con master tables governance/security globali e tenant-scoped, migration Flyway V3, DEC-020 e test smoke backend. |
 | 1.18 | 2026-05-02 | Hardening documentale post TASK-013: chiarite note architetturali, DEC-019, tenant placeholder strategy e dipendenze TASK-014 -> TASK-018. |
 | 1.17 | 2026-05-02 | TASK-013 completato con master tables HR/business tenant-scoped, BaseTenantMasterEntity, migration Flyway V2, seed placeholder e test smoke backend. |
 | 1.16 | 2026-05-02 | TASK-012 completato con master tables globali foundation, migration Flyway, seed minimo e test smoke backend. |
