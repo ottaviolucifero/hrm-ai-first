@@ -4,6 +4,7 @@ import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.OfficeLocationRepository;
 import com.odsoftware.hrm.repository.core.SmtpConfigurationRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.entity.audit.AuditLog;
 import com.odsoftware.hrm.entity.calendar.HolidayCalendar;
 import com.odsoftware.hrm.entity.contract.Contract;
 import com.odsoftware.hrm.entity.device.Device;
@@ -12,6 +13,7 @@ import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.leave.LeaveRequest;
 import com.odsoftware.hrm.entity.leave.LeaveRequestStatus;
 import com.odsoftware.hrm.entity.master.Area;
+import com.odsoftware.hrm.entity.master.AuditActionType;
 import com.odsoftware.hrm.entity.master.ContractType;
 import com.odsoftware.hrm.entity.master.Country;
 import com.odsoftware.hrm.entity.master.LeaveRequestType;
@@ -22,6 +24,7 @@ import com.odsoftware.hrm.entity.rbac.RolePermission;
 import com.odsoftware.hrm.entity.rbac.UserRole;
 import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.entity.master.TimeZone;
+import com.odsoftware.hrm.repository.audit.AuditLogRepository;
 import com.odsoftware.hrm.repository.calendar.HolidayCalendarRepository;
 import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.device.DeviceRepository;
@@ -198,6 +201,9 @@ class HrmBackendApplicationTests {
 	private HolidayCalendarRepository holidayCalendarRepository;
 
 	@Autowired
+	private AuditLogRepository auditLogRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -207,6 +213,8 @@ class HrmBackendApplicationTests {
 	private static final UUID ITALY_COUNTRY_ID = UUID.fromString("20000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
 	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
+	private static final UUID CREATE_AUDIT_ACTION_TYPE_ID = UUID.fromString("72000000-0000-0000-0000-000000000001");
+	private static final UUID UPDATE_AUDIT_ACTION_TYPE_ID = UUID.fromString("72000000-0000-0000-0000-000000000002");
 	private static final UUID TENANT_ADMIN_ROLE_ID = UUID.fromString("75000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_READ_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_WRITE_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000002");
@@ -299,6 +307,11 @@ class HrmBackendApplicationTests {
 	@Test
 	void flywayMigrationCreatesHolidayCalendarBackendFoundation() {
 		assertThatCode(() -> holidayCalendarRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void flywayMigrationCreatesAuditLogBackendFoundation() {
+		assertThatCode(() -> auditLogRepository.count()).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -644,6 +657,87 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void auditLogRepositoryPersistsSystemAuditLog() {
+		AuditLog auditLog = newAuditLog("TENANT", FOUNDATION_TENANT_ID);
+
+		AuditLog saved = auditLogRepository.saveAndFlush(auditLog);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getTenant().getId()).isEqualTo(FOUNDATION_TENANT_ID);
+		assertThat(saved.getCompanyProfile()).isNull();
+		assertThat(saved.getUserAccount()).isNull();
+		assertThat(saved.getAuditActionType().getId()).isEqualTo(CREATE_AUDIT_ACTION_TYPE_ID);
+		assertThat(saved.getEntityType()).isEqualTo("TENANT");
+		assertThat(saved.getEntityId()).isEqualTo(FOUNDATION_TENANT_ID);
+		assertThat(saved.getCreatedAt()).isNotNull();
+		assertThat(saved.getSuccess()).isTrue();
+		assertThat(saved.getSeverityLevel()).isEqualTo("LOW");
+		assertThat(saved.getImpersonationMode()).isEqualTo("NONE");
+		assertThat(auditLogRepository.findByTenant_Id(FOUNDATION_TENANT_ID)).extracting(AuditLog::getId).contains(saved.getId());
+		assertThat(auditLogRepository.findByTenant_IdAndAuditActionType_Id(FOUNDATION_TENANT_ID, CREATE_AUDIT_ACTION_TYPE_ID)).extracting(AuditLog::getId).contains(saved.getId());
+		assertThat(auditLogRepository.findByTenant_IdAndEntityTypeAndEntityId(FOUNDATION_TENANT_ID, "TENANT", FOUNDATION_TENANT_ID)).hasSize(1);
+	}
+
+	@Test
+	void auditLogRepositoryPersistsUserAuditLogWithCompanyAndUser() {
+		UserAccount userAccount = userAccountRepository.saveAndFlush(newUserAccount("audit.user@example.com"));
+		AuditLog auditLog = newAuditLog("USER_ACCOUNT", userAccount.getId());
+		auditLog.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
+		auditLog.setUserAccount(userAccount);
+		auditLog.setAuditActionType(auditActionTypeRepository.findById(UPDATE_AUDIT_ACTION_TYPE_ID).orElseThrow());
+		auditLog.setSeverityLevel("MEDIUM");
+		auditLog.setSuccess(false);
+		auditLog.setOldValueJson("{\"active\":true}");
+		auditLog.setNewValueJson("{\"active\":false}");
+
+		AuditLog saved = auditLogRepository.saveAndFlush(auditLog);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getCompanyProfile().getId()).isEqualTo(FOUNDATION_COMPANY_ID);
+		assertThat(saved.getUserAccount().getId()).isEqualTo(userAccount.getId());
+		assertThat(saved.getAuditActionType().getId()).isEqualTo(UPDATE_AUDIT_ACTION_TYPE_ID);
+		assertThat(saved.getSeverityLevel()).isEqualTo("MEDIUM");
+		assertThat(saved.getSuccess()).isFalse();
+		assertThat(saved.getOldValueJson()).isEqualTo("{\"active\":true}");
+		assertThat(saved.getNewValueJson()).isEqualTo("{\"active\":false}");
+		assertThat(auditLogRepository.findByTenant_IdAndUserAccount_Id(FOUNDATION_TENANT_ID, userAccount.getId())).hasSize(1);
+	}
+
+	@Test
+	void auditLogRepositoryPersistsTenantSwitchMetadata() {
+		AuditLog auditLog = newAuditLog("TENANT_ACCESS", FOUNDATION_TENANT_ID);
+		auditLog.setActingTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		auditLog.setTargetTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		auditLog.setImpersonationMode("TENANT_SWITCH");
+
+		AuditLog saved = auditLogRepository.saveAndFlush(auditLog);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getActingTenant().getId()).isEqualTo(FOUNDATION_TENANT_ID);
+		assertThat(saved.getTargetTenant().getId()).isEqualTo(FOUNDATION_TENANT_ID);
+		assertThat(saved.getImpersonationMode()).isEqualTo("TENANT_SWITCH");
+		assertThat(auditLogRepository.findByActingTenant_IdAndTargetTenant_Id(FOUNDATION_TENANT_ID, FOUNDATION_TENANT_ID)).hasSize(1);
+	}
+
+	@Test
+	void auditLogRepositoryEnforcesSeverityLevelConstraint() {
+		AuditLog auditLog = newAuditLog("TENANT", FOUNDATION_TENANT_ID);
+		auditLog.setSeverityLevel("CRITICAL");
+
+		assertThatThrownBy(() -> auditLogRepository.saveAndFlush(auditLog))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void auditLogRepositoryEnforcesImpersonationModeConstraint() {
+		AuditLog auditLog = newAuditLog("TENANT", FOUNDATION_TENANT_ID);
+		auditLog.setImpersonationMode("INVALID");
+
+		assertThatThrownBy(() -> auditLogRepository.saveAndFlush(auditLog))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
 	@WithMockUser
 	void foundationReadApiReturnsSeedData() throws Exception {
 		mockMvc.perform(get("/api/foundation/tenants"))
@@ -896,6 +990,20 @@ class HrmBackendApplicationTests {
 		holidayCalendar.setEndDate(LocalDate.of(2026, 12, 31));
 		holidayCalendar.setName(name);
 		return holidayCalendar;
+	}
+
+	private AuditLog newAuditLog(String entityType, UUID entityId) {
+		AuditLog auditLog = new AuditLog();
+		auditLog.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		auditLog.setAuditActionType(auditActionTypeRepository.findById(CREATE_AUDIT_ACTION_TYPE_ID).orElseThrow());
+		auditLog.setEntityType(entityType);
+		auditLog.setEntityId(entityId);
+		auditLog.setEntityDisplayName("Task 026 audited entity");
+		auditLog.setDescription("Task 026 audit log event");
+		auditLog.setIpAddress("127.0.0.1");
+		auditLog.setUserAgent("JUnit");
+		auditLog.setSeverityLevel("LOW");
+		return auditLog;
 	}
 
 }
