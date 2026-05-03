@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.33  
+Versione: 1.35  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -71,16 +71,18 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-026 AuditLog backend foundation
 - TASK-027 EmployeeDisciplinaryAction backend foundation
 - TASK-028 Core HR API readiness backend read-only
+- TASK-029 Frontend UI and shared components governance
+- Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 
 ### Prossimo passo
 
-- TASK-029: Implementare UI Master Data Admin
+- TASK-030: Implementare API CRUD master data globali
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Core HR API readiness backend read-only
+Stato: Master Data CRUD API backlog governance
 
 Completato:
 
@@ -113,6 +115,8 @@ Completato:
 - AuditLog backend persistence foundation with AuditLog entity, AuditLogRepository, Flyway V13 `audit_logs` table and backend persistence/query/constraint tests validated with BUILD SUCCESS
 - EmployeeDisciplinaryAction backend persistence foundation with EmployeeDisciplinaryAction entity, EmployeeDisciplinaryActionRepository, Flyway V14 `employee_disciplinary_actions` table and backend persistence/query/constraint tests validated with BUILD SUCCESS
 - Core HR API readiness backend read-only with `/api/core-hr` controller, read-only service, explicit DTO responses and MockMvc/OpenAPI tests validated with BUILD SUCCESS
+- Frontend UI and shared components governance documented in `frontend/AGENTS.md`
+- Master Data Admin backlog reordered so backend CRUD APIs are implemented before operational UI
 
 Nota:
 
@@ -131,10 +135,16 @@ HolidayCalendar persistence foundation is available; API REST, DTO, service laye
 AuditLog persistence foundation is available; automatic audit runtime, interceptors/aspects, login/JWT integration, real tenant switching, real impersonation, API REST, DTO, service layer and UI remain deferred.
 EmployeeDisciplinaryAction persistence foundation is available; API REST, DTO, service layer, controller, UI, disciplinary workflow, notifications, upload/download, audit runtime and security integration remain deferred.
 Core HR read-only API readiness is available for Employee, Contract, Device, PayrollDocument, LeaveRequest, HolidayCalendar, AuditLog and EmployeeDisciplinaryAction; write APIs, operational CRUD, workflows, physical document transfer, login/JWT runtime, RBAC runtime, tenant switching runtime, automatic audit, frontend/UI and notifications remain deferred.
+Frontend governance is active: UI tasks must analyze and reuse existing Angular components, extend before creating duplicates, keep feature components local, create shared components only with explicit motivation, and adapt Metronic as a visual reference rather than copying code indiscriminately.
+Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 
 Da fare:
 
-- UI Master Data Admin
+- TASK-030 API CRUD master data globali
+- TASK-031 API CRUD master data HR/business
+- TASK-032 API CRUD master data governance/security
+- TASK-033 UI Master Data Admin foundation/list
+- TASK-034 UI Master Data Admin CRUD
 
 ---
 
@@ -178,17 +188,21 @@ Profili Spring Boot configurati:
 
 - TASK-022 -> TASK-028
 
-### Fase 2F - UI Admin / Operations
+### Fase 2F - API CRUD Master Data
 
-- TASK-029 -> TASK-037
+- TASK-030 -> TASK-032
 
-### Fase 2G - Platform Operations
+### Fase 2G - UI Admin / Operations
 
-- TASK-038 -> TASK-039
+- TASK-033 -> TASK-042
+
+### Fase 2H - Platform Operations
+
+- TASK-043 -> TASK-044
 
 ### Fase 3 - Stabilization
 
-- TASK-040 -> TASK-041
+- TASK-045 -> TASK-046
 
 ---
 
@@ -204,7 +218,9 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 1.33 | 2026-05-03 | TASK-028 completato con Core HR API readiness backend read-only, controller /api/core-hr, service read-only, DTO corehr e test MockMvc/OpenAPI validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-029 UI Master Data Admin. |
+| 1.35 | 2026-05-03 | Backlog riorganizzato: Master Data Admin UI rinviata dopo API CRUD master data globali, HR/business e governance/security; prossimo passo aggiornato a TASK-030 API CRUD master data globali. |
+| 1.34 | 2026-05-03 | TASK-029 documentale completato con governance frontend UI/shared components in `frontend/AGENTS.md`; backlog successivo rinumerato e prossimo passo aggiornato a TASK-030. |
+| 1.33 | 2026-05-03 | TASK-028 completato con Core HR API readiness backend read-only, controller /api/core-hr, service read-only, DTO corehr e test MockMvc/OpenAPI validati con BUILD SUCCESS; UI Master Data Admin rinumerata successivamente nel backlog. |
 | 1.32 | 2026-05-03 | TASK-027 completato con EmployeeDisciplinaryAction backend foundation, EmployeeDisciplinaryAction entity, EmployeeDisciplinaryActionRepository, migration V14 employee_disciplinary_actions e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-028 Consolidare API readiness backend core HR. |
 | 1.31 | 2026-05-03 | TASK-026 completato con AuditLog backend foundation, AuditLog entity, AuditLogRepository, migration V13 audit_logs e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-027 EmployeeDisciplinaryAction backend foundation. |
 | 1.30 | 2026-05-03 | TASK-025 completato con HolidayCalendar backend foundation, HolidayCalendar entity, HolidayCalendarRepository, migration V12 holiday_calendars e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-026 AuditLog backend foundation. |
