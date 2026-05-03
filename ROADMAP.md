@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.32  
+Versione: 1.33  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -70,16 +70,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-025 HolidayCalendar backend foundation
 - TASK-026 AuditLog backend foundation
 - TASK-027 EmployeeDisciplinaryAction backend foundation
+- TASK-028 Core HR API readiness backend read-only
 
 ### Prossimo passo
 
-- TASK-028: Consolidare API readiness backend core HR
+- TASK-029: Implementare UI Master Data Admin
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: EmployeeDisciplinaryAction backend foundation
+Stato: Core HR API readiness backend read-only
 
 Completato:
 
@@ -111,6 +112,7 @@ Completato:
 - HolidayCalendar backend persistence foundation with HolidayCalendar entity, HolidayCalendarRepository, Flyway V12 `holiday_calendars` table and backend persistence/query/constraint tests validated with BUILD SUCCESS
 - AuditLog backend persistence foundation with AuditLog entity, AuditLogRepository, Flyway V13 `audit_logs` table and backend persistence/query/constraint tests validated with BUILD SUCCESS
 - EmployeeDisciplinaryAction backend persistence foundation with EmployeeDisciplinaryAction entity, EmployeeDisciplinaryActionRepository, Flyway V14 `employee_disciplinary_actions` table and backend persistence/query/constraint tests validated with BUILD SUCCESS
+- Core HR API readiness backend read-only with `/api/core-hr` controller, read-only service, explicit DTO responses and MockMvc/OpenAPI tests validated with BUILD SUCCESS
 
 Nota:
 
@@ -128,10 +130,11 @@ LeaveRequest persistence foundation is available; approval workflow, API REST, D
 HolidayCalendar persistence foundation is available; API REST, DTO, service layer, UI, holiday seed data, movable holiday calculation and operational workflow remain deferred.
 AuditLog persistence foundation is available; automatic audit runtime, interceptors/aspects, login/JWT integration, real tenant switching, real impersonation, API REST, DTO, service layer and UI remain deferred.
 EmployeeDisciplinaryAction persistence foundation is available; API REST, DTO, service layer, controller, UI, disciplinary workflow, notifications, upload/download, audit runtime and security integration remain deferred.
+Core HR read-only API readiness is available for Employee, Contract, Device, PayrollDocument, LeaveRequest, HolidayCalendar, AuditLog and EmployeeDisciplinaryAction; write APIs, operational CRUD, workflows, physical document transfer, login/JWT runtime, RBAC runtime, tenant switching runtime, automatic audit, frontend/UI and notifications remain deferred.
 
 Da fare:
 
-- Consolidare API readiness backend core HR
+- UI Master Data Admin
 
 ---
 
@@ -201,6 +204,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.33 | 2026-05-03 | TASK-028 completato con Core HR API readiness backend read-only, controller /api/core-hr, service read-only, DTO corehr e test MockMvc/OpenAPI validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-029 UI Master Data Admin. |
 | 1.32 | 2026-05-03 | TASK-027 completato con EmployeeDisciplinaryAction backend foundation, EmployeeDisciplinaryAction entity, EmployeeDisciplinaryActionRepository, migration V14 employee_disciplinary_actions e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-028 Consolidare API readiness backend core HR. |
 | 1.31 | 2026-05-03 | TASK-026 completato con AuditLog backend foundation, AuditLog entity, AuditLogRepository, migration V13 audit_logs e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-027 EmployeeDisciplinaryAction backend foundation. |
 | 1.30 | 2026-05-03 | TASK-025 completato con HolidayCalendar backend foundation, HolidayCalendar entity, HolidayCalendarRepository, migration V12 holiday_calendars e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-026 AuditLog backend foundation. |

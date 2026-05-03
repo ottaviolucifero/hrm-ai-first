@@ -878,6 +878,136 @@ class HrmBackendApplicationTests {
 				.andExpect(jsonPath("$.paths['/api/foundation/smtp-configurations']").exists());
 	}
 
+	@Test
+	@WithMockUser
+	void coreHrReadApiReturnsListsAndRecords() throws Exception {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-CORE-HR-API"));
+		Contract contract = contractRepository.saveAndFlush(newContract(employee, "TASK_028_CONTRACT"));
+		Device device = newDevice("Task 028 API Device", "SN-TASK-028-001");
+		device.setAssignedTo(employee);
+		device.setAssignedAt(OffsetDateTime.now());
+		device = deviceRepository.saveAndFlush(device);
+		PayrollDocument payrollDocument = payrollDocumentRepository.saveAndFlush(newPayrollDocument(employee, contract, 2026, 8));
+		LeaveRequestType leaveRequestType = leaveRequestTypeRepository.saveAndFlush(newLeaveRequestType("TASK_028_LEAVE"));
+		LeaveRequest leaveRequest = leaveRequestRepository.saveAndFlush(newLeaveRequest(employee, leaveRequestType));
+		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
+		Region region = regionRepository.saveAndFlush(newRegion(country, "TASK_028_REGION"));
+		Area area = areaRepository.saveAndFlush(newArea(country, region, "TASK_028_AREA"));
+		HolidayCalendar holidayCalendar = holidayCalendarRepository.saveAndFlush(newHolidayCalendar(country, region, area, "TASK 028 Calendar"));
+		AuditLog auditLog = auditLogRepository.saveAndFlush(newAuditLog("EMPLOYEE", employee.getId()));
+		UserAccount issuer = userAccountRepository.saveAndFlush(newUserAccount("core.hr.disciplinary.issuer@example.com"));
+		EmployeeDisciplinaryAction disciplinaryAction = employeeDisciplinaryActionRepository.saveAndFlush(newEmployeeDisciplinaryAction(employee, issuer, WARNING_DISCIPLINARY_ACTION_TYPE_ID));
+
+		mockMvc.perform(get("/api/core-hr/employees"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+		mockMvc.perform(get("/api/core-hr/employees/{id}", employee.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.employeeCode").value("EMP-CORE-HR-API"))
+				.andExpect(jsonPath("$.companyProfile.code").value("FOUNDATION_LEGAL_ENTITY"));
+
+		mockMvc.perform(get("/api/core-hr/contracts"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+		mockMvc.perform(get("/api/core-hr/contracts/{id}", contract.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.employee.code").value("EMP-CORE-HR-API"))
+				.andExpect(jsonPath("$.currency.code").value("EUR"));
+
+		mockMvc.perform(get("/api/core-hr/devices"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+		mockMvc.perform(get("/api/core-hr/devices/{id}", device.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("Task 028 API Device"))
+				.andExpect(jsonPath("$.assignedTo.code").value("EMP-CORE-HR-API"));
+
+		mockMvc.perform(get("/api/core-hr/payroll-documents"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+		mockMvc.perform(get("/api/core-hr/payroll-documents/{id}", payrollDocument.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.originalFilename").value("payslip-april-2026.pdf"))
+				.andExpect(jsonPath("$.storedFilename").doesNotExist())
+				.andExpect(jsonPath("$.storagePath").doesNotExist())
+				.andExpect(jsonPath("$.checksum").doesNotExist());
+
+		mockMvc.perform(get("/api/core-hr/leave-requests"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+		mockMvc.perform(get("/api/core-hr/leave-requests/{id}", leaveRequest.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.employee.code").value("EMP-CORE-HR-API"))
+				.andExpect(jsonPath("$.status").value("DRAFT"));
+
+		mockMvc.perform(get("/api/core-hr/holiday-calendars"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+		mockMvc.perform(get("/api/core-hr/holiday-calendars/{id}", holidayCalendar.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("TASK 028 Calendar"))
+				.andExpect(jsonPath("$.country.code").value("IT"));
+
+		mockMvc.perform(get("/api/core-hr/audit-logs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+		mockMvc.perform(get("/api/core-hr/audit-logs/{id}", auditLog.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.entityType").value("EMPLOYEE"))
+				.andExpect(jsonPath("$.oldValueJson").doesNotExist())
+				.andExpect(jsonPath("$.newValueJson").doesNotExist())
+				.andExpect(jsonPath("$.ipAddress").doesNotExist())
+				.andExpect(jsonPath("$.userAgent").doesNotExist());
+
+		mockMvc.perform(get("/api/core-hr/employee-disciplinary-actions"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
+		mockMvc.perform(get("/api/core-hr/employee-disciplinary-actions/{id}", disciplinaryAction.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.employee.code").value("EMP-CORE-HR-API"))
+				.andExpect(jsonPath("$.issuedBy.code").value("core.hr.disciplinary.issuer@example.com"));
+	}
+
+	@Test
+	@WithMockUser
+	void coreHrReadApiReturnsNotFoundForMissingEmployee() throws Exception {
+		mockMvc.perform(get("/api/core-hr/employees/00000000-0000-0000-0000-000000000099"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.status").value(404))
+				.andExpect(jsonPath("$.message").value("Employee not found: 00000000-0000-0000-0000-000000000099"));
+	}
+
+	@Test
+	@WithMockUser
+	void coreHrReadApiReturnsValidationErrorForInvalidId() throws Exception {
+		mockMvc.perform(get("/api/core-hr/employees/not-a-uuid"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.validationErrors.id").value("Invalid value"));
+	}
+
+	@Test
+	void openApiIncludesCoreHrReadEndpoints() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.paths['/api/core-hr/employees']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/employees/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/contracts']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/contracts/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/devices']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/devices/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/payroll-documents']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/payroll-documents/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/leave-requests']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/leave-requests/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/holiday-calendars']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/holiday-calendars/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/audit-logs']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/audit-logs/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/employee-disciplinary-actions']").exists())
+				.andExpect(jsonPath("$.paths['/api/core-hr/employee-disciplinary-actions/{id}']").exists());
+	}
+
 	private Employee newEmployee(String employeeCode) {
 		Employee employee = new Employee();
 		employee.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
