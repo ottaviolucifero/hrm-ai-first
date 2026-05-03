@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.29  
+Versione: 1.30  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -1490,7 +1490,22 @@ LeaveRequest backend persistence foundation completed. Workflow approvativo oper
 
 ### TASK-025 - Implementare HolidayCalendar backend foundation
 
-Stato: TODO
+Stato: DONE
+
+Completato:
+
+- Migration Flyway V12 `V12__create_holiday_calendar_backend_foundation.sql`
+- Tabella `holiday_calendars` introdotta con relazioni country/region/area
+- FK reali verso `countries`, `regions` e `areas`
+- Check constraint `end_date >= start_date`
+- Entity JPA `HolidayCalendar` creata nel package `calendar`
+- Repository JPA `HolidayCalendarRepository` creato
+- Test backend aggiunti per migration V12, persistenza HolidayCalendar, query country/region/area, default active e vincoli DB/validation
+- Test validati con `BUILD SUCCESS`
+
+Nota architetturale:
+
+HolidayCalendar backend persistence foundation completed. API REST, DTO, service layer, UI, seed festivita, calcolo festivita mobili e workflow operativo restano fuori scope e differiti ai task successivi.
 
 ### TASK-026 - Implementare AuditLog backend foundation
 
@@ -1606,6 +1621,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.30 | 2026-05-03 | TASK-025 completato con HolidayCalendar backend foundation, migration Flyway V12, entity HolidayCalendar, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.29 | 2026-05-03 | TASK-024 completato con LeaveRequest backend foundation, migration Flyway V11, entity LeaveRequest, enum LeaveRequestStatus, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.28 | 2026-05-03 | TASK-023 completato con PayrollDocument backend foundation, migration Flyway V10, entity PayrollDocument, enum PayrollDocumentStatus, repository JPA e test persistence/query validati con BUILD SUCCESS. |
 | 1.27 | 2026-05-02 | TASK-022 completato con Device backend foundation, migration Flyway V9, entity/repository JPA, FK tenant/company/master/employee e test persistence. |

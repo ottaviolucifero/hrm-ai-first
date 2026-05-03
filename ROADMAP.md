@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.29  
+Versione: 1.30  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -67,16 +67,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-022 Device backend foundation
 - TASK-023 PayrollDocument backend foundation
 - TASK-024 LeaveRequest backend foundation
+- TASK-025 HolidayCalendar backend foundation
 
 ### Prossimo passo
 
-- TASK-025: HolidayCalendar backend foundation
+- TASK-026: AuditLog backend foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: LeaveRequest backend foundation
+Stato: HolidayCalendar backend foundation
 
 Completato:
 
@@ -105,6 +106,7 @@ Completato:
 - Device backend persistence foundation with tenant/company/master device/employee assignment relational integrity
 - PayrollDocument backend persistence foundation with PayrollDocument entity, PayrollDocumentStatus enum, PayrollDocumentRepository, Flyway V10 `payroll_documents` table and backend persistence/query tests validated with BUILD SUCCESS
 - LeaveRequest backend persistence foundation with LeaveRequest entity, LeaveRequestStatus enum, LeaveRequestRepository, Flyway V11 `leave_requests` table and backend persistence/query/constraint tests validated with BUILD SUCCESS
+- HolidayCalendar backend persistence foundation with HolidayCalendar entity, HolidayCalendarRepository, Flyway V12 `holiday_calendars` table and backend persistence/query/constraint tests validated with BUILD SUCCESS
 
 Nota:
 
@@ -119,10 +121,11 @@ RBAC bridge persistence foundation is available; runtime authorization, Spring S
 Device persistence foundation is available; assignment workflow, service layer, API and UI remain deferred.
 PayrollDocument persistence foundation is available; physical upload/download, API REST, DTO, service layer, frontend/UI, notifications and publication workflow remain deferred.
 LeaveRequest persistence foundation is available; approval workflow, API REST, DTO, service layer, leave balance calculation, attachments, frontend/UI and notifications remain deferred.
+HolidayCalendar persistence foundation is available; API REST, DTO, service layer, UI, holiday seed data, movable holiday calculation and operational workflow remain deferred.
 
 Da fare:
 
-- HolidayCalendar backend foundation
+- AuditLog backend foundation
 
 ---
 
@@ -192,6 +195,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.30 | 2026-05-03 | TASK-025 completato con HolidayCalendar backend foundation, HolidayCalendar entity, HolidayCalendarRepository, migration V12 holiday_calendars e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-026 AuditLog backend foundation. |
 | 1.29 | 2026-05-03 | TASK-024 completato con LeaveRequest backend foundation, LeaveRequest entity, LeaveRequestStatus enum, LeaveRequestRepository, migration V11 leave_requests e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-025 HolidayCalendar backend foundation. |
 | 1.28 | 2026-05-03 | TASK-023 completato con PayrollDocument backend foundation, PayrollDocument entity, PayrollDocumentStatus enum, PayrollDocumentRepository, migration V10 payroll_documents e test backend persistence/query validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-024 LeaveRequest backend foundation. |
 | 1.27 | 2026-05-02 | TASK-022 completato con Device backend foundation, migration V9, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-023 PayrollDocument backend foundation. |
