@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.27  
-Ultimo aggiornamento: 2026-05-02  
+Versione: 1.28  
+Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
 ---
@@ -65,16 +65,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-020 UserAccount identity/security foundation
 - TASK-021 RBAC bridge foundation
 - TASK-022 Device backend foundation
+- TASK-023 PayrollDocument backend foundation
 
 ### Prossimo passo
 
-- TASK-023: PayrollDocument backend foundation
+- TASK-024: LeaveRequest backend foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Device backend foundation
+Stato: PayrollDocument backend foundation
 
 Completato:
 
@@ -101,6 +102,7 @@ Completato:
 - UserAccount identity/security persistence foundation with email-first login identity, authentication method governance and strong authentication readiness
 - RBAC bridge persistence foundation with UserRole, RolePermission and UserTenantAccess relational integrity
 - Device backend persistence foundation with tenant/company/master device/employee assignment relational integrity
+- PayrollDocument backend persistence foundation with PayrollDocument entity, PayrollDocumentStatus enum, PayrollDocumentRepository, Flyway V10 `payroll_documents` table and backend persistence/query tests validated with BUILD SUCCESS
 
 Nota:
 
@@ -113,10 +115,11 @@ Backlog execution is now backend-first: core technical foundations and API readi
 UserAccount persistence foundation is available; login runtime, JWT, OTP/MFA execution and API remain deferred.
 RBAC bridge persistence foundation is available; runtime authorization, Spring Security RBAC, tenant switching, impersonation, service layer, API and UI remain deferred.
 Device persistence foundation is available; assignment workflow, service layer, API and UI remain deferred.
+PayrollDocument persistence foundation is available; physical upload/download, API REST, DTO, service layer, frontend/UI, notifications and publication workflow remain deferred.
 
 Da fare:
 
-- PayrollDocument backend foundation
+- LeaveRequest backend foundation
 
 ---
 
@@ -186,6 +189,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.28 | 2026-05-03 | TASK-023 completato con PayrollDocument backend foundation, PayrollDocument entity, PayrollDocumentStatus enum, PayrollDocumentRepository, migration V10 payroll_documents e test backend persistence/query validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-024 LeaveRequest backend foundation. |
 | 1.27 | 2026-05-02 | TASK-022 completato con Device backend foundation, migration V9, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-023 PayrollDocument backend foundation. |
 | 1.26 | 2026-05-02 | TASK-021 completato con RBAC bridge foundation, migration V8, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-022 Device backend foundation. |
 | 1.25 | 2026-05-02 | TASK-020 completato con UserAccount identity/security foundation, migration V7, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-021 RBAC bridge foundation. |

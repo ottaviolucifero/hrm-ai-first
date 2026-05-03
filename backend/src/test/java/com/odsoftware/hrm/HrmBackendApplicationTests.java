@@ -9,6 +9,8 @@ import com.odsoftware.hrm.entity.device.Device;
 import com.odsoftware.hrm.entity.employee.Employee;
 import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.master.ContractType;
+import com.odsoftware.hrm.entity.payroll.PayrollDocument;
+import com.odsoftware.hrm.entity.payroll.PayrollDocumentStatus;
 import com.odsoftware.hrm.entity.rbac.RolePermission;
 import com.odsoftware.hrm.entity.rbac.UserRole;
 import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
@@ -20,6 +22,7 @@ import com.odsoftware.hrm.repository.identity.UserAccountRepository;
 import com.odsoftware.hrm.repository.rbac.RolePermissionRepository;
 import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
 import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
+import com.odsoftware.hrm.repository.payroll.PayrollDocumentRepository;
 import com.odsoftware.hrm.repository.master.ApprovalStatusRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.AuditActionTypeRepository;
@@ -165,6 +168,9 @@ class HrmBackendApplicationTests {
 	private DeviceRepository deviceRepository;
 
 	@Autowired
+	private PayrollDocumentRepository payrollDocumentRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -180,6 +186,7 @@ class HrmBackendApplicationTests {
 	private static final UUID DELL_DEVICE_BRAND_ID = UUID.fromString("63000000-0000-0000-0000-000000000001");
 	private static final UUID AVAILABLE_DEVICE_STATUS_ID = UUID.fromString("64000000-0000-0000-0000-000000000001");
 	private static final UUID ASSIGNED_DEVICE_STATUS_ID = UUID.fromString("64000000-0000-0000-0000-000000000002");
+	private static final UUID PAYSLIP_DOCUMENT_TYPE_ID = UUID.fromString("61000000-0000-0000-0000-000000000001");
 
 	@Test
 	void contextLoads() {
@@ -249,6 +256,11 @@ class HrmBackendApplicationTests {
 	@Test
 	void flywayMigrationCreatesDeviceBackendFoundation() {
 		assertThatCode(() -> deviceRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void flywayMigrationCreatesPayrollDocumentBackendFoundation() {
+		assertThatCode(() -> payrollDocumentRepository.count()).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -414,6 +426,57 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void payrollDocumentRepositoryPersistsDraftDocument() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-PAYROLL-DRAFT"));
+		Contract contract = contractRepository.saveAndFlush(newContract(employee, "TASK_023_DRAFT_CONTRACT"));
+
+		PayrollDocument payrollDocument = newPayrollDocument(employee, contract, 2026, 4);
+
+		PayrollDocument saved = payrollDocumentRepository.saveAndFlush(payrollDocument);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getCreatedAt()).isNotNull();
+		assertThat(saved.getUpdatedAt()).isNotNull();
+		assertThat(saved.getUploadedAt()).isNotNull();
+		assertThat(saved.getEmployee().getId()).isEqualTo(employee.getId());
+		assertThat(saved.getContract().getId()).isEqualTo(contract.getId());
+		assertThat(saved.getDocumentType().getId()).isEqualTo(PAYSLIP_DOCUMENT_TYPE_ID);
+		assertThat(saved.getStatus()).isEqualTo(PayrollDocumentStatus.DRAFT);
+		assertThat(saved.getPublishedAt()).isNull();
+		assertThat(saved.getOriginalFilename()).isEqualTo("payslip-april-2026.pdf");
+		assertThat(saved.getStoredFilename()).isEqualTo("payroll-2026-04-anonymized.pdf");
+		assertThat(saved.getFileSizeBytes()).isEqualTo(128000L);
+		assertThat(saved.getChecksum()).isEqualTo("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
+		assertThat(payrollDocumentRepository.findByTenant_IdAndEmployee_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+		assertThat(payrollDocumentRepository.findByTenant_IdAndEmployee_IdAndPeriodYearAndPeriodMonth(FOUNDATION_TENANT_ID, employee.getId(), 2026, 4)).hasSize(1);
+		assertThat(payrollDocumentRepository.findByTenant_IdAndEmployee_IdAndDocumentType_IdAndPeriodYearAndPeriodMonth(FOUNDATION_TENANT_ID, employee.getId(), PAYSLIP_DOCUMENT_TYPE_ID, 2026, 4)).isPresent();
+	}
+
+	@Test
+	void payrollDocumentRepositoryPersistsPublishedDocumentWithPublishedAt() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-PAYROLL-PUBLISHED"));
+		Contract contract = contractRepository.saveAndFlush(newContract(employee, "TASK_023_PUBLISHED_CONTRACT"));
+
+		PayrollDocument payrollDocument = newPayrollDocument(employee, contract, 2026, 5);
+		OffsetDateTime publishedAt = OffsetDateTime.now();
+		payrollDocument.setStatus(PayrollDocumentStatus.PUBLISHED);
+		payrollDocument.setPublishedAt(publishedAt);
+		payrollDocument.setIssuerName("HR Payroll Office");
+		payrollDocument.setUploadedBy(userAccountRepository.saveAndFlush(newUserAccount("payroll.publisher@example.com")));
+
+		PayrollDocument saved = payrollDocumentRepository.saveAndFlush(payrollDocument);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getStatus()).isEqualTo(PayrollDocumentStatus.PUBLISHED);
+		assertThat(saved.getPublishedAt()).isEqualTo(publishedAt);
+		assertThat(saved.getIssuerName()).isEqualTo("HR Payroll Office");
+		assertThat(saved.getUploadedBy().getEmail()).isEqualTo("payroll.publisher@example.com");
+		assertThat(payrollDocumentRepository.findByTenant_IdAndEmployee_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+		assertThat(payrollDocumentRepository.findByTenant_IdAndEmployee_IdAndPeriodYearAndPeriodMonth(FOUNDATION_TENANT_ID, employee.getId(), 2026, 5)).hasSize(1);
+		assertThat(payrollDocumentRepository.findByTenant_IdAndEmployee_IdAndDocumentType_IdAndPeriodYearAndPeriodMonth(FOUNDATION_TENANT_ID, employee.getId(), PAYSLIP_DOCUMENT_TYPE_ID, 2026, 5)).isPresent();
+	}
+
+	@Test
 	@WithMockUser
 	void foundationReadApiReturnsSeedData() throws Exception {
 		mockMvc.perform(get("/api/foundation/tenants"))
@@ -528,6 +591,19 @@ class HrmBackendApplicationTests {
 		return contractType;
 	}
 
+	private Contract newContract(Employee employee, String contractTypeCode) {
+		Contract contract = new Contract();
+		contract.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		contract.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
+		contract.setEmployee(employee);
+		contract.setContractType(contractTypeRepository.saveAndFlush(newContractType(contractTypeCode)));
+		contract.setCurrency(currencyRepository.findById(FOUNDATION_CURRENCY_ID).orElseThrow());
+		contract.setStartDate(LocalDate.of(2026, 1, 1));
+		contract.setBaseSalary(new BigDecimal("42000.00"));
+		contract.setWeeklyHours(new BigDecimal("40.00"));
+		return contract;
+	}
+
 	private TimeZone newTimeZone(String code) {
 		TimeZone timeZone = new TimeZone();
 		timeZone.setCode(code);
@@ -583,6 +659,24 @@ class HrmBackendApplicationTests {
 		device.setWarrantyEndDate(LocalDate.of(2029, 5, 2));
 		device.setDeviceStatus(deviceStatusRepository.findById(AVAILABLE_DEVICE_STATUS_ID).orElseThrow());
 		return device;
+	}
+
+	private PayrollDocument newPayrollDocument(Employee employee, Contract contract, Integer periodYear, Integer periodMonth) {
+		PayrollDocument payrollDocument = new PayrollDocument();
+		payrollDocument.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		payrollDocument.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
+		payrollDocument.setEmployee(employee);
+		payrollDocument.setContract(contract);
+		payrollDocument.setDocumentType(documentTypeRepository.findById(PAYSLIP_DOCUMENT_TYPE_ID).orElseThrow());
+		payrollDocument.setOriginalFilename("payslip-april-2026.pdf");
+		payrollDocument.setStoredFilename("payroll-2026-04-anonymized.pdf");
+		payrollDocument.setContentType("application/pdf");
+		payrollDocument.setFileSizeBytes(128000L);
+		payrollDocument.setChecksum("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
+		payrollDocument.setStoragePath("payroll/2026/04/payroll-2026-04-anonymized.pdf");
+		payrollDocument.setPeriodYear(periodYear);
+		payrollDocument.setPeriodMonth(periodMonth);
+		return payrollDocument;
 	}
 
 }

@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.27  
-Ultimo aggiornamento: 2026-05-02  
+Versione: 1.28  
+Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
 ---
@@ -1449,7 +1449,24 @@ Device backend persistence foundation completed. Device assignment workflow, API
 
 ### TASK-023 - Implementare PayrollDocument backend foundation
 
-Stato: TODO
+Stato: DONE
+
+Completato:
+
+- Migration Flyway V10 `V10__create_payroll_document_backend_foundation.sql`
+- Tabella `payroll_documents` introdotta con relazioni tenant/company/employee/contract/document type/uploaded by opzionale
+- FK reali verso `tenants`, `company_profiles`, `employees`, `contracts`, `document_types` e `user_accounts`
+- Check constraint su `file_size_bytes`, `period_month`, `period_year`, `status` e `published_at` obbligatorio per documenti pubblicati
+- Unique constraint su tenant, employee, document type, anno e mese del periodo payroll
+- Entity JPA `PayrollDocument` creata nel package `payroll`
+- Enum `PayrollDocumentStatus` creato con stati `DRAFT` e `PUBLISHED`
+- Repository JPA `PayrollDocumentRepository` creato
+- Test backend aggiunti per migration V10, persistenza PayrollDocument DRAFT, persistenza PayrollDocument PUBLISHED e query repository tenant/employee e tenant/employee/periodo/document type
+- Test validati con `BUILD SUCCESS`
+
+Nota architetturale:
+
+PayrollDocument backend persistence foundation completed. Upload/download fisico, API REST, DTO, service layer, frontend/UI, notifiche e workflow di pubblicazione restano fuori scope e differiti ai task successivi.
 
 ### TASK-024 - Implementare LeaveRequest backend foundation
 
@@ -1573,6 +1590,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.28 | 2026-05-03 | TASK-023 completato con PayrollDocument backend foundation, migration Flyway V10, entity PayrollDocument, enum PayrollDocumentStatus, repository JPA e test persistence/query validati con BUILD SUCCESS. |
 | 1.27 | 2026-05-02 | TASK-022 completato con Device backend foundation, migration Flyway V9, entity/repository JPA, FK tenant/company/master/employee e test persistence. |
 | 1.26 | 2026-05-02 | TASK-021 completato con RBAC bridge foundation, migration Flyway V8, entity/repository JPA, FK rigorose e test persistence/unique constraint. |
 | 1.25 | 2026-05-02 | TASK-020 completato con UserAccount identity/security foundation, migration Flyway V7, entity/repository JPA, FK identity governance e test persistence/unique constraint. |
