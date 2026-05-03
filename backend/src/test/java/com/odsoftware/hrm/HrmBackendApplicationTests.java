@@ -4,20 +4,25 @@ import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.OfficeLocationRepository;
 import com.odsoftware.hrm.repository.core.SmtpConfigurationRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.entity.calendar.HolidayCalendar;
 import com.odsoftware.hrm.entity.contract.Contract;
 import com.odsoftware.hrm.entity.device.Device;
 import com.odsoftware.hrm.entity.employee.Employee;
 import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.leave.LeaveRequest;
 import com.odsoftware.hrm.entity.leave.LeaveRequestStatus;
+import com.odsoftware.hrm.entity.master.Area;
 import com.odsoftware.hrm.entity.master.ContractType;
+import com.odsoftware.hrm.entity.master.Country;
 import com.odsoftware.hrm.entity.master.LeaveRequestType;
 import com.odsoftware.hrm.entity.payroll.PayrollDocument;
 import com.odsoftware.hrm.entity.payroll.PayrollDocumentStatus;
+import com.odsoftware.hrm.entity.master.Region;
 import com.odsoftware.hrm.entity.rbac.RolePermission;
 import com.odsoftware.hrm.entity.rbac.UserRole;
 import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.entity.master.TimeZone;
+import com.odsoftware.hrm.repository.calendar.HolidayCalendarRepository;
 import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.device.DeviceRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
@@ -30,6 +35,7 @@ import com.odsoftware.hrm.repository.payroll.PayrollDocumentRepository;
 import com.odsoftware.hrm.repository.master.ApprovalStatusRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.AuditActionTypeRepository;
+import com.odsoftware.hrm.repository.master.AreaRepository;
 import com.odsoftware.hrm.repository.master.CompanyProfileTypeRepository;
 import com.odsoftware.hrm.repository.master.ContractTypeRepository;
 import com.odsoftware.hrm.repository.master.CountryRepository;
@@ -44,6 +50,7 @@ import com.odsoftware.hrm.repository.master.LeaveRequestTypeRepository;
 import com.odsoftware.hrm.repository.master.MaritalStatusRepository;
 import com.odsoftware.hrm.repository.master.OfficeLocationTypeRepository;
 import com.odsoftware.hrm.repository.master.PermissionRepository;
+import com.odsoftware.hrm.repository.master.RegionRepository;
 import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.master.SmtpEncryptionTypeRepository;
 import com.odsoftware.hrm.repository.master.TimeZoneRepository;
@@ -78,6 +85,12 @@ class HrmBackendApplicationTests {
 
 	@Autowired
 	private CountryRepository countryRepository;
+
+	@Autowired
+	private RegionRepository regionRepository;
+
+	@Autowired
+	private AreaRepository areaRepository;
 
 	@Autowired
 	private CurrencyRepository currencyRepository;
@@ -182,12 +195,16 @@ class HrmBackendApplicationTests {
 	private LeaveRequestRepository leaveRequestRepository;
 
 	@Autowired
+	private HolidayCalendarRepository holidayCalendarRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COMPANY_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_OFFICE_ID = UUID.fromString("81000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_CURRENCY_ID = UUID.fromString("10000000-0000-0000-0000-000000000001");
+	private static final UUID ITALY_COUNTRY_ID = UUID.fromString("20000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
 	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_ROLE_ID = UUID.fromString("75000000-0000-0000-0000-000000000001");
@@ -277,6 +294,11 @@ class HrmBackendApplicationTests {
 	@Test
 	void flywayMigrationCreatesLeaveRequestBackendFoundation() {
 		assertThatCode(() -> leaveRequestRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void flywayMigrationCreatesHolidayCalendarBackendFoundation() {
+		assertThatCode(() -> holidayCalendarRepository.count()).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -568,6 +590,60 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void holidayCalendarRepositoryPersistsHolidayCalendar() {
+		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
+		Region region = regionRepository.saveAndFlush(newRegion(country, "TASK_025_REGION_PERSIST"));
+		Area area = areaRepository.saveAndFlush(newArea(country, region, "TASK_025_AREA_PERSIST"));
+
+		HolidayCalendar holidayCalendar = newHolidayCalendar(country, region, area, "TASK 025 Calendar");
+
+		HolidayCalendar saved = holidayCalendarRepository.saveAndFlush(holidayCalendar);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getCountry().getId()).isEqualTo(country.getId());
+		assertThat(saved.getRegion().getId()).isEqualTo(region.getId());
+		assertThat(saved.getArea().getId()).isEqualTo(area.getId());
+		assertThat(saved.getStartDate()).isEqualTo(LocalDate.of(2026, 1, 1));
+		assertThat(saved.getEndDate()).isEqualTo(LocalDate.of(2026, 12, 31));
+		assertThat(saved.getName()).isEqualTo("TASK 025 Calendar");
+		assertThat(saved.getActive()).isTrue();
+	}
+
+	@Test
+	void holidayCalendarRepositoryFindsByCountryRegionAndArea() {
+		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
+		Region region = regionRepository.saveAndFlush(newRegion(country, "TASK_025_REGION_QUERY"));
+		Area area = areaRepository.saveAndFlush(newArea(country, region, "TASK_025_AREA_QUERY"));
+		holidayCalendarRepository.saveAndFlush(newHolidayCalendar(country, region, area, "TASK 025 Query Calendar"));
+
+		assertThat(holidayCalendarRepository.findByCountry_Id(country.getId())).hasSize(1);
+		assertThat(holidayCalendarRepository.findByCountry_IdAndRegion_Id(country.getId(), region.getId())).hasSize(1);
+		assertThat(holidayCalendarRepository.findByCountry_IdAndRegion_IdAndArea_Id(country.getId(), region.getId(), area.getId())).hasSize(1);
+		assertThat(holidayCalendarRepository.findByCountry_IdAndActiveTrue(country.getId())).hasSize(1);
+	}
+
+	@Test
+	void holidayCalendarRepositoryEnforcesDateRangeConstraint() {
+		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
+		HolidayCalendar holidayCalendar = newHolidayCalendar(country, null, null, "TASK 025 Invalid Range Calendar");
+		holidayCalendar.setStartDate(LocalDate.of(2026, 12, 31));
+		holidayCalendar.setEndDate(LocalDate.of(2026, 1, 1));
+
+		assertThatThrownBy(() -> holidayCalendarRepository.saveAndFlush(holidayCalendar))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void holidayCalendarRepositoryRequiresName() {
+		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
+		HolidayCalendar holidayCalendar = newHolidayCalendar(country, null, null, "TASK 025 Missing Name Calendar");
+		holidayCalendar.setName(null);
+
+		assertThatThrownBy(() -> holidayCalendarRepository.saveAndFlush(holidayCalendar))
+				.isInstanceOf(jakarta.validation.ConstraintViolationException.class);
+	}
+
+	@Test
 	@WithMockUser
 	void foundationReadApiReturnsSeedData() throws Exception {
 		mockMvc.perform(get("/api/foundation/tenants"))
@@ -792,6 +868,34 @@ class HrmBackendApplicationTests {
 		leaveRequest.setDeductedDays(new BigDecimal("3.000"));
 		leaveRequest.setReason("Planned leave request");
 		return leaveRequest;
+	}
+
+	private Region newRegion(Country country, String code) {
+		Region region = new Region();
+		region.setCountry(country);
+		region.setCode(code);
+		region.setName("Task 025 Region");
+		return region;
+	}
+
+	private Area newArea(Country country, Region region, String code) {
+		Area area = new Area();
+		area.setCountry(country);
+		area.setRegion(region);
+		area.setCode(code);
+		area.setName("Task 025 Area");
+		return area;
+	}
+
+	private HolidayCalendar newHolidayCalendar(Country country, Region region, Area area, String name) {
+		HolidayCalendar holidayCalendar = new HolidayCalendar();
+		holidayCalendar.setCountry(country);
+		holidayCalendar.setRegion(region);
+		holidayCalendar.setArea(area);
+		holidayCalendar.setStartDate(LocalDate.of(2026, 1, 1));
+		holidayCalendar.setEndDate(LocalDate.of(2026, 12, 31));
+		holidayCalendar.setName(name);
+		return holidayCalendar;
 	}
 
 }
