@@ -195,15 +195,24 @@ Profili Spring Boot configurati:
 - TASK-030 -> TASK-032
 
 ### Fase 2G - UI Admin / Operations
+### Fase 2F - API CRUD Master Data
 
+- TASK-030 -> TASK-032
+
+### Fase 2G - UI Admin / Operations
+
+- TASK-033 -> TASK-042
 - TASK-033 -> TASK-042
 
 ### Fase 2H - Platform Operations
+### Fase 2H - Platform Operations
 
+- TASK-043 -> TASK-044
 - TASK-043 -> TASK-044
 
 ### Fase 3 - Stabilization
 
+- TASK-045 -> TASK-046
 - TASK-045 -> TASK-046
 
 ---

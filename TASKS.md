@@ -1207,6 +1207,7 @@ Include:
 Dipendenze:
 
 - Deve mantenere separazione rispetto ai master HR/business già completati in TASK-013
+- Deve mantenere separazione rispetto ai master HR/business già completati in TASK-013
 - Deve rispettare tenant-scoped governance dove prevista dal blueprint TASK-011
 - Non deve introdurre `Tenant`, `CompanyProfile`, `UserAccount` o bridge RBAC fuori scope
 
@@ -1237,6 +1238,7 @@ Dipendenze:
 
 - Deve introdurre il dominio `Tenant`
 - Deve trasformare la temporary tenant foundation strategy di TASK-013 in governance tenant reale
+- Deve aggiungere FK hardening verso `Tenant` per le master tables tenant-scoped già create, dove applicabile
 - Deve aggiungere FK hardening verso `Tenant` per le master tables tenant-scoped già create, dove applicabile
 - Deve preservare il tenant placeholder tecnico `00000000-0000-0000-0000-000000000001` o migrarlo in modo controllato
 
@@ -1566,6 +1568,7 @@ Nota architetturale:
 Core HR API readiness read-only completed. API write, CRUD operativo, workflow approvativi, upload/download fisico documenti, login/JWT runtime, RBAC runtime, tenant switching runtime, audit automatico, frontend/UI e notifiche restano fuori scope e differiti ai task successivi.
 
 ## FASE 2F - API CRUD MASTER DATA / UI ADMIN / OPERATIONS
+## FASE 2F - API CRUD MASTER DATA / UI ADMIN / OPERATIONS
 
 Decisione operativa:
 
@@ -1661,6 +1664,27 @@ Stato: TODO
 
 Include:
 
+
+Deve includere:
+
+- DTO request/response
+- Service layer applicativo
+- Controller REST
+- Validazioni minime
+- Gestione errori
+- Test backend
+- OpenAPI verificabile
+
+Nota:
+
+Le API CRUD master data HR/business devono essere disponibili prima della relativa gestione UI operativa.
+
+### TASK-032 - Implementare API CRUD master data governance/security
+
+Stato: TODO
+
+Include:
+
 - UserType
 - AuthenticationMethod
 - Role
@@ -1671,6 +1695,21 @@ Include:
 - CompanyProfileType
 - OfficeLocationType
 
+Deve includere:
+
+- DTO request/response
+- Service layer applicativo
+- Controller REST
+- Validazioni minime
+- Gestione errori
+- Test backend
+- OpenAPI verificabile
+
+Nota:
+
+Le API CRUD master data governance/security devono precedere la UI amministrativa completa. Login/JWT runtime, RBAC runtime e tenant switching operativo restano fuori scope salvo task dedicati.
+
+### TASK-033 - Implementare UI Master Data Admin foundation/list
 Deve includere:
 
 - DTO request/response
@@ -1709,6 +1748,26 @@ Obiettivo:
 Stato: TODO
 
 ### TASK-036 - Implementare Security Admin UI
+Obiettivo:
+
+- Implementare la foundation UI e le viste lista della UI Master Data Admin usando API backend disponibili.
+- Riusare layout, shell e componenti esistenti secondo `frontend/AGENTS.md`.
+- Non implementare CRUD completo se le API write corrispondenti non sono disponibili.
+
+### TASK-034 - Implementare UI Master Data Admin CRUD
+
+Stato: TODO
+
+Obiettivo:
+
+- Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
+- Non usare mock come sostituto dei contratti API backend.
+
+### TASK-035 - Implementare UI Employee management enterprise
+
+Stato: TODO
+
+### TASK-036 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -1721,25 +1780,31 @@ Include:
 - permessi
 
 ### TASK-037 - Implementare UI Device governance
+### TASK-037 - Implementare UI Device governance
 
 Stato: TODO
 
+### TASK-038 - Implementare UI PayrollDocument
 ### TASK-038 - Implementare UI PayrollDocument
 
 Stato: TODO
 
 ### TASK-039 - Implementare UI LeaveRequest
+### TASK-039 - Implementare UI LeaveRequest
 
 Stato: TODO
 
+### TASK-040 - Implementare UI HolidayCalendar
 ### TASK-040 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
 ### TASK-041 - Implementare Audit UI / compliance explorer
+### TASK-041 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
+### TASK-042 - Implementare UI disciplinary governance
 ### TASK-042 - Implementare UI disciplinary governance
 
 Stato: TODO
@@ -1747,9 +1812,11 @@ Stato: TODO
 ## FASE 2G - PLATFORM OPERATIONS
 
 ### TASK-043 - Implementare Platform Operator / Super Admin governance
+### TASK-043 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
+### TASK-044 - Implementare Cross-tenant admin UI
 ### TASK-044 - Implementare Cross-tenant admin UI
 
 Stato: TODO
@@ -1757,9 +1824,11 @@ Stato: TODO
 ## FASE 3 - STABILIZATION
 
 ### TASK-045 - Configurare logging, monitoring e observability enterprise
+### TASK-045 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
+### TASK-046 - Test integrato MVP enterprise completo
 ### TASK-046 - Test integrato MVP enterprise completo
 
 Stato: TODO
