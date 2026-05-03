@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.28  
+Versione: 1.29  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -1470,7 +1470,23 @@ PayrollDocument backend persistence foundation completed. Upload/download fisico
 
 ### TASK-024 - Implementare LeaveRequest backend foundation
 
-Stato: TODO
+Stato: DONE
+
+Completato:
+
+- Migration Flyway V11 `V11__create_leave_request_backend_foundation.sql`
+- Tabella `leave_requests` introdotta con relazioni tenant/company/employee/leave request type/approver opzionale
+- FK reali verso `tenants`, `company_profiles`, `employees` e `leave_request_types`
+- Check constraint su range date, durata, giorni dedotti, status e motivo obbligatorio per richieste urgenti
+- Entity JPA `LeaveRequest` creata nel package `leave`
+- Enum `LeaveRequestStatus` creato con stati `DRAFT`, `SUBMITTED`, `APPROVED`, `REJECTED` e `CANCELLED`
+- Repository JPA `LeaveRequestRepository` creato
+- Test backend aggiunti per migration V11, persistenza LeaveRequest DRAFT, persistenza LeaveRequest APPROVED con approver, query repository e vincoli DB
+- Test validati con `BUILD SUCCESS`
+
+Nota architetturale:
+
+LeaveRequest backend persistence foundation completed. Workflow approvativo operativo, API REST, DTO, service layer, calcolo ferie, LeaveBalance, attachment/file storage, frontend/UI e notifiche restano fuori scope e differiti ai task successivi.
 
 ### TASK-025 - Implementare HolidayCalendar backend foundation
 
@@ -1590,6 +1606,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.29 | 2026-05-03 | TASK-024 completato con LeaveRequest backend foundation, migration Flyway V11, entity LeaveRequest, enum LeaveRequestStatus, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.28 | 2026-05-03 | TASK-023 completato con PayrollDocument backend foundation, migration Flyway V10, entity PayrollDocument, enum PayrollDocumentStatus, repository JPA e test persistence/query validati con BUILD SUCCESS. |
 | 1.27 | 2026-05-02 | TASK-022 completato con Device backend foundation, migration Flyway V9, entity/repository JPA, FK tenant/company/master/employee e test persistence. |
 | 1.26 | 2026-05-02 | TASK-021 completato con RBAC bridge foundation, migration Flyway V8, entity/repository JPA, FK rigorose e test persistence/unique constraint. |
