@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.32  
+Versione: 1.33  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -1548,7 +1548,22 @@ EmployeeDisciplinaryAction backend persistence foundation completed. API REST, D
 
 ### TASK-028 - Consolidare API readiness backend core HR
 
-Stato: TODO
+Stato: DONE
+
+Completato:
+
+- Controller REST read-only `CoreHrReadController` creato sotto `/api/core-hr`
+- Service read-only `CoreHrReadService` creato con `@Transactional(readOnly = true)`
+- DTO espliciti creati nel package `dto.corehr`
+- Endpoint GET lista e GET by id aggiunti per Employee, Contract, Device, PayrollDocument, LeaveRequest, HolidayCalendar, AuditLog ed EmployeeDisciplinaryAction
+- Mapping entity -> DTO introdotto senza esporre direttamente entity JPA
+- Gestione not found riusata tramite `ResourceNotFoundException`
+- Test MockMvc aggiunti per liste, dettaglio by id, 404, UUID invalido e OpenAPI
+- Test validati con `BUILD SUCCESS`
+
+Nota architetturale:
+
+Core HR API readiness read-only completed. API write, CRUD operativo, workflow approvativi, upload/download fisico documenti, login/JWT runtime, RBAC runtime, tenant switching runtime, audit automatico, frontend/UI e notifiche restano fuori scope e differiti ai task successivi.
 
 ## FASE 2F - UI ADMIN / OPERATIONS
 
@@ -1652,6 +1667,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.33 | 2026-05-03 | TASK-028 completato con Core HR API readiness read-only, controller `/api/core-hr`, service read-only, DTO corehr, test MockMvc/OpenAPI e BUILD SUCCESS. |
 | 1.32 | 2026-05-03 | TASK-027 completato con EmployeeDisciplinaryAction backend foundation, migration Flyway V14, entity EmployeeDisciplinaryAction, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.31 | 2026-05-03 | TASK-026 completato con AuditLog backend foundation, migration Flyway V13, entity AuditLog, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.30 | 2026-05-03 | TASK-025 completato con HolidayCalendar backend foundation, migration Flyway V12, entity HolidayCalendar, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
