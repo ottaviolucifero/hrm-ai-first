@@ -8,6 +8,7 @@ import com.odsoftware.hrm.entity.audit.AuditLog;
 import com.odsoftware.hrm.entity.calendar.HolidayCalendar;
 import com.odsoftware.hrm.entity.contract.Contract;
 import com.odsoftware.hrm.entity.device.Device;
+import com.odsoftware.hrm.entity.disciplinary.EmployeeDisciplinaryAction;
 import com.odsoftware.hrm.entity.employee.Employee;
 import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.leave.LeaveRequest;
@@ -28,6 +29,7 @@ import com.odsoftware.hrm.repository.audit.AuditLogRepository;
 import com.odsoftware.hrm.repository.calendar.HolidayCalendarRepository;
 import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.device.DeviceRepository;
+import com.odsoftware.hrm.repository.disciplinary.EmployeeDisciplinaryActionRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
 import com.odsoftware.hrm.repository.identity.UserAccountRepository;
 import com.odsoftware.hrm.repository.leave.LeaveRequestRepository;
@@ -204,6 +206,9 @@ class HrmBackendApplicationTests {
 	private AuditLogRepository auditLogRepository;
 
 	@Autowired
+	private EmployeeDisciplinaryActionRepository employeeDisciplinaryActionRepository;
+
+	@Autowired
 	private MockMvc mockMvc;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
@@ -215,6 +220,8 @@ class HrmBackendApplicationTests {
 	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
 	private static final UUID CREATE_AUDIT_ACTION_TYPE_ID = UUID.fromString("72000000-0000-0000-0000-000000000001");
 	private static final UUID UPDATE_AUDIT_ACTION_TYPE_ID = UUID.fromString("72000000-0000-0000-0000-000000000002");
+	private static final UUID WARNING_DISCIPLINARY_ACTION_TYPE_ID = UUID.fromString("73000000-0000-0000-0000-000000000001");
+	private static final UUID SUSPENSION_DISCIPLINARY_ACTION_TYPE_ID = UUID.fromString("73000000-0000-0000-0000-000000000002");
 	private static final UUID TENANT_ADMIN_ROLE_ID = UUID.fromString("75000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_READ_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_WRITE_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000002");
@@ -312,6 +319,11 @@ class HrmBackendApplicationTests {
 	@Test
 	void flywayMigrationCreatesAuditLogBackendFoundation() {
 		assertThatCode(() -> auditLogRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void flywayMigrationCreatesEmployeeDisciplinaryActionBackendFoundation() {
+		assertThatCode(() -> employeeDisciplinaryActionRepository.count()).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -738,6 +750,72 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void employeeDisciplinaryActionRepositoryPersistsActionWithoutRelatedDocument() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-DISCIPLINARY-WARNING"));
+		UserAccount issuer = userAccountRepository.saveAndFlush(newUserAccount("disciplinary.issuer@example.com"));
+		EmployeeDisciplinaryAction action = newEmployeeDisciplinaryAction(employee, issuer, WARNING_DISCIPLINARY_ACTION_TYPE_ID);
+		action.setDescription(null);
+
+		EmployeeDisciplinaryAction saved = employeeDisciplinaryActionRepository.saveAndFlush(action);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getTenant().getId()).isEqualTo(FOUNDATION_TENANT_ID);
+		assertThat(saved.getCompanyProfile().getId()).isEqualTo(FOUNDATION_COMPANY_ID);
+		assertThat(saved.getEmployee().getId()).isEqualTo(employee.getId());
+		assertThat(saved.getDisciplinaryActionType().getId()).isEqualTo(WARNING_DISCIPLINARY_ACTION_TYPE_ID);
+		assertThat(saved.getActionDate()).isEqualTo(LocalDate.of(2026, 7, 1));
+		assertThat(saved.getTitle()).isEqualTo("Task 027 disciplinary action");
+		assertThat(saved.getDescription()).isNull();
+		assertThat(saved.getIssuedBy().getId()).isEqualTo(issuer.getId());
+		assertThat(saved.getRelatedDocument()).isNull();
+		assertThat(saved.getActive()).isTrue();
+		assertThat(employeeDisciplinaryActionRepository.findByTenant_IdAndEmployee_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+		assertThat(employeeDisciplinaryActionRepository.findByTenant_IdAndCompanyProfile_Id(FOUNDATION_TENANT_ID, FOUNDATION_COMPANY_ID)).extracting(EmployeeDisciplinaryAction::getId).contains(saved.getId());
+		assertThat(employeeDisciplinaryActionRepository.findByTenant_IdAndEmployee_IdAndActiveTrue(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+		assertThat(employeeDisciplinaryActionRepository.findByTenant_IdAndDisciplinaryActionType_Id(FOUNDATION_TENANT_ID, WARNING_DISCIPLINARY_ACTION_TYPE_ID)).extracting(EmployeeDisciplinaryAction::getId).contains(saved.getId());
+	}
+
+	@Test
+	void employeeDisciplinaryActionRepositoryPersistsActionWithRelatedDocument() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-DISCIPLINARY-DOCUMENT"));
+		Contract contract = contractRepository.saveAndFlush(newContract(employee, "TASK_027_DISCIPLINARY_CONTRACT"));
+		PayrollDocument relatedDocument = payrollDocumentRepository.saveAndFlush(newPayrollDocument(employee, contract, 2026, 7));
+		UserAccount issuer = userAccountRepository.saveAndFlush(newUserAccount("disciplinary.document.issuer@example.com"));
+		EmployeeDisciplinaryAction action = newEmployeeDisciplinaryAction(employee, issuer, SUSPENSION_DISCIPLINARY_ACTION_TYPE_ID);
+		action.setDescription("Disciplinary action linked to a payroll document record.");
+		action.setRelatedDocument(relatedDocument);
+
+		EmployeeDisciplinaryAction saved = employeeDisciplinaryActionRepository.saveAndFlush(action);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getDisciplinaryActionType().getId()).isEqualTo(SUSPENSION_DISCIPLINARY_ACTION_TYPE_ID);
+		assertThat(saved.getDescription()).isEqualTo("Disciplinary action linked to a payroll document record.");
+		assertThat(saved.getRelatedDocument().getId()).isEqualTo(relatedDocument.getId());
+		assertThat(employeeDisciplinaryActionRepository.findByTenant_IdAndEmployee_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+		assertThat(employeeDisciplinaryActionRepository.findByTenant_IdAndDisciplinaryActionType_Id(FOUNDATION_TENANT_ID, SUSPENSION_DISCIPLINARY_ACTION_TYPE_ID)).extracting(EmployeeDisciplinaryAction::getId).contains(saved.getId());
+	}
+
+	@Test
+	void employeeDisciplinaryActionRepositoryRequiresIssuedBy() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-DISCIPLINARY-ISSUER"));
+		EmployeeDisciplinaryAction action = newEmployeeDisciplinaryAction(employee, null, WARNING_DISCIPLINARY_ACTION_TYPE_ID);
+
+		assertThatThrownBy(() -> employeeDisciplinaryActionRepository.saveAndFlush(action))
+				.isInstanceOf(jakarta.validation.ConstraintViolationException.class);
+	}
+
+	@Test
+	void employeeDisciplinaryActionRepositoryRequiresTitle() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-DISCIPLINARY-TITLE"));
+		UserAccount issuer = userAccountRepository.saveAndFlush(newUserAccount("disciplinary.title.issuer@example.com"));
+		EmployeeDisciplinaryAction action = newEmployeeDisciplinaryAction(employee, issuer, WARNING_DISCIPLINARY_ACTION_TYPE_ID);
+		action.setTitle(null);
+
+		assertThatThrownBy(() -> employeeDisciplinaryActionRepository.saveAndFlush(action))
+				.isInstanceOf(jakarta.validation.ConstraintViolationException.class);
+	}
+
+	@Test
 	@WithMockUser
 	void foundationReadApiReturnsSeedData() throws Exception {
 		mockMvc.perform(get("/api/foundation/tenants"))
@@ -1004,6 +1082,19 @@ class HrmBackendApplicationTests {
 		auditLog.setUserAgent("JUnit");
 		auditLog.setSeverityLevel("LOW");
 		return auditLog;
+	}
+
+	private EmployeeDisciplinaryAction newEmployeeDisciplinaryAction(Employee employee, UserAccount issuedBy, UUID disciplinaryActionTypeId) {
+		EmployeeDisciplinaryAction action = new EmployeeDisciplinaryAction();
+		action.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		action.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
+		action.setEmployee(employee);
+		action.setDisciplinaryActionType(disciplinaryActionTypeRepository.findById(disciplinaryActionTypeId).orElseThrow());
+		action.setActionDate(LocalDate.of(2026, 7, 1));
+		action.setTitle("Task 027 disciplinary action");
+		action.setDescription("Task 027 disciplinary action description");
+		action.setIssuedBy(issuedBy);
+		return action;
 	}
 
 }

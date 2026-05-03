@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.31  
+Versione: 1.32  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -1528,7 +1528,23 @@ AuditLog backend persistence foundation completed. Runtime audit automatico, int
 
 ### TASK-027 - Implementare EmployeeDisciplinaryAction backend foundation
 
-Stato: TODO
+Stato: DONE
+
+Completato:
+
+- Migration Flyway V14 `V14__create_employee_disciplinary_action_backend_foundation.sql`
+- Tabella `employee_disciplinary_actions` introdotta con relazioni tenant/company/employee/disciplinary action type/issued by/related document
+- FK reali verso `tenants`, `company_profiles`, `employees`, `disciplinary_action_types`, `user_accounts` e `payroll_documents`
+- `related_document_id` nullable con FK verso `payroll_documents`
+- `issued_by_id` obbligatorio con FK verso `user_accounts`
+- Entity JPA `EmployeeDisciplinaryAction` creata nel package `disciplinary`
+- Repository JPA `EmployeeDisciplinaryActionRepository` creato
+- Test backend aggiunti per migration V14, persistenza EmployeeDisciplinaryAction con e senza related document, query repository e vincoli minimi
+- Test validati con `BUILD SUCCESS`
+
+Nota architetturale:
+
+EmployeeDisciplinaryAction backend persistence foundation completed. API REST, DTO, service layer, controller, UI, workflow disciplinare, notifiche, upload/download, audit runtime e security integration restano fuori scope e differiti ai task successivi.
 
 ### TASK-028 - Consolidare API readiness backend core HR
 
@@ -1636,6 +1652,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.32 | 2026-05-03 | TASK-027 completato con EmployeeDisciplinaryAction backend foundation, migration Flyway V14, entity EmployeeDisciplinaryAction, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.31 | 2026-05-03 | TASK-026 completato con AuditLog backend foundation, migration Flyway V13, entity AuditLog, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.30 | 2026-05-03 | TASK-025 completato con HolidayCalendar backend foundation, migration Flyway V12, entity HolidayCalendar, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.29 | 2026-05-03 | TASK-024 completato con LeaveRequest backend foundation, migration Flyway V11, entity LeaveRequest, enum LeaveRequestStatus, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
