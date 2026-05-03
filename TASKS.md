@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.30  
+Versione: 1.31  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -1509,7 +1509,22 @@ HolidayCalendar backend persistence foundation completed. API REST, DTO, service
 
 ### TASK-026 - Implementare AuditLog backend foundation
 
-Stato: TODO
+Stato: DONE
+
+Completato:
+
+- Migration Flyway V13 `V13__create_audit_log_backend_foundation.sql`
+- Tabella `audit_logs` introdotta con relazioni tenant/company/user/action/acting tenant/target tenant
+- FK reali verso `tenants`, `company_profiles`, `user_accounts` e `audit_action_types`
+- Check constraint su `impersonation_mode` e `severity_level`
+- Entity JPA `AuditLog` creata nel package `audit`
+- Repository JPA `AuditLogRepository` creato
+- Test backend aggiunti per migration V13, persistenza AuditLog system/user/cross-tenant metadata, query repository e vincoli DB
+- Test validati con `BUILD SUCCESS`
+
+Nota architetturale:
+
+AuditLog backend persistence foundation completed. Runtime audit automatico, interceptor/aspect, integrazione login/JWT, tenant switching reale, impersonation reale, API REST, DTO, service layer e UI restano fuori scope e differiti ai task successivi.
 
 ### TASK-027 - Implementare EmployeeDisciplinaryAction backend foundation
 
@@ -1621,6 +1636,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.31 | 2026-05-03 | TASK-026 completato con AuditLog backend foundation, migration Flyway V13, entity AuditLog, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.30 | 2026-05-03 | TASK-025 completato con HolidayCalendar backend foundation, migration Flyway V12, entity HolidayCalendar, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.29 | 2026-05-03 | TASK-024 completato con LeaveRequest backend foundation, migration Flyway V11, entity LeaveRequest, enum LeaveRequestStatus, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.28 | 2026-05-03 | TASK-023 completato con PayrollDocument backend foundation, migration Flyway V10, entity PayrollDocument, enum PayrollDocumentStatus, repository JPA e test persistence/query validati con BUILD SUCCESS. |
