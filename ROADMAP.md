@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.28  
+Versione: 1.29  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -66,16 +66,17 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-021 RBAC bridge foundation
 - TASK-022 Device backend foundation
 - TASK-023 PayrollDocument backend foundation
+- TASK-024 LeaveRequest backend foundation
 
 ### Prossimo passo
 
-- TASK-024: LeaveRequest backend foundation
+- TASK-025: HolidayCalendar backend foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: PayrollDocument backend foundation
+Stato: LeaveRequest backend foundation
 
 Completato:
 
@@ -103,6 +104,7 @@ Completato:
 - RBAC bridge persistence foundation with UserRole, RolePermission and UserTenantAccess relational integrity
 - Device backend persistence foundation with tenant/company/master device/employee assignment relational integrity
 - PayrollDocument backend persistence foundation with PayrollDocument entity, PayrollDocumentStatus enum, PayrollDocumentRepository, Flyway V10 `payroll_documents` table and backend persistence/query tests validated with BUILD SUCCESS
+- LeaveRequest backend persistence foundation with LeaveRequest entity, LeaveRequestStatus enum, LeaveRequestRepository, Flyway V11 `leave_requests` table and backend persistence/query/constraint tests validated with BUILD SUCCESS
 
 Nota:
 
@@ -116,10 +118,11 @@ UserAccount persistence foundation is available; login runtime, JWT, OTP/MFA exe
 RBAC bridge persistence foundation is available; runtime authorization, Spring Security RBAC, tenant switching, impersonation, service layer, API and UI remain deferred.
 Device persistence foundation is available; assignment workflow, service layer, API and UI remain deferred.
 PayrollDocument persistence foundation is available; physical upload/download, API REST, DTO, service layer, frontend/UI, notifications and publication workflow remain deferred.
+LeaveRequest persistence foundation is available; approval workflow, API REST, DTO, service layer, leave balance calculation, attachments, frontend/UI and notifications remain deferred.
 
 Da fare:
 
-- LeaveRequest backend foundation
+- HolidayCalendar backend foundation
 
 ---
 
@@ -189,6 +192,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.29 | 2026-05-03 | TASK-024 completato con LeaveRequest backend foundation, LeaveRequest entity, LeaveRequestStatus enum, LeaveRequestRepository, migration V11 leave_requests e test backend persistence/query/constraint validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-025 HolidayCalendar backend foundation. |
 | 1.28 | 2026-05-03 | TASK-023 completato con PayrollDocument backend foundation, PayrollDocument entity, PayrollDocumentStatus enum, PayrollDocumentRepository, migration V10 payroll_documents e test backend persistence/query validati con BUILD SUCCESS; prossimo passo aggiornato a TASK-024 LeaveRequest backend foundation. |
 | 1.27 | 2026-05-02 | TASK-022 completato con Device backend foundation, migration V9, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-023 PayrollDocument backend foundation. |
 | 1.26 | 2026-05-02 | TASK-021 completato con RBAC bridge foundation, migration V8, JPA entity/repository e test backend; prossimo passo aggiornato a TASK-022 Device backend foundation. |

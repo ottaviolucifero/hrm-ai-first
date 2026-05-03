@@ -8,7 +8,10 @@ import com.odsoftware.hrm.entity.contract.Contract;
 import com.odsoftware.hrm.entity.device.Device;
 import com.odsoftware.hrm.entity.employee.Employee;
 import com.odsoftware.hrm.entity.identity.UserAccount;
+import com.odsoftware.hrm.entity.leave.LeaveRequest;
+import com.odsoftware.hrm.entity.leave.LeaveRequestStatus;
 import com.odsoftware.hrm.entity.master.ContractType;
+import com.odsoftware.hrm.entity.master.LeaveRequestType;
 import com.odsoftware.hrm.entity.payroll.PayrollDocument;
 import com.odsoftware.hrm.entity.payroll.PayrollDocumentStatus;
 import com.odsoftware.hrm.entity.rbac.RolePermission;
@@ -19,6 +22,7 @@ import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.device.DeviceRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
 import com.odsoftware.hrm.repository.identity.UserAccountRepository;
+import com.odsoftware.hrm.repository.leave.LeaveRequestRepository;
 import com.odsoftware.hrm.repository.rbac.RolePermissionRepository;
 import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
 import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
@@ -36,6 +40,7 @@ import com.odsoftware.hrm.repository.master.DeviceTypeRepository;
 import com.odsoftware.hrm.repository.master.DisciplinaryActionTypeRepository;
 import com.odsoftware.hrm.repository.master.DocumentTypeRepository;
 import com.odsoftware.hrm.repository.master.GenderRepository;
+import com.odsoftware.hrm.repository.master.LeaveRequestTypeRepository;
 import com.odsoftware.hrm.repository.master.MaritalStatusRepository;
 import com.odsoftware.hrm.repository.master.OfficeLocationTypeRepository;
 import com.odsoftware.hrm.repository.master.PermissionRepository;
@@ -91,6 +96,9 @@ class HrmBackendApplicationTests {
 
 	@Autowired
 	private DocumentTypeRepository documentTypeRepository;
+
+	@Autowired
+	private LeaveRequestTypeRepository leaveRequestTypeRepository;
 
 	@Autowired
 	private DeviceTypeRepository deviceTypeRepository;
@@ -169,6 +177,9 @@ class HrmBackendApplicationTests {
 
 	@Autowired
 	private PayrollDocumentRepository payrollDocumentRepository;
+
+	@Autowired
+	private LeaveRequestRepository leaveRequestRepository;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -261,6 +272,11 @@ class HrmBackendApplicationTests {
 	@Test
 	void flywayMigrationCreatesPayrollDocumentBackendFoundation() {
 		assertThatCode(() -> payrollDocumentRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void flywayMigrationCreatesLeaveRequestBackendFoundation() {
+		assertThatCode(() -> leaveRequestRepository.count()).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -477,6 +493,81 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void leaveRequestRepositoryPersistsDraftRequest() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-LEAVE-DRAFT"));
+		LeaveRequestType leaveRequestType = leaveRequestTypeRepository.saveAndFlush(newLeaveRequestType("TASK_024_VACATION"));
+
+		LeaveRequest leaveRequest = newLeaveRequest(employee, leaveRequestType);
+
+		LeaveRequest saved = leaveRequestRepository.saveAndFlush(leaveRequest);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getCreatedAt()).isNotNull();
+		assertThat(saved.getUpdatedAt()).isNotNull();
+		assertThat(saved.getEmployee().getId()).isEqualTo(employee.getId());
+		assertThat(saved.getLeaveRequestType().getId()).isEqualTo(leaveRequestType.getId());
+		assertThat(saved.getStatus()).isEqualTo(LeaveRequestStatus.DRAFT);
+		assertThat(saved.getStartDate()).isEqualTo(LocalDate.of(2026, 6, 1));
+		assertThat(saved.getEndDate()).isEqualTo(LocalDate.of(2026, 6, 3));
+		assertThat(saved.getDurationDays()).isEqualByComparingTo("3.00");
+		assertThat(saved.getDeductFromBalance()).isTrue();
+		assertThat(saved.getDeductedDays()).isEqualByComparingTo("3.000");
+		assertThat(saved.getUrgent()).isFalse();
+		assertThat(leaveRequestRepository.findByTenant_IdAndEmployee_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+		assertThat(leaveRequestRepository.findByTenant_IdAndEmployee_IdAndStatus(FOUNDATION_TENANT_ID, employee.getId(), LeaveRequestStatus.DRAFT)).hasSize(1);
+		assertThat(leaveRequestRepository.findByTenant_IdAndCompanyProfile_Id(FOUNDATION_TENANT_ID, FOUNDATION_COMPANY_ID)).hasSize(1);
+	}
+
+	@Test
+	void leaveRequestRepositoryPersistsApprovedRequestWithApprover() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-LEAVE-APPROVED"));
+		Employee approver = employeeRepository.saveAndFlush(newEmployee("EMP-LEAVE-APPROVER"));
+		LeaveRequestType leaveRequestType = leaveRequestTypeRepository.saveAndFlush(newLeaveRequestType("TASK_024_PERMISSION"));
+
+		LeaveRequest leaveRequest = newLeaveRequest(employee, leaveRequestType);
+		leaveRequest.setStatus(LeaveRequestStatus.APPROVED);
+		leaveRequest.setApprover(approver);
+		leaveRequest.setComments("Approved by manager");
+		leaveRequest.setUrgent(true);
+		leaveRequest.setUrgentReason("Family emergency");
+
+		LeaveRequest saved = leaveRequestRepository.saveAndFlush(leaveRequest);
+
+		assertThat(saved.getId()).isNotNull();
+		assertThat(saved.getStatus()).isEqualTo(LeaveRequestStatus.APPROVED);
+		assertThat(saved.getApprover().getId()).isEqualTo(approver.getId());
+		assertThat(saved.getComments()).isEqualTo("Approved by manager");
+		assertThat(saved.getUrgent()).isTrue();
+		assertThat(saved.getUrgentReason()).isEqualTo("Family emergency");
+		assertThat(leaveRequestRepository.findByTenant_IdAndEmployee_Id(FOUNDATION_TENANT_ID, employee.getId())).hasSize(1);
+		assertThat(leaveRequestRepository.findByTenant_IdAndEmployee_IdAndStatus(FOUNDATION_TENANT_ID, employee.getId(), LeaveRequestStatus.APPROVED)).hasSize(1);
+	}
+
+	@Test
+	void leaveRequestRepositoryEnforcesDateRangeConstraint() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-LEAVE-DATE-RANGE"));
+		LeaveRequestType leaveRequestType = leaveRequestTypeRepository.saveAndFlush(newLeaveRequestType("TASK_024_DATE_RANGE"));
+		LeaveRequest leaveRequest = newLeaveRequest(employee, leaveRequestType);
+		leaveRequest.setStartDate(LocalDate.of(2026, 6, 5));
+		leaveRequest.setEndDate(LocalDate.of(2026, 6, 1));
+
+		assertThatThrownBy(() -> leaveRequestRepository.saveAndFlush(leaveRequest))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void leaveRequestRepositoryRequiresReasonForUrgentRequest() {
+		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-LEAVE-URGENT"));
+		LeaveRequestType leaveRequestType = leaveRequestTypeRepository.saveAndFlush(newLeaveRequestType("TASK_024_URGENT"));
+		LeaveRequest leaveRequest = newLeaveRequest(employee, leaveRequestType);
+		leaveRequest.setUrgent(true);
+		leaveRequest.setUrgentReason(null);
+
+		assertThatThrownBy(() -> leaveRequestRepository.saveAndFlush(leaveRequest))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
 	@WithMockUser
 	void foundationReadApiReturnsSeedData() throws Exception {
 		mockMvc.perform(get("/api/foundation/tenants"))
@@ -591,6 +682,15 @@ class HrmBackendApplicationTests {
 		return contractType;
 	}
 
+	private LeaveRequestType newLeaveRequestType(String code) {
+		LeaveRequestType leaveRequestType = new LeaveRequestType();
+		leaveRequestType.setTenantId(FOUNDATION_TENANT_ID);
+		leaveRequestType.setCode(code);
+		leaveRequestType.setName("Task 024 Leave Request Type");
+		leaveRequestType.setRequiresApproval(true);
+		return leaveRequestType;
+	}
+
 	private Contract newContract(Employee employee, String contractTypeCode) {
 		Contract contract = new Contract();
 		contract.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
@@ -677,6 +777,21 @@ class HrmBackendApplicationTests {
 		payrollDocument.setPeriodYear(periodYear);
 		payrollDocument.setPeriodMonth(periodMonth);
 		return payrollDocument;
+	}
+
+	private LeaveRequest newLeaveRequest(Employee employee, LeaveRequestType leaveRequestType) {
+		LeaveRequest leaveRequest = new LeaveRequest();
+		leaveRequest.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		leaveRequest.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
+		leaveRequest.setEmployee(employee);
+		leaveRequest.setLeaveRequestType(leaveRequestType);
+		leaveRequest.setStartDate(LocalDate.of(2026, 6, 1));
+		leaveRequest.setEndDate(LocalDate.of(2026, 6, 3));
+		leaveRequest.setDurationDays(new BigDecimal("3.00"));
+		leaveRequest.setDeductFromBalance(true);
+		leaveRequest.setDeductedDays(new BigDecimal("3.000"));
+		leaveRequest.setReason("Planned leave request");
+		return leaveRequest;
 	}
 
 }
