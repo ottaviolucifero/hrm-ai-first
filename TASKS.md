@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.35  
+Versione: 1.36  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -1595,7 +1595,7 @@ Task documentale completato senza modifiche a codice backend, codice frontend ap
 
 ### TASK-030 - Implementare API CRUD master data globali
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -1608,19 +1608,21 @@ Include:
 - MaritalStatus
 - NationalIdentifierType
 
-Deve includere:
+Completato:
 
 - DTO request/response
-- Service layer applicativo
-- Controller REST
-- Validazioni minime
-- Gestione errori
-- Test backend
-- OpenAPI verificabile
+- Service layer applicativo `MasterDataGlobalService`
+- Controller REST `MasterDataGlobalController` sotto `/api/master-data/global`
+- CRUD backend per Country, Region, Area, GlobalZipCode, Currency, Gender, MaritalStatus e NationalIdentifierType
+- DELETE implementato come soft delete con `active=false`
+- Validazioni minime su campi obbligatori e relazioni geografiche coerenti
+- Gestione errori per not found, validation error e conflict 409 su chiavi naturali
+- Repository master estesi con metodi `exists/find` necessari
+- Test backend MockMvc per CRUD flow, validation error, not found, conflict 409 e OpenAPI `/v3/api-docs`
 
 Nota:
 
-Le API CRUD master data globali devono essere implementate prima della UI Master Data Admin. Le API read-only esistenti possono supportare consultazione, ma non sono sufficienti per CRUD amministrativo completo.
+Le API CRUD master data globali sono disponibili prima della UI Master Data Admin. Nessuna migration, nessun frontend e nessuna modifica security runtime introdotta. Validazione completata con BUILD SUCCESS.
 
 ### TASK-031 - Implementare API CRUD master data HR/business
 
@@ -1768,6 +1770,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.36 | 2026-05-03 | TASK-030 completato con API CRUD backend master data globali, DTO request/response, service layer applicativo, controller `/api/master-data/global`, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS. |
 | 1.35 | 2026-05-03 | Backlog riorganizzato per introdurre API CRUD master data prima della UI Master Data Admin: nuovi TASK-030, TASK-031 e TASK-032 per API CRUD globali, HR/business e governance/security; UI Master Data Admin rinumerata e divisa in foundation/list e CRUD. |
 | 1.34 | 2026-05-03 | TASK-029 documentale completato con creazione `frontend/AGENTS.md`, governance frontend UI/shared components e rinumerazione backlog successivo di +1. |
 | 1.33 | 2026-05-03 | TASK-028 completato con Core HR API readiness read-only, controller `/api/core-hr`, service read-only, DTO corehr, test MockMvc/OpenAPI e BUILD SUCCESS. |
