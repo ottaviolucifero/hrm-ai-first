@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.33  
+Versione: 1.35  
 Ultimo aggiornamento: 2026-05-03  
 Stato: In avanzamento
 
@@ -1206,7 +1206,7 @@ Include:
 
 Dipendenze:
 
-- Deve mantenere separazione rispetto ai master HR/business giÃ  completati in TASK-013
+- Deve mantenere separazione rispetto ai master HR/business già completati in TASK-013
 - Deve rispettare tenant-scoped governance dove prevista dal blueprint TASK-011
 - Non deve introdurre `Tenant`, `CompanyProfile`, `UserAccount` o bridge RBAC fuori scope
 
@@ -1237,7 +1237,7 @@ Dipendenze:
 
 - Deve introdurre il dominio `Tenant`
 - Deve trasformare la temporary tenant foundation strategy di TASK-013 in governance tenant reale
-- Deve aggiungere FK hardening verso `Tenant` per le master tables tenant-scoped giÃ  create, dove applicabile
+- Deve aggiungere FK hardening verso `Tenant` per le master tables tenant-scoped già create, dove applicabile
 - Deve preservare il tenant placeholder tecnico `00000000-0000-0000-0000-000000000001` o migrarlo in modo controllato
 
 Completato:
@@ -1565,9 +1565,35 @@ Nota architetturale:
 
 Core HR API readiness read-only completed. API write, CRUD operativo, workflow approvativi, upload/download fisico documenti, login/JWT runtime, RBAC runtime, tenant switching runtime, audit automatico, frontend/UI e notifiche restano fuori scope e differiti ai task successivi.
 
-## FASE 2F - UI ADMIN / OPERATIONS
+## FASE 2F - API CRUD MASTER DATA / UI ADMIN / OPERATIONS
 
-### TASK-029 - Implementare UI Master Data Admin
+Decisione operativa:
+
+- Prima implementare API CRUD master data backend.
+- Poi implementare UI Master Data Admin.
+- Le API read-only esistenti (`/api/foundation`, `/api/core-hr`) possono supportare consultazione, ma non sostituiscono le API CRUD necessarie per una UI amministrativa completa.
+
+### TASK-029 - Definire governance frontend UI e shared components
+
+Stato: DONE
+
+Tipo: Documentale / Governance
+
+Completato:
+
+- File `frontend/AGENTS.md` creato con regole operative frontend Angular
+- Governance frontend formalizzata su reuse first, extend before creating e componenti shared
+- Regole definite per componenti feature-specific e promozione a shared component
+- Governance Metronic chiarita come riferimento visuale approvato, non codice da copiare indiscriminatamente
+- Regole di consistenza UI definite per riuso di `app-shell`, `app-header`, `app-sidebar` e layout esistenti
+- Validazione task frontend chiarita: build frontend per modifiche codice, `git status`/`git diff` per task markdown-only
+- Backlog UI e task successivi rinumerati di +1
+
+Nota:
+
+Task documentale completato senza modifiche a codice backend, codice frontend applicativo, `ARCHITECTURE.md` o `DECISIONS.md`. UI Master Data Admin resta non implementata ed è stata successivamente rinviata dopo le API CRUD master data.
+
+### TASK-030 - Implementare API CRUD master data globali
 
 Stato: TODO
 
@@ -1578,19 +1604,61 @@ Include:
 - Area
 - GlobalZipCode
 - Currency
+- Gender
+- MaritalStatus
+- NationalIdentifierType
+
+Deve includere:
+
+- DTO request/response
+- Service layer applicativo
+- Controller REST
+- Validazioni minime
+- Gestione errori
+- Test backend
+- OpenAPI verificabile
+
+Nota:
+
+Le API CRUD master data globali devono essere implementate prima della UI Master Data Admin. Le API read-only esistenti possono supportare consultazione, ma non sono sufficienti per CRUD amministrativo completo.
+
+### TASK-031 - Implementare API CRUD master data HR/business
+
+Stato: TODO
+
+Include:
+
 - Department
 - JobTitle
 - ContractType
 - EmploymentStatus
 - WorkMode
-- Gender
-- MaritalStatus
-- NationalIdentifierType
 - LeaveRequestType
 - DocumentType
 - DeviceType
 - DeviceBrand
 - DeviceStatus
+
+Deve includere:
+
+- DTO request/response
+- Service layer applicativo
+- Controller REST
+- Validazioni minime
+- Gestione errori
+- Test backend
+- OpenAPI verificabile
+
+Nota:
+
+Le API CRUD master data HR/business devono essere disponibili prima della relativa gestione UI operativa.
+
+### TASK-032 - Implementare API CRUD master data governance/security
+
+Stato: TODO
+
+Include:
+
 - UserType
 - AuthenticationMethod
 - Role
@@ -1601,11 +1669,44 @@ Include:
 - CompanyProfileType
 - OfficeLocationType
 
-### TASK-030 - Implementare UI Employee management enterprise
+Deve includere:
+
+- DTO request/response
+- Service layer applicativo
+- Controller REST
+- Validazioni minime
+- Gestione errori
+- Test backend
+- OpenAPI verificabile
+
+Nota:
+
+Le API CRUD master data governance/security devono precedere la UI amministrativa completa. Login/JWT runtime, RBAC runtime e tenant switching operativo restano fuori scope salvo task dedicati.
+
+### TASK-033 - Implementare UI Master Data Admin foundation/list
 
 Stato: TODO
 
-### TASK-031 - Implementare Security Admin UI
+Obiettivo:
+
+- Implementare la foundation UI e le viste lista della UI Master Data Admin usando API backend disponibili.
+- Riusare layout, shell e componenti esistenti secondo `frontend/AGENTS.md`.
+- Non implementare CRUD completo se le API write corrispondenti non sono disponibili.
+
+### TASK-034 - Implementare UI Master Data Admin CRUD
+
+Stato: TODO
+
+Obiettivo:
+
+- Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
+- Non usare mock come sostituto dei contratti API backend.
+
+### TASK-035 - Implementare UI Employee management enterprise
+
+Stato: TODO
+
+### TASK-036 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -1617,47 +1718,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-032 - Implementare UI Device governance
+### TASK-037 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-033 - Implementare UI PayrollDocument
+### TASK-038 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-034 - Implementare UI LeaveRequest
+### TASK-039 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-035 - Implementare UI HolidayCalendar
+### TASK-040 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-036 - Implementare Audit UI / compliance explorer
+### TASK-041 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-037 - Implementare UI disciplinary governance
+### TASK-042 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-038 - Implementare Platform Operator / Super Admin governance
+### TASK-043 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-039 - Implementare Cross-tenant admin UI
+### TASK-044 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-040 - Configurare logging, monitoring e observability enterprise
+### TASK-045 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-041 - Test integrato MVP enterprise completo
+### TASK-046 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -1667,6 +1768,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.35 | 2026-05-03 | Backlog riorganizzato per introdurre API CRUD master data prima della UI Master Data Admin: nuovi TASK-030, TASK-031 e TASK-032 per API CRUD globali, HR/business e governance/security; UI Master Data Admin rinumerata e divisa in foundation/list e CRUD. |
+| 1.34 | 2026-05-03 | TASK-029 documentale completato con creazione `frontend/AGENTS.md`, governance frontend UI/shared components e rinumerazione backlog successivo di +1. |
 | 1.33 | 2026-05-03 | TASK-028 completato con Core HR API readiness read-only, controller `/api/core-hr`, service read-only, DTO corehr, test MockMvc/OpenAPI e BUILD SUCCESS. |
 | 1.32 | 2026-05-03 | TASK-027 completato con EmployeeDisciplinaryAction backend foundation, migration Flyway V14, entity EmployeeDisciplinaryAction, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |
 | 1.31 | 2026-05-03 | TASK-026 completato con AuditLog backend foundation, migration Flyway V13, entity AuditLog, repository JPA e test persistence/query/constraint validati con BUILD SUCCESS. |

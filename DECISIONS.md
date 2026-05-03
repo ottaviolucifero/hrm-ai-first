@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.16  
-Ultimo aggiornamento: 2026-05-02  
+Versione: 1.17  
+Ultimo aggiornamento: 2026-05-03  
 Stato: Attivo
 
 ---
@@ -589,16 +589,16 @@ Il modello mantiene riferimenti multipli:
 
 Questa ridondanza intenzionale favorisce:
 
-- query piÃ¹ semplici;
+- query più semplici;
 - filtri diretti;
 - reporting enterprise;
 - performance applicativa;
-- flessibilitÃ  multi-country;
+- flessibilità multi-country;
 - import di dataset geografici eterogenei, inclusi dataset CAP da Excel.
 
-La consistenza gerarchica, ad esempio `Area` appartenente alla `Region` corretta e `Region` appartenente al `Country` corretto, non sarÃ  forzata esclusivamente tramite schema SQL complesso.
+La consistenza gerarchica, ad esempio `Area` appartenente alla `Region` corretta e `Region` appartenente al `Country` corretto, non sarà forzata esclusivamente tramite schema SQL complesso.
 
-La governance della consistenza sarÃ  gestita tramite:
+La governance della consistenza sarà gestita tramite:
 
 - validation service layer;
 - business rules;
@@ -607,7 +607,7 @@ La governance della consistenza sarÃ  gestita tramite:
 
 Motivazione:
 
-- Ridurre complessitÃ  query;
+- Ridurre complessità query;
 - facilitare data import;
 - supportare dataset incompleti o eterogenei;
 - evitare over-engineering prematuro;
@@ -632,9 +632,9 @@ Pro:
 
 Contro:
 
-- possibile incoerenza se la validation applicativa Ã¨ assente;
+- possibile incoerenza se la validation applicativa è assente;
 - governance applicativa obbligatoria;
-- maggiore responsabilitÃ  lato backend.
+- maggiore responsabilità lato backend.
 
 Mitigazioni:
 
@@ -668,7 +668,7 @@ Decisione:
 
 Le master tables HR/business introdotte con TASK-013 saranno tenant-scoped tramite campo strutturale `tenant_id UUID NOT NULL`, ma senza foreign key reale verso `Tenant` fino all'implementazione di TASK-015.
 
-Il modello userÃ :
+Il modello userà:
 
 - `BaseTenantMasterEntity` come base JPA per master tenant-scoped;
 - `tenant_id` obbligatorio;
@@ -679,7 +679,7 @@ Il modello userÃ :
 
 Motivazione:
 
-- Tenant non Ã¨ ancora implementato nel database;
+- Tenant non è ancora implementato nel database;
 - TASK-013 deve preparare dati tenant-scoped senza anticipare TASK-015;
 - evitare FK verso tabella inesistente;
 - mantenere una struttura future-proof per la futura introduzione della FK reale;
@@ -694,7 +694,7 @@ Alternative escluse:
 
 Impatto:
 
-Quando TASK-015 introdurrÃ  `Tenant`, le migration successive dovranno convertire `tenant_id` da campo strutturale a relazione governata tramite foreign key reale, preservando i dati seed e le unique constraint tenant-scoped.
+Quando TASK-015 introdurrà `Tenant`, le migration successive dovranno convertire `tenant_id` da campo strutturale a relazione governata tramite foreign key reale, preservando i dati seed e le unique constraint tenant-scoped.
 
 ---
 
@@ -738,13 +738,13 @@ Motivazione:
 Alternative escluse:
 
 - rendere tutti i master governance globali;
-- rendere i pattern di autenticazione tenant-specific giÃ  nel foundation;
+- rendere i pattern di autenticazione tenant-specific già nel foundation;
 - creare subito `UserAccount`, `UserRole`, `RolePermission` o `Tenant`;
 - introdurre RBAC operativo prima della foundation dati.
 
 Impatto:
 
-Le bridge RBAC operative saranno introdotte in task successivi, mantenendo continuitÃ  con il tenant placeholder tecnico `00000000-0000-0000-0000-000000000001` finchÃ© TASK-015 non introdurrÃ  il dominio `Tenant` e il relativo FK hardening.
+Le bridge RBAC operative saranno introdotte in task successivi, mantenendo continuità con il tenant placeholder tecnico `00000000-0000-0000-0000-000000000001` finché TASK-015 non introdurrà il dominio `Tenant` e il relativo FK hardening.
 
 ---
 
@@ -869,10 +869,62 @@ Da TASK-019 in avanti, le implementazioni tecniche dovranno privilegiare prima l
 
 ---
 
+### DEC-024 - Master Data Admin requires backend CRUD API before operational UI
+
+Data: 2026-05-03  
+Stato: Approvata
+
+Decisione:
+
+Le UI CRUD operative non devono essere implementate prima delle API CRUD backend corrispondenti.
+
+Le API read-only esistenti, incluse `/api/foundation` e `/api/core-hr`, non sono sufficienti per una UI amministrativa completa.
+
+Master Data Admin sarà implementato in questa sequenza:
+
+1. API CRUD master data globali
+2. API CRUD master data HR/business
+3. API CRUD master data governance/security
+4. UI foundation/list
+5. UI CRUD
+
+I task UI possono riusare API read-only solo per consultazione, non per CRUD completo.
+
+Motivazione:
+
+- evitare mock UI non durevoli;
+- evitare refactor successivi tra UI e backend;
+- mantenere coerenza tra contratti API, service validation e interfacce amministrative;
+- rendere OpenAPI verificabile prima dello sviluppo UI CRUD;
+- preservare la strategia backend-first.
+
+Alternative escluse:
+
+- implementare UI CRUD Master Data Admin basata solo su API read-only;
+- introdurre mock UI come sostituto dei contratti API backend;
+- implementare schermate CRUD prima di DTO request/response, service layer, controller REST, validazioni e test backend;
+- mescolare API CRUD e UI CRUD nello stesso task.
+
+Impatto:
+
+Il backlog viene riorganizzato introducendo prima:
+
+- TASK-030 API CRUD master data globali;
+- TASK-031 API CRUD master data HR/business;
+- TASK-032 API CRUD master data governance/security.
+
+La UI Master Data Admin viene rinviata a:
+
+- TASK-033 UI Master Data Admin foundation/list;
+- TASK-034 UI Master Data Admin CRUD.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.17 | 2026-05-03 | Aggiunta DEC-024 per imporre API CRUD backend master data prima della UI Master Data Admin operativa. |
 | 1.16 | 2026-05-02 | Aggiunta DEC-023 per strategia backend-first: foundation persistence e API readiness prima delle UI enterprise. |
 | 1.15 | 2026-05-02 | Aggiunta DEC-022 per boundary API foundation read-only con DTO, service layer e protezione campi SMTP sensibili. |
 | 1.14 | 2026-05-02 | Aggiunta DEC-021 per attivazione dominio Tenant reale, FK hardening SaaS e credenziali SMTP opzionali. |
