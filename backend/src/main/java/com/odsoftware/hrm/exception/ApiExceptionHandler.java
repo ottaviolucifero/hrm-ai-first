@@ -22,6 +22,16 @@ public class ApiExceptionHandler {
 		return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request, null);
 	}
 
+	@ExceptionHandler(InvalidRequestException.class)
+	public ResponseEntity<ApiErrorResponse> handleInvalidRequest(InvalidRequestException exception, HttpServletRequest request) {
+		return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request, null);
+	}
+
+	@ExceptionHandler(ResourceConflictException.class)
+	public ResponseEntity<ApiErrorResponse> handleConflict(ResourceConflictException exception, HttpServletRequest request) {
+		return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), request, null);
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletRequest request) {
 		Map<String, String> validationErrors = new LinkedHashMap<>();
