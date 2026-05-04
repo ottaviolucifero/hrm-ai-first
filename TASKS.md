@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.39
+Versione: 1.40
 Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
@@ -1714,15 +1714,27 @@ Task solo documentale. Nessun codice backend, nessun codice frontend, nessuna im
 
 ### TASK-034 - Implementare backend login/JWT foundation
 
-Stato: TODO
+Stato: DONE
 
-Obiettivo:
+Completato:
 
-- Implementare la foundation backend per login runtime e autenticazione JWT del MVP.
-- Riusare `UserAccount`, `UserType` e `AuthenticationMethod` gia introdotti nella foundation dati.
-- Esporre contratti API espliciti con DTO request/response e service layer applicativo.
-- Preparare gestione password hash, autenticazione email-first, emissione e validazione JWT.
-- Mantenere OTP/MFA, RBAC runtime, tenant switching e impersonation fuori scope salvo task dedicati.
+- Endpoint pubblico `POST /api/auth/login` implementato con login solo email/password
+- Endpoint protetto `GET /api/auth/me` implementato per utente autenticato
+- DTO auth espliciti `LoginRequest`, `LoginResponse` e `AuthenticatedUserResponse`
+- Service layer applicativo `AuthService`
+- JWT stateless configurato con Spring Security OAuth2 Resource Server / Jose
+- Secret e scadenza JWT configurabili da `application.yml` / variabili ambiente
+- Claim JWT principali: `sub`, `userId`, `tenantId`, `userType`
+- `UserDetailsService` basato su `UserAccount` e lookup email globale case-insensitive
+- `BCryptPasswordEncoder` configurato
+- Password policy foundation riusabile introdotta
+- Migration Flyway V15 introdotta per vincolo email globale case-insensitive
+- Security stateless configurata con `/api/auth/login`, OpenAPI e Swagger pubblici; endpoint applicativi e actuator protetti
+- Test backend MockMvc/unitari aggiunti per login valido, email case-insensitive, credenziali errate, account senza password hash, account inactive/locked, `/api/auth/me`, OpenAPI pubblico, actuator protetto e password policy
+
+Nota:
+
+TASK-034 non introduce refresh token, logout server-side, registrazione, forgot password, change password, OTP/MFA runtime, RBAC runtime completo, tenant switching, impersonation, Keycloak, frontend o UI login.
 
 ### TASK-035 - Implementare frontend login foundation
 
@@ -1820,6 +1832,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.40 | 2026-05-04 | TASK-034 completato con backend login/JWT foundation: endpoint `/api/auth/login` e `/api/auth/me`, DTO auth, service layer, UserDetailsService su UserAccount, BCrypt, password policy, JWT stateless con Spring Security OAuth2 Resource Server / Jose, migration V15 per email globale case-insensitive, test auth/security/OpenAPI/actuator e BUILD SUCCESS; prossimo passo TASK-035 frontend login foundation. |
 | 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: introdotti TASK-034 backend login/JWT foundation e TASK-035 frontend login foundation prima delle UI amministrative; UI Master Data Admin spostata a TASK-036/TASK-037 e task successivi rinumerati. |
 | 1.38 | 2026-05-04 | TASK-032 completato con API CRUD backend master data governance/security sotto `/api/master-data/governance-security`, DTO request/response globali e tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-033 UI Master Data Admin foundation/list. |
 | 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO request/response tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-032 API CRUD master data governance/security. |

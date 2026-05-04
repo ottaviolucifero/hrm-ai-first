@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.19
+Versione: 1.20
 Ultimo aggiornamento: 2026-05-04
 Stato: Attivo
 
@@ -1001,10 +1001,59 @@ TASKS.md definisce il nuovo ordine operativo dei task. ROADMAP.md espone TASK-03
 
 ---
 
+### DEC-027 - Backend login/JWT foundation contract and email identity rules
+
+Data: 2026-05-04
+Stato: Approvata
+
+Decisione:
+
+La foundation login backend del MVP usa autenticazione stateless JWT con Spring Security OAuth2 Resource Server / Jose.
+
+La login avviene solo tramite email e password:
+
+- `email` e identificativo globale dell'account utente;
+- la login via email e case-insensitive;
+- l'email viene normalizzata con trim + lowercase prima del lookup;
+- `username` non e una credenziale di login;
+- la stessa email non puo esistere su piu tenant, neanche con differenze di maiuscole/minuscole.
+
+Il JWT usa questi claim principali:
+
+- `sub`: email normalizzata lowercase;
+- `userId`;
+- `tenantId`;
+- `userType`.
+
+`USER_TYPE_<userType>` e ammessa come authority tecnica minima derivata dal token, ma non introduce RBAC runtime completo.
+
+Motivazione:
+
+- mantenere un modello login email-first coerente con `UserAccount`;
+- evitare ambiguita tra tenant in assenza di tenant switching runtime;
+- preparare il frontend login foundation con un contratto token stabile;
+- usare componenti Spring Security standard per JWT;
+- mantenere il MVP stateless e semplice da validare.
+
+Alternative escluse:
+
+- login tramite username;
+- email duplicata tra tenant;
+- JWT con claim tenant switching o impersonation;
+- RBAC runtime completo in TASK-034;
+- refresh token, logout server-side, registrazione, forgot password o change password nel task login foundation.
+
+Impatto:
+
+Il database deve imporre un vincolo globale case-insensitive su `user_accounts.email`. Le future API che creeranno o aggiorneranno account utente dovranno normalizzare e validare email coerentemente con questa decisione e dovranno applicare la password policy backend prima di salvare nuovi hash password.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.20 | 2026-05-04 | Aggiunta DEC-027 per definire backend login/JWT foundation: email globale case-insensitive come identificativo login, JWT stateless con Spring Security OAuth2 Resource Server / Jose e claim principali `sub`, `userId`, `tenantId`, `userType`. |
 | 1.19 | 2026-05-04 | Aggiunta DEC-026 per introdurre backend login/JWT foundation e frontend login foundation prima delle UI amministrative, spostando Master Data Admin dopo login foundation e mantenendo fuori scope OTP/MFA, RBAC runtime, tenant switching e impersonation. |
 | 1.18 | 2026-05-04 | Aggiunta DEC-025 per separare governance globale e area-specific con `backend/AGENTS.md` e `frontend/AGENTS.md`, escludere `/skills` e `SKILLS.md`, e chiarire che `docs/analysis` e materiale storico/supportivo non prevalente su governance corrente o codice implementato. |
 | 1.17 | 2026-05-03 | Aggiunta DEC-024 per imporre API CRUD backend master data prima della UI Master Data Admin operativa. |

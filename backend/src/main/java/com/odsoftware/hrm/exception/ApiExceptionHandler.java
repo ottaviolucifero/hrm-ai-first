@@ -17,6 +17,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+	@ExceptionHandler(AuthenticationFailedException.class)
+	public ResponseEntity<ApiErrorResponse> handleAuthenticationFailed(AuthenticationFailedException exception, HttpServletRequest request) {
+		return buildResponse(HttpStatus.UNAUTHORIZED, exception.getMessage(), request, null);
+	}
+
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException exception, HttpServletRequest request) {
 		return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request, null);
