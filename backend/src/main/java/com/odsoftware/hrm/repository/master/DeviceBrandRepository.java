@@ -5,4 +5,8 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DeviceBrandRepository extends JpaRepository<DeviceBrand, UUID> {
+
+	boolean existsByTenantIdAndCode(UUID tenantId, String code);
+
+	boolean existsByTenantIdAndCodeAndIdNot(UUID tenantId, String code, UUID id);
 }

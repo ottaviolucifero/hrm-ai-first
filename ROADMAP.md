@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.36  
-Ultimo aggiornamento: 2026-05-03  
+Versione: 1.37
+Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
 ---
@@ -73,17 +73,18 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-028 Core HR API readiness backend read-only
 - TASK-029 Frontend UI and shared components governance
 - TASK-030 API CRUD master data globali
+- TASK-031 API CRUD master data HR/business
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 
 ### Prossimo passo
 
-- TASK-031: Implementare API CRUD master data HR/business
+- TASK-032: Implementare API CRUD master data governance/security
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Master Data global CRUD API completata
+Stato: Master Data HR/business CRUD API completata
 
 Completato:
 
@@ -119,6 +120,7 @@ Completato:
 - Frontend UI and shared components governance documented in `frontend/AGENTS.md`
 - Master Data Admin backlog reordered so backend CRUD APIs are implemented before operational UI
 - API CRUD master data globali available under `/api/master-data/global` for Country, Region, Area, GlobalZipCode, Currency, Gender, MaritalStatus and NationalIdentifierType, with explicit DTOs, application service layer, soft delete and MockMvc/OpenAPI tests validated with BUILD SUCCESS
+- API CRUD master data HR/business available under `/api/master-data/hr-business` for Department, JobTitle, ContractType, EmploymentStatus, WorkMode, LeaveRequestType, DocumentType, DeviceType, DeviceBrand and DeviceStatus, with tenant-scoped DTOs, application service layer, soft delete and MockMvc/OpenAPI tests validated with BUILD SUCCESS
 
 Nota:
 
@@ -139,11 +141,10 @@ EmployeeDisciplinaryAction persistence foundation is available; API REST, DTO, s
 Core HR read-only API readiness is available for Employee, Contract, Device, PayrollDocument, LeaveRequest, HolidayCalendar, AuditLog and EmployeeDisciplinaryAction; write APIs, operational CRUD, workflows, physical document transfer, login/JWT runtime, RBAC runtime, tenant switching runtime, automatic audit, frontend/UI and notifications remain deferred.
 Frontend governance is active: UI tasks must analyze and reuse existing Angular components, extend before creating duplicates, keep feature components local, create shared components only with explicit motivation, and adapt Metronic as a visual reference rather than copying code indiscriminately.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
-Global master data CRUD APIs are available; HR/business and governance/security master data CRUD APIs remain deferred.
+Global and HR/business master data CRUD APIs are available; governance/security master data CRUD APIs remain deferred.
 
 Da fare:
 
-- TASK-031 API CRUD master data HR/business
 - TASK-032 API CRUD master data governance/security
 - TASK-033 UI Master Data Admin foundation/list
 - TASK-034 UI Master Data Admin CRUD
@@ -229,6 +230,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO tenant-scoped, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-032 API CRUD master data governance/security. |
 | 1.36 | 2026-05-03 | TASK-030 completato con API CRUD backend master data globali sotto `/api/master-data/global`, DTO espliciti, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-031 API CRUD master data HR/business. |
 | 1.35 | 2026-05-03 | Backlog riorganizzato: Master Data Admin UI rinviata dopo API CRUD master data globali, HR/business e governance/security; prossimo passo aggiornato a TASK-030 API CRUD master data globali. |
 | 1.34 | 2026-05-03 | TASK-029 documentale completato con governance frontend UI/shared components in `frontend/AGENTS.md`; backlog successivo rinumerato e prossimo passo aggiornato a TASK-030. |
