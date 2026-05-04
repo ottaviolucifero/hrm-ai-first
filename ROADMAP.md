@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.39
+Versione: 1.40
 Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
@@ -76,18 +76,19 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-031 API CRUD master data HR/business
 - TASK-032 API CRUD master data governance/security
 - TASK-033 Backlog login/JWT before admin UI reorganization
+- TASK-034 Backend login/JWT foundation
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
 
 ### Prossimo passo
 
-- TASK-034: Implementare backend login/JWT foundation
+- TASK-035: Implementare frontend login foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Backlog login-first prima delle UI amministrative completato
+Stato: Backend login/JWT foundation completata
 
 Completato:
 
@@ -126,6 +127,7 @@ Completato:
 - API CRUD master data HR/business available under `/api/master-data/hr-business` for Department, JobTitle, ContractType, EmploymentStatus, WorkMode, LeaveRequestType, DocumentType, DeviceType, DeviceBrand and DeviceStatus, with tenant-scoped DTOs, application service layer, soft delete and MockMvc/OpenAPI tests validated with BUILD SUCCESS
 - API CRUD master data governance/security available under `/api/master-data/governance-security` for UserType, AuthenticationMethod, AuditActionType, DisciplinaryActionType, SmtpEncryptionType, Role, Permission, CompanyProfileType and OfficeLocationType, with explicit DTOs, application service layer, soft delete and MockMvc/OpenAPI tests validated with BUILD SUCCESS
 - TASK-033 backlog reorganization completed: backend login/JWT foundation and frontend login foundation now precede Master Data Admin UI
+- Backend login/JWT foundation available with `/api/auth/login`, `/api/auth/me`, stateless JWT, email-only case-insensitive login, BCrypt password verification, password policy foundation and user email global case-insensitive uniqueness
 
 Nota:
 
@@ -146,12 +148,11 @@ EmployeeDisciplinaryAction persistence foundation is available; API REST, DTO, s
 Core HR read-only API readiness is available for Employee, Contract, Device, PayrollDocument, LeaveRequest, HolidayCalendar, AuditLog and EmployeeDisciplinaryAction; write APIs, operational CRUD, workflows, physical document transfer, login/JWT runtime, RBAC runtime, tenant switching runtime, automatic audit, frontend/UI and notifications remain deferred.
 Frontend governance is active: UI tasks must analyze and reuse existing Angular components, extend before creating duplicates, keep feature components local, create shared components only with explicit motivation, and adapt Metronic as a visual reference rather than copying code indiscriminately.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
-UserAccount persistence foundation is available, but login runtime/JWT remains deferred to TASK-034 and frontend login foundation remains deferred to TASK-035.
+UserAccount persistence foundation is available and backend login runtime/JWT foundation is active; frontend login foundation remains deferred to TASK-035.
 Global, HR/business and governance/security master data CRUD APIs are available; Master Data Admin UI remains deferred until after login foundation.
 
 Da fare:
 
-- TASK-034 backend login/JWT foundation
 - TASK-035 frontend login foundation
 - TASK-036 UI Master Data Admin foundation/list
 - TASK-037 UI Master Data Admin CRUD
@@ -232,6 +233,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.40 | 2026-05-04 | TASK-034 completato con backend login/JWT foundation: endpoint `/api/auth/login` e `/api/auth/me`, JWT stateless, login email-only case-insensitive, BCrypt, password policy, migration V15 email globale case-insensitive e BUILD SUCCESS; prossimo passo aggiornato a TASK-035 frontend login foundation. |
 | 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: login/JWT foundation backend e frontend spostate prima delle UI amministrative; prossimo passo aggiornato a TASK-034 backend login/JWT foundation e Master Data Admin rinumerato a TASK-036/TASK-037. |
 | 1.38 | 2026-05-04 | TASK-032 completato con API CRUD backend master data governance/security sotto `/api/master-data/governance-security`, DTO globali e tenant-scoped, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-033 UI Master Data Admin foundation/list. |
 | 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO tenant-scoped, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-032 API CRUD master data governance/security. |

@@ -14,3 +14,9 @@ management:
   endpoint:
     health:
       show-details: never
+
+hrm:
+  security:
+    jwt:
+      secret: ${HRM_JWT_SECRET}
+      expires-in: ${HRM_JWT_EXPIRES_IN:3600}

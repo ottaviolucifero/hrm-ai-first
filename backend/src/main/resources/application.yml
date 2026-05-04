@@ -25,3 +25,9 @@ management:
   endpoint:
     health:
       show-details: always
+
+hrm:
+  security:
+    jwt:
+      secret: ${HRM_JWT_SECRET:dev-test-only-change-this-secret-32-bytes-minimum}
+      expires-in: ${HRM_JWT_EXPIRES_IN:3600}
