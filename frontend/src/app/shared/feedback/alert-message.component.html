@@ -1,0 +1,20 @@
+@if (visible) {
+  <div
+    class="kt-alert kt-alert-light"
+    [class.kt-alert-destructive]="type === 'danger'"
+    [class.kt-alert-warning]="type === 'warning'"
+    [class.kt-alert-success]="type === 'success'"
+    [class.kt-alert-info]="type === 'info'"
+    role="alert"
+  >
+    <div class="kt-alert-content">
+      <div class="kt-alert-description">{{ message }}</div>
+    </div>
+
+    @if (dismissible) {
+      <button class="kt-alert-close" type="button" aria-label="Chiudi messaggio" (click)="dismiss()">
+        <i class="ki-filled ki-cross"></i>
+      </button>
+    }
+  </div>
+}
