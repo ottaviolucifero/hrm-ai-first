@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.36  
-Ultimo aggiornamento: 2026-05-03  
+Versione: 1.37
+Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
 ---
@@ -1629,7 +1629,7 @@ Le API CRUD master data globali sono disponibili prima della UI Master Data Admi
 
 ### TASK-031 - Implementare API CRUD master data HR/business
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -1644,19 +1644,21 @@ Include:
 - DeviceBrand
 - DeviceStatus
 
-Deve includere:
+Completato:
 
-- DTO request/response
-- Service layer applicativo
-- Controller REST
-- Validazioni minime
-- Gestione errori
-- Test backend
-- OpenAPI verificabile
+- DTO request/response generici `TenantMasterDataRequest` e `TenantMasterDataResponse`
+- Service layer applicativo `MasterDataHrBusinessService`
+- Controller REST `MasterDataHrBusinessController` sotto `/api/master-data/hr-business`
+- CRUD backend per Department, JobTitle, ContractType, EmploymentStatus, WorkMode, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus
+- DELETE implementato come soft delete con `active=false`
+- Validazioni minime su `tenantId`, `code`, `name`, default `active=true`, normalizzazione `code` uppercase/trim e `name` trim
+- Gestione errori per validation/semantic error 400, not found 404 e conflict 409 su `tenantId + code`
+- Repository master HR/business estesi con metodi `existsByTenantIdAndCode` e `existsByTenantIdAndCodeAndIdNot`
+- Test backend MockMvc per list, get by id, create, update, delete/disable, validation error, not found, conflict 409 e OpenAPI `/v3/api-docs`
 
 Nota:
 
-Le API CRUD master data HR/business devono essere disponibili prima della relativa gestione UI operativa.
+Le API CRUD master data HR/business sono disponibili prima della relativa gestione UI operativa. Nessuna migration, nessun frontend, nessuna modifica security runtime, nessun login/JWT runtime, nessun RBAC runtime e nessun tenant switching operativo introdotti.
 
 ### TASK-032 - Implementare API CRUD master data governance/security
 
@@ -1839,6 +1841,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO request/response tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-032 API CRUD master data governance/security. |
 | 1.36 | 2026-05-03 | TASK-030 completato con API CRUD backend master data globali, DTO request/response, service layer applicativo, controller `/api/master-data/global`, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS. |
 | 1.35 | 2026-05-03 | Backlog riorganizzato per introdurre API CRUD master data prima della UI Master Data Admin: nuovi TASK-030, TASK-031 e TASK-032 per API CRUD globali, HR/business e governance/security; UI Master Data Admin rinumerata e divisa in foundation/list e CRUD. |
 | 1.34 | 2026-05-03 | TASK-029 documentale completato con creazione `frontend/AGENTS.md`, governance frontend UI/shared components e rinumerazione backlog successivo di +1. |
