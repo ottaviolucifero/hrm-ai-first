@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.40
+Versione: 1.41
 Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
@@ -1747,6 +1747,149 @@ Obiettivo:
 - Gestire stato autenticazione, token storage e navigazione base post-login in modo coerente con il MVP.
 - Non implementare OTP/MFA UI, RBAC runtime UI, tenant switching UI o impersonation UI.
 
+Sottotask operativi:
+
+035.1 - Analisi frontend esistente
+- leggere `frontend/AGENTS.md`
+- verificare routing Angular
+- verificare layout/shell esistenti
+- verificare asset/classi Metronic disponibili
+- verificare eventuali asset login/sign-in già presenti
+- definire file da modificare/creare
+
+035.2 - Riferimento grafico Metronic
+- usare come riferimento visuale una pagina login/sign-in Metronic
+- riusare asset/classi Metronic già presenti nel progetto
+- non copiare codice HTML/CSS esterno dalla demo
+- non usare Stitch come sorgente di codice
+- mantenere UI minimale coerente con layout e stile esistenti
+
+URL riferimento visuale:
+- https://keenthemes.com/metronic/tailwind/demo1/authentication/classic/sign-in
+
+035.3 - Routing login
+- aggiungere rotta `/login`
+- verificare redirect iniziale
+- evitare modifiche invasive al routing esistente
+
+035.4 - Shared form fields foundation
+- creare area shared dedicata ai campi form riusabili
+- creare `EmailFieldComponent`
+- creare `PasswordFieldComponent`
+- supportare Reactive Forms
+- API minimale
+- stile coerente con Metronic
+- nessun form framework generico
+- nessun componente base astratto
+- nessun componente shared oltre email/password
+
+035.5 - Shared feedback foundation
+- creare `AlertMessageComponent` riusabile
+- supportare `type`: `danger`, `warning`, `success`, `info`
+- supportare messaggio testuale
+- dismiss opzionale solo se semplice
+- usare classi Metronic/Bootstrap già disponibili
+- non creare toast system
+- non creare notification center
+- non creare gestione globale errori
+
+035.6 - EmailFieldComponent
+- input `type="email"`
+- validazione formato email tramite Reactive Forms / `Validators.email`
+- label configurabile
+- placeholder configurabile
+- messaggi errore base
+- trim del valore prima del submit/login
+
+035.7 - PasswordFieldComponent
+- input `type="password"`
+- toggle mostra/nascondi password con icona occhio
+- label configurabile
+- placeholder configurabile
+- messaggi errore base
+- non implementare password policy nel login
+- non loggare mai la password
+
+035.8 - Login page UI
+- creare `LoginComponent`
+- card centrale stile Metronic
+- usare `EmailFieldComponent`, `PasswordFieldComponent` e `AlertMessageComponent`
+- validazioni base
+- loading state sul submit
+- messaggio errore generico per login fallito
+- niente registrazione
+- niente forgot password
+- niente social login
+
+035.9 - Core auth foundation
+- creare `frontend/src/app/core/auth/`
+- `AuthService`
+- `AuthGuard`
+- `AuthInterceptor`
+- `AuthModels`
+
+035.10 - Auth service
+- chiamata `POST /api/auth/login`
+- chiamata `GET /api/auth/me`
+- gestione token JWT
+- persistenza token in `sessionStorage`
+- logout base con rimozione token
+
+035.11 - Route guard
+- proteggere rotte principali
+- redirect a `/login` se non autenticato
+
+035.12 - HTTP auth integration
+- aggiungere `Authorization: Bearer <token>`
+- usare pattern Angular semplice e mantenibile
+- gestire assenza token in modo sicuro
+- non gestire errori globali complessi
+
+035.13 - Navigazione post-login
+- dopo login valido andare alla shell/app
+- se già autenticato evitare di restare sulla login
+
+035.14 - Test e validazione tecnica
+- build frontend
+- test se presenti
+- login con credenziali errate -> HTTP 401
+- accesso rotta protetta senza token -> redirect login
+- refresh pagina con token presente -> utente autenticato
+- logout -> token rimosso
+
+Nota test:
+- non sono disponibili credenziali valide in questa fase
+- la validazione grafica/manuale della pagina login sarà fatta da una persona
+- Codex deve eseguire solo test tecnici automatizzabili o verificabili da build/test
+
+035.15 - Documentazione finale task
+- a task completato aggiornare `TASKS.md`
+- a task completato aggiornare `ROADMAP.md`
+- aggiornare `DECISIONS.md` solo se emerge una decisione architetturale durevole
+
+Fuori scope TASK-035:
+
+- backend
+- OTP/MFA
+- RBAC UI
+- tenant switching
+- impersonation
+- registrazione utente
+- forgot password
+- social login
+- refactor layout generale
+- gestione avanzata sessione multitab
+- sincronizzazione logout tra tab
+- persistenza cross-tab
+- uso di `localStorage` per token
+- refresh token
+- gestione avanzata scadenza token lato frontend
+- frontend app versioning
+- auto clean cache dopo nuovo deploy
+- service worker / PWA cache strategy
+- componenti shared oltre `EmailFieldComponent`, `PasswordFieldComponent` e `AlertMessageComponent`
+- toast system o notification center
+
 ### TASK-036 - Implementare UI Master Data Admin foundation/list
 
 Stato: TODO
@@ -1832,6 +1975,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.41 | 2026-05-04 | TASK-035 dettagliato con sottotask operativi per frontend login foundation: analisi frontend, riferimento visuale Metronic, routing `/login`, shared form fields, feedback component, login UI, core auth foundation, service/guard/interceptor, navigazione post-login, test tecnici e fuori scope. |
 | 1.40 | 2026-05-04 | TASK-034 completato con backend login/JWT foundation: endpoint `/api/auth/login` e `/api/auth/me`, DTO auth, service layer, UserDetailsService su UserAccount, BCrypt, password policy, JWT stateless con Spring Security OAuth2 Resource Server / Jose, migration V15 per email globale case-insensitive, test auth/security/OpenAPI/actuator e BUILD SUCCESS; prossimo passo TASK-035 frontend login foundation. |
 | 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: introdotti TASK-034 backend login/JWT foundation e TASK-035 frontend login foundation prima delle UI amministrative; UI Master Data Admin spostata a TASK-036/TASK-037 e task successivi rinumerati. |
 | 1.38 | 2026-05-04 | TASK-032 completato con API CRUD backend master data governance/security sotto `/api/master-data/governance-security`, DTO request/response globali e tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-033 UI Master Data Admin foundation/list. |
