@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.41
+Versione: 1.42
 Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
@@ -1738,7 +1738,7 @@ TASK-034 non introduce refresh token, logout server-side, registrazione, forgot 
 
 ### TASK-035 - Implementare frontend login foundation
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -1890,6 +1890,25 @@ Fuori scope TASK-035:
 - componenti shared oltre `EmailFieldComponent`, `PasswordFieldComponent` e `AlertMessageComponent`
 - toast system o notification center
 
+Completato:
+
+- Route pubblica `/login` aggiunta
+- Route principale protetta tramite auth guard
+- `LoginComponent` standalone creato con Reactive Forms e UI minimale coerente con Metronic
+- Componenti shared `EmailFieldComponent`, `PasswordFieldComponent` e `AlertMessageComponent` creati
+- Core auth foundation creata sotto `frontend/src/app/core/auth/`
+- `AuthService` creato con `POST /api/auth/login`, `GET /api/auth/me`, token JWT in `sessionStorage` con chiave `hrm.accessToken` e logout base
+- `AuthGuard` creato per redirect a `/login` quando manca autenticazione
+- `AuthInterceptor` creato per aggiungere `Authorization: Bearer <token>` alle richieste autenticate
+- `provideHttpClient` configurato con interceptor
+- Errore login generico configurato come `Email o password non corretti.`
+- Test tecnici aggiunti per auth service e interceptor
+- Build frontend e test frontend validati
+
+Nota:
+
+TASK-035 non introduce backend, proxy frontend, refresh token, gestione scadenza avanzata, gestione multitab avanzata, OTP/MFA, RBAC UI, tenant switching, impersonation, registrazione utente, forgot password, social login, refactor shell/header/sidebar o gestione errori globale.
+
 ### TASK-036 - Implementare UI Master Data Admin foundation/list
 
 Stato: TODO
@@ -1975,6 +1994,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.42 | 2026-05-04 | TASK-035 completato con frontend login foundation: route `/login`, LoginComponent, shared EmailField/PasswordField/AlertMessage, core auth service/guard/interceptor, token in `sessionStorage`, route principale protetta, test auth/interceptor, `npm run build` e `npm test` validati. |
 | 1.41 | 2026-05-04 | TASK-035 dettagliato con sottotask operativi per frontend login foundation: analisi frontend, riferimento visuale Metronic, routing `/login`, shared form fields, feedback component, login UI, core auth foundation, service/guard/interceptor, navigazione post-login, test tecnici e fuori scope. |
 | 1.40 | 2026-05-04 | TASK-034 completato con backend login/JWT foundation: endpoint `/api/auth/login` e `/api/auth/me`, DTO auth, service layer, UserDetailsService su UserAccount, BCrypt, password policy, JWT stateless con Spring Security OAuth2 Resource Server / Jose, migration V15 per email globale case-insensitive, test auth/security/OpenAPI/actuator e BUILD SUCCESS; prossimo passo TASK-035 frontend login foundation. |
 | 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: introdotti TASK-034 backend login/JWT foundation e TASK-035 frontend login foundation prima delle UI amministrative; UI Master Data Admin spostata a TASK-036/TASK-037 e task successivi rinumerati. |

@@ -1,0 +1,39 @@
+<main class="login-page">
+  <section class="login-panel">
+    <div class="login-logo">
+      <img src="assets/media/app/default-logo.svg" alt="HRM AI-first" />
+    </div>
+
+    <div class="kt-card">
+      <div class="login-card-header kt-card-header">
+        <h1 class="kt-card-title text-xl">Accedi</h1>
+      </div>
+
+      <form class="kt-card-content flex flex-col gap-5" [formGroup]="loginForm" (ngSubmit)="submit()">
+        <app-alert-message type="danger" [message]="errorMessage()" />
+
+        <app-email-field
+          [control]="loginForm.controls.email"
+          [submitted]="submitted"
+          label="Email"
+          placeholder="name@company.com"
+        />
+
+        <app-password-field
+          [control]="loginForm.controls.password"
+          [submitted]="submitted"
+          label="Password"
+          placeholder="Password"
+        />
+
+        <button class="kt-btn kt-btn-primary w-full" type="submit" [disabled]="loading()">
+          @if (loading()) {
+            <span>Accesso in corso...</span>
+          } @else {
+            <span>Accedi</span>
+          }
+        </button>
+      </form>
+    </div>
+  </section>
+</main>

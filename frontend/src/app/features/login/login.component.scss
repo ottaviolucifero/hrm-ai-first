@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+.login-page {
+  align-items: center;
+  background: hsl(var(--muted) / 0.3);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.login-panel {
+  width: min(100%, 440px);
+}
+
+.login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+
+  img {
+    height: 2.5rem;
+    max-width: 100%;
+  }
+}
+
+.login-card-header {
+  justify-content: center;
+  text-align: center;
+}

@@ -1,0 +1,20 @@
+<label class="kt-label mb-2 block" for="loginEmail">{{ label }}</label>
+<input
+  id="loginEmail"
+  class="kt-input"
+  type="email"
+  autocomplete="email"
+  [attr.aria-invalid]="showErrors"
+  [formControl]="control"
+  [placeholder]="placeholder"
+/>
+
+@if (showErrors) {
+  <div class="mt-1.5 text-xs text-destructive">
+    @if (control.hasError('required')) {
+      <span>Email obbligatoria.</span>
+    } @else if (control.hasError('email')) {
+      <span>Formato email non valido.</span>
+    }
+  </div>
+}
