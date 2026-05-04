@@ -93,7 +93,7 @@ Decisione:
 Lo stack principale sarà:
 
 - Angular per il frontend;
-- Spring Boot 3 / Java 21 per il backend;
+- Spring Boot 4 / Java 21 per il backend;
 - PostgreSQL per il database.
 
 Motivazione:

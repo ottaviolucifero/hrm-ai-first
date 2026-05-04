@@ -10,7 +10,7 @@ These rules extend the root `AGENTS.md` and must be followed by AI agents workin
 
 ## Backend Stack
 
-- Use Spring Boot 3.
+- Use Spring Boot 4.
 - Use Java 21.
 - Use PostgreSQL as the production database.
 - Use Flyway for versioned database migrations.

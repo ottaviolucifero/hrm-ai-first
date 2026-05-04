@@ -27,7 +27,7 @@ Tutti gli agenti AI devono rispettare questa architettura e non introdurre strut
 
 ### Backend
 
-- Spring Boot 3
+- Spring Boot 4
 - Java 21
 - API REST
 - Spring Security
