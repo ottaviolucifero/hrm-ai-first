@@ -236,3 +236,57 @@ For markdown-only governance tasks, validate with:
 
 Do not modify backend files during frontend-only tasks unless explicitly requested.
 
+
+
+\---
+
+
+
+\## 8. Auth Frontend Rules
+
+
+
+\- For login foundation, store JWT access tokens in `sessionStorage`, not `localStorage`, unless a later architecture decision says otherwise.
+
+\- Use relative API URLs, for example `/api/auth/login` and `/api/auth/me`.
+
+\- Auth interceptors must add `Authorization: Bearer <token>` only when a token is present.
+
+\- Do not introduce refresh tokens, advanced expiry handling, advanced multitab handling, frontend proxy configuration or global error handling without a dedicated task.
+
+\- Login errors must remain generic, for example `Email o password non corretti.`
+
+
+
+\---
+
+
+
+\## 9. Angular UI State Rules
+
+
+
+\- Every loading state activated by an HTTP call must be restored on both success and error, preferably with RxJS `finalize()`.
+
+\- UI errors must appear immediately after the HTTP response, without depending on focus, blur or other user interactions.
+
+\- If signals or `OnPush` are used, explicitly verify that the UI updates immediately.
+
+\- Stuck loading states or delayed error messages are functional regressions.
+
+
+
+\---
+
+
+
+\## 10. Frontend Manual Validation
+
+
+
+\- When a task introduces or changes screens, manual UI validation is required in addition to build/test.
+
+\- Verify rendering, basic responsive behavior, error states, loading states, disabled/re-enabled buttons and main interactions.
+
+\- On Windows, prefer `npm.cmd` in documented commands when `npm.ps1` may be blocked by PowerShell execution policy.
+
