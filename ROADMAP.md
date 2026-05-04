@@ -44,7 +44,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 ### Completato
 
 - Governance documentale completa
-- Backend Spring Boot 3 / Java 21
+- Backend Spring Boot 4 / Java 21
 - Configurazione backend YAML
 - PostgreSQL + Docker Compose
 - Frontend Angular base

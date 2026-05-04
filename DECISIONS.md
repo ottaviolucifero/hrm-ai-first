@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.17  
-Ultimo aggiornamento: 2026-05-03  
+Versione: 1.18
+Ultimo aggiornamento: 2026-05-04
 Stato: Attivo
 
 ---
@@ -93,7 +93,7 @@ Decisione:
 Lo stack principale sarà:
 
 - Angular per il frontend;
-- Spring Boot 3 / Java 21 per il backend;
+- Spring Boot 4 / Java 21 per il backend;
 - PostgreSQL per il database.
 
 Motivazione:
@@ -920,10 +920,48 @@ La UI Master Data Admin viene rinviata a:
 
 ---
 
+### DEC-025 - Agent governance split and historical analysis source precedence
+
+Data: 2026-05-04
+Stato: Approvata
+
+Decisione:
+
+La governance operativa degli agenti viene strutturata su piu livelli:
+
+- `AGENTS.md` resta la governance globale del progetto;
+- `backend/AGENTS.md` contiene le istruzioni specifiche per il backend Spring Boot;
+- `frontend/AGENTS.md`, quando presente, contiene le istruzioni specifiche per il frontend Angular.
+
+Il repository non usera una cartella `/skills` o un file `SKILLS.md` come fonte di governance interna. Eventuali skill esterne possono essere consultate solo come ispirazione operativa, ma non vengono installate, copiate o rese fonte autoritativa automaticamente.
+
+I file in `docs/analysis` sono classificati come materiale storico e supportivo. Possono essere consultati per contesto, ma non prevalgono su istruzioni umane esplicite, `DECISIONS.md`, `ARCHITECTURE.md`, `TASKS.md`, `ROADMAP.md`, `AGENTS.md`, istruzioni area-specific o codice gia implementato.
+
+Motivazione:
+
+- Chiarire la separazione tra governance globale e regole operative per area;
+- evitare che analisi storiche sovrascrivano decisioni, task, roadmap o codice consolidato;
+- mantenere il repository privo di sistemi paralleli di skill governance;
+- ridurre ambiguita per gli agenti AI durante task backend-only o frontend-only.
+
+Alternative escluse:
+
+- usare `/skills` o `SKILLS.md` come governance interna del repository;
+- trattare `docs/analysis` come fonte autoritativa corrente in caso di conflitto;
+- copiare o installare skill esterne automaticamente;
+- mantenere tutte le regole backend/frontend solo nel root `AGENTS.md`.
+
+Impatto:
+
+Gli agenti devono seguire prima la governance corrente e le decisioni documentate, poi il codice implementato, e usare `docs/analysis` solo come contesto storico/supportivo. Le modifiche backend e frontend devono rispettare i rispettivi file area-specific quando presenti.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.18 | 2026-05-04 | Aggiunta DEC-025 per separare governance globale e area-specific con `backend/AGENTS.md` e `frontend/AGENTS.md`, escludere `/skills` e `SKILLS.md`, e chiarire che `docs/analysis` e materiale storico/supportivo non prevalente su governance corrente o codice implementato. |
 | 1.17 | 2026-05-03 | Aggiunta DEC-024 per imporre API CRUD backend master data prima della UI Master Data Admin operativa. |
 | 1.16 | 2026-05-02 | Aggiunta DEC-023 per strategia backend-first: foundation persistence e API readiness prima delle UI enterprise. |
 | 1.15 | 2026-05-02 | Aggiunta DEC-022 per boundary API foundation read-only con DTO, service layer e protezione campi SMTP sensibili. |
