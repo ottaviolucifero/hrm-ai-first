@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.38
+Versione: 1.39
 Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
@@ -1567,8 +1567,7 @@ Nota architetturale:
 
 Core HR API readiness read-only completed. API write, CRUD operativo, workflow approvativi, upload/download fisico documenti, login/JWT runtime, RBAC runtime, tenant switching runtime, audit automatico, frontend/UI e notifiche restano fuori scope e differiti ai task successivi.
 
-## FASE 2F - API CRUD MASTER DATA / UI ADMIN / OPERATIONS
-## FASE 2F - API CRUD MASTER DATA / UI ADMIN / OPERATIONS
+## FASE 2F - API CRUD MASTER DATA / LOGIN / UI ADMIN / OPERATIONS
 
 Decisione operativa:
 
@@ -1693,7 +1692,50 @@ Nota:
 
 Le API CRUD master data governance/security sono disponibili prima della UI amministrativa completa. Nessuna nuova entity, nessuna migration, nessun frontend, nessun login/JWT runtime, nessun RBAC runtime e nessun tenant switching operativo introdotti.
 
-### TASK-033 - Implementare UI Master Data Admin foundation/list
+### TASK-033 - Riorganizzare backlog login/JWT prima delle UI amministrative
+
+Stato: DONE
+
+Tipo: Documentale / Backlog governance
+
+Completato:
+
+- Backlog riorganizzato per introdurre backend login/JWT foundation prima delle UI amministrative
+- Frontend login foundation inserita prima della UI Master Data Admin
+- UI Master Data Admin foundation/list spostata dopo login foundation
+- UI Master Data Admin CRUD spostata dopo UI foundation/list
+- Task successivi rinumerati mantenendo ordine e coerenza
+- ROADMAP.md aggiornato con nuovo prossimo passo
+- DECISIONS.md aggiornato con decisione architetturale dedicata
+
+Nota:
+
+Task solo documentale. Nessun codice backend, nessun codice frontend, nessuna implementazione login/JWT, nessuna UI login e nessuna UI Master Data Admin introdotti.
+
+### TASK-034 - Implementare backend login/JWT foundation
+
+Stato: TODO
+
+Obiettivo:
+
+- Implementare la foundation backend per login runtime e autenticazione JWT del MVP.
+- Riusare `UserAccount`, `UserType` e `AuthenticationMethod` gia introdotti nella foundation dati.
+- Esporre contratti API espliciti con DTO request/response e service layer applicativo.
+- Preparare gestione password hash, autenticazione email-first, emissione e validazione JWT.
+- Mantenere OTP/MFA, RBAC runtime, tenant switching e impersonation fuori scope salvo task dedicati.
+
+### TASK-035 - Implementare frontend login foundation
+
+Stato: TODO
+
+Obiettivo:
+
+- Implementare la foundation frontend per login usando i contratti backend login/JWT disponibili.
+- Riusare shell, layout e convenzioni frontend esistenti secondo `frontend/AGENTS.md`.
+- Gestire stato autenticazione, token storage e navigazione base post-login in modo coerente con il MVP.
+- Non implementare OTP/MFA UI, RBAC runtime UI, tenant switching UI o impersonation UI.
+
+### TASK-036 - Implementare UI Master Data Admin foundation/list
 
 Stato: TODO
 
@@ -1703,7 +1745,7 @@ Obiettivo:
 - Riusare layout, shell e componenti esistenti secondo `frontend/AGENTS.md`.
 - Non implementare CRUD completo se le API write corrispondenti non sono disponibili.
 
-### TASK-034 - Implementare UI Master Data Admin CRUD
+### TASK-037 - Implementare UI Master Data Admin CRUD
 
 Stato: TODO
 
@@ -1712,31 +1754,11 @@ Obiettivo:
 - Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
 - Non usare mock come sostituto dei contratti API backend.
 
-### TASK-035 - Implementare UI Employee management enterprise
+### TASK-038 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-036 - Implementare Security Admin UI
-Obiettivo:
-
-- Implementare la foundation UI e le viste lista della UI Master Data Admin usando API backend disponibili.
-- Riusare layout, shell e componenti esistenti secondo `frontend/AGENTS.md`.
-- Non implementare CRUD completo se le API write corrispondenti non sono disponibili.
-
-### TASK-034 - Implementare UI Master Data Admin CRUD
-
-Stato: TODO
-
-Obiettivo:
-
-- Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
-- Non usare mock come sostituto dei contratti API backend.
-
-### TASK-035 - Implementare UI Employee management enterprise
-
-Stato: TODO
-
-### TASK-036 - Implementare Security Admin UI
+### TASK-039 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -1748,57 +1770,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-037 - Implementare UI Device governance
-### TASK-037 - Implementare UI Device governance
+### TASK-040 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-038 - Implementare UI PayrollDocument
-### TASK-038 - Implementare UI PayrollDocument
+### TASK-041 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-039 - Implementare UI LeaveRequest
-### TASK-039 - Implementare UI LeaveRequest
+### TASK-042 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-040 - Implementare UI HolidayCalendar
-### TASK-040 - Implementare UI HolidayCalendar
+### TASK-043 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-041 - Implementare Audit UI / compliance explorer
-### TASK-041 - Implementare Audit UI / compliance explorer
+### TASK-044 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-042 - Implementare UI disciplinary governance
-### TASK-042 - Implementare UI disciplinary governance
+### TASK-045 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-043 - Implementare Platform Operator / Super Admin governance
-### TASK-043 - Implementare Platform Operator / Super Admin governance
+### TASK-046 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-044 - Implementare Cross-tenant admin UI
-### TASK-044 - Implementare Cross-tenant admin UI
+### TASK-047 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-045 - Configurare logging, monitoring e observability enterprise
-### TASK-045 - Configurare logging, monitoring e observability enterprise
+### TASK-048 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-046 - Test integrato MVP enterprise completo
-### TASK-046 - Test integrato MVP enterprise completo
+### TASK-049 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -1808,6 +1820,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: introdotti TASK-034 backend login/JWT foundation e TASK-035 frontend login foundation prima delle UI amministrative; UI Master Data Admin spostata a TASK-036/TASK-037 e task successivi rinumerati. |
 | 1.38 | 2026-05-04 | TASK-032 completato con API CRUD backend master data governance/security sotto `/api/master-data/governance-security`, DTO request/response globali e tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-033 UI Master Data Admin foundation/list. |
 | 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO request/response tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-032 API CRUD master data governance/security. |
 | 1.36 | 2026-05-03 | TASK-030 completato con API CRUD backend master data globali, DTO request/response, service layer applicativo, controller `/api/master-data/global`, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS. |

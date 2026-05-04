@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.38
+Versione: 1.39
 Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
@@ -75,17 +75,19 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-030 API CRUD master data globali
 - TASK-031 API CRUD master data HR/business
 - TASK-032 API CRUD master data governance/security
+- TASK-033 Backlog login/JWT before admin UI reorganization
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
+- Backlog governance updated: Login foundation precedes administrative UI
 
 ### Prossimo passo
 
-- TASK-033: Implementare UI Master Data Admin foundation/list
+- TASK-034: Implementare backend login/JWT foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Master Data governance/security CRUD API completata
+Stato: Backlog login-first prima delle UI amministrative completato
 
 Completato:
 
@@ -123,6 +125,7 @@ Completato:
 - API CRUD master data globali available under `/api/master-data/global` for Country, Region, Area, GlobalZipCode, Currency, Gender, MaritalStatus and NationalIdentifierType, with explicit DTOs, application service layer, soft delete and MockMvc/OpenAPI tests validated with BUILD SUCCESS
 - API CRUD master data HR/business available under `/api/master-data/hr-business` for Department, JobTitle, ContractType, EmploymentStatus, WorkMode, LeaveRequestType, DocumentType, DeviceType, DeviceBrand and DeviceStatus, with tenant-scoped DTOs, application service layer, soft delete and MockMvc/OpenAPI tests validated with BUILD SUCCESS
 - API CRUD master data governance/security available under `/api/master-data/governance-security` for UserType, AuthenticationMethod, AuditActionType, DisciplinaryActionType, SmtpEncryptionType, Role, Permission, CompanyProfileType and OfficeLocationType, with explicit DTOs, application service layer, soft delete and MockMvc/OpenAPI tests validated with BUILD SUCCESS
+- TASK-033 backlog reorganization completed: backend login/JWT foundation and frontend login foundation now precede Master Data Admin UI
 
 Nota:
 
@@ -143,12 +146,15 @@ EmployeeDisciplinaryAction persistence foundation is available; API REST, DTO, s
 Core HR read-only API readiness is available for Employee, Contract, Device, PayrollDocument, LeaveRequest, HolidayCalendar, AuditLog and EmployeeDisciplinaryAction; write APIs, operational CRUD, workflows, physical document transfer, login/JWT runtime, RBAC runtime, tenant switching runtime, automatic audit, frontend/UI and notifications remain deferred.
 Frontend governance is active: UI tasks must analyze and reuse existing Angular components, extend before creating duplicates, keep feature components local, create shared components only with explicit motivation, and adapt Metronic as a visual reference rather than copying code indiscriminately.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
-Global, HR/business and governance/security master data CRUD APIs are available; Master Data Admin UI remains deferred.
+UserAccount persistence foundation is available, but login runtime/JWT remains deferred to TASK-034 and frontend login foundation remains deferred to TASK-035.
+Global, HR/business and governance/security master data CRUD APIs are available; Master Data Admin UI remains deferred until after login foundation.
 
 Da fare:
 
-- TASK-033 UI Master Data Admin foundation/list
-- TASK-034 UI Master Data Admin CRUD
+- TASK-034 backend login/JWT foundation
+- TASK-035 frontend login foundation
+- TASK-036 UI Master Data Admin foundation/list
+- TASK-037 UI Master Data Admin CRUD
 
 ---
 
@@ -196,26 +202,21 @@ Profili Spring Boot configurati:
 
 - TASK-030 -> TASK-032
 
-### Fase 2G - UI Admin / Operations
-### Fase 2F - API CRUD Master Data
+### Fase 2G - Login Foundation
 
-- TASK-030 -> TASK-032
+- TASK-034 -> TASK-035
 
-### Fase 2G - UI Admin / Operations
+### Fase 2H - UI Admin / Operations
 
-- TASK-033 -> TASK-042
-- TASK-033 -> TASK-042
+- TASK-036 -> TASK-045
 
-### Fase 2H - Platform Operations
-### Fase 2H - Platform Operations
+### Fase 2I - Platform Operations
 
-- TASK-043 -> TASK-044
-- TASK-043 -> TASK-044
+- TASK-046 -> TASK-047
 
 ### Fase 3 - Stabilization
 
-- TASK-045 -> TASK-046
-- TASK-045 -> TASK-046
+- TASK-048 -> TASK-049
 
 ---
 
@@ -231,6 +232,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: login/JWT foundation backend e frontend spostate prima delle UI amministrative; prossimo passo aggiornato a TASK-034 backend login/JWT foundation e Master Data Admin rinumerato a TASK-036/TASK-037. |
 | 1.38 | 2026-05-04 | TASK-032 completato con API CRUD backend master data governance/security sotto `/api/master-data/governance-security`, DTO globali e tenant-scoped, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-033 UI Master Data Admin foundation/list. |
 | 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO tenant-scoped, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-032 API CRUD master data governance/security. |
 | 1.36 | 2026-05-03 | TASK-030 completato con API CRUD backend master data globali sotto `/api/master-data/global`, DTO espliciti, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-031 API CRUD master data HR/business. |
