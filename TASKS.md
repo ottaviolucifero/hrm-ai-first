@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.37
+Versione: 1.38
 Ultimo aggiornamento: 2026-05-04
 Stato: In avanzamento
 
@@ -1662,28 +1662,7 @@ Le API CRUD master data HR/business sono disponibili prima della relativa gestio
 
 ### TASK-032 - Implementare API CRUD master data governance/security
 
-Stato: TODO
-
-Include:
-
-
-Deve includere:
-
-- DTO request/response
-- Service layer applicativo
-- Controller REST
-- Validazioni minime
-- Gestione errori
-- Test backend
-- OpenAPI verificabile
-
-Nota:
-
-Le API CRUD master data HR/business devono essere disponibili prima della relativa gestione UI operativa.
-
-### TASK-032 - Implementare API CRUD master data governance/security
-
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -1697,34 +1676,22 @@ Include:
 - CompanyProfileType
 - OfficeLocationType
 
-Deve includere:
+Completato:
 
-- DTO request/response
-- Service layer applicativo
-- Controller REST
-- Validazioni minime
-- Gestione errori
-- Test backend
-- OpenAPI verificabile
-
-Nota:
-
-Le API CRUD master data governance/security devono precedere la UI amministrativa completa. Login/JWT runtime, RBAC runtime e tenant switching operativo restano fuori scope salvo task dedicati.
-
-### TASK-033 - Implementare UI Master Data Admin foundation/list
-Deve includere:
-
-- DTO request/response
-- Service layer applicativo
-- Controller REST
-- Validazioni minime
-- Gestione errori
-- Test backend
-- OpenAPI verificabile
+- DTO request/response espliciti in `dto/masterdata/governancesecurity`
+- Service layer applicativo `MasterDataGovernanceSecurityService`
+- Controller REST `MasterDataGovernanceSecurityController` sotto `/api/master-data/governance-security`
+- CRUD backend per UserType, AuthenticationMethod, AuditActionType, DisciplinaryActionType, SmtpEncryptionType, Role, Permission, CompanyProfileType e OfficeLocationType
+- DELETE implementato come soft delete con `active=false`
+- Validazioni minime su `code`, `name`, campi specifici obbligatori e `tenantId` per risorse tenant-scoped
+- Default `active=true` se assente, normalizzazione `code` uppercase/trim e `name` trim
+- Gestione errori per validation/semantic error 400, not found 404 e conflict 409 su `code` o `tenantId + code`
+- Repository governance/security estesi con metodi di conflict check necessari
+- Test backend MockMvc per list, get by id, create, update, delete/disable, validation error, not found, conflict 409 e OpenAPI `/v3/api-docs`
 
 Nota:
 
-Le API CRUD master data governance/security devono precedere la UI amministrativa completa. Login/JWT runtime, RBAC runtime e tenant switching operativo restano fuori scope salvo task dedicati.
+Le API CRUD master data governance/security sono disponibili prima della UI amministrativa completa. Nessuna nuova entity, nessuna migration, nessun frontend, nessun login/JWT runtime, nessun RBAC runtime e nessun tenant switching operativo introdotti.
 
 ### TASK-033 - Implementare UI Master Data Admin foundation/list
 
@@ -1841,6 +1808,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.38 | 2026-05-04 | TASK-032 completato con API CRUD backend master data governance/security sotto `/api/master-data/governance-security`, DTO request/response globali e tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-033 UI Master Data Admin foundation/list. |
 | 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO request/response tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-032 API CRUD master data governance/security. |
 | 1.36 | 2026-05-03 | TASK-030 completato con API CRUD backend master data globali, DTO request/response, service layer applicativo, controller `/api/master-data/global`, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS. |
 | 1.35 | 2026-05-03 | Backlog riorganizzato per introdurre API CRUD master data prima della UI Master Data Admin: nuovi TASK-030, TASK-031 e TASK-032 per API CRUD globali, HR/business e governance/security; UI Master Data Admin rinumerata e divisa in foundation/list e CRUD. |

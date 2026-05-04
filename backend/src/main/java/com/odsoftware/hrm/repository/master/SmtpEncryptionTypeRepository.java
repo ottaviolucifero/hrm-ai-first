@@ -5,4 +5,8 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SmtpEncryptionTypeRepository extends JpaRepository<SmtpEncryptionType, UUID> {
+
+	boolean existsByCode(String code);
+
+	boolean existsByCodeAndIdNot(String code, UUID id);
 }
