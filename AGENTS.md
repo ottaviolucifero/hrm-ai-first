@@ -4,18 +4,30 @@
 
 This repository contains the HRM AI-first platform.
 
-Primary source documents:
-- /docs/analysis/Manifesto_e_Intenzioni_HRM_AI_First
-- /docs/analysis/MacroAnalyse_HRMUpdated
-- /docs/analysis/Entities_With_Types_v11
-- /docs/analysis/HRM_Jmix_UI_Interfaces
+Primary governance documents:
+- `AGENTS.md`
+- `ARCHITECTURE.md`
+- `ROADMAP.md`
+- `TASKS.md`
+- `DECISIONS.md`
 
-Agents must always use these documents as the primary source of truth for:
-- Functional scope
-- MVP boundaries
-- Data model
-- UI reference
-- Strategic direction
+Supporting historical analysis input:
+- `/docs/analysis/Manifesto_e_Intenzioni_HRM_AI_First`
+- `/docs/analysis/MacroAnalyse_HRMUpdated`
+- `/docs/analysis/Entities_With_Types_v11`
+- `/docs/analysis/HRM_Jmix_UI_Interfaces`
+
+Agents may consult `docs/analysis` for historical context and background analysis.
+
+`docs/analysis` must not override:
+- explicit human instructions
+- already implemented code
+- `ARCHITECTURE.md`
+- `TASKS.md`
+- `ROADMAP.md`
+- `DECISIONS.md`
+- `backend/AGENTS.md`
+- `frontend/AGENTS.md`
 
 ---
 
@@ -65,17 +77,31 @@ Do NOT implement unless explicitly requested:
 
 Agents must follow this order of authority:
 
-1. Manifesto (vision and strategic method)
-2. Macro Analysis (functional requirements)
-3. Architecture.md (technical structure)
-4. Root AGENTS.md (global operational governance)
-5. backend/AGENTS.md (backend implementation rules)
-6. frontend/AGENTS.md (frontend implementation rules)
+1. Human instruction
+2. `DECISIONS.md`
+3. `ARCHITECTURE.md`
+4. `TASKS.md`
+5. `ROADMAP.md`
+6. Root `AGENTS.md`
+7. `backend/AGENTS.md` for backend work
+8. `frontend/AGENTS.md` for frontend work
+9. Existing implemented code
+10. `docs/analysis` as supporting historical context
 
 If conflicts appear:
 - The more specific file applies only within its domain
-- Architecture.md governs structural decisions
+- `DECISIONS.md` and `ARCHITECTURE.md` govern strategic and structural decisions
+- `docs/analysis` provides context but does not define current scope by itself
 - Human instruction overrides all
+
+---
+
+## Area-Specific Instructions
+
+Agents must also follow area-specific operational rules when working inside scoped project areas:
+
+- `backend/AGENTS.md` for backend Spring Boot conventions and constraints
+- `frontend/AGENTS.md` for frontend Angular conventions and constraints, when present
 
 ---
 
