@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.18
+Versione: 1.19
 Ultimo aggiornamento: 2026-05-04
 Stato: Attivo
 
@@ -913,10 +913,10 @@ Il backlog viene riorganizzato introducendo prima:
 - TASK-031 API CRUD master data HR/business;
 - TASK-032 API CRUD master data governance/security.
 
-La UI Master Data Admin viene rinviata a:
+La UI Master Data Admin resta rinviata dopo le API CRUD master data. La numerazione corrente viene aggiornata da DEC-026:
 
-- TASK-033 UI Master Data Admin foundation/list;
-- TASK-034 UI Master Data Admin CRUD.
+- TASK-036 UI Master Data Admin foundation/list;
+- TASK-037 UI Master Data Admin CRUD.
 
 ---
 
@@ -957,10 +957,55 @@ Gli agenti devono seguire prima la governance corrente e le decisioni documentat
 
 ---
 
+### DEC-026 - Login/JWT foundation before administrative UI
+
+Data: 2026-05-04
+Stato: Approvata
+
+Contesto:
+
+La foundation `UserAccount` esiste gia e modella identity/security email-first, ma login runtime, JWT, OTP/MFA, RBAC runtime, tenant switching e impersonation sono ancora deferred.
+
+Decisione:
+
+Backend login/JWT foundation e frontend login foundation devono precedere le UI amministrative.
+
+Il backlog operativo viene ordinato cosi:
+
+1. TASK-034 backend login/JWT foundation
+2. TASK-035 frontend login foundation
+3. TASK-036 UI Master Data Admin foundation/list
+4. TASK-037 UI Master Data Admin CRUD
+
+Motivazione:
+
+- evitare di sviluppare UI amministrative senza una foundation di autenticazione;
+- allineare accesso applicativo, shell frontend e protezione delle rotte prima delle schermate operative;
+- mantenere separata la foundation login/JWT da RBAC runtime e tenant switching;
+- ridurre refactor successivi sulle UI amministrative.
+
+Conseguenze:
+
+Master Data Admin viene spostato dopo login foundation. Le UI amministrative dovranno essere implementate quando backend login/JWT e frontend login foundation sono disponibili.
+
+Non obiettivi:
+
+- non implementare OTP/MFA in questa fase;
+- non implementare RBAC runtime in questa fase;
+- non implementare tenant switching in questa fase;
+- non implementare impersonation in questa fase.
+
+Impatto:
+
+TASKS.md definisce il nuovo ordine operativo dei task. ROADMAP.md espone TASK-034 come prossimo passo. Questa decisione aggiorna la sequenza operativa introdotta da DEC-024 senza modificare il principio: le UI amministrative restano subordinate a foundation e contratti backend stabili.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.19 | 2026-05-04 | Aggiunta DEC-026 per introdurre backend login/JWT foundation e frontend login foundation prima delle UI amministrative, spostando Master Data Admin dopo login foundation e mantenendo fuori scope OTP/MFA, RBAC runtime, tenant switching e impersonation. |
 | 1.18 | 2026-05-04 | Aggiunta DEC-025 per separare governance globale e area-specific con `backend/AGENTS.md` e `frontend/AGENTS.md`, escludere `/skills` e `SKILLS.md`, e chiarire che `docs/analysis` e materiale storico/supportivo non prevalente su governance corrente o codice implementato. |
 | 1.17 | 2026-05-03 | Aggiunta DEC-024 per imporre API CRUD backend master data prima della UI Master Data Admin operativa. |
 | 1.16 | 2026-05-02 | Aggiunta DEC-023 per strategia backend-first: foundation persistence e API readiness prima delle UI enterprise. |
