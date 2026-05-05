@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.44
+Versione: 1.47
 Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
@@ -78,21 +78,23 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-033 Backlog login/JWT before admin UI reorganization
 - TASK-034 Backend login/JWT foundation
 - TASK-035 Frontend login foundation
+- TASK-036 Frontend authenticated home shell foundation
 - TASK-037 Frontend application logo integration in login UI
 - TASK-038 Frontend design guidelines based on logo brand colors
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
 - Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
+- Backlog governance updated: sidebar navigation tree foundation and frontend i18n foundation immediately follow authenticated home shell before Master Data Admin UI
 
 ### Prossimo passo
 
-- TASK-036: Frontend authenticated home shell foundation
+- TASK-039: Frontend sidebar navigation tree foundation
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Frontend login foundation, logo integration e design guidelines completate
+Stato: Frontend login foundation, authenticated home shell foundation, logo integration e design guidelines completate
 
 Completato:
 
@@ -133,6 +135,7 @@ Completato:
 - TASK-033 backlog reorganization completed: backend login/JWT foundation and frontend login foundation now precede Master Data Admin UI
 - Backend login/JWT foundation available with `/api/auth/login`, `/api/auth/me`, stateless JWT, email-only case-insensitive login, BCrypt password verification, password policy foundation and user email global case-insensitive uniqueness
 - Frontend login foundation available with `/login`, sessionStorage JWT token handling, route guard, auth HTTP interceptor, reusable email/password fields, alert feedback component and frontend build/test validation
+- Frontend authenticated home shell foundation available with protected `/` route under `app-shell`, `app-header`, `app-sidebar` and a minimal `HomeComponent`
 - Frontend application logo integrated in the existing login UI using `assets/logos/hrm-logo.png`
 - Frontend design guidelines based on logo brand colors documented in `frontend/AGENTS.md`
 
@@ -157,13 +160,14 @@ Frontend governance is active: UI tasks must analyze and reuse existing Angular 
 Logo brand color governance is active: frontend UI tasks must use the documented deep indigo, navy, accent blue, violet-blue and soft highlight tint consistently when the task scope includes visual implementation, without opportunistic redesign.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
-Global, HR/business and governance/security master data CRUD APIs are available; Master Data Admin UI remains deferred until after authenticated home shell foundation.
+Global, HR/business and governance/security master data CRUD APIs are available; Master Data Admin UI can proceed from TASK-041 after sidebar navigation tree and i18n foundation.
 
 Da fare:
 
-- TASK-036 Frontend authenticated home shell foundation
-- TASK-039 UI Master Data Admin foundation/list
-- TASK-040 UI Master Data Admin CRUD
+- TASK-039 Frontend sidebar navigation tree foundation
+- TASK-040 Frontend i18n foundation
+- TASK-041 UI Master Data Admin foundation/list
+- TASK-042 UI Master Data Admin CRUD
 
 ---
 
@@ -217,15 +221,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-048
+- TASK-036 -> TASK-050
 
 ### Fase 2I - Platform Operations
 
-- TASK-049 -> TASK-050
+- TASK-051 -> TASK-052
 
 ### Fase 3 - Stabilization
 
-- TASK-051 -> TASK-052
+- TASK-053 -> TASK-054
 
 ---
 
@@ -241,6 +245,9 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.47 | 2026-05-05 | Backlog futuro rinumerato in chiusura TASK-036: TASK-039 diventa Frontend sidebar navigation tree foundation, TASK-040 diventa Frontend i18n foundation, Master Data Admin slitta a TASK-041/TASK-042 e prossimo passo aggiornato a TASK-039. |
+| 1.46 | 2026-05-05 | Riallineamento documentale intermedio dei task frontend futuri, sostituito dalla rinumerazione definitiva in versione 1.47. |
+| 1.45 | 2026-05-05 | TASK-036 completato con home autenticata post-login: route protetta `/` sotto `app-shell`, header/sidebar visibili, `HomeComponent` minimale e placeholder dashboard rimossi dalla shell; nessuna UI Master Data Admin, nessun backend e nessuna modifica a login/JWT; prossimo passo aggiornato a TASK-039. |
 | 1.44 | 2026-05-05 | TASK-038 completato con direttive frontend/design basate sui colori del logo documentate in `frontend/AGENTS.md`; roadmap riallineata con Master Data Admin foundation/list a TASK-039, CRUD a TASK-040 e task successivi fino a TASK-052; prossimo passo resta TASK-036 finche la home shell foundation non viene chiusa. |
 | 1.43 | 2026-05-05 | TASK-037 completato con integrazione del logo applicativo nella login UI esistente usando `assets/logos/hrm-logo.png`; nessuna modifica a backend, routing, autenticazione, login/logout, sidebar/header/shell o UI Master Data Admin; prossimo passo resta TASK-036 finche la home shell foundation non viene chiusa. |
 | 1.42 | 2026-05-05 | Riallineato backlog documentale: TASK-036 diventa frontend authenticated home shell foundation, TASK-037 frontend application logo integration, Master Data Admin foundation/list spostato a TASK-038, Master Data Admin CRUD a TASK-039 e task successivi rinumerati fino a TASK-051; prossimo passo aggiornato a TASK-036. |
