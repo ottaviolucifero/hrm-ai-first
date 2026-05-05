@@ -1,75 +1,227 @@
 <aside
   id="sidebar"
-  class="kt-sidebar fixed bottom-0 start-0 top-0 z-20 hidden shrink-0 flex-col border-e border-border bg-background lg:flex"
+  class="kt-sidebar fixed bottom-0 start-0 top-0 z-20 hidden shrink-0 flex-col border-e border-border bg-background transition-all duration-200 lg:flex"
+  [class.overflow-hidden]="sidebarCollapsed()"
+  [class.w-20]="sidebarCollapsed()"
+  [style.--sidebar-width]="sidebarCollapsed() ? '80px' : null"
 >
   <div id="sidebar_wrapper" class="kt-sidebar-wrapper flex grow flex-col">
-    <div class="kt-sidebar-header flex items-center border-b border-border px-5">
-      <a class="kt-sidebar-logo flex items-center gap-3" href="/" aria-label="HRflow home">
-        <img class="default-logo h-8" src="assets/logos/hrm-logo.png" alt="HRflow" />
-        <img class="small-logo h-8" src="assets/logos/hrm-logo.png" alt="HRflow" />
-      </a>
+    <div
+      class="kt-sidebar-header flex items-center gap-2 border-b border-border px-5"
+      [class.justify-center]="sidebarCollapsed()"
+      [class.px-3]="sidebarCollapsed()"
+    >
+      @if (!sidebarCollapsed()) {
+        <a class="sidebar-focus kt-sidebar-logo flex min-w-0 items-center gap-3" href="/" aria-label="HRflow home">
+          <img class="default-logo h-8" src="assets/logos/hrm-logo.png" alt="HRflow" />
+          <img class="small-logo h-8" src="assets/logos/hrm-logo.png" alt="HRflow" />
+        </a>
+      }
+      <button
+        class="sidebar-focus kt-btn kt-btn-icon kt-btn-ghost kt-btn-sm shrink-0"
+        type="button"
+        [class.ms-auto]="!sidebarCollapsed()"
+        [attr.aria-label]="sidebarCollapsed() ? 'Espandi menu' : 'Comprimi menu'"
+        [attr.aria-expanded]="!sidebarCollapsed()"
+        [attr.title]="sidebarCollapsed() ? 'Espandi menu' : 'Comprimi menu'"
+        (click)="toggleSidebarCollapsed()"
+      >
+        <span class="flex flex-col gap-1" style="width: 16px;" aria-hidden="true">
+          <span class="block rounded-full" style="height: 2px; width: 16px; background: currentColor;"></span>
+          <span class="block rounded-full" style="height: 2px; width: 16px; background: currentColor;"></span>
+          <span class="block rounded-full" style="height: 2px; width: 16px; background: currentColor;"></span>
+        </span>
+      </button>
     </div>
 
     <div id="sidebar_scrollable" class="kt-sidebar-content kt-scrollable-y-auto grow py-4">
+      @if (!sidebarCollapsed()) {
+        <div class="px-4 pb-3">
+          <div class="kt-input kt-input-sm">
+            <i class="ki-filled ki-magnifier" aria-hidden="true"></i>
+            <input
+              type="search"
+              aria-label="Cerca nel menu"
+              placeholder="Cerca"
+              [value]="searchTerm()"
+              (input)="updateSearch($event)"
+            />
+          </div>
+        </div>
+      }
+
       <nav
         id="sidebar_menu"
         class="kt-menu kt-menu-default flex-col px-2"
         data-kt-menu="true"
         aria-label="Main navigation"
       >
-        <div class="kt-menu-item active">
-          <a class="kt-menu-link" href="/">
-            <span class="kt-menu-bullet">
-              <span class="size-1.5 rounded-full bg-primary"></span>
-            </span>
-            <span class="kt-menu-title">Home</span>
-          </a>
-        </div>
+        @for (node of displayedNavigationTree(); track node.id) {
+          <div
+            class="kt-menu-item"
+            [class.active]="isActiveRoute(node)"
+            [class.here]="hasActiveDescendant(node)"
+            [class.show]="isExpanded(node)"
+          >
+            @if (hasChildren(node)) {
+              @if (sidebarCollapsed()) {
+                <button
+                  class="kt-menu-link w-full justify-center opacity-60"
+                  type="button"
+                  disabled
+                  [attr.title]="node.title"
+                >
+                  <span class="text-sm font-semibold leading-none">{{ navigationInitial(node) }}</span>
+                </button>
+              } @else {
+                <button
+                  class="sidebar-focus kt-menu-link w-full"
+                  type="button"
+                  [attr.aria-expanded]="isExpanded(node)"
+                  (click)="toggleNode(node)"
+                >
+                  <span class="kt-menu-bullet">
+                    <span
+                      class="size-1.5 rounded-full"
+                      [class.bg-primary]="hasActiveDescendant(node)"
+                      [class.bg-muted]="!hasActiveDescendant(node)"
+                    ></span>
+                  </span>
+                  <span class="kt-menu-title">{{ node.title }}</span>
+                  <span class="kt-menu-arrow">
+                    <i
+                      class="ki-filled"
+                      [class.ki-down]="isExpanded(node)"
+                      [class.ki-right]="!isExpanded(node)"
+                      aria-hidden="true"
+                    ></i>
+                  </span>
+                </button>
+              }
 
-        <div class="kt-menu-item">
-          <a class="kt-menu-link" href="/">
-            <span class="kt-menu-bullet">
-              <span class="size-1.5 rounded-full bg-muted"></span>
-            </span>
-            <span class="kt-menu-title">Dipendenti</span>
-          </a>
-        </div>
+              @if (isExpanded(node)) {
+                <div class="kt-menu-accordion flex-col">
+                  @for (childNode of node.children; track childNode.id) {
+                    <div
+                      class="kt-menu-item"
+                      [class.active]="isActiveRoute(childNode)"
+                      [class.here]="hasActiveDescendant(childNode)"
+                      [class.show]="isExpanded(childNode)"
+                    >
+                      @if (hasChildren(childNode)) {
+                        <button
+                          class="sidebar-focus kt-menu-link w-full"
+                          type="button"
+                          [attr.aria-expanded]="isExpanded(childNode)"
+                          (click)="toggleNode(childNode)"
+                        >
+                          <span class="kt-menu-bullet">
+                            <span
+                              class="size-1.5 rounded-full"
+                              [class.bg-primary]="hasActiveDescendant(childNode)"
+                              [class.bg-muted]="!hasActiveDescendant(childNode)"
+                            ></span>
+                          </span>
+                          <span class="kt-menu-title">{{ childNode.title }}</span>
+                          <span class="kt-menu-arrow">
+                            <i
+                              class="ki-filled"
+                              [class.ki-down]="isExpanded(childNode)"
+                              [class.ki-right]="!isExpanded(childNode)"
+                              aria-hidden="true"
+                            ></i>
+                          </span>
+                        </button>
 
-        <div class="kt-menu-item">
-          <a class="kt-menu-link" href="/">
-            <span class="kt-menu-bullet">
-              <span class="size-1.5 rounded-full bg-muted"></span>
-            </span>
-            <span class="kt-menu-title">Dispositivi</span>
-          </a>
-        </div>
-
-        <div class="kt-menu-item">
-          <a class="kt-menu-link" href="/">
-            <span class="kt-menu-bullet">
-              <span class="size-1.5 rounded-full bg-muted"></span>
-            </span>
-            <span class="kt-menu-title">Documenti paga</span>
-          </a>
-        </div>
-
-        <div class="kt-menu-item">
-          <a class="kt-menu-link" href="/">
-            <span class="kt-menu-bullet">
-              <span class="size-1.5 rounded-full bg-muted"></span>
-            </span>
-            <span class="kt-menu-title">Richieste permessi</span>
-          </a>
-        </div>
-
-        <div class="kt-menu-item">
-          <a class="kt-menu-link" href="/">
-            <span class="kt-menu-bullet">
-              <span class="size-1.5 rounded-full bg-muted"></span>
-            </span>
-            <span class="kt-menu-title">Calendario festività</span>
-          </a>
-        </div>
+                        @if (isExpanded(childNode)) {
+                          <div class="kt-menu-accordion flex-col">
+                            @for (grandchildNode of childNode.children; track grandchildNode.id) {
+                              <div
+                                class="kt-menu-item"
+                                [class.active]="isActiveRoute(grandchildNode)"
+                              >
+                                @if (grandchildNode.route; as route) {
+                                  <a class="sidebar-focus kt-menu-link" [routerLink]="route">
+                                    <span class="kt-menu-bullet">
+                                      <span
+                                        class="size-1.5 rounded-full"
+                                        [class.bg-primary]="isActiveRoute(grandchildNode)"
+                                        [class.bg-muted]="!isActiveRoute(grandchildNode)"
+                                      ></span>
+                                    </span>
+                                    <span class="kt-menu-title">{{ grandchildNode.title }}</span>
+                                  </a>
+                                } @else {
+                                  <button class="kt-menu-link w-full opacity-60" type="button" disabled>
+                                    <span class="kt-menu-bullet">
+                                      <span class="size-1.5 rounded-full bg-muted"></span>
+                                    </span>
+                                    <span class="kt-menu-title">{{ grandchildNode.title }}</span>
+                                  </button>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      } @else if (childNode.route; as route) {
+                        <a class="sidebar-focus kt-menu-link" [routerLink]="route">
+                          <span class="kt-menu-bullet">
+                            <span
+                              class="size-1.5 rounded-full"
+                              [class.bg-primary]="isActiveRoute(childNode)"
+                              [class.bg-muted]="!isActiveRoute(childNode)"
+                            ></span>
+                          </span>
+                          <span class="kt-menu-title">{{ childNode.title }}</span>
+                        </a>
+                      } @else {
+                        <button class="kt-menu-link w-full opacity-60" type="button" disabled>
+                          <span class="kt-menu-bullet">
+                            <span class="size-1.5 rounded-full bg-muted"></span>
+                          </span>
+                          <span class="kt-menu-title">{{ childNode.title }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            } @else if (node.route; as route) {
+              <a
+                class="sidebar-focus kt-menu-link"
+                [routerLink]="route"
+                [class.active]="isActiveRoute(node)"
+                [class.rounded-md]="sidebarCollapsed()"
+                [class.justify-center]="sidebarCollapsed()"
+                [attr.title]="sidebarCollapsed() ? node.title : null"
+              >
+                @if (!sidebarCollapsed()) {
+                  <span class="kt-menu-bullet">
+                    <span
+                      class="size-1.5 rounded-full"
+                      [class.bg-primary]="isActiveRoute(node)"
+                      [class.bg-muted]="!isActiveRoute(node)"
+                    ></span>
+                  </span>
+                }
+                @if (sidebarCollapsed()) {
+                  <span class="text-sm font-semibold leading-none">{{ navigationInitial(node) }}</span>
+                } @else {
+                  <span class="kt-menu-title">{{ node.title }}</span>
+                }
+              </a>
+            } @else {
+              <button class="kt-menu-link w-full opacity-60" type="button" disabled>
+                <span class="kt-menu-bullet">
+                  <span class="size-1.5 rounded-full bg-muted"></span>
+                </span>
+                <span class="kt-menu-title">{{ node.title }}</span>
+              </button>
+            }
+          </div>
+        } @empty {
+          <div class="px-4 py-2 text-sm text-secondary-foreground">Nessuna voce trovata.</div>
+        }
       </nav>
     </div>
   </div>

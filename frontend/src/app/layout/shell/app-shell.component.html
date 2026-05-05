@@ -1,5 +1,9 @@
-<div class="demo1 kt-sidebar-fixed kt-header-fixed flex grow">
-  <app-sidebar />
+<div
+  class="demo1 kt-sidebar-fixed kt-header-fixed flex grow"
+  [attr.data-sidebar-collapsed]="sidebarCollapsed() ? '' : null"
+  [style.--sidebar-width]="sidebarCollapsed() ? '80px' : null"
+>
+  <app-sidebar (sidebarCollapsedChange)="updateSidebarCollapsed($event)" />
 
   <div class="kt-wrapper flex grow flex-col min-h-screen">
     <app-header />

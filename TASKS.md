@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.49
+Versione: 1.51
 Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
@@ -2041,7 +2041,7 @@ TASK-038 e documentale e non introduce redesign generale, nuove pagine, componen
 
 ### TASK-039 - Frontend sidebar navigation tree foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend foundation
 
@@ -2067,6 +2067,23 @@ Output atteso:
 - Sidebar pronta a ospitare una navigazione gerarchica.
 - Struttura menu tipizzata e locale al frontend.
 - Interazione base di espansione/collasso e filtro disponibile.
+
+Completato:
+
+- `AppSidebarComponent` riusato come unica sidebar applicativa.
+- Introdotta struttura dati tipizzata locale per la navigazione sidebar.
+- Supportati nodi fino a 3 livelli tramite template Angular annidato.
+- Introdotto stato locale di apertura/chiusura nodi con Angular signals.
+- Evidenza active route collegata al router Angular per le route esistenti.
+- Aggiunta ricerca/filtro locale sulle voci del tree.
+- Aggiunto stato locale collassato/espanso per la sidebar con toggle visibile, navigazione top-level compatta e search/submenu nascosti in modalita collassata.
+- Link navigante mantenuto solo per la route esistente `/`; le voci future restano placeholder non naviganti.
+- Test frontend aggiunti per rendering tree e filtro.
+- Build frontend e test frontend validati.
+
+Nota:
+
+TASK-039 non introduce nuove pagine funzionali, nuove route, RBAC/permission filtering, i18n, nuove librerie, backend, login/JWT changes o redesign generale.
 
 ### TASK-040 - Frontend i18n foundation
 
@@ -2182,6 +2199,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.51 | 2026-05-05 | TASK-039 rifinito con sidebar collassabile/espandibile: toggle visibile, modalita compatta top-level, search e submenu nascosti quando collassata, placeholder futuri ancora non naviganti e test componente aggiornati. |
+| 1.50 | 2026-05-05 | TASK-039 completato con foundation sidebar navigation tree: struttura dati tipizzata locale, nodi fino a 3 livelli, expand/collapse, active route highlighting, ricerca/filtro e placeholder non naviganti per pagine future; nessun backend, RBAC, i18n, nuove route o nuove librerie. |
 | 1.49 | 2026-05-05 | Backlog futuro rinumerato in chiusura TASK-036: TASK-039 diventa Frontend sidebar navigation tree foundation, TASK-040 diventa Frontend i18n foundation, UI Master Data Admin slitta a TASK-041/TASK-042 e i task futuri TODO successivi slittano coerentemente fino a TASK-054. |
 | 1.48 | 2026-05-05 | Riallineamento documentale intermedio dei task frontend futuri, sostituito dalla rinumerazione definitiva in versione 1.49. |
 | 1.47 | 2026-05-05 | TASK-036 completato con home autenticata post-login: route protetta `/` sotto `app-shell`, child route `HomeComponent` minimale, header/sidebar visibili, placeholder dashboard rimossi dalla shell, nessuna UI Master Data Admin e nessuna modifica a backend o login/JWT. |
