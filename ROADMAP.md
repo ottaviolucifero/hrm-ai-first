@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.41
-Ultimo aggiornamento: 2026-05-04
+Versione: 1.42
+Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
 ---
@@ -80,10 +80,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-035 Frontend login foundation
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
+- Backlog governance updated: authenticated home shell and logo integration precede Master Data Admin UI
 
 ### Prossimo passo
 
-- TASK-036: Implementare UI Master Data Admin foundation/list
+- TASK-036: Frontend authenticated home shell foundation
 
 ---
 
@@ -151,12 +152,14 @@ Core HR read-only API readiness is available for Employee, Contract, Device, Pay
 Frontend governance is active: UI tasks must analyze and reuse existing Angular components, extend before creating duplicates, keep feature components local, create shared components only with explicit motivation, and adapt Metronic as a visual reference rather than copying code indiscriminately.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
-Global, HR/business and governance/security master data CRUD APIs are available; Master Data Admin UI remains deferred until after login foundation.
+Global, HR/business and governance/security master data CRUD APIs are available; Master Data Admin UI remains deferred until after authenticated home shell and logo integration.
 
 Da fare:
 
-- TASK-036 UI Master Data Admin foundation/list
-- TASK-037 UI Master Data Admin CRUD
+- TASK-036 Frontend authenticated home shell foundation
+- TASK-037 Frontend application logo integration
+- TASK-038 UI Master Data Admin foundation/list
+- TASK-039 UI Master Data Admin CRUD
 
 ---
 
@@ -208,17 +211,17 @@ Profili Spring Boot configurati:
 
 - TASK-034 -> TASK-035
 
-### Fase 2H - UI Admin / Operations
+### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-045
+- TASK-036 -> TASK-047
 
 ### Fase 2I - Platform Operations
 
-- TASK-046 -> TASK-047
+- TASK-048 -> TASK-049
 
 ### Fase 3 - Stabilization
 
-- TASK-048 -> TASK-049
+- TASK-050 -> TASK-051
 
 ---
 
@@ -234,9 +237,10 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 1.41 | 2026-05-04 | TASK-035 completato con frontend login foundation: route `/login`, LoginComponent, shared email/password fields, alert feedback, AuthService/AuthGuard/AuthInterceptor, token JWT in `sessionStorage`, route principale protetta, build e test frontend validati; prossimo passo aggiornato a TASK-036 UI Master Data Admin foundation/list. |
+| 1.42 | 2026-05-05 | Riallineato backlog documentale: TASK-036 diventa frontend authenticated home shell foundation, TASK-037 frontend application logo integration, Master Data Admin foundation/list spostato a TASK-038, Master Data Admin CRUD a TASK-039 e task successivi rinumerati fino a TASK-051; prossimo passo aggiornato a TASK-036. |
+| 1.41 | 2026-05-04 | TASK-035 completato con frontend login foundation: route `/login`, LoginComponent, shared email/password fields, alert feedback, AuthService/AuthGuard/AuthInterceptor, token JWT in `sessionStorage`, route principale protetta, build e test frontend validati; prossimo passo aggiornato alla UI Master Data Admin foundation/list, poi riallineata in 1.42. |
 | 1.40 | 2026-05-04 | TASK-034 completato con backend login/JWT foundation: endpoint `/api/auth/login` e `/api/auth/me`, JWT stateless, login email-only case-insensitive, BCrypt, password policy, migration V15 email globale case-insensitive e BUILD SUCCESS; prossimo passo aggiornato a TASK-035 frontend login foundation. |
-| 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: login/JWT foundation backend e frontend spostate prima delle UI amministrative; prossimo passo aggiornato a TASK-034 backend login/JWT foundation e Master Data Admin rinumerato a TASK-036/TASK-037. |
+| 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: login/JWT foundation backend e frontend spostate prima delle UI amministrative; prossimo passo aggiornato a TASK-034 backend login/JWT foundation e Master Data Admin spostato dopo login foundation. |
 | 1.38 | 2026-05-04 | TASK-032 completato con API CRUD backend master data governance/security sotto `/api/master-data/governance-security`, DTO globali e tenant-scoped, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-033 UI Master Data Admin foundation/list. |
 | 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO tenant-scoped, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-032 API CRUD master data governance/security. |
 | 1.36 | 2026-05-03 | TASK-030 completato con API CRUD backend master data globali sotto `/api/master-data/global`, DTO espliciti, service layer applicativo, soft delete, gestione errori 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo aggiornato a TASK-031 API CRUD master data HR/business. |

@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.42
-Ultimo aggiornamento: 2026-05-04
+Versione: 1.43
+Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
 ---
@@ -1567,7 +1567,7 @@ Nota architetturale:
 
 Core HR API readiness read-only completed. API write, CRUD operativo, workflow approvativi, upload/download fisico documenti, login/JWT runtime, RBAC runtime, tenant switching runtime, audit automatico, frontend/UI e notifiche restano fuori scope e differiti ai task successivi.
 
-## FASE 2F - API CRUD MASTER DATA / LOGIN / UI ADMIN / OPERATIONS
+## FASE 2F - API CRUD MASTER DATA / LOGIN / FRONTEND SHELL / UI ADMIN / OPERATIONS
 
 Decisione operativa:
 
@@ -1909,7 +1909,60 @@ Nota:
 
 TASK-035 non introduce backend, proxy frontend, refresh token, gestione scadenza avanzata, gestione multitab avanzata, OTP/MFA, RBAC UI, tenant switching, impersonation, registrazione utente, forgot password, social login, refactor shell/header/sidebar o gestione errori globale.
 
-### TASK-036 - Implementare UI Master Data Admin foundation/list
+### TASK-036 - Frontend authenticated home shell foundation
+
+Stato: TODO
+
+Obiettivo:
+
+- Introdurre una home vuota post-login usando la shell Angular esistente, con header e side menu gia presenti.
+
+Scope:
+
+- Frontend only.
+- Usare la shell esistente.
+- Riusare `app-shell`, `app-header` e `app-sidebar`.
+- Nessuna UI Master Data Admin.
+- Nessun backend.
+- Nessun refactor di shell/header/sidebar.
+- Nessun nuovo componente shared se non necessario.
+- Nessuna funzionalita business.
+- Solo home vuota autenticata post-login.
+
+Output atteso:
+
+- Route autenticata post-login pronta per ospitare future dashboard/moduli.
+- Shell/header/sidebar visibili dopo login.
+- Pagina home vuota/minimale.
+
+### TASK-037 - Frontend application logo integration
+
+Stato: TODO
+
+Obiettivo:
+
+- Integrare nel frontend il logo gia preparato per il progetto.
+
+Scope:
+
+- Frontend only.
+- Verificare dove sono gestiti asset/logo/header/sidebar.
+- Usare asset esistente se gia presente.
+- Se l'asset non e presente, prevedere nel task futuro l'aggiunta nella posizione corretta.
+- Integrare il logo nella shell esistente, preferibilmente in header o sidebar secondo struttura attuale.
+- Non modificare backend.
+- Non introdurre logiche business.
+- Non creare componenti shared non necessari.
+- Non sostituire la shell esistente.
+- Non introdurre redesign generale.
+
+Output atteso:
+
+- Logo visibile nella shell autenticata.
+- Asset referenziato correttamente nel frontend.
+- Build Angular funzionante.
+
+### TASK-038 - Implementare UI Master Data Admin foundation/list
 
 Stato: TODO
 
@@ -1919,7 +1972,7 @@ Obiettivo:
 - Riusare layout, shell e componenti esistenti secondo `frontend/AGENTS.md`.
 - Non implementare CRUD completo se le API write corrispondenti non sono disponibili.
 
-### TASK-037 - Implementare UI Master Data Admin CRUD
+### TASK-039 - Implementare UI Master Data Admin CRUD
 
 Stato: TODO
 
@@ -1928,11 +1981,11 @@ Obiettivo:
 - Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
 - Non usare mock come sostituto dei contratti API backend.
 
-### TASK-038 - Implementare UI Employee management enterprise
+### TASK-040 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-039 - Implementare Security Admin UI
+### TASK-041 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -1944,47 +1997,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-040 - Implementare UI Device governance
+### TASK-042 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-041 - Implementare UI PayrollDocument
+### TASK-043 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-042 - Implementare UI LeaveRequest
+### TASK-044 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-043 - Implementare UI HolidayCalendar
+### TASK-045 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-044 - Implementare Audit UI / compliance explorer
+### TASK-046 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-045 - Implementare UI disciplinary governance
+### TASK-047 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-046 - Implementare Platform Operator / Super Admin governance
+### TASK-048 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-047 - Implementare Cross-tenant admin UI
+### TASK-049 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-048 - Configurare logging, monitoring e observability enterprise
+### TASK-050 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-049 - Test integrato MVP enterprise completo
+### TASK-051 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -1994,10 +2047,11 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.43 | 2026-05-05 | Backlog documentale riallineato: introdotti TASK-036 frontend authenticated home shell foundation e TASK-037 frontend application logo integration prima della UI Master Data Admin; Master Data Admin foundation/list rinumerato a TASK-038, Master Data Admin CRUD a TASK-039 e task successivi rinumerati fino a TASK-051. |
 | 1.42 | 2026-05-04 | TASK-035 completato con frontend login foundation: route `/login`, LoginComponent, shared EmailField/PasswordField/AlertMessage, core auth service/guard/interceptor, token in `sessionStorage`, route principale protetta, test auth/interceptor, `npm run build` e `npm test` validati. |
 | 1.41 | 2026-05-04 | TASK-035 dettagliato con sottotask operativi per frontend login foundation: analisi frontend, riferimento visuale Metronic, routing `/login`, shared form fields, feedback component, login UI, core auth foundation, service/guard/interceptor, navigazione post-login, test tecnici e fuori scope. |
 | 1.40 | 2026-05-04 | TASK-034 completato con backend login/JWT foundation: endpoint `/api/auth/login` e `/api/auth/me`, DTO auth, service layer, UserDetailsService su UserAccount, BCrypt, password policy, JWT stateless con Spring Security OAuth2 Resource Server / Jose, migration V15 per email globale case-insensitive, test auth/security/OpenAPI/actuator e BUILD SUCCESS; prossimo passo TASK-035 frontend login foundation. |
-| 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: introdotti TASK-034 backend login/JWT foundation e TASK-035 frontend login foundation prima delle UI amministrative; UI Master Data Admin spostata a TASK-036/TASK-037 e task successivi rinumerati. |
+| 1.39 | 2026-05-04 | TASK-033 completato come riorganizzazione documentale backlog: introdotti TASK-034 backend login/JWT foundation e TASK-035 frontend login foundation prima delle UI amministrative; UI Master Data Admin spostata dopo login foundation e task successivi rinumerati. |
 | 1.38 | 2026-05-04 | TASK-032 completato con API CRUD backend master data governance/security sotto `/api/master-data/governance-security`, DTO request/response globali e tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-033 UI Master Data Admin foundation/list. |
 | 1.37 | 2026-05-04 | TASK-031 completato con API CRUD backend master data HR/business sotto `/api/master-data/hr-business`, DTO request/response tenant-scoped, service layer applicativo, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS; prossimo passo TASK-032 API CRUD master data governance/security. |
 | 1.36 | 2026-05-03 | TASK-030 completato con API CRUD backend master data globali, DTO request/response, service layer applicativo, controller `/api/master-data/global`, soft delete `active=false`, gestione 400/404/409, test MockMvc/OpenAPI e BUILD SUCCESS. |
