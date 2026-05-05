@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.46
+Versione: 1.49
 Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
@@ -1911,7 +1911,7 @@ TASK-035 non introduce backend, proxy frontend, refresh token, gestione scadenza
 
 ### TASK-036 - Frontend authenticated home shell foundation
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -1934,6 +1934,21 @@ Output atteso:
 - Route autenticata post-login pronta per ospitare future dashboard/moduli.
 - Shell/header/sidebar visibili dopo login.
 - Pagina home vuota/minimale.
+
+Completato:
+
+- Verificata la shell Angular esistente con `app-shell`, `app-header`, `app-sidebar` e `router-outlet`.
+- Introdotto `HomeComponent` standalone locale sotto `frontend/src/app/features/home/`.
+- Route principale protetta `/` aggiornata come shell route con child route home.
+- `AppShellComponent` mantenuto come layout autenticato con header, sidebar e outlet.
+- Rimossi dalla shell i placeholder dashboard/moduli per lasciare una home minimale.
+- Nessuna UI Master Data Admin introdotta.
+- Nessuna modifica a backend, login/JWT, logout o route pubblica `/login`.
+- Build frontend e test frontend validati.
+
+Nota:
+
+TASK-036 prepara la superficie autenticata post-login senza introdurre funzionalita business, redesign generale, nuovi componenti shared o modifiche ai flussi di autenticazione.
 
 ### TASK-037 - Frontend application logo integration
 
@@ -2024,7 +2039,65 @@ Nota:
 
 TASK-038 e documentale e non introduce redesign generale, nuove pagine, componenti shared o modifiche applicative.
 
-### TASK-039 - Implementare UI Master Data Admin foundation/list
+### TASK-039 - Frontend sidebar navigation tree foundation
+
+Stato: TODO
+
+Tipo: Frontend foundation
+
+Obiettivo:
+
+- Introdurre una foundation per la navigazione sidebar ad albero, riusando la sidebar esistente senza introdurre nuove pagine funzionali obbligatorie.
+
+Scope:
+
+- Introdurre una struttura dati tipizzata per le voci sidebar.
+- Supportare nodi fino a 3 livelli.
+- Supportare apertura/chiusura nodi.
+- Supportare evidenza active route.
+- Aggiungere una piccola ricerca/filtro sul tree.
+- Riutilizzare lo stile/sidebar esistente.
+- Non creare nuove pagine funzionali obbligatorie.
+- Non introdurre RBAC/permission filtering in questo task.
+- Non introdurre i18n in questo task.
+- Non introdurre nuove librerie.
+
+Output atteso:
+
+- Sidebar pronta a ospitare una navigazione gerarchica.
+- Struttura menu tipizzata e locale al frontend.
+- Interazione base di espansione/collasso e filtro disponibile.
+
+### TASK-040 - Frontend i18n foundation
+
+Stato: TODO
+
+Tipo: Frontend foundation
+
+Obiettivo:
+
+- Definire e predisporre la strategia multilingua frontend senza introdurre refactor massivo o redesign UI.
+
+Scope:
+
+- Definire la strategia multilingua frontend.
+- Valutare Angular built-in i18n vs libreria runtime come Transloco o ngx-translate.
+- Predisporre lingua iniziale italiana.
+- Prevedere estensione a francese e inglese.
+- Estrarre progressivamente i testi statici principali della shell/login/sidebar/header.
+- Prevedere selezione lingua futura, senza implementare necessariamente un language switcher completo se fuori scope.
+- Non introdurre traduzioni dinamiche da backend in questo task.
+- Non modificare flussi auth/JWT.
+- Non fare redesign UI.
+- Non introdurre refactor massivo.
+
+Output atteso:
+
+- Strategia i18n frontend documentata e implementata nel perimetro minimo approvato.
+- Lingua italiana predisposta come baseline iniziale.
+- Percorso chiaro per estendere il frontend a francese e inglese.
+
+### TASK-041 - Implementare UI Master Data Admin foundation/list
 
 Stato: TODO
 
@@ -2034,7 +2107,7 @@ Obiettivo:
 - Riusare layout, shell e componenti esistenti secondo `frontend/AGENTS.md`.
 - Non implementare CRUD completo se le API write corrispondenti non sono disponibili.
 
-### TASK-040 - Implementare UI Master Data Admin CRUD
+### TASK-042 - Implementare UI Master Data Admin CRUD
 
 Stato: TODO
 
@@ -2043,11 +2116,11 @@ Obiettivo:
 - Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
 - Non usare mock come sostituto dei contratti API backend.
 
-### TASK-041 - Implementare UI Employee management enterprise
+### TASK-043 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-042 - Implementare Security Admin UI
+### TASK-044 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -2059,47 +2132,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-043 - Implementare UI Device governance
+### TASK-045 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-044 - Implementare UI PayrollDocument
+### TASK-046 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-045 - Implementare UI LeaveRequest
+### TASK-047 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-046 - Implementare UI HolidayCalendar
+### TASK-048 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-047 - Implementare Audit UI / compliance explorer
+### TASK-049 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-048 - Implementare UI disciplinary governance
+### TASK-050 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-049 - Implementare Platform Operator / Super Admin governance
+### TASK-051 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-050 - Implementare Cross-tenant admin UI
+### TASK-052 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-051 - Configurare logging, monitoring e observability enterprise
+### TASK-053 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-052 - Test integrato MVP enterprise completo
+### TASK-054 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -2109,6 +2182,9 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.49 | 2026-05-05 | Backlog futuro rinumerato in chiusura TASK-036: TASK-039 diventa Frontend sidebar navigation tree foundation, TASK-040 diventa Frontend i18n foundation, UI Master Data Admin slitta a TASK-041/TASK-042 e i task futuri TODO successivi slittano coerentemente fino a TASK-054. |
+| 1.48 | 2026-05-05 | Riallineamento documentale intermedio dei task frontend futuri, sostituito dalla rinumerazione definitiva in versione 1.49. |
+| 1.47 | 2026-05-05 | TASK-036 completato con home autenticata post-login: route protetta `/` sotto `app-shell`, child route `HomeComponent` minimale, header/sidebar visibili, placeholder dashboard rimossi dalla shell, nessuna UI Master Data Admin e nessuna modifica a backend o login/JWT. |
 | 1.46 | 2026-05-05 | TASK-038 completato con direttive frontend/design basate sui colori del logo in `frontend/AGENTS.md`: palette deep indigo, navy, accent blue, violet-blue e soft highlight tint; regole d'uso per login, shell, header, sidebar, pulsanti, link, badge e stati UI; nessuna modifica applicativa. |
 | 1.45 | 2026-05-05 | Backlog documentale riallineato dopo TASK-037: introdotto TASK-038 frontend design guidelines based on logo brand colors come task dedicato per documentare palette e direttive UI in `frontend/AGENTS.md`; Master Data Admin foundation/list spostato a TASK-039, Master Data Admin CRUD a TASK-040 e task successivi rinumerati fino a TASK-052. |
 | 1.44 | 2026-05-05 | TASK-037 completato con integrazione logo nella login UI esistente: asset `assets/logos/hrm-logo.png`, alt `HRM AI-first`, nessun nuovo componente shared, nessuna modifica a backend, routing, autenticazione, login/logout, sidebar/header/shell o UI Master Data Admin. |

@@ -14,18 +14,49 @@
       </button>
 
       <div class="min-w-0">
-        <div class="text-sm font-semibold text-mono">HRM AI-first</div>
-        <div class="text-xs text-secondary-foreground">MVP workspace</div>
+        <div class="text-sm font-semibold text-mono">HRflow</div>
+        <div class="text-xs text-secondary-foreground">Area riservata</div>
       </div>
     </div>
 
-    <div class="flex items-center gap-3">
-      <span class="kt-badge kt-badge-outline kt-badge-primary">MVP</span>
-      <img
-        class="size-9 rounded-full border border-border"
-        src="assets/media/avatars/blank.png"
-        alt="User avatar"
-      />
+    <div class="relative flex items-center gap-3">
+      <button
+        class="flex size-10 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/15"
+        type="button"
+        aria-label="Profilo utente"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="profileMenuOpen()"
+        (click)="toggleProfileMenu()"
+      >
+        <i class="ki-filled ki-profile-circle text-2xl" aria-hidden="true"></i>
+      </button>
+
+      @if (profileMenuOpen()) {
+        <div
+          class="absolute end-0 z-30 mt-2 w-44 rounded-md border border-border bg-background py-1 shadow-lg"
+          style="top: 100%;"
+          role="menu"
+          aria-label="Menu profilo"
+        >
+          <button
+            class="flex w-full items-center px-3 py-2 text-left text-sm text-secondary-foreground"
+            type="button"
+            role="menuitem"
+            (click)="closeProfileMenu()"
+          >
+            Profilo
+          </button>
+
+          <button
+            class="flex w-full items-center px-3 py-2 text-left text-sm font-bold text-destructive hover:bg-muted"
+            type="button"
+            role="menuitem"
+            (click)="logout()"
+          >
+            Logout
+          </button>
+        </div>
+      }
     </div>
   </div>
 </header>
