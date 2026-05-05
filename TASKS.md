@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.43
+Versione: 1.45
 Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
@@ -1937,32 +1937,82 @@ Output atteso:
 
 ### TASK-037 - Frontend application logo integration
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
-- Integrare nel frontend il logo gia preparato per il progetto.
+- Integrare nella login UI esistente il logo gia preparato per il progetto.
 
 Scope:
 
 - Frontend only.
-- Verificare dove sono gestiti asset/logo/header/sidebar.
+- Verificare dove sono gestiti asset/logo e login UI.
 - Usare asset esistente se gia presente.
 - Se l'asset non e presente, prevedere nel task futuro l'aggiunta nella posizione corretta.
-- Integrare il logo nella shell esistente, preferibilmente in header o sidebar secondo struttura attuale.
+- Integrare il logo nella login UI esistente.
 - Non modificare backend.
 - Non introdurre logiche business.
 - Non creare componenti shared non necessari.
 - Non sostituire la shell esistente.
 - Non introdurre redesign generale.
+- Non modificare sidebar/header/shell.
+- Non modificare routing, autenticazione, login/logout.
 
 Output atteso:
 
-- Logo visibile nella shell autenticata.
+- Logo visibile nella login UI.
 - Asset referenziato correttamente nel frontend.
 - Build Angular funzionante.
 
-### TASK-038 - Implementare UI Master Data Admin foundation/list
+Completato:
+
+- Verificata presenza del logo in `frontend/public/assets/logos/hrm-logo.png`.
+- Logo integrato nel blocco logo esistente della pagina login.
+- Template `LoginComponent` aggiornato per referenziare `assets/logos/hrm-logo.png`.
+- Testo alternativo configurato come `HRM AI-first`.
+- Nessun nuovo componente shared introdotto.
+- Nessuna modifica a routing, autenticazione, login/logout, backend, sidebar/header/shell o UI Master Data Admin.
+
+Nota:
+
+TASK-037 riusa la login UI esistente. Non introduce logiche business, redesign generale, nuove pagine o sostituzione della shell.
+
+### TASK-038 - Frontend design guidelines based on logo brand colors
+
+Stato: TODO
+
+Tipo: Documentale / Frontend governance
+
+Descrizione:
+
+- Definire linee guida frontend coerenti con il logo applicativo e i suoi colori, senza introdurre redesign generale.
+
+Scope:
+
+- Analizzare i colori principali del logo HRM AI-first.
+- Definire palette primaria/secondaria frontend.
+- Stabilire regole minime di utilizzo per login, shell, header, sidebar, pulsanti e stati UI.
+- Documentare le direttive in `frontend/AGENTS.md` in un task successivo dedicato.
+- Evitare modifiche invasive alla UI.
+- Evitare introduzione di nuovi componenti shared se non strettamente necessario.
+- Mantenere coerenza con Metronic/Tailwind e con la shell Angular esistente.
+
+Out of scope:
+
+- Nessun redesign generale.
+- Nessuna nuova pagina.
+- Nessuna UI Master Data Admin.
+- Nessuna modifica backend.
+- Nessuna modifica a routing, auth, login/logout.
+- Nessuna implementazione grafica in questo task di riallineamento.
+
+Output atteso:
+
+- Direttive frontend/design documentate per l'uso dei colori del logo.
+- Regole minime di palette e utilizzo UI pronte per guidare i task frontend successivi.
+- `frontend/AGENTS.md` aggiornato nel task dedicato futuro.
+
+### TASK-039 - Implementare UI Master Data Admin foundation/list
 
 Stato: TODO
 
@@ -1972,7 +2022,7 @@ Obiettivo:
 - Riusare layout, shell e componenti esistenti secondo `frontend/AGENTS.md`.
 - Non implementare CRUD completo se le API write corrispondenti non sono disponibili.
 
-### TASK-039 - Implementare UI Master Data Admin CRUD
+### TASK-040 - Implementare UI Master Data Admin CRUD
 
 Stato: TODO
 
@@ -1981,11 +2031,11 @@ Obiettivo:
 - Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
 - Non usare mock come sostituto dei contratti API backend.
 
-### TASK-040 - Implementare UI Employee management enterprise
+### TASK-041 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-041 - Implementare Security Admin UI
+### TASK-042 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -1997,47 +2047,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-042 - Implementare UI Device governance
+### TASK-043 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-043 - Implementare UI PayrollDocument
+### TASK-044 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-044 - Implementare UI LeaveRequest
+### TASK-045 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-045 - Implementare UI HolidayCalendar
+### TASK-046 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-046 - Implementare Audit UI / compliance explorer
+### TASK-047 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-047 - Implementare UI disciplinary governance
+### TASK-048 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-048 - Implementare Platform Operator / Super Admin governance
+### TASK-049 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-049 - Implementare Cross-tenant admin UI
+### TASK-050 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-050 - Configurare logging, monitoring e observability enterprise
+### TASK-051 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-051 - Test integrato MVP enterprise completo
+### TASK-052 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -2047,7 +2097,9 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 1.43 | 2026-05-05 | Backlog documentale riallineato: introdotti TASK-036 frontend authenticated home shell foundation e TASK-037 frontend application logo integration prima della UI Master Data Admin; Master Data Admin foundation/list rinumerato a TASK-038, Master Data Admin CRUD a TASK-039 e task successivi rinumerati fino a TASK-051. |
+| 1.45 | 2026-05-05 | Backlog documentale riallineato dopo TASK-037: introdotto TASK-038 frontend design guidelines based on logo brand colors come task dedicato per documentare palette e direttive UI in `frontend/AGENTS.md`; Master Data Admin foundation/list spostato a TASK-039, Master Data Admin CRUD a TASK-040 e task successivi rinumerati fino a TASK-052. |
+| 1.44 | 2026-05-05 | TASK-037 completato con integrazione logo nella login UI esistente: asset `assets/logos/hrm-logo.png`, alt `HRM AI-first`, nessun nuovo componente shared, nessuna modifica a backend, routing, autenticazione, login/logout, sidebar/header/shell o UI Master Data Admin. |
+| 1.43 | 2026-05-05 | Backlog documentale riallineato: introdotti TASK-036 frontend authenticated home shell foundation e TASK-037 frontend application logo integration prima della UI Master Data Admin; task successivi rinumerati, poi riallineati nuovamente in 1.45 per inserire le design guidelines basate sul logo. |
 | 1.42 | 2026-05-04 | TASK-035 completato con frontend login foundation: route `/login`, LoginComponent, shared EmailField/PasswordField/AlertMessage, core auth service/guard/interceptor, token in `sessionStorage`, route principale protetta, test auth/interceptor, `npm run build` e `npm test` validati. |
 | 1.41 | 2026-05-04 | TASK-035 dettagliato con sottotask operativi per frontend login foundation: analisi frontend, riferimento visuale Metronic, routing `/login`, shared form fields, feedback component, login UI, core auth foundation, service/guard/interceptor, navigazione post-login, test tecnici e fuori scope. |
 | 1.40 | 2026-05-04 | TASK-034 completato con backend login/JWT foundation: endpoint `/api/auth/login` e `/api/auth/me`, DTO auth, service layer, UserDetailsService su UserAccount, BCrypt, password policy, JWT stateless con Spring Security OAuth2 Resource Server / Jose, migration V15 per email globale case-insensitive, test auth/security/OpenAPI/actuator e BUILD SUCCESS; prossimo passo TASK-035 frontend login foundation. |
