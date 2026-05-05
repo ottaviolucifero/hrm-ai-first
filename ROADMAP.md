@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.43
+Versione: 1.44
 Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
@@ -79,9 +79,10 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-034 Backend login/JWT foundation
 - TASK-035 Frontend login foundation
 - TASK-037 Frontend application logo integration in login UI
+- TASK-038 Frontend design guidelines based on logo brand colors
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
-- Backlog governance updated: authenticated home shell and logo integration precede Master Data Admin UI
+- Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
 
 ### Prossimo passo
 
@@ -91,7 +92,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Frontend login foundation e logo integration completate
+Stato: Frontend login foundation, logo integration e design guidelines completate
 
 Completato:
 
@@ -133,6 +134,7 @@ Completato:
 - Backend login/JWT foundation available with `/api/auth/login`, `/api/auth/me`, stateless JWT, email-only case-insensitive login, BCrypt password verification, password policy foundation and user email global case-insensitive uniqueness
 - Frontend login foundation available with `/login`, sessionStorage JWT token handling, route guard, auth HTTP interceptor, reusable email/password fields, alert feedback component and frontend build/test validation
 - Frontend application logo integrated in the existing login UI using `assets/logos/hrm-logo.png`
+- Frontend design guidelines based on logo brand colors documented in `frontend/AGENTS.md`
 
 Nota:
 
@@ -152,6 +154,7 @@ AuditLog persistence foundation is available; automatic audit runtime, intercept
 EmployeeDisciplinaryAction persistence foundation is available; API REST, DTO, service layer, controller, UI, disciplinary workflow, notifications, upload/download, audit runtime and security integration remain deferred.
 Core HR read-only API readiness is available for Employee, Contract, Device, PayrollDocument, LeaveRequest, HolidayCalendar, AuditLog and EmployeeDisciplinaryAction; write APIs, operational CRUD, workflows, physical document transfer, login/JWT runtime, RBAC runtime, tenant switching runtime, automatic audit, frontend/UI and notifications remain deferred.
 Frontend governance is active: UI tasks must analyze and reuse existing Angular components, extend before creating duplicates, keep feature components local, create shared components only with explicit motivation, and adapt Metronic as a visual reference rather than copying code indiscriminately.
+Logo brand color governance is active: frontend UI tasks must use the documented deep indigo, navy, accent blue, violet-blue and soft highlight tint consistently when the task scope includes visual implementation, without opportunistic redesign.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
 Global, HR/business and governance/security master data CRUD APIs are available; Master Data Admin UI remains deferred until after authenticated home shell foundation.
@@ -159,8 +162,8 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 Da fare:
 
 - TASK-036 Frontend authenticated home shell foundation
-- TASK-038 UI Master Data Admin foundation/list
-- TASK-039 UI Master Data Admin CRUD
+- TASK-039 UI Master Data Admin foundation/list
+- TASK-040 UI Master Data Admin CRUD
 
 ---
 
@@ -214,15 +217,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-047
+- TASK-036 -> TASK-048
 
 ### Fase 2I - Platform Operations
 
-- TASK-048 -> TASK-049
+- TASK-049 -> TASK-050
 
 ### Fase 3 - Stabilization
 
-- TASK-050 -> TASK-051
+- TASK-051 -> TASK-052
 
 ---
 
@@ -238,6 +241,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.44 | 2026-05-05 | TASK-038 completato con direttive frontend/design basate sui colori del logo documentate in `frontend/AGENTS.md`; roadmap riallineata con Master Data Admin foundation/list a TASK-039, CRUD a TASK-040 e task successivi fino a TASK-052; prossimo passo resta TASK-036 finche la home shell foundation non viene chiusa. |
 | 1.43 | 2026-05-05 | TASK-037 completato con integrazione del logo applicativo nella login UI esistente usando `assets/logos/hrm-logo.png`; nessuna modifica a backend, routing, autenticazione, login/logout, sidebar/header/shell o UI Master Data Admin; prossimo passo resta TASK-036 finche la home shell foundation non viene chiusa. |
 | 1.42 | 2026-05-05 | Riallineato backlog documentale: TASK-036 diventa frontend authenticated home shell foundation, TASK-037 frontend application logo integration, Master Data Admin foundation/list spostato a TASK-038, Master Data Admin CRUD a TASK-039 e task successivi rinumerati fino a TASK-051; prossimo passo aggiornato a TASK-036. |
 | 1.41 | 2026-05-04 | TASK-035 completato con frontend login foundation: route `/login`, LoginComponent, shared email/password fields, alert feedback, AuthService/AuthGuard/AuthInterceptor, token JWT in `sessionStorage`, route principale protetta, build e test frontend validati; prossimo passo aggiornato alla UI Master Data Admin foundation/list, poi riallineata in 1.42. |

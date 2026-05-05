@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.45
+Versione: 1.46
 Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
@@ -1979,7 +1979,7 @@ TASK-037 riusa la login UI esistente. Non introduce logiche business, redesign g
 
 ### TASK-038 - Frontend design guidelines based on logo brand colors
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Documentale / Frontend governance
 
@@ -2011,6 +2011,18 @@ Output atteso:
 - Direttive frontend/design documentate per l'uso dei colori del logo.
 - Regole minime di palette e utilizzo UI pronte per guidare i task frontend successivi.
 - `frontend/AGENTS.md` aggiornato nel task dedicato futuro.
+
+Completato:
+
+- Analizzati tecnicamente i colori principali del logo HRM AI-first.
+- Palette documentata in `frontend/AGENTS.md` con deep indigo, navy, accent blue, violet-blue e soft highlight tint.
+- Regole minime definite per login, shell, header, sidebar, pulsanti, link, badge e stati UI.
+- Confermato che l'applicazione delle direttive ai componenti resta fuori scope di TASK-038.
+- Nessuna modifica a backend, codice frontend applicativo, routing, auth, login/logout, shell/header/sidebar/login UI o UI Master Data Admin.
+
+Nota:
+
+TASK-038 e documentale e non introduce redesign generale, nuove pagine, componenti shared o modifiche applicative.
 
 ### TASK-039 - Implementare UI Master Data Admin foundation/list
 
@@ -2097,6 +2109,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.46 | 2026-05-05 | TASK-038 completato con direttive frontend/design basate sui colori del logo in `frontend/AGENTS.md`: palette deep indigo, navy, accent blue, violet-blue e soft highlight tint; regole d'uso per login, shell, header, sidebar, pulsanti, link, badge e stati UI; nessuna modifica applicativa. |
 | 1.45 | 2026-05-05 | Backlog documentale riallineato dopo TASK-037: introdotto TASK-038 frontend design guidelines based on logo brand colors come task dedicato per documentare palette e direttive UI in `frontend/AGENTS.md`; Master Data Admin foundation/list spostato a TASK-039, Master Data Admin CRUD a TASK-040 e task successivi rinumerati fino a TASK-052. |
 | 1.44 | 2026-05-05 | TASK-037 completato con integrazione logo nella login UI esistente: asset `assets/logos/hrm-logo.png`, alt `HRM AI-first`, nessun nuovo componente shared, nessuna modifica a backend, routing, autenticazione, login/logout, sidebar/header/shell o UI Master Data Admin. |
 | 1.43 | 2026-05-05 | Backlog documentale riallineato: introdotti TASK-036 frontend authenticated home shell foundation e TASK-037 frontend application logo integration prima della UI Master Data Admin; task successivi rinumerati, poi riallineati nuovamente in 1.45 per inserire le design guidelines basate sul logo. |

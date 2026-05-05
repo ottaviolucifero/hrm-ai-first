@@ -290,3 +290,55 @@ Do not modify backend files during frontend-only tasks unless explicitly request
 
 \- On Windows, prefer `npm.cmd` in documented commands when `npm.ps1` may be blocked by PowerShell execution policy.
 
+
+\---
+
+
+
+\## 11. Frontend Brand Color Guidelines
+
+
+
+Frontend visual decisions must remain coherent with the HRM AI-first logo without introducing a general redesign.
+
+
+
+Logo-derived palette:
+
+
+
+\- Primary deep indigo: `#203070`.
+
+\- Primary navy support: `#202050`.
+
+\- Accent blue: `#2080F0`.
+
+\- Secondary violet-blue: `#6060F0`.
+
+\- Soft highlight tint: `#F0F0FF`.
+
+
+
+Usage rules:
+
+
+
+\- Use the deep indigo as the main brand anchor for primary accents, active navigation and important identity moments.
+
+\- Use accent blue for primary actions, focused states, selected states and links when the existing Metronic/Tailwind token allows it.
+
+\- Use violet-blue sparingly for secondary accents, illustrations, badges or subtle emphasis.
+
+\- Use the soft highlight tint only for low-emphasis backgrounds, hover surfaces or gentle visual grouping.
+
+\- Keep neutral surfaces, borders, body text and enterprise layout density aligned with the existing Metronic/Tailwind-adapted style.
+
+\- Login, shell, header, sidebar, buttons, links, badges and UI states must use brand colors consistently, but only when the task scope includes UI implementation.
+
+\- Do not recolor existing screens opportunistically during unrelated frontend tasks.
+
+\- Do not introduce a full theme rewrite, broad palette replacement, decorative gradients or general redesign under the pretext of brand alignment.
+
+\- Reuse existing shell, header, sidebar, login UI, buttons, badges and layout patterns before changing styles.
+
+\- Create or promote shared components only when the existing shared component rules justify it and the task explicitly documents the reason.
