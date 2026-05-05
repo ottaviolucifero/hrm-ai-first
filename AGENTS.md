@@ -83,31 +83,14 @@ Agents must follow this order of authority:
 4. `TASKS.md`
 5. `ROADMAP.md`
 6. Root `AGENTS.md`
-7. `backend/AGENTS.md` for backend work
-8. `frontend/AGENTS.md` for frontend work
+7. `backend/AGENTS.md`
+8. `frontend/AGENTS.md`
 9. Existing implemented code
-10. `docs/analysis` as supporting historical context
-
-If conflicts appear:
-- The more specific file applies only within its domain
-- `DECISIONS.md` and `ARCHITECTURE.md` govern strategic and structural decisions
-- `docs/analysis` provides context but does not define current scope by itself
-- Human instruction overrides all
-
----
-
-## Area-Specific Instructions
-
-Agents must also follow area-specific operational rules when working inside scoped project areas:
-
-- `backend/AGENTS.md` for backend Spring Boot conventions and constraints
-- `frontend/AGENTS.md` for frontend Angular conventions and constraints, when present
+10. `docs/analysis`
 
 ---
 
 ## Architecture Governance
-
-Architecture.md is the mandatory technical structure reference.
 
 Agents must:
 - Follow Architecture.md strictly
@@ -116,9 +99,6 @@ Agents must:
 - Never silently refactor foundational systems
 - Never introduce new frameworks unless approved
 - Update documentation before structural changes
-
-Mandatory rule:
-Any major structural, architectural or strategic deviation must first be documented before implementation.
 
 ---
 
@@ -130,138 +110,45 @@ Before implementing major changes:
 3. Update relevant AGENTS.md if operational rules change
 4. Then implement code
 
-Do not modify project direction silently.
-
 ---
 
 ## Working Methodology
 
-Mandatory:
-- Work in small, verifiable tasks
-- One major task at a time
-- Validate before moving forward
+- Work in small tasks
+- Validate continuously
 - Reuse before creating
-- Prefer maintainability over unnecessary complexity
-- Respect MVP discipline
-- Prioritize clarity
-- Use existing repository structure
-- Follow naming conventions
-- Respect shared systems
+- Respect MVP
 
 ---
 
 ## Git Workflow
 
-Mandatory:
-1 task = 1 branch = 1 pull request
-
-Branch examples:
-- feature/employee-module
-- feature/device-module
-- feature/payroll-upload
-- fix/security-validation
-
-Do not group unrelated tasks in one branch.
+1 task = 1 branch = 1 PR
 
 ---
 
-## AI Agent Operational Rules
+## QA Agent
 
-Agents must:
-- Read documentation first
-- Analyze existing code before modifying
-- Extend before replacing
-- Reuse before duplicating
-- Preserve consistency
-- Avoid scope creep
-- Keep implementation incremental
-- Build with long-term maintainability in mind
+Il QA Agent è responsabile della validazione finale dei task.
 
-Agents must NOT:
-- Expand scope autonomously
-- Add speculative features
-- Ignore documentation
-- Duplicate systems
-- Break architecture consistency
-- Replace approved foundations
+Responsabilità:
+- verificare implementazione rispetto a TASKS.md
+- identificare bug e regressioni
+- controllare coerenza con ARCHITECTURE.md e DECISIONS.md
+- verificare aggiornamento documentazione
 
----
+Regole:
+- non modifica codice automaticamente
+- produce report strutturato
+- classifica problemi in BLOCKER / MAJOR / MINOR / NOTE
+- propone fix ma non li applica senza richiesta
 
-## Validation Rules
-
-Before considering work complete:
-
-Backend:
-- Build passes
-- Structure respected
-- Security respected
-- Validation included
-
-Frontend:
-- Build passes
-- Template governance respected
-- Shared component governance respected
-- UI consistency preserved
-
-Global:
-- MVP respected
-- Naming respected
-- Documentation aligned
-
----
-
-## Definition of Done
-
-A task is done only if:
-
-- Code builds successfully
-- Scope matches task
-- MVP boundaries respected
-- Architecture respected
-- Existing systems reused where appropriate
-- Security considered
-- Naming conventions respected
-- Documentation updated when necessary
-- No uncontrolled side effects introduced
-
----
-
-## Version Governance
-
-When modifying strategic documents:
-- Update version
-- Update Last Updated field
-- Update Version History
-- Never erase prior history silently
-
----
-
-## Execution Priority
-
-Immediate priorities:
-
-1. Governance foundation
-2. Technical foundation
-3. Data model
-4. Employee module
-5. Security
-6. Core HR modules
-7. MVP stabilization
-
----
-
-## Strategic Principle
-
-Documentation → Architecture → Task → Validation → Release
-
-Never reverse this order.
+Output:
+- aggiornamento `docs/qa/QA-REPORTS.md`
+- esito: PASS / PASS WITH NOTES / FAIL
 
 ---
 
 ## Final Rule
 
-This project is AI-first, not AI-uncontrolled.
-
-AI accelerates execution.  
-Documentation governs execution.  
-Humans retain authority.
+Documentation governs execution. Humans retain authority.
