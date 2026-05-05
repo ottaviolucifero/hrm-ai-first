@@ -11,6 +11,10 @@ Primary governance documents:
 - `TASKS.md`
 - `DECISIONS.md`
 
+Operational support documents:
+- `docs/qa/QA-REPORTS.md`
+- `docs/ai/MODEL-SELECTION-GUIDE.md`
+
 Supporting historical analysis input:
 - `/docs/analysis/Manifesto_e_Intenzioni_HRM_AI_First`
 - `/docs/analysis/MacroAnalyse_HRMUpdated`
@@ -18,6 +22,8 @@ Supporting historical analysis input:
 - `/docs/analysis/HRM_Jmix_UI_Interfaces`
 
 Agents may consult `docs/analysis` for historical context and background analysis.
+
+Operational support documents help execution but do not override primary governance documents.
 
 `docs/analysis` must not override:
 - explicit human instructions
