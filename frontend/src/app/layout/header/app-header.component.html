@@ -8,14 +8,14 @@
         id="sidebar_toggle"
         class="kt-btn kt-btn-icon kt-btn-ghost lg:hidden"
         type="button"
-        aria-label="Toggle sidebar"
+        [attr.aria-label]="i18n.t('header.mobileSidebarToggle')"
       >
         <span class="block h-4 w-4 rounded-sm border border-current"></span>
       </button>
 
       <div class="min-w-0">
-        <div class="text-sm font-semibold text-mono">HRflow</div>
-        <div class="text-xs text-secondary-foreground">Area riservata</div>
+        <div class="text-sm font-semibold text-mono">{{ i18n.t('app.brand') }}</div>
+        <div class="text-xs text-secondary-foreground">{{ i18n.t('header.reservedArea') }}</div>
       </div>
     </div>
 
@@ -23,7 +23,7 @@
       <button
         class="flex size-10 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/15"
         type="button"
-        aria-label="Profilo utente"
+        [attr.aria-label]="i18n.t('header.profileUser')"
         aria-haspopup="menu"
         [attr.aria-expanded]="profileMenuOpen()"
         (click)="toggleProfileMenu()"
@@ -36,7 +36,7 @@
           class="absolute end-0 z-30 mt-2 w-44 rounded-md border border-border bg-background py-1 shadow-lg"
           style="top: 100%;"
           role="menu"
-          aria-label="Menu profilo"
+          [attr.aria-label]="i18n.t('header.profileMenu')"
         >
           <button
             class="flex w-full items-center px-3 py-2 text-left text-sm text-secondary-foreground"
@@ -44,7 +44,7 @@
             role="menuitem"
             (click)="closeProfileMenu()"
           >
-            Profilo
+            {{ i18n.t('header.profile') }}
           </button>
 
           <button
@@ -53,7 +53,7 @@
             role="menuitem"
             (click)="logout()"
           >
-            Logout
+            {{ i18n.t('header.logout') }}
           </button>
         </div>
       }

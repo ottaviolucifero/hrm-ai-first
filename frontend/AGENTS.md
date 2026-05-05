@@ -262,7 +262,35 @@ Do not modify backend files during frontend-only tasks unless explicitly request
 
 
 
-\## 9. Angular UI State Rules
+\## 9. Frontend i18n Rules
+
+
+
+\- Do not add new hardcoded UI text in Angular templates or components.
+
+\- Use the existing runtime i18n foundation under `frontend/src/app/core/i18n/`.
+
+\- Every new label, message, placeholder, title, tooltip or `aria-label` must have a key in `frontend/src/app/core/i18n/i18n.messages.ts`.
+
+\- Always update all supported languages when adding or changing an i18n key: `it`, `fr` and `en`.
+
+\- Italian (`it`) is the baseline language and fallback.
+
+\- Do not translate dynamic data coming from backend APIs, database records or tenant/user content.
+
+\- Do not introduce new i18n libraries, including Angular localize, Transloco or ngx-translate, without a documented architecture decision.
+
+\- Frontend tests should avoid fragile assertions on hardcoded UI strings when possible; when string assertions are necessary, align them with the current i18n keys and translations.
+
+\- New UI components must be verified at least in Italian and, when language behavior is relevant, with language changes through `I18nService` or the persisted `localStorage` language.
+
+
+
+\---
+
+
+
+\## 10. Angular UI State Rules
 
 
 
@@ -280,7 +308,7 @@ Do not modify backend files during frontend-only tasks unless explicitly request
 
 
 
-\## 10. Frontend Manual Validation
+\## 11. Frontend Manual Validation
 
 
 
@@ -295,7 +323,7 @@ Do not modify backend files during frontend-only tasks unless explicitly request
 
 
 
-\## 11. Frontend Brand Color Guidelines
+\## 12. Frontend Brand Color Guidelines
 
 
 

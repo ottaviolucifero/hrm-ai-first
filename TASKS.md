@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.51
+Versione: 1.52
 Ultimo aggiornamento: 2026-05-05
 Stato: In avanzamento
 
@@ -2087,7 +2087,7 @@ TASK-039 non introduce nuove pagine funzionali, nuove route, RBAC/permission fil
 
 ### TASK-040 - Frontend i18n foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend foundation
 
@@ -2113,6 +2113,21 @@ Output atteso:
 - Strategia i18n frontend documentata e implementata nel perimetro minimo approvato.
 - Lingua italiana predisposta come baseline iniziale.
 - Percorso chiaro per estendere il frontend a francese e inglese.
+
+Completato:
+
+- Introdotta foundation i18n runtime custom/minimale sotto `frontend/src/app/core/i18n/`.
+- Definiti `LanguageCode`, lingua default `it`, dizionario typed con baseline italiana completa e fallback automatico su `it`.
+- Aggiunto `I18nService` con signal per lingua corrente, metodo `t(key)`, persistenza in `localStorage` e sincronizzazione di `document.documentElement.lang`.
+- Aggiornato `frontend/src/index.html` a `lang="it"`.
+- Estratti i testi statici principali da login, header, sidebar, home, shared email/password fields e alert close.
+- Aggiunto selettore lingua minimale nella card login con opzioni Italiano, Français ed English.
+- Mantenuti invariati routing, auth/login/JWT, login/logout, layout, ricerca sidebar, expand/collapse, collapsed initials e placeholder disabled.
+- Build frontend e test frontend validati.
+
+Nota:
+
+TASK-040 non introduce nuove dipendenze, `@angular/localize`, Transloco, ngx-translate, language switcher completo, nuove pagine funzionali, redesign, backend o modifiche ai flussi auth/JWT.
 
 ### TASK-041 - Implementare UI Master Data Admin foundation/list
 
@@ -2199,6 +2214,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.52 | 2026-05-05 | TASK-040 completato con foundation i18n runtime custom/minimale: lingua default `it`, dizionario typed, fallback automatico a italiano, `I18nService` con signal, `t(key)`, persistenza `localStorage`, `lang="it"`, testi principali estratti e selettore lingua minimale nella login card senza nuove dipendenze o modifiche auth/routing. |
 | 1.51 | 2026-05-05 | TASK-039 rifinito con sidebar collassabile/espandibile: toggle visibile, modalita compatta top-level, search e submenu nascosti quando collassata, placeholder futuri ancora non naviganti e test componente aggiornati. |
 | 1.50 | 2026-05-05 | TASK-039 completato con foundation sidebar navigation tree: struttura dati tipizzata locale, nodi fino a 3 livelli, expand/collapse, active route highlighting, ricerca/filtro e placeholder non naviganti per pagine future; nessun backend, RBAC, i18n, nuove route o nuove librerie. |
 | 1.49 | 2026-05-05 | Backlog futuro rinumerato in chiusura TASK-036: TASK-039 diventa Frontend sidebar navigation tree foundation, TASK-040 diventa Frontend i18n foundation, UI Master Data Admin slitta a TASK-041/TASK-042 e i task futuri TODO successivi slittano coerentemente fino a TASK-054. |

@@ -6,20 +6,19 @@ import { AuthService } from '../../core/auth/auth.service';
 import { LoginComponent } from './login.component';
 
 describe('LoginComponent', () => {
+  afterEach(() => {
+    window.localStorage.removeItem('hrflow.language');
+    TestBed.resetTestingModule();
+  });
+
   it('shows login error immediately and resets loading after failed login', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
     const authService = {
       login: vi.fn(() => throwError(() => ({ status: 401 })))
     };
 
-    await TestBed.configureTestingModule({
-      imports: [LoginComponent],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: authService }
-      ]
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(LoginComponent);
+    const fixture = await createLoginFixture(authService);
     fixture.detectChanges();
 
     const component = fixture.componentInstance as unknown as {
@@ -42,4 +41,43 @@ describe('LoginComponent', () => {
     expect(button.disabled).toBe(false);
     expect(fixture.nativeElement.textContent).toContain('Email o password non corretti.');
   });
+
+  it('syncs the language selector with the current fr language', async () => {
+    window.localStorage.setItem('hrflow.language', 'fr');
+
+    const fixture = await createLoginFixture();
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(select.value).toBe('fr');
+    expect(select.selectedOptions[0]?.textContent?.trim()).toBe('Français');
+  });
+
+  it('updates language storage when the selector changes to en', async () => {
+    window.localStorage.setItem('hrflow.language', 'fr');
+
+    const fixture = await createLoginFixture();
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    select.value = 'en';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(select.value).toBe('en');
+    expect(window.localStorage.getItem('hrflow.language')).toBe('en');
+    expect(document.documentElement.lang).toBe('en');
+  });
 });
+
+async function createLoginFixture(authService = { login: vi.fn() }) {
+  await TestBed.configureTestingModule({
+    imports: [LoginComponent],
+    providers: [
+      provideRouter([]),
+      { provide: AuthService, useValue: authService }
+    ]
+  }).compileComponents();
+
+  return TestBed.createComponent(LoginComponent);
+}

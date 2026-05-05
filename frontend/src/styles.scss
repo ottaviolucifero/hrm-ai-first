@@ -1,1 +1,44 @@
 /* You can add global styles to this file, and also import other style files */
+
+.app-select {
+  background-color: var(--background);
+  border: 1px solid var(--input);
+  border-radius: 0.375rem;
+  color: var(--foreground);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.25rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
+}
+
+.app-select:focus {
+  outline: none;
+}
+
+.app-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+}
+
+.app-select--compact {
+  font-size: 0.8125rem;
+  min-height: 2rem;
+  padding: 0.3125rem 2.25rem 0.3125rem 0.625rem;
+}
+
+.app-select--ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--muted-foreground);
+}
+
+.app-select--ghost:hover {
+  background-color: color-mix(in oklab, var(--muted) 45%, transparent);
+  color: var(--foreground);
+}
