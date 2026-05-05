@@ -5,10 +5,16 @@ import { AppSidebarComponent } from './app-sidebar.component';
 
 describe('AppSidebarComponent', () => {
   beforeEach(async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
     await TestBed.configureTestingModule({
       imports: [AppSidebarComponent],
       providers: [provideRouter([])]
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    window.localStorage.removeItem('hrflow.language');
   });
 
   it('renders the navigation tree and search input', () => {

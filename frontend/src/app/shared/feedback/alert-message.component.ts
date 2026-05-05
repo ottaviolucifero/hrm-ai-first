@@ -1,4 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
+
+import { I18nService } from '../../core/i18n/i18n.service';
 
 export type AlertMessageType = 'danger' | 'warning' | 'success' | 'info';
 
@@ -9,6 +11,8 @@ export type AlertMessageType = 'danger' | 'warning' | 'success' | 'info';
   styleUrl: './alert-message.component.scss'
 })
 export class AlertMessageComponent {
+  protected readonly i18n = inject(I18nService);
+
   @Input({ required: true }) message = '';
   @Input() type: AlertMessageType = 'info';
   @Input() dismissible = false;

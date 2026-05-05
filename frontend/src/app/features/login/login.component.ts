@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { LanguageCode } from '../../core/i18n/i18n.models';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { AlertMessageComponent } from '../../shared/feedback/alert-message.component';
 import { EmailFieldComponent } from '../../shared/form-fields/email-field.component';
 import { PasswordFieldComponent } from '../../shared/form-fields/password-field.component';
@@ -23,6 +25,7 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
+  protected readonly i18n = inject(I18nService);
 
   protected readonly loginForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
@@ -32,6 +35,16 @@ export class LoginComponent {
   protected submitted = false;
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal('');
+  protected readonly languageOptions: ReadonlyArray<{ readonly code: LanguageCode; readonly label: string }> = [
+    { code: 'it', label: 'Italiano' },
+    { code: 'fr', label: 'Français' },
+    { code: 'en', label: 'English' }
+  ];
+
+  protected updateLanguage(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.i18n.setLanguage(select.value as LanguageCode);
+  }
 
   protected submit(): void {
     this.submitted = true;
@@ -55,7 +68,7 @@ export class LoginComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => void this.router.navigateByUrl('/'),
-        error: () => this.errorMessage.set('Email o password non corretti.')
+        error: () => this.errorMessage.set(this.i18n.t('login.errorInvalidCredentials'))
       });
   }
 }

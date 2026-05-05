@@ -12,9 +12,9 @@
 @if (showErrors) {
   <div class="mt-1.5 text-xs text-destructive">
     @if (control.hasError('required')) {
-      <span>Email obbligatoria.</span>
+      <span>{{ i18n.t('form.email.required') }}</span>
     } @else if (control.hasError('email')) {
-      <span>Formato email non valido.</span>
+      <span>{{ i18n.t('form.email.invalid') }}</span>
     }
   </div>
 }

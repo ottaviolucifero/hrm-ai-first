@@ -1,12 +1,23 @@
 <main class="login-page">
   <section class="login-panel">
     <div class="login-logo">
-      <img src="assets/logos/hrm-logo.png" alt="HRM AI-first" />
+      <img src="assets/logos/hrm-logo.png" [alt]="i18n.t('login.logoAlt')" />
     </div>
 
     <div class="kt-card">
       <div class="login-card-header kt-card-header">
-        <h1 class="kt-card-title text-xl">Accedi</h1>
+        <span aria-hidden="true"></span>
+        <h1 class="kt-card-title text-xl">{{ i18n.t('login.title') }}</h1>
+        <select
+          class="login-language-selector app-select app-select--compact app-select--ghost"
+          [attr.aria-label]="i18n.t('login.languageSelector')"
+          [value]="i18n.language()"
+          (change)="updateLanguage($event)"
+        >
+          @for (language of languageOptions; track language.code) {
+            <option [value]="language.code" [selected]="language.code === i18n.language()">{{ language.label }}</option>
+          }
+        </select>
       </div>
 
       <form class="kt-card-content flex flex-col gap-5" [formGroup]="loginForm" (ngSubmit)="submit()">
@@ -15,22 +26,22 @@
         <app-email-field
           [control]="loginForm.controls.email"
           [submitted]="submitted"
-          label="Email"
-          placeholder="name@company.com"
+          [label]="i18n.t('login.emailLabel')"
+          [placeholder]="i18n.t('login.emailPlaceholder')"
         />
 
         <app-password-field
           [control]="loginForm.controls.password"
           [submitted]="submitted"
-          label="Password"
-          placeholder="Password"
+          [label]="i18n.t('login.passwordLabel')"
+          [placeholder]="i18n.t('login.passwordPlaceholder')"
         />
 
         <button class="kt-btn kt-btn-primary w-full" type="submit" [disabled]="loading()">
           @if (loading()) {
-            <span>Accesso in corso...</span>
+            <span>{{ i18n.t('login.submitting') }}</span>
           } @else {
-            <span>Accedi</span>
+            <span>{{ i18n.t('login.submit') }}</span>
           }
         </button>
       </form>

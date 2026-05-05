@@ -1,9 +1,12 @@
 import { Component, EventEmitter, Output, computed, inject, signal } from '@angular/core';
 import { IsActiveMatchOptions, Router, RouterLink } from '@angular/router';
 
+import { I18nKey } from '../../core/i18n/i18n.messages';
+import { I18nService } from '../../core/i18n/i18n.service';
+
 interface SidebarNavNode {
   readonly id: string;
-  readonly title: string;
+  readonly titleKey: I18nKey;
   readonly initial?: string;
   readonly route?: `/${string}`;
   readonly children?: readonly SidebarNavNode[];
@@ -12,71 +15,71 @@ interface SidebarNavNode {
 const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
   {
     id: 'home',
-    title: 'Home',
+    titleKey: 'nav.home',
     initial: 'H',
     route: '/'
   },
   {
     id: 'people',
-    title: 'Persone',
+    titleKey: 'nav.people',
     initial: 'P',
     children: [
       {
         id: 'people-employees',
-        title: 'Dipendenti'
+        titleKey: 'nav.peopleEmployees'
       }
     ]
   },
   {
     id: 'hr-operations',
-    title: 'Operazioni HR',
+    titleKey: 'nav.hrOperations',
     initial: 'O',
     children: [
       {
         id: 'hr-documents',
-        title: 'Documenti paga'
+        titleKey: 'nav.payrollDocuments'
       },
       {
         id: 'hr-leave',
-        title: 'Richieste permessi'
+        titleKey: 'nav.leaveRequests'
       },
       {
         id: 'hr-holidays',
-        title: 'Calendario festivita'
+        titleKey: 'nav.holidayCalendar'
       }
     ]
   },
   {
     id: 'assets',
-    title: 'Asset aziendali',
+    titleKey: 'nav.assets',
     initial: 'A',
     children: [
       {
         id: 'assets-devices',
-        title: 'Dispositivi'
+        titleKey: 'nav.devices'
       }
     ]
   },
   {
     id: 'governance',
-    title: 'Governance',
+    titleKey: 'nav.governance',
     initial: 'G',
     children: [
       {
         id: 'governance-security',
-        title: 'Sicurezza',
+        titleKey: 'nav.governanceSecurity',
         children: [
           {
             id: 'governance-security-users',
-            title: 'Utenti'
+            titleKey: 'nav.users'
           },
           {
             id: 'governance-security-roles',
-            title: 'Ruoli'
+            titleKey: 'nav.roles'
           },
           {
             id: 'governance-security-permissions',
-            title: 'Permessi'
+            titleKey: 'nav.permissions'
           }
         ]
       }
@@ -110,6 +113,7 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
 })
 export class AppSidebarComponent {
   private readonly router = inject(Router);
+  protected readonly i18n = inject(I18nService);
 
   @Output() readonly sidebarCollapsedChange = new EventEmitter<boolean>();
 
@@ -178,11 +182,15 @@ export class AppSidebarComponent {
   }
 
   protected navigationInitial(node: SidebarNavNode): string {
-    return node.initial ?? node.title.slice(0, 1).toLocaleUpperCase();
+    return node.initial ?? this.nodeTitle(node).slice(0, 1).toLocaleUpperCase();
+  }
+
+  protected nodeTitle(node: SidebarNavNode): string {
+    return this.i18n.t(node.titleKey);
   }
 
   private filterNode(node: SidebarNavNode, query: string): SidebarNavNode | null {
-    const titleMatches = this.normalize(node.title).includes(query);
+    const titleMatches = this.normalize(this.nodeTitle(node)).includes(query);
     const matchingChildren = node.children
       ?.map((childNode) => this.filterNode(childNode, query))
       .filter((childNode): childNode is SidebarNavNode => childNode !== null);

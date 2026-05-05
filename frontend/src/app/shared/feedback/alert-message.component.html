@@ -12,7 +12,7 @@
     </div>
 
     @if (dismissible) {
-      <button class="kt-alert-close" type="button" aria-label="Chiudi messaggio" (click)="dismiss()">
+      <button class="kt-alert-close" type="button" [attr.aria-label]="i18n.t('alert.close')" (click)="dismiss()">
         <i class="ki-filled ki-cross"></i>
       </button>
     }
