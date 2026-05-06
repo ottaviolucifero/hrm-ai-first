@@ -17,6 +17,7 @@ import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeRequest;
 import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeResponse;
 import com.odsoftware.hrm.dto.masterdata.global.RegionRequest;
 import com.odsoftware.hrm.dto.masterdata.global.RegionResponse;
+import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.entity.master.Area;
 import com.odsoftware.hrm.entity.master.Country;
 import com.odsoftware.hrm.entity.master.Currency;
@@ -36,10 +37,12 @@ import com.odsoftware.hrm.repository.master.GlobalZipCodeRepository;
 import com.odsoftware.hrm.repository.master.MaritalStatusRepository;
 import com.odsoftware.hrm.repository.master.NationalIdentifierTypeRepository;
 import com.odsoftware.hrm.repository.master.RegionRepository;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.function.Function;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,11 +78,15 @@ public class MasterDataGlobalService {
 		this.nationalIdentifierTypeRepository = nationalIdentifierTypeRepository;
 	}
 
-	public List<CountryResponse> findCountries() {
-		return countryRepository.findAll().stream()
-				.sorted(Comparator.comparing(Country::getIsoCode))
-				.map(this::toCountryResponse)
-				.toList();
+	public MasterDataPageResponse<CountryResponse> findCountries(Integer page, Integer size, String search) {
+		return findPage(
+				countryRepository,
+				page,
+				size,
+				search,
+				Sort.by("isoCode"),
+				MasterDataQuerySupport.searchSpecification(search, "isoCode", "name", "phoneCode"),
+				this::toCountryResponse);
 	}
 
 	public CountryResponse findCountryById(UUID id) {
@@ -115,11 +122,15 @@ public class MasterDataGlobalService {
 		countryRepository.save(country);
 	}
 
-	public List<RegionResponse> findRegions() {
-		return regionRepository.findAll().stream()
-				.sorted(Comparator.comparing(Region::getCode))
-				.map(this::toRegionResponse)
-				.toList();
+	public MasterDataPageResponse<RegionResponse> findRegions(Integer page, Integer size, String search) {
+		return findPage(
+				regionRepository,
+				page,
+				size,
+				search,
+				Sort.by("code"),
+				MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name"),
+				this::toRegionResponse);
 	}
 
 	public RegionResponse findRegionById(UUID id) {
@@ -157,11 +168,15 @@ public class MasterDataGlobalService {
 		regionRepository.save(region);
 	}
 
-	public List<AreaResponse> findAreas() {
-		return areaRepository.findAll().stream()
-				.sorted(Comparator.comparing(Area::getCode))
-				.map(this::toAreaResponse)
-				.toList();
+	public MasterDataPageResponse<AreaResponse> findAreas(Integer page, Integer size, String search) {
+		return findPage(
+				areaRepository,
+				page,
+				size,
+				search,
+				Sort.by("code"),
+				MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name", "region.code", "region.name"),
+				this::toAreaResponse);
 	}
 
 	public AreaResponse findAreaById(UUID id) {
@@ -203,11 +218,26 @@ public class MasterDataGlobalService {
 		areaRepository.save(area);
 	}
 
-	public List<GlobalZipCodeResponse> findGlobalZipCodes() {
-		return globalZipCodeRepository.findAll().stream()
-				.sorted(Comparator.comparing(GlobalZipCode::getPostalCode).thenComparing(GlobalZipCode::getCity))
-				.map(this::toGlobalZipCodeResponse)
-				.toList();
+	public MasterDataPageResponse<GlobalZipCodeResponse> findGlobalZipCodes(Integer page, Integer size, String search) {
+		return findPage(
+				globalZipCodeRepository,
+				page,
+				size,
+				search,
+				Sort.by("postalCode").ascending().and(Sort.by("city")),
+				MasterDataQuerySupport.searchSpecification(
+						search,
+						"postalCode",
+						"city",
+						"provinceCode",
+						"provinceName",
+						"country.isoCode",
+						"country.name",
+						"region.code",
+						"region.name",
+						"area.code",
+						"area.name"),
+				this::toGlobalZipCodeResponse);
 	}
 
 	public GlobalZipCodeResponse findGlobalZipCodeById(UUID id) {
@@ -247,11 +277,15 @@ public class MasterDataGlobalService {
 		globalZipCodeRepository.save(globalZipCode);
 	}
 
-	public List<CurrencyResponse> findCurrencies() {
-		return currencyRepository.findAll().stream()
-				.sorted(Comparator.comparing(Currency::getCode))
-				.map(this::toCurrencyResponse)
-				.toList();
+	public MasterDataPageResponse<CurrencyResponse> findCurrencies(Integer page, Integer size, String search) {
+		return findPage(
+				currencyRepository,
+				page,
+				size,
+				search,
+				Sort.by("code"),
+				MasterDataQuerySupport.searchSpecification(search, "code", "name", "symbol"),
+				this::toCurrencyResponse);
 	}
 
 	public CurrencyResponse findCurrencyById(UUID id) {
@@ -287,11 +321,15 @@ public class MasterDataGlobalService {
 		currencyRepository.save(currency);
 	}
 
-	public List<GenderResponse> findGenders() {
-		return genderRepository.findAll().stream()
-				.sorted(Comparator.comparing(Gender::getCode))
-				.map(this::toGenderResponse)
-				.toList();
+	public MasterDataPageResponse<GenderResponse> findGenders(Integer page, Integer size, String search) {
+		return findPage(
+				genderRepository,
+				page,
+				size,
+				search,
+				Sort.by("code"),
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toGenderResponse);
 	}
 
 	public GenderResponse findGenderById(UUID id) {
@@ -327,11 +365,15 @@ public class MasterDataGlobalService {
 		genderRepository.save(gender);
 	}
 
-	public List<MaritalStatusResponse> findMaritalStatuses() {
-		return maritalStatusRepository.findAll().stream()
-				.sorted(Comparator.comparing(MaritalStatus::getCode))
-				.map(this::toMaritalStatusResponse)
-				.toList();
+	public MasterDataPageResponse<MaritalStatusResponse> findMaritalStatuses(Integer page, Integer size, String search) {
+		return findPage(
+				maritalStatusRepository,
+				page,
+				size,
+				search,
+				Sort.by("code"),
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toMaritalStatusResponse);
 	}
 
 	public MaritalStatusResponse findMaritalStatusById(UUID id) {
@@ -367,11 +409,15 @@ public class MasterDataGlobalService {
 		maritalStatusRepository.save(maritalStatus);
 	}
 
-	public List<NationalIdentifierTypeResponse> findNationalIdentifierTypes() {
-		return nationalIdentifierTypeRepository.findAll().stream()
-				.sorted(Comparator.comparing(NationalIdentifierType::getCode))
-				.map(this::toNationalIdentifierTypeResponse)
-				.toList();
+	public MasterDataPageResponse<NationalIdentifierTypeResponse> findNationalIdentifierTypes(Integer page, Integer size, String search) {
+		return findPage(
+				nationalIdentifierTypeRepository,
+				page,
+				size,
+				search,
+				Sort.by("code"),
+				MasterDataQuerySupport.searchSpecification(search, "code", "name", "regexPattern", "country.isoCode", "country.name"),
+				this::toNationalIdentifierTypeResponse);
 	}
 
 	public NationalIdentifierTypeResponse findNationalIdentifierTypeById(UUID id) {
@@ -675,6 +721,19 @@ public class MasterDataGlobalService {
 		}
 		String cleaned = value.trim();
 		return cleaned.isEmpty() ? null : cleaned;
+	}
+
+	private <T, R> MasterDataPageResponse<R> findPage(
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			Integer page,
+			Integer size,
+			String search,
+			Sort sort,
+			Specification<T> specification,
+			Function<T, R> mapper) {
+		return MasterDataQuerySupport.toPageResponse(
+				repository.findAll(specification, MasterDataQuerySupport.buildPageable(page, size, sort)),
+				mapper);
 	}
 
 	private record ZipCodeRelations(Country country, Region region, Area area) {

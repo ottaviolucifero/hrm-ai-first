@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.AuthenticationMethod;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AuthenticationMethodRepository extends JpaRepository<AuthenticationMethod, UUID> {
+public interface AuthenticationMethodRepository extends MasterDataRepository<AuthenticationMethod> {
 
 	boolean existsByCode(String code);
 

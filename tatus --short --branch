@@ -1,0 +1,97 @@
+warning: in the working copy of 'ROADMAP.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'TASKS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/controller/MasterDataGlobalController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/controller/MasterDataGovernanceSecurityController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/controller/MasterDataHrBusinessController.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/AreaRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/AuditActionTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/AuthenticationMethodRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/CompanyProfileTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/ContractTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/CountryRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/CurrencyRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/DepartmentRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/DeviceBrandRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/DeviceStatusRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/DeviceTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/DisciplinaryActionTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/DocumentTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/EmploymentStatusRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/GenderRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/GlobalZipCodeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/JobTitleRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/LeaveRequestTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/MaritalStatusRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/NationalIdentifierTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/OfficeLocationTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/PermissionRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/RegionRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/RoleRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/SmtpEncryptionTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/UserTypeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/WorkModeRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/service/MasterDataGlobalService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/service/MasterDataGovernanceSecurityService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/service/MasterDataHrBusinessService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/test/java/com/odsoftware/hrm/MasterDataGlobalControllerTests.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/test/java/com/odsoftware/hrm/MasterDataGovernanceSecurityControllerTests.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/test/java/com/odsoftware/hrm/MasterDataHrBusinessControllerTests.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/qa/QA-REPORTS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/app/core/i18n/i18n.messages.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/app/features/master-data/master-data-admin.component.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/app/features/master-data/master-data-admin.component.scss', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/app/features/master-data/master-data-admin.component.spec.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/app/features/master-data/master-data-admin.component.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/app/features/master-data/master-data.models.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/app/features/master-data/master-data.service.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/repository/master/MasterDataRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/main/java/com/odsoftware/hrm/service/MasterDataQuerySupport.java', LF will be replaced by CRLF the next time Git touches it
+ ROADMAP.md                                         |  10 [32m+[m[31m-[m
+ TASKS.md                                           |  19 [32m++[m[31m-[m
+ .../hrm/controller/MasterDataGlobalController.java |  58 [32m+++++[m[31m---[m
+ .../MasterDataGovernanceSecurityController.java    |  65 [32m++++++[m[31m---[m
+ .../controller/MasterDataHrBusinessController.java |  72 [32m+++++++[m[31m---[m
+ .../hrm/repository/master/AreaRepository.java      |   2 [32m+[m[31m-[m
+ .../master/AuditActionTypeRepository.java          |   2 [32m+[m[31m-[m
+ .../master/AuthenticationMethodRepository.java     |   2 [32m+[m[31m-[m
+ .../master/CompanyProfileTypeRepository.java       |   2 [32m+[m[31m-[m
+ .../repository/master/ContractTypeRepository.java  |   2 [32m+[m[31m-[m
+ .../hrm/repository/master/CountryRepository.java   |   2 [32m+[m[31m-[m
+ .../hrm/repository/master/CurrencyRepository.java  |   2 [32m+[m[31m-[m
+ .../repository/master/DepartmentRepository.java    |   2 [32m+[m[31m-[m
+ .../repository/master/DeviceBrandRepository.java   |   2 [32m+[m[31m-[m
+ .../repository/master/DeviceStatusRepository.java  |   2 [32m+[m[31m-[m
+ .../repository/master/DeviceTypeRepository.java    |   2 [32m+[m[31m-[m
+ .../master/DisciplinaryActionTypeRepository.java   |   2 [32m+[m[31m-[m
+ .../repository/master/DocumentTypeRepository.java  |   2 [32m+[m[31m-[m
+ .../master/EmploymentStatusRepository.java         |   2 [32m+[m[31m-[m
+ .../hrm/repository/master/GenderRepository.java    |   2 [32m+[m[31m-[m
+ .../repository/master/GlobalZipCodeRepository.java |   2 [32m+[m[31m-[m
+ .../hrm/repository/master/JobTitleRepository.java  |   2 [32m+[m[31m-[m
+ .../master/LeaveRequestTypeRepository.java         |   2 [32m+[m[31m-[m
+ .../repository/master/MaritalStatusRepository.java |   2 [32m+[m[31m-[m
+ .../repository/master/MasterDataRepository.java    |  10 [32m++[m
+ .../master/NationalIdentifierTypeRepository.java   |   2 [32m+[m[31m-[m
+ .../master/OfficeLocationTypeRepository.java       |   2 [32m+[m[31m-[m
+ .../repository/master/PermissionRepository.java    |   2 [32m+[m[31m-[m
+ .../hrm/repository/master/RegionRepository.java    |   2 [32m+[m[31m-[m
+ .../hrm/repository/master/RoleRepository.java      |   2 [32m+[m[31m-[m
+ .../master/SmtpEncryptionTypeRepository.java       |   2 [32m+[m[31m-[m
+ .../hrm/repository/master/UserTypeRepository.java  |   2 [32m+[m[31m-[m
+ .../hrm/repository/master/WorkModeRepository.java  |   2 [32m+[m[31m-[m
+ .../hrm/service/MasterDataGlobalService.java       | 141 [32m+++++++++++++[m[31m------[m
+ .../MasterDataGovernanceSecurityService.java       | 152 [32m++++++++++++++[m[31m-------[m
+ .../hrm/service/MasterDataHrBusinessService.java   |  96 [32m++++++++[m[31m-----[m
+ .../hrm/service/MasterDataQuerySupport.java        |  93 [32m+++++++++++++[m
+ .../hrm/MasterDataGlobalControllerTests.java       |  51 [32m+++++[m[31m--[m
+ ...asterDataGovernanceSecurityControllerTests.java |  29 [32m+++[m[31m-[m
+ .../hrm/MasterDataHrBusinessControllerTests.java   |  29 [32m+++[m[31m-[m
+ docs/qa/QA-REPORTS.md                              |  13 [32m+[m[31m-[m
+ frontend/src/app/core/i18n/i18n.messages.ts        |  21 [32m+++[m
+ .../master-data/master-data-admin.component.html   |  30 [32m++++[m
+ .../master-data/master-data-admin.component.scss   |  26 [32m++++[m
+ .../master-data-admin.component.spec.ts            | 152 [32m+++++++++++++++++[m[31m----[m
+ .../master-data/master-data-admin.component.ts     |  74 [32m+++++++++[m[31m-[m
+ .../app/features/master-data/master-data.models.ts |  27 [32m++++[m
+ .../features/master-data/master-data.service.ts    |  16 [32m++[m[31m-[m
+ 48 files changed, 980 insertions(+), 258 deletions(-)

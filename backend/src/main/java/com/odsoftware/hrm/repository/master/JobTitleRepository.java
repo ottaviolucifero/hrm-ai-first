@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.JobTitle;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface JobTitleRepository extends JpaRepository<JobTitle, UUID> {
+public interface JobTitleRepository extends MasterDataRepository<JobTitle> {
 
 	boolean existsByTenantIdAndCode(UUID tenantId, String code);
 

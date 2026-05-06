@@ -24,7 +24,17 @@ Nessun report backend registrato al momento.
 
 ## Full-stack / integration QA reports
 
-Nessun report full-stack o integration registrato al momento.
+### TASK-043 - Master Data API/UI pagination and generic filters
+
+- Data: 2026-05-06
+- Branch: `task-043-master-data-pagination-filters`
+- Scope QA: review tecnica/regressiva cross-stack su API paginate Master Data, filtro generico, UI `/master-data`, i18n `it/fr/en`, test backend/frontend e rispetto del fuori scope
+- Test backend eseguiti con esito reale: `cd backend && $env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'; .\mvnw.cmd test` -> BUILD SUCCESS, 95 test, 0 failure, 0 errori
+- Test frontend eseguiti con esito reale: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK, 9 file di test passed, 27 test passed
+- QA manuale browser eseguito/non eseguito: eseguito manualmente con successo su `/master-data` (apertura pagina, categoria Global, entita Paesi/Countries, filtro testuale, paginazione precedente/successivo, refresh, cambio entita e ritorno su Paesi)
+- Problemi trovati: nessun blocker confermato; osservazioni minori su copertura test non esplicita per `page` negativo e `search` solo spazi, anche se la normalizzazione è presente in `MasterDataQuerySupport`
+- Esito finale: PASS CON OSSERVAZIONI
+
 
 ---
 
@@ -32,3 +42,4 @@ Nota operativa:
 
 - Le sezioni devono contenere solo report riferiti a task reali.
 - Mantenere ogni report sintetico ma verificabile.
+

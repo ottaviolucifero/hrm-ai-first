@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.MaritalStatus;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MaritalStatusRepository extends JpaRepository<MaritalStatus, UUID> {
+public interface MaritalStatusRepository extends MasterDataRepository<MaritalStatus> {
 
 	boolean existsByCode(String code);
 

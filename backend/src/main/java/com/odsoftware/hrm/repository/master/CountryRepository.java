@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.Country;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CountryRepository extends JpaRepository<Country, UUID> {
+public interface CountryRepository extends MasterDataRepository<Country> {
 
 	boolean existsByIsoCode(String isoCode);
 

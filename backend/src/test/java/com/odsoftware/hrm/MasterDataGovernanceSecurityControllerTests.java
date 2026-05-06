@@ -81,7 +81,7 @@ class MasterDataGovernanceSecurityControllerTests {
 
 			mockMvc.perform(get(resource.path()))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$").isArray());
+					.andExpect(jsonPath("$.content").isArray());
 			mockMvc.perform(get(resource.path() + "/{id}", id))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$.code").value(expectedCode));
@@ -94,6 +94,33 @@ class MasterDataGovernanceSecurityControllerTests {
 
 		assertThat(userTypeRepository.findById(userTypeId).orElseThrow().getActive()).isFalse();
 		assertThat(roleRepository.findById(roleId).orElseThrow().getActive()).isFalse();
+	}
+
+	@Test
+	@WithMockUser
+	void masterDataGovernanceSecurityListEndpointsSupportPaginationAndSearch() throws Exception {
+		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK043_ROLE_A", "Task 043 Role A", false));
+		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK043_ROLE_B", "Task 043 Role B", false));
+		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK043_ROLE_C", "Task 043 Role C", false));
+
+		mockMvc.perform(get("/api/master-data/governance-security/roles"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content").isArray())
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(25))
+				.andExpect(jsonPath("$.first").value(true));
+
+		mockMvc.perform(get("/api/master-data/governance-security/roles?page=0&size=2"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(2))
+				.andExpect(jsonPath("$.content.length()").value(2))
+				.andExpect(jsonPath("$.first").value(true));
+
+		mockMvc.perform(get("/api/master-data/governance-security/roles?search=TASK043_ROLE_B"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].code").value("TASK043_ROLE_B"));
 	}
 
 	@Test

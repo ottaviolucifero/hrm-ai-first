@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.DeviceBrand;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface DeviceBrandRepository extends JpaRepository<DeviceBrand, UUID> {
+public interface DeviceBrandRepository extends MasterDataRepository<DeviceBrand> {
 
 	boolean existsByTenantIdAndCode(UUID tenantId, String code);
 

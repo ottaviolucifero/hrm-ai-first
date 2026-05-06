@@ -2,6 +2,7 @@ import { I18nKey } from '../../core/i18n/i18n.messages';
 
 export type MasterDataCategoryId = 'global' | 'hrBusiness' | 'governanceSecurity';
 export type MasterDataColumnKind = 'text' | 'boolean' | 'date';
+export const DEFAULT_MASTER_DATA_PAGE_SIZE = 25;
 
 export interface MasterDataColumn {
   readonly key: string;
@@ -23,6 +24,32 @@ export interface MasterDataCategory {
 }
 
 export type MasterDataRow = Record<string, unknown>;
+
+export interface MasterDataQuery {
+  readonly page: number;
+  readonly size: number;
+  readonly search?: string;
+}
+
+export interface MasterDataPage<T> {
+  readonly content: readonly T[];
+  readonly page: number;
+  readonly size: number;
+  readonly totalElements: number;
+  readonly totalPages: number;
+  readonly first: boolean;
+  readonly last: boolean;
+}
+
+export const EMPTY_MASTER_DATA_PAGE: MasterDataPage<MasterDataRow> = {
+  content: [],
+  page: 0,
+  size: DEFAULT_MASTER_DATA_PAGE_SIZE,
+  totalElements: 0,
+  totalPages: 0,
+  first: true,
+  last: true
+};
 
 const CODE_COLUMN: MasterDataColumn = {
   key: 'code',

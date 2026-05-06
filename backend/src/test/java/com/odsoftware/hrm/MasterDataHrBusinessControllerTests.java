@@ -78,7 +78,7 @@ class MasterDataHrBusinessControllerTests {
 
 			mockMvc.perform(get(path))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$").isArray());
+					.andExpect(jsonPath("$.content").isArray());
 			mockMvc.perform(get(path + "/{id}", id))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$.code").value(expectedCode));
@@ -90,6 +90,33 @@ class MasterDataHrBusinessControllerTests {
 		}
 
 		assertThat(departmentRepository.findById(departmentId).orElseThrow().getActive()).isFalse();
+	}
+
+	@Test
+	@WithMockUser
+	void masterDataHrBusinessListEndpointsSupportPaginationAndSearch() throws Exception {
+		createTenantMaster("/api/master-data/hr-business/departments", "TASK043_PAGE_A", "Task 043 Page A");
+		createTenantMaster("/api/master-data/hr-business/departments", "TASK043_PAGE_B", "Task 043 Page B");
+		createTenantMaster("/api/master-data/hr-business/departments", "TASK043_PAGE_C", "Task 043 Page C");
+
+		mockMvc.perform(get("/api/master-data/hr-business/departments"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content").isArray())
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(25))
+				.andExpect(jsonPath("$.first").value(true));
+
+		mockMvc.perform(get("/api/master-data/hr-business/departments?page=0&size=2"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(2))
+				.andExpect(jsonPath("$.content.length()").value(2))
+				.andExpect(jsonPath("$.first").value(true));
+
+		mockMvc.perform(get("/api/master-data/hr-business/departments?search=TASK043_PAGE_B"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].code").value("TASK043_PAGE_B"));
 	}
 
 	@Test

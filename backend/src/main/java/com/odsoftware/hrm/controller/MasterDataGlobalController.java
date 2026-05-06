@@ -16,6 +16,7 @@ import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeRequest;
 import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeResponse;
 import com.odsoftware.hrm.dto.masterdata.global.RegionRequest;
 import com.odsoftware.hrm.dto.masterdata.global.RegionResponse;
+import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.service.MasterDataGlobalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,8 +50,11 @@ public class MasterDataGlobalController {
 
 	@GetMapping("/countries")
 	@Operation(summary = "List countries")
-	public List<CountryResponse> findCountries() {
-		return masterDataGlobalService.findCountries();
+	public MasterDataPageResponse<CountryResponse> findCountries(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findCountries(page, size, search);
 	}
 
 	@GetMapping("/countries/{id}")
@@ -80,8 +85,11 @@ public class MasterDataGlobalController {
 
 	@GetMapping("/regions")
 	@Operation(summary = "List regions")
-	public List<RegionResponse> findRegions() {
-		return masterDataGlobalService.findRegions();
+	public MasterDataPageResponse<RegionResponse> findRegions(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findRegions(page, size, search);
 	}
 
 	@GetMapping("/regions/{id}")
@@ -112,8 +120,11 @@ public class MasterDataGlobalController {
 
 	@GetMapping("/areas")
 	@Operation(summary = "List areas")
-	public List<AreaResponse> findAreas() {
-		return masterDataGlobalService.findAreas();
+	public MasterDataPageResponse<AreaResponse> findAreas(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findAreas(page, size, search);
 	}
 
 	@GetMapping("/areas/{id}")
@@ -144,8 +155,11 @@ public class MasterDataGlobalController {
 
 	@GetMapping("/zip-codes")
 	@Operation(summary = "List global zip codes")
-	public List<GlobalZipCodeResponse> findGlobalZipCodes() {
-		return masterDataGlobalService.findGlobalZipCodes();
+	public MasterDataPageResponse<GlobalZipCodeResponse> findGlobalZipCodes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findGlobalZipCodes(page, size, search);
 	}
 
 	@GetMapping("/zip-codes/{id}")
@@ -176,8 +190,11 @@ public class MasterDataGlobalController {
 
 	@GetMapping("/currencies")
 	@Operation(summary = "List currencies")
-	public List<CurrencyResponse> findCurrencies() {
-		return masterDataGlobalService.findCurrencies();
+	public MasterDataPageResponse<CurrencyResponse> findCurrencies(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findCurrencies(page, size, search);
 	}
 
 	@GetMapping("/currencies/{id}")
@@ -208,8 +225,11 @@ public class MasterDataGlobalController {
 
 	@GetMapping("/genders")
 	@Operation(summary = "List genders")
-	public List<GenderResponse> findGenders() {
-		return masterDataGlobalService.findGenders();
+	public MasterDataPageResponse<GenderResponse> findGenders(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findGenders(page, size, search);
 	}
 
 	@GetMapping("/genders/{id}")
@@ -240,8 +260,11 @@ public class MasterDataGlobalController {
 
 	@GetMapping("/marital-statuses")
 	@Operation(summary = "List marital statuses")
-	public List<MaritalStatusResponse> findMaritalStatuses() {
-		return masterDataGlobalService.findMaritalStatuses();
+	public MasterDataPageResponse<MaritalStatusResponse> findMaritalStatuses(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findMaritalStatuses(page, size, search);
 	}
 
 	@GetMapping("/marital-statuses/{id}")
@@ -272,8 +295,11 @@ public class MasterDataGlobalController {
 
 	@GetMapping("/national-identifier-types")
 	@Operation(summary = "List national identifier types")
-	public List<NationalIdentifierTypeResponse> findNationalIdentifierTypes() {
-		return masterDataGlobalService.findNationalIdentifierTypes();
+	public MasterDataPageResponse<NationalIdentifierTypeResponse> findNationalIdentifierTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findNationalIdentifierTypes(page, size, search);
 	}
 
 	@GetMapping("/national-identifier-types/{id}")

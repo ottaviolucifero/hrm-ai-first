@@ -4,6 +4,7 @@ import com.odsoftware.hrm.dto.masterdata.governancesecurity.AuthenticationMethod
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.AuthenticationMethodResponse;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.GlobalGovernanceMasterDataRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.GlobalGovernanceMasterDataResponse;
+import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.PermissionRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.PermissionResponse;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.RoleRequest;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,8 +46,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/user-types")
 	@Operation(summary = "List user types")
-	public List<GlobalGovernanceMasterDataResponse> findUserTypes() {
-		return masterDataGovernanceSecurityService.findUserTypes();
+	public MasterDataPageResponse<GlobalGovernanceMasterDataResponse> findUserTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findUserTypes(page, size, search);
 	}
 
 	@GetMapping("/user-types/{id}")
@@ -76,8 +81,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/authentication-methods")
 	@Operation(summary = "List authentication methods")
-	public List<AuthenticationMethodResponse> findAuthenticationMethods() {
-		return masterDataGovernanceSecurityService.findAuthenticationMethods();
+	public MasterDataPageResponse<AuthenticationMethodResponse> findAuthenticationMethods(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findAuthenticationMethods(page, size, search);
 	}
 
 	@GetMapping("/authentication-methods/{id}")
@@ -108,8 +116,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/audit-action-types")
 	@Operation(summary = "List audit action types")
-	public List<SeverityMasterDataResponse> findAuditActionTypes() {
-		return masterDataGovernanceSecurityService.findAuditActionTypes();
+	public MasterDataPageResponse<SeverityMasterDataResponse> findAuditActionTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findAuditActionTypes(page, size, search);
 	}
 
 	@GetMapping("/audit-action-types/{id}")
@@ -140,8 +151,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/disciplinary-action-types")
 	@Operation(summary = "List disciplinary action types")
-	public List<SeverityMasterDataResponse> findDisciplinaryActionTypes() {
-		return masterDataGovernanceSecurityService.findDisciplinaryActionTypes();
+	public MasterDataPageResponse<SeverityMasterDataResponse> findDisciplinaryActionTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findDisciplinaryActionTypes(page, size, search);
 	}
 
 	@GetMapping("/disciplinary-action-types/{id}")
@@ -172,8 +186,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/smtp-encryption-types")
 	@Operation(summary = "List SMTP encryption types")
-	public List<GlobalGovernanceMasterDataResponse> findSmtpEncryptionTypes() {
-		return masterDataGovernanceSecurityService.findSmtpEncryptionTypes();
+	public MasterDataPageResponse<GlobalGovernanceMasterDataResponse> findSmtpEncryptionTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findSmtpEncryptionTypes(page, size, search);
 	}
 
 	@GetMapping("/smtp-encryption-types/{id}")
@@ -204,8 +221,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/roles")
 	@Operation(summary = "List roles")
-	public List<RoleResponse> findRoles() {
-		return masterDataGovernanceSecurityService.findRoles();
+	public MasterDataPageResponse<RoleResponse> findRoles(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findRoles(page, size, search);
 	}
 
 	@GetMapping("/roles/{id}")
@@ -236,8 +256,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/permissions")
 	@Operation(summary = "List permissions")
-	public List<PermissionResponse> findPermissions() {
-		return masterDataGovernanceSecurityService.findPermissions();
+	public MasterDataPageResponse<PermissionResponse> findPermissions(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findPermissions(page, size, search);
 	}
 
 	@GetMapping("/permissions/{id}")
@@ -268,8 +291,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/company-profile-types")
 	@Operation(summary = "List company profile types")
-	public List<TenantGovernanceMasterDataResponse> findCompanyProfileTypes() {
-		return masterDataGovernanceSecurityService.findCompanyProfileTypes();
+	public MasterDataPageResponse<TenantGovernanceMasterDataResponse> findCompanyProfileTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findCompanyProfileTypes(page, size, search);
 	}
 
 	@GetMapping("/company-profile-types/{id}")
@@ -300,8 +326,11 @@ public class MasterDataGovernanceSecurityController {
 
 	@GetMapping("/office-location-types")
 	@Operation(summary = "List office location types")
-	public List<TenantGovernanceMasterDataResponse> findOfficeLocationTypes() {
-		return masterDataGovernanceSecurityService.findOfficeLocationTypes();
+	public MasterDataPageResponse<TenantGovernanceMasterDataResponse> findOfficeLocationTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGovernanceSecurityService.findOfficeLocationTypes(page, size, search);
 	}
 
 	@GetMapping("/office-location-types/{id}")

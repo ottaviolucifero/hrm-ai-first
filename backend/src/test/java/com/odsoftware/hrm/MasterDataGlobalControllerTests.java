@@ -76,7 +76,7 @@ class MasterDataGlobalControllerTests {
 		UUID countryId = createCountry("Task 030 Country", "QZ");
 		mockMvc.perform(get("/api/master-data/global/countries"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/countries/{id}", countryId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.isoCode").value("QZ"));
@@ -87,7 +87,7 @@ class MasterDataGlobalControllerTests {
 		UUID regionId = createRegion(countryId, "Task 030 Region", "qa-r1");
 		mockMvc.perform(get("/api/master-data/global/regions"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/regions/{id}", regionId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.code").value("QA-R1"));
@@ -98,7 +98,7 @@ class MasterDataGlobalControllerTests {
 		UUID areaId = createArea(countryId, regionId, "Task 030 Area", "qa-a1");
 		mockMvc.perform(get("/api/master-data/global/areas"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/areas/{id}", areaId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.code").value("QA-A1"));
@@ -109,7 +109,7 @@ class MasterDataGlobalControllerTests {
 		UUID zipCodeId = createZipCode(countryId, regionId, areaId, "Task City", "30100");
 		mockMvc.perform(get("/api/master-data/global/zip-codes"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/zip-codes/{id}", zipCodeId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.postalCode").value("30100"))
@@ -139,7 +139,7 @@ class MasterDataGlobalControllerTests {
 		UUID currencyId = createCurrency("XQA", "Task 030 Currency", "XQA");
 		mockMvc.perform(get("/api/master-data/global/currencies"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/currencies/{id}", currencyId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.code").value("XQA"));
@@ -150,7 +150,7 @@ class MasterDataGlobalControllerTests {
 		UUID genderId = createGender("TASK030_GENDER", "Task 030 Gender");
 		mockMvc.perform(get("/api/master-data/global/genders"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/genders/{id}", genderId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.code").value("TASK030_GENDER"));
@@ -161,7 +161,7 @@ class MasterDataGlobalControllerTests {
 		UUID maritalStatusId = createMaritalStatus("TASK030_STATUS", "Task 030 Status");
 		mockMvc.perform(get("/api/master-data/global/marital-statuses"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/marital-statuses/{id}", maritalStatusId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.code").value("TASK030_STATUS"));
@@ -172,7 +172,7 @@ class MasterDataGlobalControllerTests {
 		UUID nationalIdentifierTypeId = createNationalIdentifierType("TASK030_NID", "Task 030 NID");
 		mockMvc.perform(get("/api/master-data/global/national-identifier-types"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/national-identifier-types/{id}", nationalIdentifierTypeId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.code").value("TASK030_NID"));
@@ -193,6 +193,41 @@ class MasterDataGlobalControllerTests {
 		assertThat(genderRepository.findById(genderId).orElseThrow().getActive()).isFalse();
 		assertThat(maritalStatusRepository.findById(maritalStatusId).orElseThrow().getActive()).isFalse();
 		assertThat(nationalIdentifierTypeRepository.findById(nationalIdentifierTypeId).orElseThrow().getActive()).isFalse();
+	}
+
+	@Test
+	@WithMockUser
+	void masterDataGlobalListEndpointsSupportPaginationAndSearch() throws Exception {
+		long totalCountries = countryRepository.count();
+
+		mockMvc.perform(get("/api/master-data/global/countries"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content").isArray())
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(25))
+				.andExpect(jsonPath("$.totalElements").value(totalCountries))
+				.andExpect(jsonPath("$.totalPages").value((int) Math.ceil(totalCountries / 25.0d)))
+				.andExpect(jsonPath("$.first").value(true))
+				.andExpect(jsonPath("$.last").value(totalCountries <= 25));
+
+		mockMvc.perform(get("/api/master-data/global/countries?page=1&size=10"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.page").value(1))
+				.andExpect(jsonPath("$.size").value(10))
+				.andExpect(jsonPath("$.content.length()").value(10))
+				.andExpect(jsonPath("$.first").value(false))
+				.andExpect(jsonPath("$.last").value(false));
+
+		mockMvc.perform(get("/api/master-data/global/countries?size=500"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.size").value(100))
+				.andExpect(jsonPath("$.content.length()").value(100));
+
+		mockMvc.perform(get("/api/master-data/global/countries?search=Italy"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].isoCode").value("IT"))
+				.andExpect(jsonPath("$.content[0].name").value("Italy"));
 	}
 
 	@Test

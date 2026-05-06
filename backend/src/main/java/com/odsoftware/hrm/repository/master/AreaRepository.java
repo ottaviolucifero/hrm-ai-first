@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.Area;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AreaRepository extends JpaRepository<Area, UUID> {
+public interface AreaRepository extends MasterDataRepository<Area> {
 
 	boolean existsByRegion_IdAndCode(UUID regionId, String code);
 

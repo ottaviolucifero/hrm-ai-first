@@ -2,6 +2,7 @@ package com.odsoftware.hrm.service;
 
 import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataRequest;
 import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataResponse;
+import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.entity.common.BaseTenantMasterEntity;
 import com.odsoftware.hrm.entity.master.ContractType;
 import com.odsoftware.hrm.entity.master.Department;
@@ -26,13 +27,12 @@ import com.odsoftware.hrm.repository.master.EmploymentStatusRepository;
 import com.odsoftware.hrm.repository.master.JobTitleRepository;
 import com.odsoftware.hrm.repository.master.LeaveRequestTypeRepository;
 import com.odsoftware.hrm.repository.master.WorkModeRepository;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,8 +77,8 @@ public class MasterDataHrBusinessService {
 		this.deviceStatusRepository = deviceStatusRepository;
 	}
 
-	public List<TenantMasterDataResponse> findDepartments() {
-		return findAll(departmentRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findDepartments(Integer page, Integer size, String search) {
+		return findAll(departmentRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findDepartmentById(UUID id) {
@@ -100,8 +100,8 @@ public class MasterDataHrBusinessService {
 		disable(id, departmentRepository, "Department");
 	}
 
-	public List<TenantMasterDataResponse> findJobTitles() {
-		return findAll(jobTitleRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findJobTitles(Integer page, Integer size, String search) {
+		return findAll(jobTitleRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findJobTitleById(UUID id) {
@@ -123,8 +123,8 @@ public class MasterDataHrBusinessService {
 		disable(id, jobTitleRepository, "Job title");
 	}
 
-	public List<TenantMasterDataResponse> findContractTypes() {
-		return findAll(contractTypeRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findContractTypes(Integer page, Integer size, String search) {
+		return findAll(contractTypeRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findContractTypeById(UUID id) {
@@ -146,8 +146,8 @@ public class MasterDataHrBusinessService {
 		disable(id, contractTypeRepository, "Contract type");
 	}
 
-	public List<TenantMasterDataResponse> findEmploymentStatuses() {
-		return findAll(employmentStatusRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findEmploymentStatuses(Integer page, Integer size, String search) {
+		return findAll(employmentStatusRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findEmploymentStatusById(UUID id) {
@@ -169,8 +169,8 @@ public class MasterDataHrBusinessService {
 		disable(id, employmentStatusRepository, "Employment status");
 	}
 
-	public List<TenantMasterDataResponse> findWorkModes() {
-		return findAll(workModeRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findWorkModes(Integer page, Integer size, String search) {
+		return findAll(workModeRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findWorkModeById(UUID id) {
@@ -192,8 +192,8 @@ public class MasterDataHrBusinessService {
 		disable(id, workModeRepository, "Work mode");
 	}
 
-	public List<TenantMasterDataResponse> findLeaveRequestTypes() {
-		return findAll(leaveRequestTypeRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findLeaveRequestTypes(Integer page, Integer size, String search) {
+		return findAll(leaveRequestTypeRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findLeaveRequestTypeById(UUID id) {
@@ -215,8 +215,8 @@ public class MasterDataHrBusinessService {
 		disable(id, leaveRequestTypeRepository, "Leave request type");
 	}
 
-	public List<TenantMasterDataResponse> findDocumentTypes() {
-		return findAll(documentTypeRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findDocumentTypes(Integer page, Integer size, String search) {
+		return findAll(documentTypeRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findDocumentTypeById(UUID id) {
@@ -238,8 +238,8 @@ public class MasterDataHrBusinessService {
 		disable(id, documentTypeRepository, "Document type");
 	}
 
-	public List<TenantMasterDataResponse> findDeviceTypes() {
-		return findAll(deviceTypeRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceTypes(Integer page, Integer size, String search) {
+		return findAll(deviceTypeRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findDeviceTypeById(UUID id) {
@@ -261,8 +261,8 @@ public class MasterDataHrBusinessService {
 		disable(id, deviceTypeRepository, "Device type");
 	}
 
-	public List<TenantMasterDataResponse> findDeviceBrands() {
-		return findAll(deviceBrandRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceBrands(Integer page, Integer size, String search) {
+		return findAll(deviceBrandRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findDeviceBrandById(UUID id) {
@@ -284,8 +284,8 @@ public class MasterDataHrBusinessService {
 		disable(id, deviceBrandRepository, "Device brand");
 	}
 
-	public List<TenantMasterDataResponse> findDeviceStatuses() {
-		return findAll(deviceStatusRepository);
+	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceStatuses(Integer page, Integer size, String search) {
+		return findAll(deviceStatusRepository, page, size, search);
 	}
 
 	public TenantMasterDataResponse findDeviceStatusById(UUID id) {
@@ -307,21 +307,31 @@ public class MasterDataHrBusinessService {
 		disable(id, deviceStatusRepository, "Device status");
 	}
 
-	private <T extends BaseTenantMasterEntity> List<TenantMasterDataResponse> findAll(JpaRepository<T, UUID> repository) {
-		return repository.findAll().stream()
-				.sorted(Comparator.comparing(BaseTenantMasterEntity::getCode))
-				.map(this::toResponse)
-				.toList();
+	private <T extends BaseTenantMasterEntity> MasterDataPageResponse<TenantMasterDataResponse> findAll(
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			Integer page,
+			Integer size,
+			String search) {
+		return findPage(
+				repository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toResponse);
 	}
 
-	private <T extends BaseTenantMasterEntity> TenantMasterDataResponse findById(UUID id, JpaRepository<T, UUID> repository, String label) {
+	private <T extends BaseTenantMasterEntity> TenantMasterDataResponse findById(
+			UUID id,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
+			String label) {
 		return toResponse(findEntity(id, repository, label));
 	}
 
 	private <T extends BaseTenantMasterEntity> TenantMasterDataResponse create(
 			TenantMasterDataRequest request,
 			Supplier<T> factory,
-			JpaRepository<T, UUID> repository,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
 			BiPredicate<UUID, String> existsByTenantIdAndCode,
 			String label) {
 		validateTenant(request.tenantId());
@@ -337,7 +347,7 @@ public class MasterDataHrBusinessService {
 	private <T extends BaseTenantMasterEntity> TenantMasterDataResponse update(
 			UUID id,
 			TenantMasterDataRequest request,
-			JpaRepository<T, UUID> repository,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
 			TenantCodeExcludingIdExists existsByTenantIdAndCodeAndIdNot,
 			String label) {
 		T entity = findEntity(id, repository, label);
@@ -350,13 +360,19 @@ public class MasterDataHrBusinessService {
 		return toResponse(repository.save(entity));
 	}
 
-	private <T extends BaseTenantMasterEntity> void disable(UUID id, JpaRepository<T, UUID> repository, String label) {
+	private <T extends BaseTenantMasterEntity> void disable(
+			UUID id,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
+			String label) {
 		T entity = findEntity(id, repository, label);
 		entity.setActive(false);
 		repository.save(entity);
 	}
 
-	private <T extends BaseTenantMasterEntity> T findEntity(UUID id, JpaRepository<T, UUID> repository, String label) {
+	private <T extends BaseTenantMasterEntity> T findEntity(
+			UUID id,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
+			String label) {
 		return repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException(label + " not found: " + id));
 	}
@@ -400,6 +416,20 @@ public class MasterDataHrBusinessService {
 		}
 		String cleaned = value.trim();
 		return cleaned.isEmpty() ? null : cleaned;
+	}
+
+	private <T extends BaseTenantMasterEntity, R> MasterDataPageResponse<R> findPage(
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			Integer page,
+			Integer size,
+			String search,
+			org.springframework.data.jpa.domain.Specification<T> specification,
+			Function<T, R> mapper) {
+		return MasterDataQuerySupport.toPageResponse(
+				repository.findAll(
+						specification,
+						MasterDataQuerySupport.buildPageable(page, size, Sort.by("code"))),
+				mapper);
 	}
 
 	@FunctionalInterface

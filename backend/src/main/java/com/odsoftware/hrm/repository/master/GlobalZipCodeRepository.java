@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.GlobalZipCode;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface GlobalZipCodeRepository extends JpaRepository<GlobalZipCode, UUID> {
+public interface GlobalZipCodeRepository extends MasterDataRepository<GlobalZipCode> {
 
 	boolean existsByCountry_IdAndPostalCodeAndCity(UUID countryId, String postalCode, String city);
 

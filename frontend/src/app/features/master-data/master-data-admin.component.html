@@ -27,6 +27,16 @@
           }
         </select>
       </label>
+
+      <label class="master-data-field">
+        <span>{{ i18n.t('masterData.search') }}</span>
+        <input
+          class="kt-input"
+          type="search"
+          [value]="searchInput()"
+          [placeholder]="i18n.t('masterData.searchPlaceholder')"
+          (input)="updateSearch($event)" />
+      </label>
     </div>
 
     @if (loading()) {
@@ -55,6 +65,26 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <div class="master-data-pagination">
+        <span class="master-data-pagination-summary">{{ paginationSummary() }}</span>
+        <div class="master-data-pagination-actions">
+          <button
+            class="kt-btn kt-btn-outline kt-btn-sm"
+            type="button"
+            [disabled]="loading() || pageData().first"
+            (click)="goToPreviousPage()">
+            {{ i18n.t('masterData.pagination.previous') }}
+          </button>
+          <button
+            class="kt-btn kt-btn-outline kt-btn-sm"
+            type="button"
+            [disabled]="loading() || pageData().last"
+            (click)="goToNextPage()">
+            {{ i18n.t('masterData.pagination.next') }}
+          </button>
+        </div>
       </div>
     }
   </div>
