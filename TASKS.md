@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.56
+Versione: 1.58
 Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
@@ -2224,7 +2224,7 @@ TASK-043 mantiene fuori scope CRUD UI completo, CAP italiani, ZIP esteri, securi
 
 ### TASK-044 - Import CAP italiani
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend/data import
 
@@ -2242,7 +2242,47 @@ Scope:
 - nessuna API esterna runtime
 - nessun frontend
 
-### TASK-045 - Implementare UI Master Data Admin CRUD
+Completato:
+
+- Generato dataset normalizzato `backend/src/main/resources/master-data/italy-zip-codes.csv` dai JSON sorgente acquistati con regole: `italy_cities.json` base anagrafica, `italy_cap.json` per CAP singolo/range e `italy_multicap.json` per esplosione CAP reali su comuni multi-CAP.
+- Validato dataset con 8465 record CAP validi (5 cifre), deduplica su coppia `istat+cap` e gestione righe non importabili nel report.
+- Implementato `ItalianZipCodeImportService` con import idempotente su `global_zip_codes` per `Country=IT`, senza CAP esteri e senza API runtime esterne.
+- Aggiunto endpoint backend di analisi/import sotto path esistente `/api/master-data/global/zip-codes/import/italy`.
+- Aggiunti report import (`rowsRead`, `totalValidSourceZipCodes`, `imported`, `updated`, `skipped`, `errors`, `errorDetails`) e test backend su validazione dataset, idempotenza import e casi invalid/duplicate.
+- Regressione validata: backend test PASS (99 test), frontend build/test PASS (nessuna modifica frontend).
+
+### TASK-045 - Shared Master Data table component
+
+Stato: TODO
+
+Tipo: Frontend refactoring dedicato
+
+Obiettivo:
+
+- Estrarre o creare un componente tabellare riusabile per le liste Master Data, senza introdurre redesign.
+
+Scope:
+
+- refactoring frontend dedicato;
+- creare o estrarre un componente tabellare riusabile per Master Data;
+- supportare colonne configurabili;
+- supportare campi nested;
+- mantenere paginazione e filtro generico;
+- integrare i18n `it` / `fr` / `en`;
+- evitare redesign;
+- non modificare backend salvo necessita motivata;
+- migrare almeno due liste Master Data reali (esempio: Paesi e CAP/ZIP) solo se coerente con il codice esistente;
+- lasciare eventuali altre liste a task successivi se la migrazione completa e troppo ampia.
+
+Acceptance criteria:
+
+- nessuna duplicazione nuova di tabelle Master Data;
+- componente condiviso o pattern configurabile documentato;
+- build frontend OK;
+- test frontend OK;
+- manual validation UI richiesta se vengono toccate schermate.
+
+### TASK-046 - Implementare UI Master Data Admin CRUD
 
 Stato: TODO
 
@@ -2251,11 +2291,11 @@ Obiettivo:
 - Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
 - Non usare mock come sostituto dei contratti API backend.
 
-### TASK-046 - Implementare UI Employee management enterprise
+### TASK-047 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-047 - Implementare Security Admin UI
+### TASK-048 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -2267,47 +2307,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-048 - Implementare UI Device governance
+### TASK-049 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-049 - Implementare UI PayrollDocument
+### TASK-050 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-050 - Implementare UI LeaveRequest
+### TASK-051 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-051 - Implementare UI HolidayCalendar
+### TASK-052 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-052 - Implementare Audit UI / compliance explorer
+### TASK-053 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-053 - Implementare UI disciplinary governance
+### TASK-054 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-054 - Implementare Platform Operator / Super Admin governance
+### TASK-055 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-055 - Implementare Cross-tenant admin UI
+### TASK-056 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-056 - Configurare logging, monitoring e observability enterprise
+### TASK-057 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-057 - Test integrato MVP enterprise completo
+### TASK-058 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -2317,6 +2357,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.58 | 2026-05-06 | Governance/backlog frontend chiariti: aggiunta regola esplicita su riuso tabelle Master Data in `frontend/AGENTS.md`; introdotto TASK-045 dedicato al refactoring shared della tabella Master Data; task successivi rinumerati di +1 a partire dall'ex TASK-045. |
+| 1.57 | 2026-05-06 | TASK-044 completato: import CAP italiani da dataset JSON acquistato normalizzato in CSV (`8465` record validi), servizio backend idempotente con report import, endpoint `/api/master-data/global/zip-codes/import/italy`, test backend su validazione/idempotenza/casi invalidi e regressione backend/frontend verificata; nessun CAP estero, nessuna modifica frontend/security. |
 | 1.56 | 2026-05-06 | TASK-043 completato: paginazione e filtro generico su Master Data API/UI con query `page/size/search`, response wrapper paginata, UI `/master-data` aggiornata con debounce e precedente/successiva, compatibilita Global/HR-business/Governance-security confermata, test backend/frontend verdi e QA manuale browser superato. |
 | 1.55 | 2026-05-06 | TASK-042 chiuso come DONE con seed ISO 3166-1 alpha-2 (249 Paesi/territori), `countries.default_currency_id` nullable, documentazione fonte dati globale e migrazione Flyway V17 PostgreSQL/H2; introdotto TASK-043 su paginazione/filtro generico Master Data API/UI e backlog successivo rinumerato (Import CAP italiani -> TASK-044, CRUD UI Master Data -> TASK-045). |
 | 1.54 | 2026-05-06 | TASKS.md riallineato dopo TASK-041 con inserimento TASK-042 seed/import dati globali iniziali e TASK-043 import CAP italiani prima della UI Master Data Admin CRUD. |

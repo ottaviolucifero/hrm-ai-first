@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.53
+Versione: 1.55
 Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
@@ -86,6 +86,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-041 UI Master Data Admin foundation/list
 - TASK-042 Seed/import dati globali iniziali
 - TASK-043 Master Data API/UI pagination and generic filters
+- TASK-044 Import CAP italiani
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
 - Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
@@ -93,7 +94,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-044: Import CAP italiani
+- TASK-045: Shared Master Data table component
 
 ---
 
@@ -147,6 +148,7 @@ Completato:
 - Frontend design guidelines based on logo brand colors documented in `frontend/AGENTS.md`
 - Frontend Master Data Admin foundation/list available at protected route `/master-data` with sidebar entry, category/entity selection, read-only table rendering, manual refresh and loading/error/empty states across global, HR/business and governance/security master data endpoints
 - TASK-042 completed: global seed foundation with `countries.default_currency_id` nullable, ISO 3166-1 alpha-2 seed (249 Paesi/territori), source documentation and Flyway V17 vendor-specific migrations for PostgreSQL/H2 validated with backend tests.
+- TASK-044 completed: import CAP italiani con dataset normalizzato da JSON acquistato (8465 record validi), import backend idempotente in `global_zip_codes`, endpoint analisi/import dedicato e test backend di coerenza/idempotenza.
 
 Nota:
 
@@ -173,8 +175,8 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-044 Import CAP italiani
-- TASK-045 UI Master Data Admin CRUD
+- TASK-045 Shared Master Data table component
+- TASK-046 UI Master Data Admin CRUD
 
 ---
 
@@ -228,15 +230,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-053
+- TASK-036 -> TASK-054
 
 ### Fase 2I - Platform Operations
 
-- TASK-054 -> TASK-055
+- TASK-055 -> TASK-056
 
 ### Fase 3 - Stabilization
 
-- TASK-056 -> TASK-057
+- TASK-057 -> TASK-058
 
 ---
 
@@ -252,6 +254,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.55 | 2026-05-06 | Governance/backlog frontend aggiornati: TASK-044 resta dedicato a import/visualizzazione CAP italiani; refactoring shared della tabella Master Data isolato nel nuovo TASK-045; task successivi rinumerati di +1. |
+| 1.54 | 2026-05-06 | TASK-044 completato con import CAP italiani da dataset JSON acquistato normalizzato in CSV (8465 record validi), import idempotente backend su `global_zip_codes`, report import e test backend/frontend di regressione validati; prossimo passo aggiornato a TASK-045 UI Master Data Admin CRUD. |
 | 1.53 | 2026-05-06 | TASK-043 completato con paginazione e filtro generico Master Data API/UI (query `page/size/search`, response wrapper paginata, UI `/master-data` con debounce e precedente/successiva), test backend/frontend validati e QA manuale browser superato; prossimo passo aggiornato a TASK-044 Import CAP italiani. |
 | 1.52 | 2026-05-06 | TASK-042 completato (country default currency nullable, seed ISO 3166-1 alpha-2 con 249 Paesi/territori, migrazione Flyway V17 PostgreSQL/H2 e test backend validati); backlog futuro riallineato con nuovo TASK-043 su paginazione/filtro generico Master Data API/UI, Import CAP italiani rinumerato a TASK-044 e CRUD UI Master Data rinumerato a TASK-045. |
 | 1.51 | 2026-05-06 | TASK-041 completato con UI Master Data Admin foundation/list read-only su `/master-data`, integrazione sidebar `Governance > Dati di base`, categorie Global/HR-business/Governance-security, stati loading/error/empty, refresh manuale, i18n completo e build/test frontend validati; prossimo passo aggiornato a TASK-042 UI Master Data Admin CRUD. |

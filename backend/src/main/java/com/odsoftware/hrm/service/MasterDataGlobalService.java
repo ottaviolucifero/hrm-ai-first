@@ -11,6 +11,7 @@ import com.odsoftware.hrm.dto.masterdata.global.GenderResponse;
 import com.odsoftware.hrm.dto.masterdata.global.GlobalMasterReferenceResponse;
 import com.odsoftware.hrm.dto.masterdata.global.GlobalZipCodeRequest;
 import com.odsoftware.hrm.dto.masterdata.global.GlobalZipCodeResponse;
+import com.odsoftware.hrm.dto.masterdata.global.ItalianZipCodeImportReport;
 import com.odsoftware.hrm.dto.masterdata.global.MaritalStatusRequest;
 import com.odsoftware.hrm.dto.masterdata.global.MaritalStatusResponse;
 import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeRequest;
@@ -58,6 +59,7 @@ public class MasterDataGlobalService {
 	private final GenderRepository genderRepository;
 	private final MaritalStatusRepository maritalStatusRepository;
 	private final NationalIdentifierTypeRepository nationalIdentifierTypeRepository;
+	private final ItalianZipCodeImportService italianZipCodeImportService;
 
 	public MasterDataGlobalService(
 			CountryRepository countryRepository,
@@ -67,7 +69,8 @@ public class MasterDataGlobalService {
 			CurrencyRepository currencyRepository,
 			GenderRepository genderRepository,
 			MaritalStatusRepository maritalStatusRepository,
-			NationalIdentifierTypeRepository nationalIdentifierTypeRepository) {
+			NationalIdentifierTypeRepository nationalIdentifierTypeRepository,
+			ItalianZipCodeImportService italianZipCodeImportService) {
 		this.countryRepository = countryRepository;
 		this.regionRepository = regionRepository;
 		this.areaRepository = areaRepository;
@@ -76,6 +79,7 @@ public class MasterDataGlobalService {
 		this.genderRepository = genderRepository;
 		this.maritalStatusRepository = maritalStatusRepository;
 		this.nationalIdentifierTypeRepository = nationalIdentifierTypeRepository;
+		this.italianZipCodeImportService = italianZipCodeImportService;
 	}
 
 	public MasterDataPageResponse<CountryResponse> findCountries(Integer page, Integer size, String search) {
@@ -275,6 +279,15 @@ public class MasterDataGlobalService {
 		GlobalZipCode globalZipCode = findGlobalZipCode(id);
 		globalZipCode.setActive(false);
 		globalZipCodeRepository.save(globalZipCode);
+	}
+
+	public ItalianZipCodeImportReport analyzeItalianZipCodeImport() {
+		return italianZipCodeImportService.analyzeDefaultCsv();
+	}
+
+	@Transactional
+	public ItalianZipCodeImportReport importItalianZipCodes() {
+		return italianZipCodeImportService.importDefaultCsv();
 	}
 
 	public MasterDataPageResponse<CurrencyResponse> findCurrencies(Integer page, Integer size, String search) {

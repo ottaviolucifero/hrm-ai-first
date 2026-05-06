@@ -194,6 +194,33 @@ Do not expand a frontend task into unrelated shared UI refactoring.
 
 \---
 
+\## 5.1 Master Data Table Reuse Rule
+
+Le tabelle Master Data non devono essere duplicate quando condividono struttura, paginazione, filtro, loading/error state e azioni simili.
+
+Durante task funzionali piccoli, non creare automaticamente un componente shared.
+
+Se il task richiede solo il completamento di una schermata esistente, applicare patch minima.
+
+Se la stessa logica tabellare serve a due o più aree Master Data, pianificare un task dedicato di refactoring shared.
+
+Il refactoring shared deve essere esplicitamente autorizzato dal task.
+
+Un componente shared Master Data table deve supportare:
+
+\- colonne configurabili;
+\- campi nested, es. `country.code`;
+\- paginazione;
+\- filtro generico;
+\- loading/error state;
+\- azioni standard;
+\- i18n;
+\- test frontend.
+
+Se un task funzionale richiede una nuova tabella simile a una già esistente, l'agente deve dichiarare il debito tecnico oppure proporre un task dedicato prima di duplicare ulteriore logica.
+
+\---
+
 
 
 \## 6. Metronic Governance

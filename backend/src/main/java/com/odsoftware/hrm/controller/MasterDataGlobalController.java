@@ -10,6 +10,7 @@ import com.odsoftware.hrm.dto.masterdata.global.GenderRequest;
 import com.odsoftware.hrm.dto.masterdata.global.GenderResponse;
 import com.odsoftware.hrm.dto.masterdata.global.GlobalZipCodeRequest;
 import com.odsoftware.hrm.dto.masterdata.global.GlobalZipCodeResponse;
+import com.odsoftware.hrm.dto.masterdata.global.ItalianZipCodeImportReport;
 import com.odsoftware.hrm.dto.masterdata.global.MaritalStatusRequest;
 import com.odsoftware.hrm.dto.masterdata.global.MaritalStatusResponse;
 import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeRequest;
@@ -186,6 +187,18 @@ public class MasterDataGlobalController {
 	@Operation(summary = "Disable global zip code")
 	public void disableGlobalZipCode(@PathVariable UUID id) {
 		masterDataGlobalService.disableGlobalZipCode(id);
+	}
+
+	@GetMapping("/zip-codes/import/italy")
+	@Operation(summary = "Analyze italian zip code csv import")
+	public ItalianZipCodeImportReport analyzeItalianZipCodeImport() {
+		return masterDataGlobalService.analyzeItalianZipCodeImport();
+	}
+
+	@PostMapping("/zip-codes/import/italy")
+	@Operation(summary = "Import italian zip code csv")
+	public ItalianZipCodeImportReport importItalianZipCodes() {
+		return masterDataGlobalService.importItalianZipCodes();
 	}
 
 	@GetMapping("/currencies")
