@@ -103,6 +103,11 @@ const CITY_COLUMN: MasterDataColumn = {
   labelKey: 'masterData.columns.city'
 };
 
+const PROVINCE_CODE_COLUMN: MasterDataColumn = {
+  key: 'provinceCode',
+  labelKey: 'masterData.columns.provinceCode'
+};
+
 const REGEX_PATTERN_COLUMN: MasterDataColumn = {
   key: 'regexPattern',
   labelKey: 'masterData.columns.regexPattern'
@@ -163,7 +168,13 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         id: 'zip-codes',
         titleKey: 'masterData.entities.zipCodes',
         endpoint: '/api/master-data/global/zip-codes',
-        columns: [COUNTRY_COLUMN, REGION_COLUMN, AREA_COLUMN, POSTAL_CODE_COLUMN, CITY_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [
+          { key: 'country.code', labelKey: 'masterData.columns.country' },
+          POSTAL_CODE_COLUMN,
+          CITY_COLUMN,
+          PROVINCE_CODE_COLUMN,
+          ACTIVE_COLUMN
+        ]
       },
       {
         id: 'currencies',

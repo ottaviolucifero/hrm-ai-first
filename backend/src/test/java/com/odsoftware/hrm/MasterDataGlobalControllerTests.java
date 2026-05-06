@@ -232,6 +232,21 @@ class MasterDataGlobalControllerTests {
 
 	@Test
 	@WithMockUser
+	void masterDataGlobalApiSupportsItalianZipCodeImport() throws Exception {
+		mockMvc.perform(get("/api/master-data/global/zip-codes/import/italy"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.rowsRead").isNumber())
+				.andExpect(jsonPath("$.totalValidSourceZipCodes").isNumber());
+
+		mockMvc.perform(post("/api/master-data/global/zip-codes/import/italy").with(csrf()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.rowsRead").value(8465))
+				.andExpect(jsonPath("$.totalValidSourceZipCodes").value(8465))
+				.andExpect(jsonPath("$.errors").value(0));
+	}
+
+	@Test
+	@WithMockUser
 	void masterDataGlobalApiReturnsNotFoundForMissingRecord() throws Exception {
 		mockMvc.perform(get("/api/master-data/global/currencies/{id}", MISSING_ID))
 				.andExpect(status().isNotFound())
@@ -302,6 +317,7 @@ class MasterDataGlobalControllerTests {
 				.andExpect(jsonPath("$.paths['/api/master-data/global/areas/{id}']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes/import/italy']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/currencies']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/currencies/{id}']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/genders']").exists())
