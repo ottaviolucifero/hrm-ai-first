@@ -73,14 +73,14 @@ class MasterDataGlobalControllerTests {
 	@Test
 	@WithMockUser
 	void masterDataGlobalGeoCrudFlowSupportsListGetCreateUpdateAndDisable() throws Exception {
-		UUID countryId = createCountry("Task 030 Country", "QA");
+		UUID countryId = createCountry("Task 030 Country", "QZ");
 		mockMvc.perform(get("/api/master-data/global/countries"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$").isArray());
 		mockMvc.perform(get("/api/master-data/global/countries/{id}", countryId))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.isoCode").value("QA"));
-		mockMvc.perform(putJson("/api/master-data/global/countries/" + countryId, countryRequest("Task 030 Country Updated", "QA")))
+				.andExpect(jsonPath("$.isoCode").value("QZ"));
+		mockMvc.perform(putJson("/api/master-data/global/countries/" + countryId, countryRequest("Task 030 Country Updated", "QZ")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Task 030 Country Updated"));
 
