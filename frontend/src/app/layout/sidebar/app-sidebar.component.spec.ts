@@ -25,6 +25,8 @@ describe('AppSidebarComponent', () => {
     expect(compiled.querySelector('input[type="search"]')).toBeTruthy();
     expect(compiled.textContent).toContain('Home');
     expect(compiled.textContent).toContain('Persone');
+    expect(compiled.textContent).toContain('Dati di base');
+    expect(compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]')).toBeTruthy();
   });
 
   it('filters the navigation tree', () => {
