@@ -211,8 +211,16 @@ class MasterDataGlobalControllerTests {
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.status").value(400))
 				.andExpect(jsonPath("$.message").value("Validation failed"))
-				.andExpect(jsonPath("$.validationErrors.name").exists())
-				.andExpect(jsonPath("$.validationErrors.defaultCurrencyId").exists());
+				.andExpect(jsonPath("$.validationErrors.name").exists());
+	}
+
+	@Test
+	@WithMockUser
+	void masterDataGlobalApiAllowsCountryWithoutDefaultCurrency() throws Exception {
+		mockMvc.perform(postJson("/api/master-data/global/countries", countryRequest("Task 042 Country", "QC", null)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.isoCode").value("QC"))
+				.andExpect(jsonPath("$.defaultCurrency").doesNotExist());
 	}
 
 	@Test
@@ -334,11 +342,17 @@ class MasterDataGlobalControllerTests {
 	}
 
 	private Map<String, Object> countryRequest(String name, String isoCode) {
+		return countryRequest(name, isoCode, EUR_CURRENCY_ID);
+	}
+
+	private Map<String, Object> countryRequest(String name, String isoCode, UUID defaultCurrencyId) {
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("name", name);
 		request.put("isoCode", isoCode);
 		request.put("phoneCode", "+999");
-		request.put("defaultCurrencyId", EUR_CURRENCY_ID);
+		if (defaultCurrencyId != null) {
+			request.put("defaultCurrencyId", defaultCurrencyId);
+		}
 		return request;
 	}
 
