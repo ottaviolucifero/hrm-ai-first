@@ -88,6 +88,25 @@ These rules extend the root `AGENTS.md` and must be followed by AI agents workin
 - Keep tests focused on the behavior introduced by the task.
 - Run backend build/tests when backend code changes.
 
+\## 13. Backend QA and Model Selection
+
+Per task backend significativi prevedere QA separato.
+
+Il QA backend deve verificare almeno:
+
+- build/test Maven;
+- regressioni API;
+- coerenza DTO/controller/service/repository;
+- sicurezza endpoint;
+- coerenza con Flyway/JPA;
+- assenza di modifiche fuori scope.
+
+Il QA backend non introduce nuove funzionalità .
+
+I fix backend post-QA devono essere piccoli e mirati, con patch minima.
+
+Ogni report QA backend deve essere registrato in `docs/qa/QA-REPORTS.md` nella sezione **Backend**.
+
 ---
 
 ## Final Checks

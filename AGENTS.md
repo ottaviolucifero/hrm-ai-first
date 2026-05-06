@@ -99,7 +99,7 @@ Agents must follow this order of authority:
 ## Architecture Governance
 
 Agents must:
-- Follow Architecture.md strictly
+- Follow `ARCHITECTURE.md` strictly
 - Never invent alternative architectures
 - Never create parallel structures
 - Never silently refactor foundational systems
@@ -111,10 +111,54 @@ Agents must:
 ## Documentation Governance
 
 Before implementing major changes:
-1. Update Architecture.md if structure changes
-2. Update roadmap.md if roadmap changes
-3. Update relevant AGENTS.md if operational rules change
+1. Update `ARCHITECTURE.md` if structure changes
+2. Update `ROADMAP.md` if roadmap changes
+3. Update relevant `AGENTS.md` if operational rules change
 4. Then implement code
+
+---
+
+## AI Model and Agent Selection Governance
+
+Per ogni task significativo, prima dell'esecuzione va suggerito il modello/agente piu adatto e, quando viene preparato un prompt operativo, va sempre inclusa una sezione obbligatoria `Modello consigliato`.
+
+La selezione deve seguire anche `docs/ai/MODEL-SELECTION-GUIDE.md`, che resta la guida centrale.
+
+Le scelte devono distinguere almeno:
+
+- Analisi / planning
+- Sviluppo
+- QA / regression test
+- Fix post-QA
+
+La raccomandazione deve tenere conto almeno di:
+
+- tipo di task
+- area di codice coinvolta
+- rischio regressione
+- complessita attesa
+- consumo/costo token
+
+Separare sviluppo e QA:
+
+- il prompt di sviluppo implementa la patch
+- il prompt QA verifica regressioni, scope creep, i18n, build/test e coerenza generale
+- il QA agent non introduce nuove funzionalita
+- i fix emersi dal QA devono essere trattati come patch correttive separate e minime
+
+Per task QA / regression test e possibile usare anche Gemini AI quando l'obiettivo principale e revisione, controllo regressioni, scope creep, i18n, build/test e coerenza UI/API.
+
+I fix post-QA devono essere applicati dal modello/agente piu adatto al codice interessato, con patch minima.
+
+I report QA devono essere registrati in `docs/qa/QA-REPORTS.md`.
+
+Modelli consigliati:
+
+- Prima scelta: 5.3 Codex
+- Alternativa veloce/economica: 5.3 Spark
+- Alternativa ragionata: 5.4
+
+La scelta concreta deve sempre essere adattata al task e motivata nella sezione `Modello consigliato`, includendo al confronto 5.3 Codex, 5.3 Spark e 5.4 quando pertinente.
 
 ---
 
@@ -135,23 +179,23 @@ Before implementing major changes:
 
 ## QA Agent
 
-Il QA Agent è responsabile della validazione finale dei task.
+Il QA Agent e responsabile della validazione finale dei task.
 
-Responsabilità:
-- verificare implementazione rispetto a TASKS.md
+Responsabilita:
+- verificare implementazione rispetto a `TASKS.md`
 - identificare bug e regressioni
-- controllare coerenza con ARCHITECTURE.md e DECISIONS.md
+- controllare coerenza con `ARCHITECTURE.md` e `DECISIONS.md`
 - verificare aggiornamento documentazione
 
 Regole:
 - non modifica codice automaticamente
 - produce report strutturato
-- classifica problemi in BLOCKER / MAJOR / MINOR / NOTE
+- classifica problemi in `BLOCKER` / `MAJOR` / `MINOR` / `NOTE`
 - propone fix ma non li applica senza richiesta
 
 Output:
 - aggiornamento `docs/qa/QA-REPORTS.md`
-- esito: PASS / PASS WITH NOTES / FAIL
+- esito: `PASS` / `PASS WITH NOTES` / `FAIL`
 
 ---
 

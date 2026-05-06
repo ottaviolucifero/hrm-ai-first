@@ -1,73 +1,34 @@
 # QA Reports
 
-Questo documento raccoglie gli esiti delle review QA per i task del progetto HRM AI-first.
+Registro ufficiale degli esiti QA.
 
-Regole operative:
+Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
-- creare una sezione per ogni task sottoposto a QA;
-- aggiornare il report prima della PR o durante la fase finale di review;
-- non usare questo file per pianificare nuovi task;
-- registrare solo evidenze di test, problemi trovati, fix suggeriti e stato finale;
-- mantenere il report sintetico e verificabile.
+## Backend QA reports
 
----
+Nessun report backend registrato al momento.
 
-## Template QA report
+## Frontend QA reports
 
-### TASK-XXX - Nome task
+### TASK-041 - UI Master Data Admin
 
-Data: YYYY-MM-DD  
-Reviewer: QA Agent  
-Branch: nome-branch  
-Pull Request: link o numero PR
+- Data: 2026-05-06
+- Task: TASK-041 - UI Master Data Admin
+- Agente/Modello usato: QA separato, revisione assistita AI
+- Area verificata: route protetta `/master-data`, sidebar `Governance > Dati di base`, i18n `it/fr/en`, UI read-only master data, documentazione `TASKS.md` e `ROADMAP.md`
+- Comandi eseguiti: `npm.cmd run build`, `npm.cmd test`, `git status --short --branch`
+- Esito: PASS WITH NOTES
+- Regressioni trovate: nessuna regressione funzionale confermata; controllo manuale UI eseguito successivamente con esito positivo
+- Fix richiesti: cleanup della subscription in `MasterDataAdminComponent`, applicato con patch post-QA; test aggiuntivo su destroy/subscription aggiunto
+- Stato finale: build e test verdi, 24 test passed, scope read-only rispettato, nessuna modifica backend/auth/dipendenze rilevata
 
-#### Esito
+## Full-stack / integration QA reports
 
-PASS / PASS WITH NOTES / FAIL
-
-#### Scope verificato
-
-- ...
-
-#### Verifiche eseguite
-
-- Build backend/frontend: esito
-- Test automatici: esito
-- Test manuali: esito
-- Regressioni controllate: esito
-- Documentazione controllata: esito
-
-#### Problemi trovati
-
-##### BLOCKER
-
-- Nessuno / ...
-
-##### MAJOR
-
-- Nessuno / ...
-
-##### MINOR
-
-- Nessuno / ...
-
-##### NOTE
-
-- Nessuna / ...
-
-#### Fix suggeriti
-
-- ...
-
-#### Documentazione
-
-- [ ] `TASKS.md` aggiornato, se necessario
-- [ ] `ROADMAP.md` aggiornato, se necessario
-- [ ] `DECISIONS.md` aggiornato, se necessario
-- [ ] `AGENTS.md` aggiornato, se necessario
-
-#### Conclusione QA
-
-Sintesi finale dell’esito QA.
+Nessun report full-stack o integration registrato al momento.
 
 ---
+
+Nota operativa:
+
+- Le sezioni devono contenere solo report riferiti a task reali.
+- Mantenere ogni report sintetico ma verificabile.

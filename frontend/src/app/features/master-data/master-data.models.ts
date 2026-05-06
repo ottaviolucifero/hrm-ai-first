@@ -1,0 +1,293 @@
+import { I18nKey } from '../../core/i18n/i18n.messages';
+
+export type MasterDataCategoryId = 'global' | 'hrBusiness' | 'governanceSecurity';
+export type MasterDataColumnKind = 'text' | 'boolean' | 'date';
+
+export interface MasterDataColumn {
+  readonly key: string;
+  readonly labelKey: I18nKey;
+  readonly kind?: MasterDataColumnKind;
+}
+
+export interface MasterDataResource {
+  readonly id: string;
+  readonly titleKey: I18nKey;
+  readonly endpoint: string;
+  readonly columns: readonly MasterDataColumn[];
+}
+
+export interface MasterDataCategory {
+  readonly id: MasterDataCategoryId;
+  readonly titleKey: I18nKey;
+  readonly resources: readonly MasterDataResource[];
+}
+
+export type MasterDataRow = Record<string, unknown>;
+
+const CODE_COLUMN: MasterDataColumn = {
+  key: 'code',
+  labelKey: 'masterData.columns.code'
+};
+
+const NAME_COLUMN: MasterDataColumn = {
+  key: 'name',
+  labelKey: 'masterData.columns.name'
+};
+
+const ACTIVE_COLUMN: MasterDataColumn = {
+  key: 'active',
+  labelKey: 'masterData.columns.active',
+  kind: 'boolean'
+};
+
+const UPDATED_AT_COLUMN: MasterDataColumn = {
+  key: 'updatedAt',
+  labelKey: 'masterData.columns.updatedAt',
+  kind: 'date'
+};
+
+const TENANT_COLUMN: MasterDataColumn = {
+  key: 'tenantId',
+  labelKey: 'masterData.columns.tenant'
+};
+
+const COUNTRY_COLUMN: MasterDataColumn = {
+  key: 'country.name',
+  labelKey: 'masterData.columns.country'
+};
+
+const REGION_COLUMN: MasterDataColumn = {
+  key: 'region.name',
+  labelKey: 'masterData.columns.region'
+};
+
+const AREA_COLUMN: MasterDataColumn = {
+  key: 'area.name',
+  labelKey: 'masterData.columns.area'
+};
+
+const POSTAL_CODE_COLUMN: MasterDataColumn = {
+  key: 'postalCode',
+  labelKey: 'masterData.columns.postalCode'
+};
+
+const CITY_COLUMN: MasterDataColumn = {
+  key: 'city',
+  labelKey: 'masterData.columns.city'
+};
+
+const REGEX_PATTERN_COLUMN: MasterDataColumn = {
+  key: 'regexPattern',
+  labelKey: 'masterData.columns.regexPattern'
+};
+
+const SEVERITY_LEVEL_COLUMN: MasterDataColumn = {
+  key: 'severityLevel',
+  labelKey: 'masterData.columns.severityLevel'
+};
+
+const STRONG_AUTH_REQUIRED_COLUMN: MasterDataColumn = {
+  key: 'strongAuthRequired',
+  labelKey: 'masterData.columns.strongAuthRequired',
+  kind: 'boolean'
+};
+
+const SYSTEM_ROLE_COLUMN: MasterDataColumn = {
+  key: 'systemRole',
+  labelKey: 'masterData.columns.systemFlag',
+  kind: 'boolean'
+};
+
+const SYSTEM_PERMISSION_COLUMN: MasterDataColumn = {
+  key: 'systemPermission',
+  labelKey: 'masterData.columns.systemFlag',
+  kind: 'boolean'
+};
+
+export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
+  {
+    id: 'global',
+    titleKey: 'masterData.category.global',
+    resources: [
+      {
+        id: 'countries',
+        titleKey: 'masterData.entities.countries',
+        endpoint: '/api/master-data/global/countries',
+        columns: [
+          { key: 'isoCode', labelKey: 'masterData.columns.code' },
+          NAME_COLUMN,
+          ACTIVE_COLUMN,
+          UPDATED_AT_COLUMN
+        ]
+      },
+      {
+        id: 'regions',
+        titleKey: 'masterData.entities.regions',
+        endpoint: '/api/master-data/global/regions',
+        columns: [COUNTRY_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'areas',
+        titleKey: 'masterData.entities.areas',
+        endpoint: '/api/master-data/global/areas',
+        columns: [COUNTRY_COLUMN, REGION_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'zip-codes',
+        titleKey: 'masterData.entities.zipCodes',
+        endpoint: '/api/master-data/global/zip-codes',
+        columns: [COUNTRY_COLUMN, REGION_COLUMN, AREA_COLUMN, POSTAL_CODE_COLUMN, CITY_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'currencies',
+        titleKey: 'masterData.entities.currencies',
+        endpoint: '/api/master-data/global/currencies',
+        columns: [CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'genders',
+        titleKey: 'masterData.entities.genders',
+        endpoint: '/api/master-data/global/genders',
+        columns: [CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'marital-statuses',
+        titleKey: 'masterData.entities.maritalStatuses',
+        endpoint: '/api/master-data/global/marital-statuses',
+        columns: [CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'national-identifier-types',
+        titleKey: 'masterData.entities.nationalIdentifierTypes',
+        endpoint: '/api/master-data/global/national-identifier-types',
+        columns: [COUNTRY_COLUMN, CODE_COLUMN, NAME_COLUMN, REGEX_PATTERN_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      }
+    ]
+  },
+  {
+    id: 'hrBusiness',
+    titleKey: 'masterData.category.hrBusiness',
+    resources: [
+      {
+        id: 'departments',
+        titleKey: 'masterData.entities.departments',
+        endpoint: '/api/master-data/hr-business/departments',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'job-titles',
+        titleKey: 'masterData.entities.jobTitles',
+        endpoint: '/api/master-data/hr-business/job-titles',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'contract-types',
+        titleKey: 'masterData.entities.contractTypes',
+        endpoint: '/api/master-data/hr-business/contract-types',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'employment-statuses',
+        titleKey: 'masterData.entities.employmentStatuses',
+        endpoint: '/api/master-data/hr-business/employment-statuses',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'work-modes',
+        titleKey: 'masterData.entities.workModes',
+        endpoint: '/api/master-data/hr-business/work-modes',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'leave-request-types',
+        titleKey: 'masterData.entities.leaveRequestTypes',
+        endpoint: '/api/master-data/hr-business/leave-request-types',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'document-types',
+        titleKey: 'masterData.entities.documentTypes',
+        endpoint: '/api/master-data/hr-business/document-types',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'device-types',
+        titleKey: 'masterData.entities.deviceTypes',
+        endpoint: '/api/master-data/hr-business/device-types',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'device-brands',
+        titleKey: 'masterData.entities.deviceBrands',
+        endpoint: '/api/master-data/hr-business/device-brands',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'device-statuses',
+        titleKey: 'masterData.entities.deviceStatuses',
+        endpoint: '/api/master-data/hr-business/device-statuses',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      }
+    ]
+  },
+  {
+    id: 'governanceSecurity',
+    titleKey: 'masterData.category.governanceSecurity',
+    resources: [
+      {
+        id: 'user-types',
+        titleKey: 'masterData.entities.userTypes',
+        endpoint: '/api/master-data/governance-security/user-types',
+        columns: [CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'authentication-methods',
+        titleKey: 'masterData.entities.authenticationMethods',
+        endpoint: '/api/master-data/governance-security/authentication-methods',
+        columns: [CODE_COLUMN, NAME_COLUMN, STRONG_AUTH_REQUIRED_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'audit-action-types',
+        titleKey: 'masterData.entities.auditActionTypes',
+        endpoint: '/api/master-data/governance-security/audit-action-types',
+        columns: [CODE_COLUMN, NAME_COLUMN, SEVERITY_LEVEL_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'disciplinary-action-types',
+        titleKey: 'masterData.entities.disciplinaryActionTypes',
+        endpoint: '/api/master-data/governance-security/disciplinary-action-types',
+        columns: [CODE_COLUMN, NAME_COLUMN, SEVERITY_LEVEL_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'smtp-encryption-types',
+        titleKey: 'masterData.entities.smtpEncryptionTypes',
+        endpoint: '/api/master-data/governance-security/smtp-encryption-types',
+        columns: [CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'roles',
+        titleKey: 'masterData.entities.roles',
+        endpoint: '/api/master-data/governance-security/roles',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, SYSTEM_ROLE_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'permissions',
+        titleKey: 'masterData.entities.permissions',
+        endpoint: '/api/master-data/governance-security/permissions',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, SYSTEM_PERMISSION_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'company-profile-types',
+        titleKey: 'masterData.entities.companyProfileTypes',
+        endpoint: '/api/master-data/governance-security/company-profile-types',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      },
+      {
+        id: 'office-location-types',
+        titleKey: 'masterData.entities.officeLocationTypes',
+        endpoint: '/api/master-data/governance-security/office-location-types',
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+      }
+    ]
+  }
+] as const;

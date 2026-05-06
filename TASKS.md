@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.52
-Ultimo aggiornamento: 2026-05-05
+Versione: 1.53
+Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
 ---
@@ -2131,13 +2131,31 @@ TASK-040 non introduce nuove dipendenze, `@angular/localize`, Transloco, ngx-tra
 
 ### TASK-041 - Implementare UI Master Data Admin foundation/list
 
-Stato: TODO
+Stato: DONE
+
+Tipo: Frontend foundation/list
 
 Obiettivo:
 
 - Implementare la foundation UI e le viste lista della UI Master Data Admin usando API backend disponibili.
 - Riusare layout, shell e componenti esistenti secondo `frontend/AGENTS.md`.
 - Non implementare CRUD completo se le API write corrispondenti non sono disponibili.
+
+Completato:
+
+- Aggiunta route protetta `/master-data` sotto `AppShellComponent`.
+- Attivata voce sidebar reale `Governance > Dati di base` con label i18n `nav.masterData`.
+- Introdotta configurazione frontend delle categorie `Global`, `HR/business` e `Governance/security` con risorse read-only disponibili.
+- Implementato `MasterDataService` con `HttpClient` per lettura dai tre gruppi endpoint backend gia disponibili.
+- Implementato `MasterDataAdminComponent` standalone con select categoria, select entita, tabella read-only, loading state, error state, empty state e refresh manuale.
+- Gestita visualizzazione safe di valori nested, boolean e date senza introdurre CRUD, filtri complessi, bulk action, import/export, RBAC UI o audit UI.
+- Aggiornato i18n runtime per `it`, `fr` ed `en` con chiavi `nav.masterData`, `masterData.*` e `masterData.entities.*`.
+- Aggiornati test frontend per sidebar e componente Master Data Admin.
+- Validati `npm.cmd run build` e `npm.cmd test`.
+
+Nota:
+
+TASK-041 resta read-only. Nessuna modifica a backend, auth/login/JWT, dipendenze o redesign UI.
 
 ### TASK-042 - Implementare UI Master Data Admin CRUD
 
@@ -2214,6 +2232,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.53 | 2026-05-06 | TASK-041 completato con UI Master Data Admin foundation/list read-only: route protetta `/master-data`, voce sidebar `Governance > Dati di base`, categorie Global/HR-business/Governance-security, tabella read-only con loading/error/empty/refresh, i18n `it`/`fr`/`en` completo e test/build frontend validati. |
 | 1.52 | 2026-05-05 | TASK-040 completato con foundation i18n runtime custom/minimale: lingua default `it`, dizionario typed, fallback automatico a italiano, `I18nService` con signal, `t(key)`, persistenza `localStorage`, `lang="it"`, testi principali estratti e selettore lingua minimale nella login card senza nuove dipendenze o modifiche auth/routing. |
 | 1.51 | 2026-05-05 | TASK-039 rifinito con sidebar collassabile/espandibile: toggle visibile, modalita compatta top-level, search e submenu nascosti quando collassata, placeholder futuri ancora non naviganti e test componente aggiornati. |
 | 1.50 | 2026-05-05 | TASK-039 completato con foundation sidebar navigation tree: struttura dati tipizzata locale, nodi fino a 3 livelli, expand/collapse, active route highlighting, ricerca/filtro e placeholder non naviganti per pagine future; nessun backend, RBAC, i18n, nuove route o nuove librerie. |

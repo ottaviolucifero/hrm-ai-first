@@ -1,0 +1,61 @@
+<section class="kt-container-fixed py-4" aria-labelledby="master-data-title">
+  <div class="master-data-layout">
+    <div class="master-data-toolbar">
+      <div>
+        <h1 id="master-data-title" class="text-xl font-semibold text-mono">{{ i18n.t('masterData.title') }}</h1>
+      </div>
+      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="loading()" (click)="refresh()">
+        {{ i18n.t('masterData.refresh') }}
+      </button>
+    </div>
+
+    <div class="master-data-filters">
+      <label class="master-data-field">
+        <span>{{ i18n.t('masterData.category') }}</span>
+        <select class="kt-input" [value]="selectedCategoryId()" (change)="updateCategory($event)">
+          @for (category of categories; track category.id) {
+            <option [value]="category.id">{{ i18n.t(category.titleKey) }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="master-data-field">
+        <span>{{ i18n.t('masterData.entity') }}</span>
+        <select class="kt-input" [value]="selectedResourceId()" (change)="updateResource($event)">
+          @for (resource of selectedCategory().resources; track resource.id) {
+            <option [value]="resource.id">{{ i18n.t(resource.titleKey) }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (loading()) {
+      <div class="master-data-state">{{ i18n.t('masterData.loading') }}</div>
+    } @else if (hasError()) {
+      <div class="master-data-state master-data-state-error">{{ i18n.t('masterData.error') }}</div>
+    } @else if (rows().length === 0) {
+      <div class="master-data-state">{{ i18n.t('masterData.empty') }}</div>
+    } @else {
+      <div class="master-data-table-wrapper">
+        <table class="master-data-table">
+          <thead>
+            <tr>
+              @for (column of selectedResource().columns; track column.key) {
+                <th scope="col">{{ i18n.t(column.labelKey) }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track trackRow($index, row)) {
+              <tr>
+                @for (column of selectedResource().columns; track column.key) {
+                  <td>{{ displayValue(row, column) }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</section>
