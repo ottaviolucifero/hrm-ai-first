@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.53
+Versione: 1.54
 Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
@@ -2157,7 +2157,49 @@ Nota:
 
 TASK-041 resta read-only. Nessuna modifica a backend, auth/login/JWT, dipendenze o redesign UI.
 
-### TASK-042 - Implementare UI Master Data Admin CRUD
+### TASK-042 - Seed/import dati globali iniziali
+
+Stato: IN_PROGRESS
+
+Tipo: Backend/data seed/documentazione
+
+Obiettivo:
+
+- Preparare il seed/import statico e idempotente dei dati globali iniziali necessari al bootstrap operativo.
+
+Scope:
+
+- seed/import statico e idempotente dei dati globali iniziali
+- Paesi ISO 3166-1 alpha-2
+- eventuali valute ISO 4217 se confermate nello scope
+- documentazione fonte/licenza/mapping
+- `countries.default_currency_id` nullable
+- nessuna API esterna runtime
+- nessun frontend
+- nessun CAP italiano
+- nessun ZIP estero
+
+### TASK-043 - Import CAP italiani
+
+Stato: TODO
+
+Tipo: Backend/data import
+
+Obiettivo:
+
+- Preparare l'import statico e idempotente dei CAP italiani nella tabella `global_zip_codes`.
+
+Scope:
+
+- import CAP italiani nella tabella `global_zip_codes`
+- solo Italia
+- fonte/licenza da documentare
+- import statico/idempotente
+- nessun ZIP estero
+- nessuna API esterna runtime
+- nessun frontend
+
+### TASK-044 - Implementare UI Master Data Admin CRUD
 
 Stato: TODO
 
@@ -2166,11 +2208,11 @@ Obiettivo:
 - Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
 - Non usare mock come sostituto dei contratti API backend.
 
-### TASK-043 - Implementare UI Employee management enterprise
+### TASK-045 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-044 - Implementare Security Admin UI
+### TASK-046 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -2182,47 +2224,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-045 - Implementare UI Device governance
+### TASK-047 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-046 - Implementare UI PayrollDocument
+### TASK-048 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-047 - Implementare UI LeaveRequest
+### TASK-049 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-048 - Implementare UI HolidayCalendar
+### TASK-050 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-049 - Implementare Audit UI / compliance explorer
+### TASK-051 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-050 - Implementare UI disciplinary governance
+### TASK-052 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-051 - Implementare Platform Operator / Super Admin governance
+### TASK-053 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-052 - Implementare Cross-tenant admin UI
+### TASK-054 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-053 - Configurare logging, monitoring e observability enterprise
+### TASK-055 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-054 - Test integrato MVP enterprise completo
+### TASK-056 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -2232,6 +2274,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.54 | 2026-05-06 | TASKS.md riallineato dopo TASK-041 con inserimento TASK-042 seed/import dati globali iniziali e TASK-043 import CAP italiani prima della UI Master Data Admin CRUD. |
 | 1.53 | 2026-05-06 | TASK-041 completato con UI Master Data Admin foundation/list read-only: route protetta `/master-data`, voce sidebar `Governance > Dati di base`, categorie Global/HR-business/Governance-security, tabella read-only con loading/error/empty/refresh, i18n `it`/`fr`/`en` completo e test/build frontend validati. |
 | 1.52 | 2026-05-05 | TASK-040 completato con foundation i18n runtime custom/minimale: lingua default `it`, dizionario typed, fallback automatico a italiano, `I18nService` con signal, `t(key)`, persistenza `localStorage`, `lang="it"`, testi principali estratti e selettore lingua minimale nella login card senza nuove dipendenze o modifiche auth/routing. |
 | 1.51 | 2026-05-05 | TASK-039 rifinito con sidebar collassabile/espandibile: toggle visibile, modalita compatta top-level, search e submenu nascosti quando collassata, placeholder futuri ancora non naviganti e test componente aggiornati. |
