@@ -93,6 +93,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 ### Prossimo passo
 
 - TASK-043: Master Data API/UI pagination and generic filters
+- TASK-042: Seed/import dati globali iniziali
 
 ---
 
