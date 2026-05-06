@@ -370,3 +370,26 @@ Usage rules:
 \- Reuse existing shell, header, sidebar, login UI, buttons, badges and layout patterns before changing styles.
 
 \- Create or promote shared components only when the existing shared component rules justify it and the task explicitly documents the reason.
+
+\## 13. Frontend QA and Model Separation
+
+
+Per task frontend significativi prevedere QA separato.
+
+Il QA frontend deve verificare almeno:
+
+\- i18n obbligatorio;
+\- assenza di testi hardcoded;
+\- route e sidebar;
+\- regressioni su login/home/shell/header/sidebar;
+\- build e test Angular;
+\- coerenza UI senza redesign non richiesti.
+
+Il QA frontend non introduce nuove funzionalità.
+
+I fix frontend post-QA devono essere piccoli e mirati, con patch minima.
+\## 14. Frontend QA Reporting
+
+Ogni report QA frontend deve essere registrato in `docs/qa/QA-REPORTS.md` nella sezione **Frontend**.
+
+La compilazione deve includere almeno: task, area verificata, comandi eseguiti, regressioni trovate, fix richiesti e stato finale.
