@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.ContractType;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ContractTypeRepository extends JpaRepository<ContractType, UUID> {
+public interface ContractTypeRepository extends MasterDataRepository<ContractType> {
 
 	boolean existsByTenantIdAndCode(UUID tenantId, String code);
 

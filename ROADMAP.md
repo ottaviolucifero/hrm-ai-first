@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.52
+Versione: 1.53
 Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
@@ -85,6 +85,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-040 Frontend i18n foundation
 - TASK-041 UI Master Data Admin foundation/list
 - TASK-042 Seed/import dati globali iniziali
+- TASK-043 Master Data API/UI pagination and generic filters
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
 - Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
@@ -92,8 +93,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-043: Master Data API/UI pagination and generic filters
-- TASK-042: Seed/import dati globali iniziali
+- TASK-044: Import CAP italiani
 
 ---
 
@@ -169,11 +169,10 @@ Frontend governance is active: UI tasks must analyze and reuse existing Angular 
 Logo brand color governance is active: frontend UI tasks must use the documented deep indigo, navy, accent blue, violet-blue and soft highlight tint consistently when the task scope includes visual implementation, without opportunistic redesign.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
-Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 now introduces pagination and generic filters before proceeding to full CRUD UI.
+Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 pagination and generic filters are completed before proceeding to full CRUD UI.
 
 Da fare:
 
-- TASK-043 Master Data API/UI pagination and generic filters
 - TASK-044 Import CAP italiani
 - TASK-045 UI Master Data Admin CRUD
 
@@ -253,6 +252,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.53 | 2026-05-06 | TASK-043 completato con paginazione e filtro generico Master Data API/UI (query `page/size/search`, response wrapper paginata, UI `/master-data` con debounce e precedente/successiva), test backend/frontend validati e QA manuale browser superato; prossimo passo aggiornato a TASK-044 Import CAP italiani. |
 | 1.52 | 2026-05-06 | TASK-042 completato (country default currency nullable, seed ISO 3166-1 alpha-2 con 249 Paesi/territori, migrazione Flyway V17 PostgreSQL/H2 e test backend validati); backlog futuro riallineato con nuovo TASK-043 su paginazione/filtro generico Master Data API/UI, Import CAP italiani rinumerato a TASK-044 e CRUD UI Master Data rinumerato a TASK-045. |
 | 1.51 | 2026-05-06 | TASK-041 completato con UI Master Data Admin foundation/list read-only su `/master-data`, integrazione sidebar `Governance > Dati di base`, categorie Global/HR-business/Governance-security, stati loading/error/empty, refresh manuale, i18n completo e build/test frontend validati; prossimo passo aggiornato a TASK-042 UI Master Data Admin CRUD. |
 | 1.50 | 2026-05-05 | TASK-040 completato con frontend i18n foundation runtime custom/minimale: lingua default italiana, dizionario typed, fallback a `it`, `I18nService`, persistenza `localStorage`, selector lingua login, `lang="it"` e testi principali estratti senza nuove dipendenze; prossimo passo aggiornato a TASK-041 UI Master Data Admin foundation/list. |

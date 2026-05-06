@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.Currency;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CurrencyRepository extends JpaRepository<Currency, UUID> {
+public interface CurrencyRepository extends MasterDataRepository<Currency> {
 
 	boolean existsByCode(String code);
 

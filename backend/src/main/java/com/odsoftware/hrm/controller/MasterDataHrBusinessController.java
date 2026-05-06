@@ -2,6 +2,7 @@ package com.odsoftware.hrm.controller;
 
 import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataRequest;
 import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataResponse;
+import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.service.MasterDataHrBusinessService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,8 +36,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/departments")
 	@Operation(summary = "List departments")
-	public List<TenantMasterDataResponse> findDepartments() {
-		return masterDataHrBusinessService.findDepartments();
+	public MasterDataPageResponse<TenantMasterDataResponse> findDepartments(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findDepartments(page, size, search);
 	}
 
 	@GetMapping("/departments/{id}")
@@ -66,8 +71,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/job-titles")
 	@Operation(summary = "List job titles")
-	public List<TenantMasterDataResponse> findJobTitles() {
-		return masterDataHrBusinessService.findJobTitles();
+	public MasterDataPageResponse<TenantMasterDataResponse> findJobTitles(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findJobTitles(page, size, search);
 	}
 
 	@GetMapping("/job-titles/{id}")
@@ -98,8 +106,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/contract-types")
 	@Operation(summary = "List contract types")
-	public List<TenantMasterDataResponse> findContractTypes() {
-		return masterDataHrBusinessService.findContractTypes();
+	public MasterDataPageResponse<TenantMasterDataResponse> findContractTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findContractTypes(page, size, search);
 	}
 
 	@GetMapping("/contract-types/{id}")
@@ -130,8 +141,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/employment-statuses")
 	@Operation(summary = "List employment statuses")
-	public List<TenantMasterDataResponse> findEmploymentStatuses() {
-		return masterDataHrBusinessService.findEmploymentStatuses();
+	public MasterDataPageResponse<TenantMasterDataResponse> findEmploymentStatuses(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findEmploymentStatuses(page, size, search);
 	}
 
 	@GetMapping("/employment-statuses/{id}")
@@ -162,8 +176,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/work-modes")
 	@Operation(summary = "List work modes")
-	public List<TenantMasterDataResponse> findWorkModes() {
-		return masterDataHrBusinessService.findWorkModes();
+	public MasterDataPageResponse<TenantMasterDataResponse> findWorkModes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findWorkModes(page, size, search);
 	}
 
 	@GetMapping("/work-modes/{id}")
@@ -194,8 +211,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/leave-request-types")
 	@Operation(summary = "List leave request types")
-	public List<TenantMasterDataResponse> findLeaveRequestTypes() {
-		return masterDataHrBusinessService.findLeaveRequestTypes();
+	public MasterDataPageResponse<TenantMasterDataResponse> findLeaveRequestTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findLeaveRequestTypes(page, size, search);
 	}
 
 	@GetMapping("/leave-request-types/{id}")
@@ -226,8 +246,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/document-types")
 	@Operation(summary = "List document types")
-	public List<TenantMasterDataResponse> findDocumentTypes() {
-		return masterDataHrBusinessService.findDocumentTypes();
+	public MasterDataPageResponse<TenantMasterDataResponse> findDocumentTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findDocumentTypes(page, size, search);
 	}
 
 	@GetMapping("/document-types/{id}")
@@ -258,8 +281,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/device-types")
 	@Operation(summary = "List device types")
-	public List<TenantMasterDataResponse> findDeviceTypes() {
-		return masterDataHrBusinessService.findDeviceTypes();
+	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceTypes(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findDeviceTypes(page, size, search);
 	}
 
 	@GetMapping("/device-types/{id}")
@@ -290,8 +316,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/device-brands")
 	@Operation(summary = "List device brands")
-	public List<TenantMasterDataResponse> findDeviceBrands() {
-		return masterDataHrBusinessService.findDeviceBrands();
+	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceBrands(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findDeviceBrands(page, size, search);
 	}
 
 	@GetMapping("/device-brands/{id}")
@@ -322,8 +351,11 @@ public class MasterDataHrBusinessController {
 
 	@GetMapping("/device-statuses")
 	@Operation(summary = "List device statuses")
-	public List<TenantMasterDataResponse> findDeviceStatuses() {
-		return masterDataHrBusinessService.findDeviceStatuses();
+	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceStatuses(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataHrBusinessService.findDeviceStatuses(page, size, search);
 	}
 
 	@GetMapping("/device-statuses/{id}")

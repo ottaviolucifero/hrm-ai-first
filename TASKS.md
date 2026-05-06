@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.55
+Versione: 1.56
 Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
@@ -2182,7 +2182,7 @@ TASK-042 mantiene fuori scope CAP italiani, ZIP esteri, frontend e API esterne r
 
 ### TASK-043 - Master Data API/UI pagination and generic filters
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend + Frontend foundation
 
@@ -2207,6 +2207,20 @@ Fuori scope:
 - redesign UI
 - RBAC runtime
 - export/import massivo
+
+Completato:
+
+- API Master Data paginate con query params `page`, `size`, `search`.
+- Response wrapper unificata con `content`, `page`, `size`, `totalElements`, `totalPages`, `first`, `last`.
+- UI `/master-data` aggiornata con filtro generico, debounce e paginazione precedente/successiva.
+- Reset pagina su cambio filtro/categoria/entita e compatibilita mantenuta con Global, HR/business e Governance/security.
+- Test backend validati: BUILD SUCCESS, 95 test, 0 failure, 0 errori.
+- Test frontend validati: build OK, test OK con 27 test passed.
+- QA manuale browser eseguito con successo su `/master-data` (lista Paesi, filtro, paginazione, refresh, cambio entita).
+
+Nota:
+
+TASK-043 mantiene fuori scope CRUD UI completo, CAP italiani, ZIP esteri, security/JWT e seed/migration TASK-042.
 
 ### TASK-044 - Import CAP italiani
 
@@ -2303,6 +2317,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.56 | 2026-05-06 | TASK-043 completato: paginazione e filtro generico su Master Data API/UI con query `page/size/search`, response wrapper paginata, UI `/master-data` aggiornata con debounce e precedente/successiva, compatibilita Global/HR-business/Governance-security confermata, test backend/frontend verdi e QA manuale browser superato. |
 | 1.55 | 2026-05-06 | TASK-042 chiuso come DONE con seed ISO 3166-1 alpha-2 (249 Paesi/territori), `countries.default_currency_id` nullable, documentazione fonte dati globale e migrazione Flyway V17 PostgreSQL/H2; introdotto TASK-043 su paginazione/filtro generico Master Data API/UI e backlog successivo rinumerato (Import CAP italiani -> TASK-044, CRUD UI Master Data -> TASK-045). |
 | 1.54 | 2026-05-06 | TASKS.md riallineato dopo TASK-041 con inserimento TASK-042 seed/import dati globali iniziali e TASK-043 import CAP italiani prima della UI Master Data Admin CRUD. |
 | 1.53 | 2026-05-06 | TASK-041 completato con UI Master Data Admin foundation/list read-only: route protetta `/master-data`, voce sidebar `Governance > Dati di base`, categorie Global/HR-business/Governance-security, tabella read-only con loading/error/empty/refresh, i18n `it`/`fr`/`en` completo e test/build frontend validati. |

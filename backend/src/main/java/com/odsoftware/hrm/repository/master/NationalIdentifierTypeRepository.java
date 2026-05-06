@@ -4,7 +4,7 @@ import com.odsoftware.hrm.entity.master.NationalIdentifierType;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface NationalIdentifierTypeRepository extends JpaRepository<NationalIdentifierType, UUID> {
+public interface NationalIdentifierTypeRepository extends MasterDataRepository<NationalIdentifierType> {
 
 	boolean existsByCountry_IdAndCode(UUID countryId, String code);
 

@@ -4,6 +4,7 @@ import com.odsoftware.hrm.dto.masterdata.governancesecurity.AuthenticationMethod
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.AuthenticationMethodResponse;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.GlobalGovernanceMasterDataRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.GlobalGovernanceMasterDataResponse;
+import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.PermissionRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.PermissionResponse;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.RoleRequest;
@@ -34,12 +35,11 @@ import com.odsoftware.hrm.repository.master.PermissionRepository;
 import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.master.SmtpEncryptionTypeRepository;
 import com.odsoftware.hrm.repository.master.UserTypeRepository;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,11 +81,14 @@ public class MasterDataGovernanceSecurityService {
 		this.officeLocationTypeRepository = officeLocationTypeRepository;
 	}
 
-	public List<GlobalGovernanceMasterDataResponse> findUserTypes() {
-		return userTypeRepository.findAll().stream()
-				.sorted(Comparator.comparing(UserType::getCode))
-				.map(this::toUserTypeResponse)
-				.toList();
+	public MasterDataPageResponse<GlobalGovernanceMasterDataResponse> findUserTypes(Integer page, Integer size, String search) {
+		return findGlobalPage(
+				userTypeRepository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toUserTypeResponse);
 	}
 
 	public GlobalGovernanceMasterDataResponse findUserTypeById(UUID id) {
@@ -121,11 +124,14 @@ public class MasterDataGovernanceSecurityService {
 		userTypeRepository.save(userType);
 	}
 
-	public List<AuthenticationMethodResponse> findAuthenticationMethods() {
-		return authenticationMethodRepository.findAll().stream()
-				.sorted(Comparator.comparing(AuthenticationMethod::getCode))
-				.map(this::toAuthenticationMethodResponse)
-				.toList();
+	public MasterDataPageResponse<AuthenticationMethodResponse> findAuthenticationMethods(Integer page, Integer size, String search) {
+		return findGlobalPage(
+				authenticationMethodRepository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toAuthenticationMethodResponse);
 	}
 
 	public AuthenticationMethodResponse findAuthenticationMethodById(UUID id) {
@@ -161,11 +167,14 @@ public class MasterDataGovernanceSecurityService {
 		authenticationMethodRepository.save(authenticationMethod);
 	}
 
-	public List<SeverityMasterDataResponse> findAuditActionTypes() {
-		return auditActionTypeRepository.findAll().stream()
-				.sorted(Comparator.comparing(AuditActionType::getCode))
-				.map(this::toAuditActionTypeResponse)
-				.toList();
+	public MasterDataPageResponse<SeverityMasterDataResponse> findAuditActionTypes(Integer page, Integer size, String search) {
+		return findGlobalPage(
+				auditActionTypeRepository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name", "severityLevel"),
+				this::toAuditActionTypeResponse);
 	}
 
 	public SeverityMasterDataResponse findAuditActionTypeById(UUID id) {
@@ -201,11 +210,14 @@ public class MasterDataGovernanceSecurityService {
 		auditActionTypeRepository.save(auditActionType);
 	}
 
-	public List<SeverityMasterDataResponse> findDisciplinaryActionTypes() {
-		return disciplinaryActionTypeRepository.findAll().stream()
-				.sorted(Comparator.comparing(DisciplinaryActionType::getCode))
-				.map(this::toDisciplinaryActionTypeResponse)
-				.toList();
+	public MasterDataPageResponse<SeverityMasterDataResponse> findDisciplinaryActionTypes(Integer page, Integer size, String search) {
+		return findGlobalPage(
+				disciplinaryActionTypeRepository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name", "severityLevel"),
+				this::toDisciplinaryActionTypeResponse);
 	}
 
 	public SeverityMasterDataResponse findDisciplinaryActionTypeById(UUID id) {
@@ -241,11 +253,14 @@ public class MasterDataGovernanceSecurityService {
 		disciplinaryActionTypeRepository.save(disciplinaryActionType);
 	}
 
-	public List<GlobalGovernanceMasterDataResponse> findSmtpEncryptionTypes() {
-		return smtpEncryptionTypeRepository.findAll().stream()
-				.sorted(Comparator.comparing(SmtpEncryptionType::getCode))
-				.map(this::toSmtpEncryptionTypeResponse)
-				.toList();
+	public MasterDataPageResponse<GlobalGovernanceMasterDataResponse> findSmtpEncryptionTypes(Integer page, Integer size, String search) {
+		return findGlobalPage(
+				smtpEncryptionTypeRepository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toSmtpEncryptionTypeResponse);
 	}
 
 	public GlobalGovernanceMasterDataResponse findSmtpEncryptionTypeById(UUID id) {
@@ -281,11 +296,14 @@ public class MasterDataGovernanceSecurityService {
 		smtpEncryptionTypeRepository.save(smtpEncryptionType);
 	}
 
-	public List<RoleResponse> findRoles() {
-		return roleRepository.findAll().stream()
-				.sorted(Comparator.comparing(Role::getCode))
-				.map(this::toRoleResponse)
-				.toList();
+	public MasterDataPageResponse<RoleResponse> findRoles(Integer page, Integer size, String search) {
+		return findGlobalPage(
+				roleRepository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toRoleResponse);
 	}
 
 	public RoleResponse findRoleById(UUID id) {
@@ -323,11 +341,14 @@ public class MasterDataGovernanceSecurityService {
 		roleRepository.save(role);
 	}
 
-	public List<PermissionResponse> findPermissions() {
-		return permissionRepository.findAll().stream()
-				.sorted(Comparator.comparing(Permission::getCode))
-				.map(this::toPermissionResponse)
-				.toList();
+	public MasterDataPageResponse<PermissionResponse> findPermissions(Integer page, Integer size, String search) {
+		return findGlobalPage(
+				permissionRepository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toPermissionResponse);
 	}
 
 	public PermissionResponse findPermissionById(UUID id) {
@@ -365,8 +386,8 @@ public class MasterDataGovernanceSecurityService {
 		permissionRepository.save(permission);
 	}
 
-	public List<TenantGovernanceMasterDataResponse> findCompanyProfileTypes() {
-		return findTenantMasterData(companyProfileTypeRepository);
+	public MasterDataPageResponse<TenantGovernanceMasterDataResponse> findCompanyProfileTypes(Integer page, Integer size, String search) {
+		return findTenantMasterData(companyProfileTypeRepository, page, size, search);
 	}
 
 	public TenantGovernanceMasterDataResponse findCompanyProfileTypeById(UUID id) {
@@ -388,8 +409,8 @@ public class MasterDataGovernanceSecurityService {
 		disableTenantMasterData(id, companyProfileTypeRepository, "Company profile type");
 	}
 
-	public List<TenantGovernanceMasterDataResponse> findOfficeLocationTypes() {
-		return findTenantMasterData(officeLocationTypeRepository);
+	public MasterDataPageResponse<TenantGovernanceMasterDataResponse> findOfficeLocationTypes(Integer page, Integer size, String search) {
+		return findTenantMasterData(officeLocationTypeRepository, page, size, search);
 	}
 
 	public TenantGovernanceMasterDataResponse findOfficeLocationTypeById(UUID id) {
@@ -439,26 +460,36 @@ public class MasterDataGovernanceSecurityService {
 		return findEntity(id, permissionRepository, "Permission");
 	}
 
-	private <T> T findEntity(UUID id, JpaRepository<T, UUID> repository, String label) {
+	private <T> T findEntity(UUID id, org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository, String label) {
 		return repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException(label + " not found: " + id));
 	}
 
-	private <T extends BaseTenantMasterEntity> List<TenantGovernanceMasterDataResponse> findTenantMasterData(JpaRepository<T, UUID> repository) {
-		return repository.findAll().stream()
-				.sorted(Comparator.comparing(BaseTenantMasterEntity::getCode))
-				.map(this::toTenantGovernanceMasterDataResponse)
-				.toList();
+	private <T extends BaseTenantMasterEntity> MasterDataPageResponse<TenantGovernanceMasterDataResponse> findTenantMasterData(
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			Integer page,
+			Integer size,
+			String search) {
+		return findGlobalPage(
+				repository,
+				page,
+				size,
+				search,
+				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				this::toTenantGovernanceMasterDataResponse);
 	}
 
-	private <T extends BaseTenantMasterEntity> TenantGovernanceMasterDataResponse findTenantMasterDataById(UUID id, JpaRepository<T, UUID> repository, String label) {
+	private <T extends BaseTenantMasterEntity> TenantGovernanceMasterDataResponse findTenantMasterDataById(
+			UUID id,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
+			String label) {
 		return toTenantGovernanceMasterDataResponse(findEntity(id, repository, label));
 	}
 
 	private <T extends BaseTenantMasterEntity> TenantGovernanceMasterDataResponse createTenantMasterData(
 			TenantGovernanceMasterDataRequest request,
 			Supplier<T> factory,
-			JpaRepository<T, UUID> repository,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
 			TenantCodeExists existsByTenantIdAndCode,
 			String label) {
 		validateTenant(request.tenantId());
@@ -474,7 +505,7 @@ public class MasterDataGovernanceSecurityService {
 	private <T extends BaseTenantMasterEntity> TenantGovernanceMasterDataResponse updateTenantMasterData(
 			UUID id,
 			TenantGovernanceMasterDataRequest request,
-			JpaRepository<T, UUID> repository,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
 			TenantCodeExcludingIdExists existsByTenantIdAndCodeAndIdNot,
 			String label) {
 		T entity = findEntity(id, repository, label);
@@ -487,7 +518,10 @@ public class MasterDataGovernanceSecurityService {
 		return toTenantGovernanceMasterDataResponse(repository.save(entity));
 	}
 
-	private <T extends BaseTenantMasterEntity> void disableTenantMasterData(UUID id, JpaRepository<T, UUID> repository, String label) {
+	private <T extends BaseTenantMasterEntity> void disableTenantMasterData(
+			UUID id,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
+			String label) {
 		T entity = findEntity(id, repository, label);
 		entity.setActive(false);
 		repository.save(entity);
@@ -644,6 +678,20 @@ public class MasterDataGovernanceSecurityService {
 		}
 		String cleaned = value.trim();
 		return cleaned.isEmpty() ? null : cleaned;
+	}
+
+	private <T, R> MasterDataPageResponse<R> findGlobalPage(
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			Integer page,
+			Integer size,
+			String search,
+			org.springframework.data.jpa.domain.Specification<T> specification,
+			Function<T, R> mapper) {
+		return MasterDataQuerySupport.toPageResponse(
+				repository.findAll(
+						specification,
+						MasterDataQuerySupport.buildPageable(page, size, Sort.by("code"))),
+				mapper);
 	}
 
 	@FunctionalInterface
