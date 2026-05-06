@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.54
+Versione: 1.55
 Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
@@ -2159,73 +2159,76 @@ TASK-041 resta read-only. Nessuna modifica a backend, auth/login/JWT, dipendenze
 
 ### TASK-042 - Seed/import dati globali iniziali
 
-Stato: TODO
+Stato: DONE
+
+Tipo: Backend/data seed/documentazione
 
 Obiettivo:
 
-- Definire il seed/import iniziale dei dati globali minimi necessari al bootstrap operativo della piattaforma.
-- Coprire almeno Paesi / Countries, Valute / Currencies ed eventuali master globali minimi gia previsti.
-- Valutare fonte dati, formato, licenza e mapping colonne prima dell'implementazione tecnica.
-- Definire una strategia di import idempotente, coerente con il perimetro MVP e con le master data tables globali gia disponibili.
+- Preparare il seed/import statico e idempotente dei dati globali iniziali necessari al bootstrap operativo.
 
-Da fare:
+Completato:
 
-- valutazione dataset affidabile ISO 3166 per i paesi
-- campi minimi paesi: `name`, `isoCode`, `active`
-- evitare dati geopolitici complessi in questa fase
-- valutazione dataset affidabile ISO 4217 per le valute
-- campi minimi valute: `code`, `name`, `symbol`, `active`
-- seed minimo coerente con MVP
-- valutazione di eventuali master globali minimi gia previsti
-- definizione di formato sorgente, licenza dati e mapping colonne
-- definizione della strategia di import idempotente
+- `countries.default_currency_id` reso nullable.
+- Fonte/licenza/mapping documentati in `docs/data-sources/global-master-data.md`.
+- Seed statico e idempotente ISO 3166-1 alpha-2 completato con 249 Paesi/territori.
+- Migration Flyway `V17__seed_iso3166_countries.sql` vendor-specific per PostgreSQL e H2.
+- Test backend validati (`92` test, `0` failure, `0` errori).
+- Dati globali seeded visibili nella UI `/master-data`.
 
-Non fare:
+Nota:
 
-- nessun import massivo dei CAP mondiali
-- nessun dataset ZIP estero
-- nessuna UI
-- nessun frontend
-- nessuna implementazione backend in questo task documentale
-- nessun CRUD UI
-- nessun refactor architetturale
-- nessuna API esterna runtime
-- nessuna implementazione import in questa fase documentale
-- nessun commit senza conferma
+TASK-042 mantiene fuori scope CAP italiani, ZIP esteri, frontend e API esterne runtime.
 
-### TASK-043 - Import CAP italiani
+### TASK-043 - Master Data API/UI pagination and generic filters
 
 Stato: TODO
 
+Tipo: Backend + Frontend foundation
+
 Obiettivo:
 
-- Definire l'import dei soli CAP / zip-codes italiani nel dominio master data globale.
-- Normalizzare il collegamento obbligatorio con `Country = Italia`.
-- Valutare il mapping verso `region`, `province`, `area`, `city` e `postalCode`.
-- Definire fonte dati e formato file supportato, mantenendo il task separato dal seed globale iniziale per favorire verifica e manutenzione incrementale.
+- Aggiungere paginazione e filtro generico alle API e alla UI Master Data Admin prima di importare ulteriori dataset grandi o completare CRUD.
 
-Da fare:
+Scope:
 
-- importare solo CAP italiani
-- valutare CSV versionato o fonte documentata equivalente
-- definire import idempotente
-- collegamento obbligatorio a `Country = Italia`
-- valutare mapping verso `region`, `province`, `area`, `city`, `postalCode`
-- confermare che per l'Italia si potra usare dataset/select CAP
-- confermare che per i paesi non italiani il postal code restera inserimento manuale senza select o dataset dedicato
+- backend: paginazione sugli endpoint Master Data dove necessario
+- backend: filtro generico testuale sui campi principali/campi visualizzati
+- frontend: adeguare UI `/master-data` per usare paginazione
+- frontend: aggiungere filtro generico sulle liste master data
+- mantenere compatibilita con Global, HR/business e Governance/security
+- test backend e frontend coerenti
 
-Non fare:
+Fuori scope:
 
-- nessun CAP estero
-- nessun dataset CAP di altri paesi
-- nessun frontend
-- nessun CRUD UI
-- nessun refactor architetturale
+- CRUD UI completo
+- CAP italiani
+- ZIP esteri
+- redesign UI
+- RBAC runtime
+- export/import massivo
+
+### TASK-044 - Import CAP italiani
+
+Stato: TODO
+
+Tipo: Backend/data import
+
+Obiettivo:
+
+- Preparare l'import statico e idempotente dei CAP italiani nella tabella `global_zip_codes`.
+
+Scope:
+
+- import CAP italiani nella tabella `global_zip_codes`
+- solo Italia
+- fonte/licenza da documentare
+- import statico/idempotente
+- nessun ZIP estero
 - nessuna API esterna runtime
-- nessuna implementazione import in questa fase documentale
-- nessun commit senza conferma
+- nessun frontend
 
-### TASK-044 - Implementare UI Master Data Admin CRUD
+### TASK-045 - Implementare UI Master Data Admin CRUD
 
 Stato: TODO
 
@@ -2234,11 +2237,11 @@ Obiettivo:
 - Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
 - Non usare mock come sostituto dei contratti API backend.
 
-### TASK-045 - Implementare UI Employee management enterprise
+### TASK-046 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-046 - Implementare Security Admin UI
+### TASK-047 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -2250,47 +2253,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-047 - Implementare UI Device governance
+### TASK-048 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-048 - Implementare UI PayrollDocument
+### TASK-049 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-049 - Implementare UI LeaveRequest
+### TASK-050 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-050 - Implementare UI HolidayCalendar
+### TASK-051 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-051 - Implementare Audit UI / compliance explorer
+### TASK-052 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-052 - Implementare UI disciplinary governance
+### TASK-053 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-053 - Implementare Platform Operator / Super Admin governance
+### TASK-054 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-054 - Implementare Cross-tenant admin UI
+### TASK-055 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-055 - Configurare logging, monitoring e observability enterprise
+### TASK-056 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-056 - Test integrato MVP enterprise completo
+### TASK-057 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -2300,7 +2303,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 1.54 | 2026-05-06 | Backlog futuro riallineato dopo completamento e merge di TASK-041: introdotti TASK-042 seed/import dati globali iniziali e TASK-043 import CAP italiani prima della UI CRUD; l'attuale Master Data Admin CRUD slitta a TASK-044 e tutti i task successivi slittano coerentemente fino a TASK-056. |
+| 1.55 | 2026-05-06 | TASK-042 chiuso come DONE con seed ISO 3166-1 alpha-2 (249 Paesi/territori), `countries.default_currency_id` nullable, documentazione fonte dati globale e migrazione Flyway V17 PostgreSQL/H2; introdotto TASK-043 su paginazione/filtro generico Master Data API/UI e backlog successivo rinumerato (Import CAP italiani -> TASK-044, CRUD UI Master Data -> TASK-045). |
+| 1.54 | 2026-05-06 | TASKS.md riallineato dopo TASK-041 con inserimento TASK-042 seed/import dati globali iniziali e TASK-043 import CAP italiani prima della UI Master Data Admin CRUD. |
 | 1.53 | 2026-05-06 | TASK-041 completato con UI Master Data Admin foundation/list read-only: route protetta `/master-data`, voce sidebar `Governance > Dati di base`, categorie Global/HR-business/Governance-security, tabella read-only con loading/error/empty/refresh, i18n `it`/`fr`/`en` completo e test/build frontend validati. |
 | 1.52 | 2026-05-05 | TASK-040 completato con foundation i18n runtime custom/minimale: lingua default `it`, dizionario typed, fallback automatico a italiano, `I18nService` con signal, `t(key)`, persistenza `localStorage`, `lang="it"`, testi principali estratti e selettore lingua minimale nella login card senza nuove dipendenze o modifiche auth/routing. |
 | 1.51 | 2026-05-05 | TASK-039 rifinito con sidebar collassabile/espandibile: toggle visibile, modalita compatta top-level, search e submenu nascosti quando collassata, placeholder futuri ancora non naviganti e test componente aggiornati. |

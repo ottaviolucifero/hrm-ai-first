@@ -84,6 +84,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-039 Frontend sidebar navigation tree foundation
 - TASK-040 Frontend i18n foundation
 - TASK-041 UI Master Data Admin foundation/list
+- TASK-042 Seed/import dati globali iniziali
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
 - Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
@@ -91,13 +92,14 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
+- TASK-043: Master Data API/UI pagination and generic filters
 - TASK-042: Seed/import dati globali iniziali
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Frontend login foundation, authenticated home shell foundation, sidebar navigation tree foundation, frontend i18n foundation, logo integration, design guidelines e Master Data Admin foundation/list completate
+Stato: Frontend login foundation, authenticated home shell foundation, sidebar navigation tree foundation, frontend i18n foundation, logo integration, design guidelines, Master Data Admin foundation/list e seed dati globali iniziali completati
 
 Completato:
 
@@ -144,6 +146,7 @@ Completato:
 - Frontend application logo integrated in the existing login UI using `assets/logos/hrm-logo.png`
 - Frontend design guidelines based on logo brand colors documented in `frontend/AGENTS.md`
 - Frontend Master Data Admin foundation/list available at protected route `/master-data` with sidebar entry, category/entity selection, read-only table rendering, manual refresh and loading/error/empty states across global, HR/business and governance/security master data endpoints
+- TASK-042 completed: global seed foundation with `countries.default_currency_id` nullable, ISO 3166-1 alpha-2 seed (249 Paesi/territori), source documentation and Flyway V17 vendor-specific migrations for PostgreSQL/H2 validated with backend tests.
 
 Nota:
 
@@ -166,13 +169,13 @@ Frontend governance is active: UI tasks must analyze and reuse existing Angular 
 Logo brand color governance is active: frontend UI tasks must use the documented deep indigo, navy, accent blue, violet-blue and soft highlight tint consistently when the task scope includes visual implementation, without opportunistic redesign.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
-Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and the backlog now inserts TASK-042 global seed/import and TASK-043 Italian ZIP code import before TASK-044 CRUD UI.
+Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 now introduces pagination and generic filters before proceeding to full CRUD UI.
 
 Da fare:
 
-- TASK-042 Seed/import dati globali iniziali
-- TASK-043 Import CAP italiani
-- TASK-044 UI Master Data Admin CRUD
+- TASK-043 Master Data API/UI pagination and generic filters
+- TASK-044 Import CAP italiani
+- TASK-045 UI Master Data Admin CRUD
 
 ---
 
@@ -226,15 +229,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-052
+- TASK-036 -> TASK-053
 
 ### Fase 2I - Platform Operations
 
-- TASK-053 -> TASK-054
+- TASK-054 -> TASK-055
 
 ### Fase 3 - Stabilization
 
-- TASK-055 -> TASK-056
+- TASK-056 -> TASK-057
 
 ---
 
@@ -250,7 +253,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 1.52 | 2026-05-06 | Backlog futuro riallineato dopo completamento e merge di TASK-041: inseriti TASK-042 seed/import dati globali iniziali e TASK-043 import CAP italiani prima della UI Master Data Admin CRUD, rinumerata a TASK-044; tutti i task successivi slittano di +2 fino a TASK-056 e il prossimo passo viene aggiornato a TASK-042. |
+| 1.52 | 2026-05-06 | TASK-042 completato (country default currency nullable, seed ISO 3166-1 alpha-2 con 249 Paesi/territori, migrazione Flyway V17 PostgreSQL/H2 e test backend validati); backlog futuro riallineato con nuovo TASK-043 su paginazione/filtro generico Master Data API/UI, Import CAP italiani rinumerato a TASK-044 e CRUD UI Master Data rinumerato a TASK-045. |
 | 1.51 | 2026-05-06 | TASK-041 completato con UI Master Data Admin foundation/list read-only su `/master-data`, integrazione sidebar `Governance > Dati di base`, categorie Global/HR-business/Governance-security, stati loading/error/empty, refresh manuale, i18n completo e build/test frontend validati; prossimo passo aggiornato a TASK-042 UI Master Data Admin CRUD. |
 | 1.50 | 2026-05-05 | TASK-040 completato con frontend i18n foundation runtime custom/minimale: lingua default italiana, dizionario typed, fallback a `it`, `I18nService`, persistenza `localStorage`, selector lingua login, `lang="it"` e testi principali estratti senza nuove dipendenze; prossimo passo aggiornato a TASK-041 UI Master Data Admin foundation/list. |
 | 1.49 | 2026-05-05 | TASK-039 rifinito con sidebar collassabile/espandibile, modalita compatta top-level, search/submenu nascosti da collassata e test componente aggiornati; prossimo passo resta TASK-040 Frontend i18n foundation. |

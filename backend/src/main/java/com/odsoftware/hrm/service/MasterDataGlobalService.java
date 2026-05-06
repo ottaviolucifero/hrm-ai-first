@@ -413,7 +413,7 @@ public class MasterDataGlobalService {
 		country.setName(clean(request.name()));
 		country.setIsoCode(isoCode);
 		country.setPhoneCode(clean(request.phoneCode()));
-		country.setDefaultCurrency(findCurrency(request.defaultCurrencyId()));
+		country.setDefaultCurrency(request.defaultCurrencyId() == null ? null : findCurrency(request.defaultCurrencyId()));
 		country.setActive(activeOrDefault(request.active()));
 	}
 
@@ -641,7 +641,7 @@ public class MasterDataGlobalService {
 	}
 
 	private GlobalMasterReferenceResponse toCurrencyReference(Currency currency) {
-		return toReference(currency.getId(), currency.getCode(), currency.getName());
+		return currency == null ? null : toReference(currency.getId(), currency.getCode(), currency.getName());
 	}
 
 	private GlobalMasterReferenceResponse toCountryReference(Country country) {

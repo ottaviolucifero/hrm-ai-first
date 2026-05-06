@@ -238,7 +238,7 @@ class HrmBackendApplicationTests {
 	@Test
 	void flywayMigrationSeedsGlobalMasterTables() {
 		assertThat(currencyRepository.count()).isEqualTo(2);
-		assertThat(countryRepository.count()).isEqualTo(3);
+		assertThat(countryRepository.count()).isEqualTo(249);
 		assertThat(genderRepository.count()).isEqualTo(3);
 		assertThat(maritalStatusRepository.count()).isEqualTo(4);
 		assertThat(approvalStatusRepository.count()).isEqualTo(4);

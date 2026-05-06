@@ -9,7 +9,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -30,9 +29,8 @@ public class Country extends BaseMasterEntity {
 	@Column(name = "phone_code", length = 10)
 	private String phoneCode;
 
-	@NotNull
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "default_currency_id", nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "default_currency_id")
 	private Currency defaultCurrency;
 
 	public String getName() {
