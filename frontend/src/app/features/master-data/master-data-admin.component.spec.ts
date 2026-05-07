@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { Observable, of, throwError } from 'rxjs';
 
+import { AuthService } from '../../core/auth/auth.service';
 import { MasterDataAdminComponent } from './master-data-admin.component';
-import { MasterDataPage, MasterDataQuery, MasterDataRow } from './master-data.models';
+import { MasterDataPage, MasterDataRow } from './master-data.models';
 import { MasterDataService } from './master-data.service';
 
 describe('MasterDataAdminComponent', () => {
@@ -15,7 +16,7 @@ describe('MasterDataAdminComponent', () => {
   it('loads the default global resource and renders read-only rows', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi.fn(() =>
         of(
           createPage([
@@ -29,7 +30,7 @@ describe('MasterDataAdminComponent', () => {
           ])
         )
       )
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
@@ -46,7 +47,7 @@ describe('MasterDataAdminComponent', () => {
   it('reloads the first resource of the selected category', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi
         .fn()
         .mockReturnValueOnce(of(createPage([])))
@@ -64,7 +65,7 @@ describe('MasterDataAdminComponent', () => {
             ])
           )
         )
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
@@ -85,9 +86,9 @@ describe('MasterDataAdminComponent', () => {
     vi.useFakeTimers();
     window.localStorage.setItem('hrflow.language', 'it');
 
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi.fn(() => of(createPage([])))
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
@@ -111,7 +112,7 @@ describe('MasterDataAdminComponent', () => {
   it('changes page with the pagination controls', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi
         .fn()
         .mockReturnValueOnce(
@@ -146,7 +147,7 @@ describe('MasterDataAdminComponent', () => {
             )
           )
         )
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
@@ -165,9 +166,9 @@ describe('MasterDataAdminComponent', () => {
   it('shows the generic error state when the resource load fails', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi.fn(() => throwError(() => new Error('request failed')))
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
@@ -178,9 +179,9 @@ describe('MasterDataAdminComponent', () => {
   it('keeps read-only resources without row actions', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi.fn(() => of(createPage([{ id: 'country-1', isoCode: 'IT', name: 'Italia', active: true }])))
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
@@ -195,7 +196,7 @@ describe('MasterDataAdminComponent', () => {
   it('receives row action events for CRUD candidate resources', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi
         .fn()
         .mockReturnValueOnce(of(createPage([])))
@@ -213,7 +214,7 @@ describe('MasterDataAdminComponent', () => {
             ])
           )
         )
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     const component = fixture.componentInstance as MasterDataAdminComponent & {
@@ -245,12 +246,12 @@ describe('MasterDataAdminComponent', () => {
   it('opens create form from toolbar on CRUD-enabled resource', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi
         .fn()
         .mockReturnValueOnce(of(createPage([])))
         .mockReturnValueOnce(of(createPage([])))
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
@@ -275,18 +276,197 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Annulla');
   });
 
+  it('creates a row with authenticated tenant and reloads the list', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        ),
+      createRow: vi.fn(() => of({ id: 'department-1' }))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleFormSave: (event: { mode: 'create'; value: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.handleFormSave({
+      mode: 'create',
+      value: { code: 'HR', name: 'Human Resources', active: true }
+    });
+    fixture.detectChanges();
+
+    expect(masterDataService.createRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      {
+        tenantId: 'tenant-1',
+        code: 'HR',
+        name: 'Human Resources',
+        active: true
+      }
+    );
+    expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      { page: 0, size: 25 }
+    );
+    expect(fixture.nativeElement.textContent).toContain('Elemento creato con successo.');
+  });
+
+  it('keeps the form open and shows a readable error when save fails', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(of(createPage([]))),
+      createRow: vi.fn(() =>
+        throwError(() => ({
+          status: 409,
+          error: {
+            message: 'Department code already exists for tenant: HR'
+          }
+        }))
+      )
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      openCreateForm: () => void;
+      handleFormSave: (event: { mode: 'create'; value: Record<string, unknown> }) => void;
+      isFormOpen: () => boolean;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.openCreateForm();
+    fixture.detectChanges();
+
+    component.handleFormSave({
+      mode: 'create',
+      value: { code: 'HR', name: 'Human Resources', active: true }
+    });
+    fixture.detectChanges();
+
+    expect(component.isFormOpen()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Department code already exists for tenant: HR');
+  });
+
+  it('updates an existing row and preserves the row tenant id', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-row',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        )
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-row',
+                code: 'HR',
+                name: 'People Operations',
+                active: true
+              }
+            ])
+          )
+        ),
+      updateRow: vi.fn(() => of({ id: 'department-1' }))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+      handleFormSave: (event: { mode: 'edit'; value: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.handleRowAction({
+      action: { id: 'edit' },
+      row: {
+        id: 'department-1',
+        tenantId: 'tenant-row',
+        code: 'HR',
+        name: 'Human Resources',
+        active: true
+      }
+    });
+    fixture.detectChanges();
+
+    component.handleFormSave({
+      mode: 'edit',
+      value: { code: 'HR', name: 'People Operations', active: true }
+    });
+    fixture.detectChanges();
+
+    expect(masterDataService.updateRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      'department-1',
+      {
+        tenantId: 'tenant-row',
+        code: 'HR',
+        name: 'People Operations',
+        active: true
+      }
+    );
+  });
+
   it('releases the active subscription on destroy', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     let unsubscribed = false;
-    const masterDataService = {
+    const masterDataService = createMasterDataService({
       fetchRows: vi.fn(
         () =>
           new Observable<MasterDataPage<MasterDataRow>>(() => () => {
             unsubscribed = true;
           })
       )
-    };
+    });
 
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
@@ -297,13 +477,32 @@ describe('MasterDataAdminComponent', () => {
   });
 });
 
-async function createFixture(masterDataService: Pick<MasterDataService, 'fetchRows'>) {
+async function createFixture(masterDataService: Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow'>) {
   await TestBed.configureTestingModule({
     imports: [MasterDataAdminComponent],
-    providers: [{ provide: MasterDataService, useValue: masterDataService }]
+    providers: [
+      { provide: MasterDataService, useValue: masterDataService },
+      {
+        provide: AuthService,
+        useValue: {
+          loadAuthenticatedUser: () => of({ id: 'user-1', tenantId: 'tenant-1', email: 'qa@example.com', userType: 'TENANT_ADMIN' })
+        }
+      }
+    ]
   }).compileComponents();
 
   return TestBed.createComponent(MasterDataAdminComponent);
+}
+
+function createMasterDataService(
+  overrides: Partial<Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow'>>
+): Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow'> {
+  return {
+    fetchRows: vi.fn(() => of(createPage([]))),
+    createRow: vi.fn(),
+    updateRow: vi.fn(),
+    ...overrides
+  };
 }
 
 function createPage(

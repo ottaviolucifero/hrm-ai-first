@@ -2,7 +2,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { MasterDataPage, MasterDataQuery, MasterDataResource, MasterDataRow } from './master-data.models';
+import {
+  MasterDataMutationRequest,
+  MasterDataPage,
+  MasterDataQuery,
+  MasterDataResource,
+  MasterDataRow
+} from './master-data.models';
 
 @Injectable({ providedIn: 'root' })
 export class MasterDataService {
@@ -18,5 +24,13 @@ export class MasterDataService {
     }
 
     return this.http.get<MasterDataPage<MasterDataRow>>(resource.endpoint, { params });
+  }
+
+  createRow(resource: MasterDataResource, payload: MasterDataMutationRequest): Observable<MasterDataRow> {
+    return this.http.post<MasterDataRow>(resource.endpoint, payload);
+  }
+
+  updateRow(resource: MasterDataResource, id: string, payload: MasterDataMutationRequest): Observable<MasterDataRow> {
+    return this.http.put<MasterDataRow>(`${resource.endpoint}/${id}`, payload);
   }
 }

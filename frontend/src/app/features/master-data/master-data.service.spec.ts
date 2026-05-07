@@ -57,4 +57,61 @@ describe('MasterDataService', () => {
       last: true
     });
   });
+
+  it('creates a row with the expected payload', () => {
+    masterDataService.createRow(
+      {
+        id: 'departments',
+        titleKey: 'masterData.entities.departments',
+        endpoint: '/api/master-data/hr-business/departments',
+        columns: []
+      },
+      {
+        tenantId: 'tenant-1',
+        code: 'HR',
+        name: 'Human Resources',
+        active: true
+      }
+    ).subscribe();
+
+    const request = httpTestingController.expectOne('/api/master-data/hr-business/departments');
+
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      tenantId: 'tenant-1',
+      code: 'HR',
+      name: 'Human Resources',
+      active: true
+    });
+    request.flush({ id: 'department-1' });
+  });
+
+  it('updates a row with the expected payload', () => {
+    masterDataService.updateRow(
+      {
+        id: 'departments',
+        titleKey: 'masterData.entities.departments',
+        endpoint: '/api/master-data/hr-business/departments',
+        columns: []
+      },
+      'department-1',
+      {
+        tenantId: 'tenant-1',
+        code: 'HR',
+        name: 'Human Resources',
+        active: true
+      }
+    ).subscribe();
+
+    const request = httpTestingController.expectOne('/api/master-data/hr-business/departments/department-1');
+
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({
+      tenantId: 'tenant-1',
+      code: 'HR',
+      name: 'Human Resources',
+      active: true
+    });
+    request.flush({ id: 'department-1' });
+  });
 });

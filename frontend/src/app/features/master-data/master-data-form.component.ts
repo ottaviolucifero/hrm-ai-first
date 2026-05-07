@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { AlertMessageComponent } from '../../shared/feedback/alert-message.component';
 import { MasterDataFormField, MasterDataFormMode, MasterDataFormFieldType, MasterDataRow } from './master-data.models';
 
 export interface MasterDataFormSubmitEvent {
@@ -12,7 +13,7 @@ export interface MasterDataFormSubmitEvent {
 
 @Component({
   selector: 'app-master-data-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, AlertMessageComponent],
   templateUrl: './master-data-form.component.html',
   styleUrl: './master-data-form.component.scss'
 })
@@ -23,6 +24,8 @@ export class MasterDataFormComponent implements OnChanges, OnInit {
   @Input({ required: true }) resourceTitleKey: I18nKey = 'masterData.title';
   @Input() fields: readonly MasterDataFormField[] = [];
   @Input() value: MasterDataRow | null = null;
+  @Input() submitting = false;
+  @Input() errorMessage = '';
 
   @Output() save = new EventEmitter<MasterDataFormSubmitEvent>();
   @Output() cancel = new EventEmitter<void>();

@@ -1,5 +1,7 @@
 <section class="kt-container-fixed py-4" aria-labelledby="master-data-title">
   <div class="master-data-layout">
+    <app-alert-message type="success" [message]="feedbackMessage()" />
+
     <div class="master-data-toolbar">
       <div>
         <h1 id="master-data-title" class="text-xl font-semibold text-mono">{{ i18n.t('masterData.title') }}</h1>
@@ -65,6 +67,8 @@
             [resourceTitleKey]="selectedResource().titleKey"
             [fields]="formFields()"
             [value]="formValue()"
+            [submitting]="saving()"
+            [errorMessage]="formErrorMessage()"
             (save)="handleFormSave($event)"
             (cancel)="handleFormCancel()"
             (close)="closeForm()" />

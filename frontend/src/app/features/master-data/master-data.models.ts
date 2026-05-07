@@ -62,6 +62,13 @@ export interface MasterDataPage<T> {
   readonly last: boolean;
 }
 
+export interface MasterDataMutationRequest {
+  readonly tenantId: string;
+  readonly code: string;
+  readonly name: string;
+  readonly active?: boolean;
+}
+
 export const EMPTY_MASTER_DATA_PAGE: MasterDataPage<MasterDataRow> = {
   content: [],
   page: 0,

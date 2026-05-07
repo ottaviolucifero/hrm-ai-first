@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.63
+Versione: 1.64
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -96,7 +96,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-046.3: Master Data CRUD API integration foundation
+- TASK-046.4: Master Data CRUD delete, confirmation and error handling foundation
 
 ---
 
@@ -154,6 +154,7 @@ Completato:
 - TASK-045 completed: shared read-only Master Data table component integrated in `/master-data`, with configurable columns, nested fields, loading/error/empty states and pagination events validated by frontend build/test.
 - TASK-046.1 completed: configurable row actions foundation added to `DataTableComponent`, with entity-level enablement and container event wiring in `/master-data`, while non-candidate entities remain read-only.
 - TASK-046.2 completed: Master Data CRUD form foundation added with metadata-driven create/edit/view form, required/read-only handling, i18n keys and frontend save hooks without backend mutations.
+- TASK-046.3 completed: real frontend create/update integration added on existing HR/business CRUD APIs for `Department`, `JobTitle`, `ContractType` and `WorkMode`, with authenticated tenant-aware payloads, modal feedback, post-save refresh and frontend build/test validation.
 
 Nota:
 
@@ -180,7 +181,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-046 Master Data CRUD standard foundation (TASK-046.3 next)
+- TASK-046 Master Data CRUD standard foundation (TASK-046.4 next)
 - TASK-047 Platform Super Admin and tenant-aware permissions model
 - TASK-048 User, Role and Permission domain review
 - TASK-049 Permission model foundation by scope/resource/action
@@ -295,6 +296,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.64 | 2026-05-07 | TASK-046.3 completato con integrazione frontend create/update verso le API CRUD Master Data HR/business esistenti per entita semplici candidate, refresh lista post-save, feedback modal e prossimo step aggiornato a TASK-046.4. |
 | 1.63 | 2026-05-07 | Ottimizzata la roadmap del blocco TASK-047..TASK-052: chiarita sequenza strategia -> review -> foundation permessi -> foundation utenti/ruoli -> UX frontend -> enforcement backend, con separazione esplicita frontend UX vs backend security. |
 | 1.62 | 2026-05-07 | Aggiornato TASK-047 come "Platform Super Admin and tenant-aware permissions model" nel blocco post-TASK-046, con focus su modello permessi tenant-aware, ruoli seed/custom e impatto frontend/backend security. |
 | 1.61 | 2026-05-07 | Backlog riorganizzato dopo TASK-046: subtask 046 riallineati (`046.1`-`046.5`), introdotto blocco authorization/Super Admin con TASK-047..TASK-052 e slittamento coerente dei task successivi/range roadmap fino a TASK-064. |

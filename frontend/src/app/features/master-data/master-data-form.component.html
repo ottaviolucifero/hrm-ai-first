@@ -3,12 +3,14 @@
     <h2 id="master-data-form-title" class="kt-card-title text-lg">
       {{ i18n.t(titleKey()) }} - {{ i18n.t(resourceTitleKey) }}
     </h2>
-    <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" (click)="close.emit()">
+    <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="submitting" (click)="close.emit()">
       {{ i18n.t('masterData.form.close') }}
     </button>
   </div>
 
   <form class="kt-card-content master-data-form-body" [formGroup]="form" (ngSubmit)="submit()">
+    <app-alert-message type="danger" [message]="errorMessage" />
+
     @for (field of normalizedFields; track field.key) {
       <label class="master-data-form-field">
         <span class="master-data-form-label">
@@ -32,14 +34,14 @@
 
     <div class="master-data-form-actions">
       @if (mode !== 'view') {
-        <button class="kt-btn kt-btn-primary kt-btn-sm" type="submit">
+        <button class="kt-btn kt-btn-primary kt-btn-sm" type="submit" [disabled]="submitting">
           {{ i18n.t('masterData.form.save') }}
         </button>
       }
-      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" (click)="resetAndCancel()">
+      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="submitting" (click)="resetAndCancel()">
         {{ i18n.t('masterData.form.cancel') }}
       </button>
-      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" (click)="close.emit()">
+      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="submitting" (click)="close.emit()">
         {{ i18n.t('masterData.form.close') }}
       </button>
     </div>
