@@ -77,3 +77,35 @@ Nota operativa:
 - Esito aggiornato dopo fix: PASS
 - Miglioria UX post-QA (2026-05-07): apertura form Master Data aggiornata da sezione inline a modal/popup con overlay sopra la pagina, mantenendo invariata la logica funzionale (`create/edit/view`, filtri/paginazione/tabella)
 - Verifica post-miglioria UX: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK (11 file test passed, 41 test passed)
+
+### TASK-046.3 - Master Data CRUD API integration foundation
+
+- Data: 2026-05-07
+- Branch: `task-046-2-master-data-crud-form-foundation`
+- Task: TASK-046.3 - Master Data CRUD API integration foundation
+- Agente/Modello usato: GPT-5 Codex (sviluppo e verifica tecnica)
+- Area verificata: integrazione frontend reale `create` / `update` su `/master-data` per entita HR/business semplici (`Department`, `JobTitle`, `ContractType`, `WorkMode`), feedback modal, refresh lista e i18n `it/fr/en`
+- Comandi eseguiti: `cd frontend && npm.cmd run build`, `cd frontend && npm.cmd test`
+- Esito: PASS
+- Regressioni trovate: nessuna regressione automatica rilevata; filtri, paginazione, tabella shared e view read-only preservati
+- Fix richiesti: nessuno in questo passaggio
+- QA manuale browser eseguito/non eseguito: non eseguito manualmente in questo passaggio
+- Stato finale: build frontend OK; test frontend OK (11 file test passed, 46 test passed); nessuna modifica backend eseguita
+
+### TASK-046.3 - Second QA pass / regression review
+
+- Data: 2026-05-07
+- Branch: `task-046-3-master-data-crud-api-integration`
+- Task: TASK-046.3 - Master Data CRUD API integration foundation
+- Tipo verifica: seconda verifica indipendente regressiva
+- Agente/Modello usato: GPT-5 Codex (QA pass 2)
+- Area verificata: integrazione create/update reale su `/master-data`, entita candidate vs non candidate, assenza mutazioni delete, riuso form metadata-driven, i18n `it/fr/en`, coerenza `TASKS.md`/`ROADMAP.md`, assenza modifiche backend
+- Comandi eseguiti: `git status --short --branch`, `git diff --stat`, `npm.cmd run build`, `npm.cmd test`
+- Esito: PASS con osservazioni
+- Regressioni trovate: nessuna regressione bloccante rilevata nei test automatici; create/update restano limitati alle entita candidate (`Department`, `JobTitle`, `ContractType`, `WorkMode`); entita non candidate restano senza azioni CRUD
+- Osservazioni: la action `delete` e visibile sulle entita candidate (foundation introdotta in TASK-046.1) ma non e ancora integrata a mutazioni backend in TASK-046.3; allineato con roadmap che delega delete/disattivazione a TASK-046.4
+- Differenze rispetto al primo report TASK-046.3: il primo report segnava `PASS`; questo secondo pass conferma il `PASS` e aggiunge esplicitazione del comportamento `delete` demandato a TASK-046.4
+- Fix richiesti: nessun fix bloccante richiesto in questo pass
+- Backend test eseguiti/non eseguiti: non eseguiti, perche non risultano file backend modificati nel working tree
+- QA manuale browser eseguita/non eseguita: non eseguita in questo pass
+- Stato finale: build frontend OK; test frontend OK (11 file test passed, 46 test passed); scope TASK-046.3 confermato
