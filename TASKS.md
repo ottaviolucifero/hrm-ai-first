@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.69
+Versione: 1.70
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -2503,7 +2503,55 @@ Acceptance criteria complessivi TASK-046:
 - nessun mock usato come sostituto dei contratti API backend;
 - nessuna modifica backend salvo bug bloccante documentato.
 
-### TASK-047 - Platform Super Admin and tenant-aware permissions model
+### TASK-047 - Master Data physical delete for non-referenced records
+
+Stato: TODO
+
+Tipo: Backend + Frontend CRUD safety foundation
+
+Obiettivo:
+
+- Implementare cancellazione fisica reale dei Master Data solo per record non referenziati, mantenendo separata la disattivazione logica `active=false`.
+
+Decisione funzionale:
+
+- `Disattiva` resta soft-delete/logical delete tramite `active=false`.
+- `Elimina` e una cancellazione fisica reale.
+- La cancellazione fisica non sostituisce la disattivazione logica.
+- La cancellazione fisica non deve essere usata per mascherare la presenza di record disattivati.
+- I record referenziati da altre tabelle/processi non devono essere eliminabili.
+
+Scope:
+
+- backend endpoint/action separata per delete fisico;
+- controlli FK preventivi dove coerenti oppure gestione controllata di `DataIntegrityViolationException`;
+- risposta coerente per record referenziati, preferibilmente `409 Conflict`;
+- UI con azione separata `Elimina`;
+- conferma forte prima della cancellazione fisica;
+- messaggio utente chiaro: `Il record non puo essere eliminato perche e collegato ad altri dati`;
+- messaggi i18n `it` / `fr` / `en`;
+- test backend e frontend;
+- QA manuale su `/master-data`.
+
+Fuori scope:
+
+- sostituire o rimuovere la disattivazione logica;
+- usare `active=false` come simulazione della cancellazione fisica;
+- nascondere record via filtro frontend per simulare delete;
+- introdurre RBAC runtime;
+- redesign UI;
+- cancellazione fisica di record referenziati.
+
+Acceptance criteria:
+
+- `Disattiva` e `Elimina` sono azioni distinte;
+- delete fisico rimuove realmente solo record non referenziati;
+- record referenziati producono errore leggibile e non vengono rimossi;
+- backend non restituisce falso successo quando il record resta in database;
+- UI aggiorna la lista dopo successo reale;
+- test backend/frontend coprono successo e blocco su record referenziati dove riproducibile.
+
+### TASK-048 - Platform Super Admin and tenant-aware permissions model
 
 Stato: TODO
 
@@ -2530,7 +2578,7 @@ Fuori scope:
 - implementazione CRUD backend reale;
 - UI completa di amministrazione utenti/ruoli.
 
-### TASK-048 - User, Role and Permission domain review
+### TASK-049 - User, Role and Permission domain review
 
 Stato: TODO
 
@@ -2538,7 +2586,7 @@ Tipo: Analisi dominio backend/API
 
 Obiettivo:
 
-- Analizzare il dominio gia presente per utenti, ruoli e permessi e identificare i gap rispetto al modello definito in TASK-047.
+- Analizzare il dominio gia presente per utenti, ruoli e permessi e identificare i gap rispetto al modello definito in TASK-048.
 
 Scope:
 
@@ -2553,7 +2601,7 @@ Fuori scope:
 - implementazione UI completa;
 - enforcement permessi runtime.
 
-### TASK-049 - Permission model foundation by scope/resource/action
+### TASK-050 - Permission model foundation by scope/resource/action
 
 Stato: TODO
 
@@ -2583,7 +2631,7 @@ Note:
 - il backend usa il modello per enforcement reale delle API;
 - modello iniziale per modulo/risorsa, senza granularita immediata per singola entita Master Data (es. `TENANT.MASTER_DATA.WORK_MODE.CREATE`).
 
-### TASK-050 - Tenant user and role administration foundation
+### TASK-051 - Tenant user and role administration foundation
 
 Stato: TODO
 
@@ -2603,9 +2651,9 @@ Scope:
 Fuori scope:
 
 - policy autorizzative granulari per singola entita;
-- enforcement backend completo (demandato a TASK-052).
+- enforcement backend completo (demandato a TASK-053).
 
-### TASK-051 - Apply permissions to frontend navigation and actions
+### TASK-052 - Apply permissions to frontend navigation and actions
 
 Stato: TODO
 
@@ -2623,7 +2671,7 @@ Scope:
 - usare permessi disponibili dall'utente autenticato;
 - mantenere chiaro che il frontend e solo UX, non sicurezza reale.
 
-### TASK-052 - Apply permissions to backend API authorization
+### TASK-053 - Apply permissions to backend API authorization
 
 Stato: TODO
 
@@ -2644,11 +2692,11 @@ Nota di sicurezza:
 
 - il backend resta il punto di enforcement reale; il frontend non sostituisce mai i controlli API.
 
-### TASK-053 - Implementare UI Employee management enterprise
+### TASK-054 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-054 - Implementare Security Admin UI
+### TASK-055 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -2660,47 +2708,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-055 - Implementare UI Device governance
+### TASK-056 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-056 - Implementare UI PayrollDocument
+### TASK-057 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-057 - Implementare UI LeaveRequest
+### TASK-058 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-058 - Implementare UI HolidayCalendar
+### TASK-059 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-059 - Implementare Audit UI / compliance explorer
+### TASK-060 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-060 - Implementare UI disciplinary governance
+### TASK-061 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-061 - Implementare Platform Operator / Super Admin governance
+### TASK-062 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-062 - Implementare Cross-tenant admin UI
+### TASK-063 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-063 - Configurare logging, monitoring e observability enterprise
+### TASK-064 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-064 - Test integrato MVP enterprise completo
+### TASK-065 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -2710,6 +2758,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.70 | 2026-05-07 | Introdotto TASK-047 "Master Data physical delete for non-referenced records" come task dedicato a cancellazione fisica sicura distinta dalla disattivazione logica `active=false`; backlog Super Admin/RBAC slittato a TASK-048..TASK-053 e task successivi rinumerati fino a TASK-065. |
 | 1.69 | 2026-05-07 | TASK-046.4 riallineato alla semantica architetturale esistente: `DELETE` Master Data resta soft-delete/disattivazione `active=false`, UX rinominata da `Elimina` a `Disattiva`, conferma/feedback/error handling i18n aggiornati e follow-up filtro attivi/inattivi + riattiva demandati a task successivi. |
 | 1.68 | 2026-05-07 | TASK-046.4 completato con delete/disattivazione frontend su `/master-data`, conferma esplicita, loading/error handling CRUD, feedback utente e build/test frontend validati; prossimo step TASK-046.5. |
 | 1.67 | 2026-05-07 | TASK-046.3 completato con integrazione CRUD API reale frontend su entita candidate semplici (`Department`, `JobTitle`, `ContractType`, `WorkMode`): create/update via API backend esistenti, feedback successo/errore, refresh lista post-save e test/build frontend validati senza modifiche backend. |

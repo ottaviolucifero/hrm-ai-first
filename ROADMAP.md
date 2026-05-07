@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.66
+Versione: 1.67
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -156,6 +156,7 @@ Completato:
 - TASK-046.2 completed: Master Data CRUD form foundation added with metadata-driven create/edit/view form, required/read-only handling, i18n keys and frontend save hooks without backend mutations.
 - TASK-046.3 completed: real frontend create/update integration added on existing HR/business CRUD APIs for `Department`, `JobTitle`, `ContractType` and `WorkMode`, with authenticated tenant-aware payloads, modal feedback, post-save refresh and frontend build/test validation.
 - TASK-046.4 completed: Master Data deactivation flow on `/master-data` aligned with existing soft-delete semantics (`active=false`), with explicit confirmation modal, coherent list refresh and i18n `it/fr/en`.
+- Backlog governance updated: Master Data physical delete is separated from logical deactivation and planned as TASK-047.
 
 Nota:
 
@@ -183,21 +184,22 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 Da fare:
 
 - TASK-046 Master Data CRUD standard foundation (TASK-046.5 next)
-- TASK-047 Platform Super Admin and tenant-aware permissions model
-- TASK-048 User, Role and Permission domain review
-- TASK-049 Permission model foundation by scope/resource/action
-- TASK-050 Tenant user and role administration foundation
-- TASK-051 Apply permissions to frontend navigation and actions
-- TASK-052 Apply permissions to backend API authorization
+- TASK-047 Master Data physical delete for non-referenced records
+- TASK-048 Platform Super Admin and tenant-aware permissions model
+- TASK-049 User, Role and Permission domain review
+- TASK-050 Permission model foundation by scope/resource/action
+- TASK-051 Tenant user and role administration foundation
+- TASK-052 Apply permissions to frontend navigation and actions
+- TASK-053 Apply permissions to backend API authorization
 
-Sequenza funzionale prevista per il blocco TASK-047..TASK-052:
+Sequenza funzionale prevista per il blocco TASK-048..TASK-053:
 
-- TASK-047: strategia e modello Super Admin / tenant-aware permissions;
-- TASK-048: review dominio esistente e gap analysis;
-- TASK-049: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
-- TASK-050: foundation utenti/ruoli tenant;
-- TASK-051: applicazione permessi lato frontend per UX/visibilita;
-- TASK-052: enforcement reale lato backend sulle API.
+- TASK-048: strategia e modello Super Admin / tenant-aware permissions;
+- TASK-049: review dominio esistente e gap analysis;
+- TASK-050: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
+- TASK-051: foundation utenti/ruoli tenant;
+- TASK-052: applicazione permessi lato frontend per UX/visibilita;
+- TASK-053: enforcement reale lato backend sulle API.
 
 Nota roadmap TASK-045:
 
@@ -219,7 +221,8 @@ Nota roadmap TASK-046:
 - TASK-046.4 completa la disattivazione logica con conferma ed error handling coerente.
 - Filtro `Attivi` / `Inattivi` e azione `Riattiva` restano follow-up dedicati.
 - TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
-- Dopo TASK-046 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-047..TASK-052) con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data.
+- TASK-047 introduce la cancellazione fisica sicura dei Master Data come azione distinta da `Disattiva`, consentita solo per record non referenziati.
+- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-048..TASK-053) con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data.
 - Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
 
 ---
@@ -274,15 +277,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-060
+- TASK-036 -> TASK-061
 
 ### Fase 2I - Platform Operations
 
-- TASK-061 -> TASK-062
+- TASK-062 -> TASK-063
 
 ### Fase 3 - Stabilization
 
-- TASK-063 -> TASK-064
+- TASK-064 -> TASK-065
 
 ---
 
@@ -298,6 +301,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.67 | 2026-05-07 | Introdotto TASK-047 "Master Data physical delete for non-referenced records" come follow-up distinto dalla disattivazione logica: `Disattiva` resta `active=false`, `Elimina` sara delete fisico solo per record non referenziati; blocco Super Admin/RBAC slittato a TASK-048..TASK-053 e range futuri aggiornati fino a TASK-065. |
 | 1.66 | 2026-05-07 | TASK-046.4 riallineato alla disattivazione logica `active=false`: UX aggiornata da `Elimina` a `Disattiva`, conferma/feedback/error handling i18n coerenti, refresh lista mantenuto e follow-up filtro attivi/inattivi + riattiva demandati a task successivi. |
 | 1.65 | 2026-05-07 | TASK-046.4 completato con delete/disattivazione frontend su `/master-data`, conferma esplicita, feedback successo/errore e refresh coerente della lista; prossimo step aggiornato a TASK-046.5. |
 | 1.64 | 2026-05-07 | TASK-046.3 completato con integrazione frontend create/update verso le API CRUD Master Data HR/business esistenti per entita semplici candidate, refresh lista post-save, feedback modal e prossimo step aggiornato a TASK-046.4. |

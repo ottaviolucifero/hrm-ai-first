@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.20
-Ultimo aggiornamento: 2026-05-04
+Versione: 1.21
+Ultimo aggiornamento: 2026-05-07
 Stato: Attivo
 
 ---
@@ -1049,10 +1049,49 @@ Il database deve imporre un vincolo globale case-insensitive su `user_accounts.e
 
 ---
 
+### DEC-028 - Master Data logical deactivation and physical delete policy
+
+Data: 2026-05-07
+Stato: Approvata
+
+Decisione:
+
+I Master Data supportano due azioni distinte:
+
+- `Disattiva`: soft-delete tramite `active=false`, mantiene il record nel database e serve per record storici, gia usati o da non rendere piu selezionabili.
+- `Elimina`: cancellazione fisica reale, consentita solo per record non referenziati da altre tabelle o processi.
+
+La cancellazione fisica non sostituisce la disattivazione logica e non deve essere usata per mascherare record disattivati.
+
+Quando un record Master Data e referenziato, il backend deve bloccare la cancellazione fisica con errore coerente, preferibilmente `409 Conflict` o gestione equivalente. La UI deve mostrare un messaggio chiaro, ad esempio: `Il record non puo essere eliminato perche e collegato ad altri dati`.
+
+Motivazione:
+
+- distinguere chiaramente lifecycle operativo e rimozione definitiva;
+- preservare integrita storica e referenziale;
+- consentire pulizia sicura di record creati per errore o mai usati;
+- evitare feedback UI falsi su cancellazioni non avvenute;
+- mantenere compatibilita con la soft-delete gia introdotta nelle API Master Data.
+
+Alternative escluse:
+
+- sostituire la disattivazione logica con delete fisico;
+- usare `active=false` come simulazione della cancellazione fisica;
+- nascondere record lato frontend per far sembrare che siano stati eliminati;
+- permettere delete fisico di record referenziati;
+- ignorare errori di integrita database restituendo successo.
+
+Impatto:
+
+Il backlog introduce TASK-047 come task dedicato alla cancellazione fisica sicura dei Master Data non referenziati. Le future UI Master Data devono trattare `Disattiva` ed `Elimina` come azioni separate, con conferme e messaggi distinti. Le implementazioni backend devono preferire controlli espliciti o gestione controllata dei vincoli FK, restituendo errori leggibili quando il record non puo essere eliminato.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.21 | 2026-05-07 | Aggiunta DEC-028 per definire la doppia policy Master Data: `Disattiva` come soft-delete `active=false` e `Elimina` come delete fisico solo per record non referenziati, con blocco coerente dei record collegati e messaggi UI distinti. |
 | 1.20 | 2026-05-04 | Aggiunta DEC-027 per definire backend login/JWT foundation: email globale case-insensitive come identificativo login, JWT stateless con Spring Security OAuth2 Resource Server / Jose e claim principali `sub`, `userId`, `tenantId`, `userType`. |
 | 1.19 | 2026-05-04 | Aggiunta DEC-026 per introdurre backend login/JWT foundation e frontend login foundation prima delle UI amministrative, spostando Master Data Admin dopo login foundation e mantenendo fuori scope OTP/MFA, RBAC runtime, tenant switching e impersonation. |
 | 1.18 | 2026-05-04 | Aggiunta DEC-025 per separare governance globale e area-specific con `backend/AGENTS.md` e `frontend/AGENTS.md`, escludere `/skills` e `SKILLS.md`, e chiarire che `docs/analysis` e materiale storico/supportivo non prevalente su governance corrente o codice implementato. |
