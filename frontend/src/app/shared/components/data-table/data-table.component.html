@@ -1,0 +1,63 @@
+@if (loading) {
+  <div class="master-data-state">{{ i18n.t('masterData.loading') }}</div>
+} @else if (hasError) {
+  <div class="master-data-state master-data-state-error">{{ i18n.t('masterData.error') }}</div>
+} @else if (rows.length === 0) {
+  <div class="master-data-state">{{ i18n.t('masterData.empty') }}</div>
+} @else {
+  <div class="data-table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          @for (column of visibleColumns(); track trackColumn($index, column)) {
+            <th
+              scope="col"
+              [ngStyle]="columnStyle(column)"
+              [class.data-table-cell-center]="columnAlignment(column) === 'center'"
+              [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+            >
+              {{ i18n.t(column.labelKey) }}
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows; track trackRow($index, row)) {
+          <tr>
+            @for (column of visibleColumns(); track trackColumn($index, column)) {
+              <td
+                [ngStyle]="columnStyle(column)"
+                [class.data-table-cell-center]="columnAlignment(column) === 'center'"
+                [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+              >
+                {{ displayValue(row, column) }}
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (pageData; as pagination) {
+    <div class="master-data-pagination">
+      <span class="master-data-pagination-summary">{{ paginationSummary(pagination) }}</span>
+      <div class="master-data-pagination-actions">
+        <button
+          class="kt-btn kt-btn-outline kt-btn-sm"
+          type="button"
+          [disabled]="loading || pagination.first"
+          (click)="previousPage.emit()">
+          {{ i18n.t('masterData.pagination.previous') }}
+        </button>
+        <button
+          class="kt-btn kt-btn-outline kt-btn-sm"
+          type="button"
+          [disabled]="loading || pagination.last"
+          (click)="nextPage.emit()">
+          {{ i18n.t('masterData.pagination.next') }}
+        </button>
+      </div>
+    </div>
+  }
+}

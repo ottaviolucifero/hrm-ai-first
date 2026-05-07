@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.59
+Versione: 1.60
 Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
@@ -2253,7 +2253,7 @@ Completato:
 
 ### TASK-045 - Shared Master Data table component
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend refactoring dedicato (contenitore)
 
@@ -2272,7 +2272,7 @@ Regole funzionali del task:
 
 Subtask:
 - 045.1 - Analisi e modello configurazione colonne Master Data
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - definire interfacce/configurazioni per colonne dinamiche;
     - definire visibilita e ordine visuale colonne via configurazione (ordine di rendering, non sorting dei dati);
@@ -2293,7 +2293,7 @@ Subtask:
     - le colonne standard opzionali si mostrano solo se configurate e disponibili nei dati.
 
 - 045.2 - Creazione componente shared MasterDataTable read-only
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - creare il componente shared tabellare read-only;
     - rendering righe/colonne dinamiche;
@@ -2308,7 +2308,7 @@ Subtask:
     - nessuna regressione visiva principale rispetto alla pagina esistente.
 
 - 045.3 - Stati UI e paginazione nel componente shared
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - gestire loading, error, empty state nel componente;
     - integrare paginazione nel componente (rendering controlli + emissione eventi) mantenendo la logica dati esistente nel container.
@@ -2321,7 +2321,7 @@ Subtask:
     - paginazione funzionante senza regressioni.
 
 - 045.4 - Integrazione della shared table nella pagina `/master-data`
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - sostituire la tabella attuale con il componente shared;
     - mantenere comportamento esistente di categoria/entita/filtro/paginazione;
@@ -2334,7 +2334,7 @@ Subtask:
     - filtri ancora gestiti dalla pagina/container.
 
 - 045.5 - Test frontend e regressione Master Data UI
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - aggiornare/aggiungere test su rendering colonne, visibilita e ordine;
     - test su stati UI e paginazione;
@@ -2344,7 +2344,7 @@ Subtask:
     - nessuna nuova duplicazione tabellare nelle aree migrate.
 
 - 045.6 - Documentazione tecnica e backlog futuro
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - documentare debito tecnico residuo;
     - proporre task futuri separati per funzionalita volutamente fuori scope.
@@ -2364,6 +2364,15 @@ Acceptance criteria complessivi TASK-045:
 - build frontend OK;
 - test frontend OK;
 - manual validation UI richiesta se vengono toccate schermate.
+
+Completato:
+
+- Creato componente shared read-only `MasterDataTableComponent` in `frontend/src/app/shared/components/master-data-table/`.
+- Definito modello colonne configurabile con chiavi nested, visibilita, ordine visuale, `width` / `minWidth`, tipo colonna, allineamento automatico, override `align` e formatter opzionale.
+- Supportati rendering righe generiche, colonne standard opzionali solo se configurate e presenti nei dati, molte colonne con scroll orizzontale, loading/error/empty state e paginazione tramite eventi.
+- Integrata la tabella shared nella pagina `/master-data` mantenendo nel container selezione categoria/entita, filtro generico, debounce, page/search, refresh e chiamate API.
+- Aggiunti test frontend per componente shared e mantenuti test di integrazione della pagina Master Data.
+- Validazione frontend: `npm.cmd run build` OK, `npm.cmd test` OK (34 test passed).
 
 ### TASK-046 - Implementare UI Master Data Admin CRUD
 
@@ -2440,6 +2449,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.60 | 2026-05-06 | TASK-045 completato con componente shared read-only `MasterDataTableComponent`, modello colonne configurabile, campi nested, stati loading/error/empty, paginazione tramite eventi e integrazione in `/master-data`; filtri e orchestrazione API restano nel container, build/test frontend validati. |
 | 1.59 | 2026-05-06 | TASK-045 scomposto in subtask incrementali 045.1-045.6: configurazione colonne, componente shared read-only, stati UI/paginazione, integrazione `/master-data`, test e backlog evolutivo; confermato che filtri restano nel container e che inline edit/drag&drop/preferenze utente restano fuori scope. |
 | 1.58 | 2026-05-06 | Governance/backlog frontend chiariti: aggiunta regola esplicita su riuso tabelle Master Data in `frontend/AGENTS.md`; introdotto TASK-045 dedicato al refactoring shared della tabella Master Data; task successivi rinumerati di +1 a partire dall'ex TASK-045. |
 | 1.57 | 2026-05-06 | TASK-044 completato: import CAP italiani da dataset JSON acquistato normalizzato in CSV (`8465` record validi), servizio backend idempotente con report import, endpoint `/api/master-data/global/zip-codes/import/italy`, test backend su validazione/idempotenza/casi invalidi e regressione backend/frontend verificata; nessun CAP estero, nessuna modifica frontend/security. |

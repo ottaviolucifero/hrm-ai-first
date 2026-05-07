@@ -39,53 +39,13 @@
       </label>
     </div>
 
-    @if (loading()) {
-      <div class="master-data-state">{{ i18n.t('masterData.loading') }}</div>
-    } @else if (hasError()) {
-      <div class="master-data-state master-data-state-error">{{ i18n.t('masterData.error') }}</div>
-    } @else if (rows().length === 0) {
-      <div class="master-data-state">{{ i18n.t('masterData.empty') }}</div>
-    } @else {
-      <div class="master-data-table-wrapper">
-        <table class="master-data-table">
-          <thead>
-            <tr>
-              @for (column of selectedResource().columns; track column.key) {
-                <th scope="col">{{ i18n.t(column.labelKey) }}</th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of rows(); track trackRow($index, row)) {
-              <tr>
-                @for (column of selectedResource().columns; track column.key) {
-                  <td>{{ displayValue(row, column) }}</td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <div class="master-data-pagination">
-        <span class="master-data-pagination-summary">{{ paginationSummary() }}</span>
-        <div class="master-data-pagination-actions">
-          <button
-            class="kt-btn kt-btn-outline kt-btn-sm"
-            type="button"
-            [disabled]="loading() || pageData().first"
-            (click)="goToPreviousPage()">
-            {{ i18n.t('masterData.pagination.previous') }}
-          </button>
-          <button
-            class="kt-btn kt-btn-outline kt-btn-sm"
-            type="button"
-            [disabled]="loading() || pageData().last"
-            (click)="goToNextPage()">
-            {{ i18n.t('masterData.pagination.next') }}
-          </button>
-        </div>
-      </div>
-    }
+    <app-data-table
+      [columns]="selectedResource().columns"
+      [rows]="rows()"
+      [pageData]="pageData()"
+      [loading]="loading()"
+      [hasError]="hasError()"
+      (previousPage)="goToPreviousPage()"
+      (nextPage)="goToNextPage()" />
   </div>
 </section>

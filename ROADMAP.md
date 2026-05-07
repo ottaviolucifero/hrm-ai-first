@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.56
+Versione: 1.57
 Ultimo aggiornamento: 2026-05-06
 Stato: In avanzamento
 
@@ -87,6 +87,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-042 Seed/import dati globali iniziali
 - TASK-043 Master Data API/UI pagination and generic filters
 - TASK-044 Import CAP italiani
+- TASK-045 Shared Master Data table component
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
 - Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
@@ -94,13 +95,13 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-045: Shared Master Data table component
+- TASK-046: UI Master Data Admin CRUD
 
 ---
 
 ## 4. Fase 1 - Fondazione tecnica
 
-Stato: Frontend login foundation, authenticated home shell foundation, sidebar navigation tree foundation, frontend i18n foundation, logo integration, design guidelines, Master Data Admin foundation/list e seed dati globali iniziali completati
+Stato: Frontend login foundation, authenticated home shell foundation, sidebar navigation tree foundation, frontend i18n foundation, logo integration, design guidelines, Master Data Admin foundation/list, seed dati globali iniziali e shared Master Data table completati
 
 Completato:
 
@@ -149,6 +150,7 @@ Completato:
 - Frontend Master Data Admin foundation/list available at protected route `/master-data` with sidebar entry, category/entity selection, read-only table rendering, manual refresh and loading/error/empty states across global, HR/business and governance/security master data endpoints
 - TASK-042 completed: global seed foundation with `countries.default_currency_id` nullable, ISO 3166-1 alpha-2 seed (249 Paesi/territori), source documentation and Flyway V17 vendor-specific migrations for PostgreSQL/H2 validated with backend tests.
 - TASK-044 completed: import CAP italiani con dataset normalizzato da JSON acquistato (8465 record validi), import backend idempotente in `global_zip_codes`, endpoint analisi/import dedicato e test backend di coerenza/idempotenza.
+- TASK-045 completed: shared read-only Master Data table component integrated in `/master-data`, with configurable columns, nested fields, loading/error/empty states and pagination events validated by frontend build/test.
 
 Nota:
 
@@ -171,17 +173,15 @@ Frontend governance is active: UI tasks must analyze and reuse existing Angular 
 Logo brand color governance is active: frontend UI tasks must use the documented deep indigo, navy, accent blue, violet-blue and soft highlight tint consistently when the task scope includes visual implementation, without opportunistic redesign.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
-Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 pagination and generic filters are completed before proceeding to full CRUD UI.
+Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 pagination/generic filters plus TASK-045 shared table refactoring are completed before proceeding to full CRUD UI.
 
 Da fare:
 
-- TASK-045 Shared Master Data table component
 - TASK-046 UI Master Data Admin CRUD
 
 Nota roadmap TASK-045:
 
-- TASK-045 resta frontend-only e viene eseguito per incrementi (045.1 -> 045.6).
-- Primo rilascio del componente tabellare shared: read-only.
+- TASK-045 resta frontend-only ed e completato come primo rilascio read-only.
 - Filtri fuori dal componente tabella (restano nel container/pagina).
 - Fuori scope in TASK-045: inline editing/CRUD dinamico, drag & drop colonne, preferenze utente colonne.
 - Le estensioni fuori scope verranno trattate con task futuri dedicati.
@@ -262,6 +262,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.57 | 2026-05-06 | TASK-045 completato con componente shared read-only per tabelle Master Data, colonne configurabili, campi nested, stati UI e paginazione tramite eventi integrati in `/master-data`; prossimo passo aggiornato a TASK-046 UI Master Data Admin CRUD. |
 | 1.56 | 2026-05-06 | TASK-045 riallineato come contenitore di subtask frontend incrementali (045.1-045.6) per Shared Master Data table component: primo rilascio read-only, filtri lasciati al container, evoluzioni avanzate (inline edit/CRUD dinamico, drag&drop colonne, preferenze utente, lookup dinamiche, validazioni avanzate) separate in backlog futuro. |
 | 1.55 | 2026-05-06 | Governance/backlog frontend aggiornati: TASK-044 resta dedicato a import/visualizzazione CAP italiani; refactoring shared della tabella Master Data isolato nel nuovo TASK-045; task successivi rinumerati di +1. |
 | 1.54 | 2026-05-06 | TASK-044 completato con import CAP italiani da dataset JSON acquistato normalizzato in CSV (8465 record validi), import idempotente backend su `global_zip_codes`, report import e test backend/frontend di regressione validati; prossimo passo aggiornato a TASK-045 UI Master Data Admin CRUD. |
