@@ -1,8 +1,11 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
-import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize } from 'rxjs';
+import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
 
+import { AuthService } from '../../core/auth/auth.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { AlertMessageComponent } from '../../shared/feedback/alert-message.component';
 import { MasterDataFormComponent, MasterDataFormSubmitEvent } from './master-data-form.component';
 import {
   DEFAULT_MASTER_DATA_PAGE_SIZE,
@@ -12,6 +15,7 @@ import {
   MasterDataCategoryId,
   MasterDataFormConfig,
   MasterDataFormMode,
+  MasterDataMutationRequest,
   MasterDataPage,
   MasterDataQuery,
   MasterDataRowActionEvent,
@@ -22,15 +26,17 @@ import { MasterDataService } from './master-data.service';
 
 @Component({
   selector: 'app-master-data-admin',
-  imports: [DataTableComponent, MasterDataFormComponent],
+  imports: [DataTableComponent, MasterDataFormComponent, AlertMessageComponent],
   templateUrl: './master-data-admin.component.html',
   styleUrl: './master-data-admin.component.scss'
 })
 export class MasterDataAdminComponent implements OnDestroy {
+  private readonly authService = inject(AuthService);
   private readonly masterDataService = inject(MasterDataService);
   protected readonly i18n = inject(I18nService);
 
   private loadSubscription?: Subscription;
+  private saveSubscription?: Subscription;
   private readonly searchChanges = new Subject<string>();
   private readonly searchSubscription = this.searchChanges
     .pipe(debounceTime(300), distinctUntilChanged())
@@ -53,6 +59,9 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly lastFormSubmission = signal<MasterDataFormSubmitEvent | null>(null);
   protected readonly formMode = signal<MasterDataFormMode | null>(null);
   protected readonly formValue = signal<MasterDataRow | null>(null);
+  protected readonly formErrorMessage = signal('');
+  protected readonly feedbackMessage = signal('');
+  protected readonly saving = signal(false);
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly formConfig = computed<MasterDataFormConfig | null>(() => this.selectedResource().form ?? null);
   protected readonly formFields = computed(() => this.formConfig()?.fields ?? []);
@@ -76,6 +85,7 @@ export class MasterDataAdminComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.loadSubscription?.unsubscribe();
+    this.saveSubscription?.unsubscribe();
     this.searchSubscription.unsubscribe();
   }
 
@@ -107,6 +117,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   }
 
   protected refresh(): void {
+    this.feedbackMessage.set('');
     this.loadSelectedResource();
   }
 
@@ -128,7 +139,47 @@ export class MasterDataAdminComponent implements OnDestroy {
 
   protected handleFormSave(event: MasterDataFormSubmitEvent): void {
     this.lastFormSubmission.set(event);
-    this.closeForm();
+    const resource = this.selectedResource();
+    const formValue = event.value;
+    const recordId = typeof this.formValue()?.['id'] === 'string' ? this.formValue()?.['id'] as string : null;
+
+    if (event.mode === 'edit' && !recordId) {
+      this.formErrorMessage.set(this.i18n.t('masterData.form.error.generic'));
+      return;
+    }
+
+    this.feedbackMessage.set('');
+    this.formErrorMessage.set('');
+    this.saving.set(true);
+    this.saveSubscription?.unsubscribe();
+    this.saveSubscription = this.authService.loadAuthenticatedUser()
+      .pipe(
+        take(1),
+        switchMap((user) => {
+          const payload = this.buildMutationPayload(
+            formValue,
+            typeof this.formValue()?.['tenantId'] === 'string' ? this.formValue()?.['tenantId'] as string : user.tenantId
+          );
+          return event.mode === 'create'
+            ? this.masterDataService.createRow(resource, payload)
+            : this.masterDataService.updateRow(resource, recordId!, payload);
+        }),
+        finalize(() => this.saving.set(false))
+      )
+      .subscribe({
+        next: () => {
+          this.feedbackMessage.set(
+            this.i18n.t(event.mode === 'create'
+              ? 'masterData.form.feedback.createSuccess'
+              : 'masterData.form.feedback.updateSuccess')
+          );
+          this.closeForm();
+          this.loadSelectedResource();
+        },
+        error: (error) => {
+          this.formErrorMessage.set(this.resolveSaveError(error));
+        }
+      });
   }
 
   protected handleFormCancel(): void {
@@ -138,6 +189,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected closeForm(): void {
     this.formMode.set(null);
     this.formValue.set(null);
+    this.formErrorMessage.set('');
   }
 
   protected goToPreviousPage(): void {
@@ -199,7 +251,39 @@ export class MasterDataAdminComponent implements OnDestroy {
       return;
     }
 
+    this.feedbackMessage.set('');
+    this.formErrorMessage.set('');
     this.formMode.set(mode);
     this.formValue.set(row);
+  }
+
+  private buildMutationPayload(formValue: Record<string, unknown>, tenantId: string): MasterDataMutationRequest {
+    return {
+      tenantId,
+      code: String(formValue['code'] ?? '').trim(),
+      name: String(formValue['name'] ?? '').trim(),
+      active: formValue['active'] === undefined ? true : Boolean(formValue['active'])
+    };
+  }
+
+  private resolveSaveError(error: unknown): string {
+    const response = error instanceof HttpErrorResponse
+      ? error
+      : (error as { error?: { message?: unknown; validationErrors?: unknown } });
+    const validationErrors = response.error?.validationErrors;
+    if (validationErrors && typeof validationErrors === 'object') {
+      const messages = Object.values(validationErrors as Record<string, unknown>)
+        .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+      if (messages.length > 0) {
+        return messages.join(' ');
+      }
+    }
+
+    const apiMessage = response.error?.message;
+    if (typeof apiMessage === 'string' && apiMessage.trim().length > 0) {
+      return apiMessage;
+    }
+
+    return this.i18n.t('masterData.form.error.generic');
   }
 }

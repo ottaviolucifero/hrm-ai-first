@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.66
+Versione: 1.67
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -2428,11 +2428,19 @@ Subtask:
     - build e test frontend OK.
 
 - 046.3 - Master Data CRUD API integration foundation
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - collegare la foundation CRUD form alle API CRUD backend esistenti dei TASK-030/TASK-031/TASK-032;
     - integrare create/update sulle prime entita semplici e a basso rischio;
     - mantenere fallback read-only sulle entita non ancora abilitate.
+  - Completato:
+    - esteso `MasterDataService` con chiamate HTTP reali `POST` / `PUT` senza introdurre nuove API backend;
+    - integrato il salvataggio reale nel container `/master-data` riusando il form metadata-driven esistente;
+    - abilitate create/update reali per le entita candidate semplici `Department`, `JobTitle`, `ContractType` e `WorkMode`;
+    - riusato `tenantId` dell'utente autenticato per `create` e preservato il `tenantId` della riga in `edit/update`;
+    - mantenuto il form aperto su errore con messaggio leggibile e dati preservati;
+    - chiusura modal, refresh lista e feedback utente aggiunti su salvataggio riuscito;
+    - mantenuti invariati filtro, paginazione, tabella shared, view read-only e entita non candidate.
   - Acceptance criteria:
     - chiamate API reali create/update introdotte senza nuove API;
     - comportamento read/list/filter/pagination esistente preservato.
@@ -2691,6 +2699,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.67 | 2026-05-07 | TASK-046.3 completato con integrazione CRUD API reale frontend su entita candidate semplici (`Department`, `JobTitle`, `ContractType`, `WorkMode`): create/update via API backend esistenti, feedback successo/errore, refresh lista post-save e test/build frontend validati senza modifiche backend. |
 | 1.66 | 2026-05-07 | Ottimizzati TASK-047..TASK-052 per ridurre sovrapposizioni: 047 strategico/documentale, 048 gap analysis dominio, 049 foundation modello permessi `SCOPE.RESOURCE.ACTION`, 050 foundation utenti/ruoli tenant, 051 UX frontend authorization, 052 enforcement backend reale; chiarita separazione frontend UX vs backend security. |
 | 1.65 | 2026-05-07 | Aggiornato TASK-047 come "Platform Super Admin and tenant-aware permissions model" con scope esplicito su `PLATFORM_SUPER_ADMIN`, distinzione `TENANT_ADMIN`, ruoli seed/custom tenant-specific, permessi CRUD Global/Tenant Master Data, regole cross-tenant e impatto frontend/backend. |
 | 1.64 | 2026-05-07 | Backlog riorganizzato dopo TASK-046: subtask 046 riallineati (`046.1`-`046.5`), introdotto blocco authorization/Super Admin con TASK-047..TASK-052 (strategy, domain review, permission model, tenant user/role foundation, enforcement frontend/backend), task successivi rinumerati in modo coerente fino a TASK-064. |
