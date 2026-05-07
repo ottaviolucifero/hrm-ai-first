@@ -11,6 +11,7 @@ import {
   MasterDataCategoryId,
   MasterDataPage,
   MasterDataQuery,
+  MasterDataRowActionEvent,
   MasterDataResource,
   MasterDataRow
 } from './master-data.models';
@@ -45,6 +46,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly appliedSearch = signal('');
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
+  protected readonly lastTriggeredRowAction = signal<MasterDataRowActionEvent | null>(null);
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly selectedCategory = computed(
     () => this.categories.find((category) => category.id === this.selectedCategoryId()) ?? this.categories[0]
@@ -91,6 +93,10 @@ export class MasterDataAdminComponent implements OnDestroy {
 
   protected refresh(): void {
     this.loadSelectedResource();
+  }
+
+  protected handleRowAction(event: MasterDataRowActionEvent): void {
+    this.lastTriggeredRowAction.set(event);
   }
 
   protected goToPreviousPage(): void {
@@ -145,5 +151,4 @@ export class MasterDataAdminComponent implements OnDestroy {
       size: DEFAULT_MASTER_DATA_PAGE_SIZE
     };
   }
-
 }

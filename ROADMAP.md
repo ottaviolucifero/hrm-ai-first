@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.58
+Versione: 1.59
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -88,6 +88,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-043 Master Data API/UI pagination and generic filters
 - TASK-044 Import CAP italiani
 - TASK-045 Shared Master Data table component
+- TASK-046.1 Master Data CRUD action foundation
 - Backlog governance updated: Master Data Admin UI follows backend CRUD APIs
 - Backlog governance updated: Login foundation precedes administrative UI
 - Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
@@ -95,7 +96,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-046: Master Data CRUD standard foundation
+- TASK-046.2: Analisi CRUD Master Data e configurazione form entita
 
 ---
 
@@ -151,6 +152,7 @@ Completato:
 - TASK-042 completed: global seed foundation with `countries.default_currency_id` nullable, ISO 3166-1 alpha-2 seed (249 Paesi/territori), source documentation and Flyway V17 vendor-specific migrations for PostgreSQL/H2 validated with backend tests.
 - TASK-044 completed: import CAP italiani con dataset normalizzato da JSON acquistato (8465 record validi), import backend idempotente in `global_zip_codes`, endpoint analisi/import dedicato e test backend di coerenza/idempotenza.
 - TASK-045 completed: shared read-only Master Data table component integrated in `/master-data`, with configurable columns, nested fields, loading/error/empty states and pagination events validated by frontend build/test.
+- TASK-046.1 completed: configurable row actions foundation added to `DataTableComponent`, with entity-level enablement and container event wiring in `/master-data`, while non-candidate entities remain read-only.
 
 Nota:
 
@@ -177,7 +179,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-046 Master Data CRUD standard foundation
+- TASK-046 Master Data CRUD standard foundation (TASK-046.2 next)
 
 Nota roadmap TASK-045:
 
@@ -193,6 +195,7 @@ Nota roadmap TASK-046:
 - Il CRUD usa le API backend gia esistenti dei TASK-030, TASK-031 e TASK-032; non sono previste nuove API backend salvo bug bloccante documentato.
 - Editing inline, drag & drop colonne, preferenze utente colonne, lookup remoti complessi, RBAC runtime UI e redesign restano fuori scope.
 - Entita importate o globali possono restare read-only o CRUD limitato; entita tenant-scoped semplici sono candidate per il primo CRUD completo.
+- TASK-046.1 completa la foundation azioni riga: `DataTableComponent` emette eventi `edit` / `delete` configurabili e il container `/master-data` li riceve senza introdurre ancora form CRUD o mutazioni backend.
 
 ---
 
@@ -270,6 +273,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.59 | 2026-05-07 | TASK-046.1 completato come CRUD action foundation frontend: `DataTableComponent` supporta azioni riga configurabili e il container `/master-data` riceve gli eventi; il prossimo step passa a TASK-046.2 per analisi form/configurazione entita prima di introdurre create/update reali. |
 | 1.58 | 2026-05-07 | TASK-046 ridefinito come "Master Data CRUD standard foundation": prossimo step orientato a standard CRUD frontend riutilizzabile basato su `DataTableComponent`, azioni configurabili, form/modal o pannello laterale, API CRUD backend esistenti e sviluppo incrementale senza editing inline o nuove API backend. |
 | 1.57 | 2026-05-06 | TASK-045 completato con componente shared read-only per tabelle Master Data, colonne configurabili, campi nested, stati UI e paginazione tramite eventi integrati in `/master-data`; prossimo passo aggiornato a TASK-046 UI Master Data Admin CRUD. |
 | 1.56 | 2026-05-06 | TASK-045 riallineato come contenitore di subtask frontend incrementali (045.1-045.6) per Shared Master Data table component: primo rilascio read-only, filtri lasciati al container, evoluzioni avanzate (inline edit/CRUD dinamico, drag&drop colonne, preferenze utente, lookup dinamiche, validazioni avanzate) separate in backlog futuro. |

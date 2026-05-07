@@ -175,6 +175,70 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Impossibile caricare i dati.');
   });
 
+  it('keeps read-only resources without row actions', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = {
+      fetchRows: vi.fn(() => of(createPage([{ id: 'country-1', isoCode: 'IT', name: 'Italia', active: true }])))
+    };
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+
+    expect(actionButtons).toHaveLength(0);
+  });
+
+  it('receives row action events for CRUD candidate resources', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = {
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true,
+                updatedAt: '2026-05-06T09:00:00Z'
+              }
+            ])
+          )
+        )
+    };
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      lastTriggeredRowAction: () => unknown;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+
+    expect(actionButtons).toHaveLength(2);
+
+    actionButtons[0].click();
+    fixture.detectChanges();
+
+    expect(component.lastTriggeredRowAction()).toEqual(
+      expect.objectContaining({
+        action: expect.objectContaining({ id: 'edit' }),
+        row: expect.objectContaining({ id: 'department-1' })
+      })
+    );
+  });
+
   it('releases the active subscription on destroy', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 

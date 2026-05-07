@@ -43,3 +43,17 @@ Nota operativa:
 - Le sezioni devono contenere solo report riferiti a task reali.
 - Mantenere ogni report sintetico ma verificabile.
 
+
+### TASK-046.1 - Master Data CRUD action foundation
+
+- Data: 2026-05-07
+- Branch: `task-046-1-master-data-crud-analysis-config`
+- Task: TASK-046.1 - Master Data CRUD action foundation
+- Agente/Modello usato: GPT-5 Codex (QA tecnica regressiva)
+- Area verificata: componente shared `DataTableComponent`, integrazione container `/master-data`, i18n `it/fr/en`, aggiornamenti documentali `TASKS.md` e `ROADMAP.md`
+- Comandi eseguiti: `git diff --stat`, `git diff -- frontend/src/app/shared/components/data-table`, `git diff -- frontend/src/app/features/master-data`, `npm.cmd run build`, `npm.cmd test`, `git status --short --branch`
+- Esito: PASS CON OSSERVAZIONI
+- Regressioni trovate: nessuna regressione bloccante; nessuna mutazione CRUD reale introdotta
+- Osservazioni: `DataTableComponent` resta generico come contratto, ma usa chiavi i18n `masterData.*` (accoppiamento semantico leggero, non bloccante in TASK-046.1)
+- Fix richiesti: nessun fix obbligatorio per chiusura TASK-046.1; eventuale disaccoppiamento i18n da pianificare in task dedicato
+- Stato finale: build frontend OK, test frontend OK (10 file, 37 test passed), scope frontend-only rispettato, nessuna modifica backend

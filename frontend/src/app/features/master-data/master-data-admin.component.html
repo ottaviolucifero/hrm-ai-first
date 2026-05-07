@@ -42,9 +42,11 @@
     <app-data-table
       [columns]="selectedResource().columns"
       [rows]="rows()"
+      [rowActions]="selectedResource().rowActions ?? []"
       [pageData]="pageData()"
       [loading]="loading()"
       [hasError]="hasError()"
+      (rowAction)="handleRowAction($event)"
       (previousPage)="goToPreviousPage()"
       (nextPage)="goToNextPage()" />
   </div>

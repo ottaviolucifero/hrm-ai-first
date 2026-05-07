@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DataTableComponent } from './data-table.component';
-import { DataTableColumn, DataTableRow } from './data-table.models';
+import { DataTableAction, DataTableColumn, DataTableRow } from './data-table.models';
 
 describe('DataTableComponent', () => {
   let fixture: ComponentFixture<DataTableComponent>;
@@ -126,5 +126,34 @@ describe('DataTableComponent', () => {
 
     expect(previousSpy).toHaveBeenCalledTimes(1);
     expect(nextSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders configured row actions and emits the selected action', () => {
+    const rowActionSpy = vi.fn();
+    component.rowAction.subscribe(rowActionSpy);
+    component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
+    component.rows = [{ id: 'department-1', name: 'Human Resources' }];
+    component.rowActions = [
+      { id: 'edit', labelKey: 'masterData.actions.edit' },
+      { id: 'delete', labelKey: 'masterData.actions.delete', tone: 'danger' }
+    ] satisfies readonly DataTableAction<DataTableRow>[];
+
+    fixture.detectChanges();
+
+    const headerElements = fixture.nativeElement.querySelectorAll('th') as NodeListOf<HTMLTableCellElement>;
+    const headers = Array.from(headerElements).map((header) => header.textContent?.trim());
+    const buttons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+
+    expect(headers).toContain('Azioni');
+    expect(buttons).toHaveLength(2);
+
+    buttons[0].click();
+
+    expect(rowActionSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: expect.objectContaining({ id: 'edit' }),
+        row: expect.objectContaining({ id: 'department-1' })
+      })
+    );
   });
 });
