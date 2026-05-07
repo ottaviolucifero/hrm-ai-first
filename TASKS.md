@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.70
+Versione: 1.71
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -2521,7 +2521,48 @@ Decisione funzionale:
 - La cancellazione fisica non deve essere usata per mascherare la presenza di record disattivati.
 - I record referenziati da altre tabelle/processi non devono essere eliminabili.
 
-Scope:
+Subtask:
+
+- 047.1 - Master Data physical delete backend foundation
+  - Stato: TODO
+  - Scope:
+    - introdurre endpoint/action backend separata per delete fisico;
+    - mantenere invariata la disattivazione logica `active=false`;
+    - verificare record referenziati tramite controlli FK preventivi dove coerenti oppure gestione controllata di `DataIntegrityViolationException`;
+    - restituire errore coerente, preferibilmente `409 Conflict`, quando il record e collegato ad altri dati;
+    - non usare `repository.delete()` per sostituire i metodi di disattivazione esistenti.
+  - Acceptance criteria:
+    - delete fisico rimuove realmente solo record non referenziati;
+    - record referenziati non vengono rimossi e producono errore leggibile;
+    - test backend coprono successo e blocco su record referenziati dove riproducibile.
+
+- 047.2 - Master Data physical delete frontend action
+  - Stato: TODO
+  - Scope:
+    - aggiungere in UI azione separata `Elimina`, distinta da `Disattiva`;
+    - usare conferma forte prima della cancellazione fisica;
+    - mostrare messaggio chiaro: `Il record non puo essere eliminato perche e collegato ad altri dati`;
+    - aggiornare messaggi i18n `it` / `fr` / `en`;
+    - aggiornare lista solo dopo successo reale del backend.
+  - Acceptance criteria:
+    - `Disattiva` ed `Elimina` sono azioni visivamente e funzionalmente distinte;
+    - la UI non nasconde record per simulare delete fisico;
+    - test frontend coprono conferma, successo, errore `409` e refresh lista.
+
+- 047.3 - Master Data physical delete QA and hardening
+  - Stato: TODO
+  - Scope:
+    - regressione backend/frontend su `/master-data`;
+    - verifica manuale di record eliminabile e record referenziato;
+    - verifica che disattivazione logica, create/edit/view, filtro e paginazione non regrediscano;
+    - aggiornamento documentazione e report QA solo con esiti reali.
+  - Acceptance criteria:
+    - test backend OK;
+    - build/test frontend OK;
+    - QA manuale documentato;
+    - `docs/qa/QA-REPORTS.md` aggiornato solo se QA reale eseguito.
+
+Scope complessivo TASK-047:
 
 - backend endpoint/action separata per delete fisico;
 - controlli FK preventivi dove coerenti oppure gestione controllata di `DataIntegrityViolationException`;
@@ -2758,6 +2799,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.71 | 2026-05-07 | TASK-047 scomposto in subtask incrementali: 047.1 backend foundation delete fisico sicuro, 047.2 azione frontend `Elimina` distinta da `Disattiva`, 047.3 QA/hardening; nessuna rinumerazione dei task successivi. |
 | 1.70 | 2026-05-07 | Introdotto TASK-047 "Master Data physical delete for non-referenced records" come task dedicato a cancellazione fisica sicura distinta dalla disattivazione logica `active=false`; backlog Super Admin/RBAC slittato a TASK-048..TASK-053 e task successivi rinumerati fino a TASK-065. |
 | 1.69 | 2026-05-07 | TASK-046.4 riallineato alla semantica architetturale esistente: `DELETE` Master Data resta soft-delete/disattivazione `active=false`, UX rinominata da `Elimina` a `Disattiva`, conferma/feedback/error handling i18n aggiornati e follow-up filtro attivi/inattivi + riattiva demandati a task successivi. |
 | 1.68 | 2026-05-07 | TASK-046.4 completato con delete/disattivazione frontend su `/master-data`, conferma esplicita, loading/error handling CRUD, feedback utente e build/test frontend validati; prossimo step TASK-046.5. |
