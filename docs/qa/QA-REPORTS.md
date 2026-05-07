@@ -32,7 +32,7 @@ Nessun report backend registrato al momento.
 - Test backend eseguiti con esito reale: `cd backend && $env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'; .\mvnw.cmd test` -> BUILD SUCCESS, 95 test, 0 failure, 0 errori
 - Test frontend eseguiti con esito reale: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK, 9 file di test passed, 27 test passed
 - QA manuale browser eseguito/non eseguito: eseguito manualmente con successo su `/master-data` (apertura pagina, categoria Global, entita Paesi/Countries, filtro testuale, paginazione precedente/successivo, refresh, cambio entita e ritorno su Paesi)
-- Problemi trovati: nessun blocker confermato; osservazioni minori su copertura test non esplicita per `page` negativo e `search` solo spazi, anche se la normalizzazione è presente in `MasterDataQuerySupport`
+- Problemi trovati: nessun blocker confermato; osservazioni minori su copertura test non esplicita per `page` negativo e `search` solo spazi, anche se la normalizzazione Ã¨ presente in `MasterDataQuerySupport`
 - Esito finale: PASS CON OSSERVAZIONI
 
 
@@ -57,3 +57,23 @@ Nota operativa:
 - Osservazioni: `DataTableComponent` resta generico come contratto, ma usa chiavi i18n `masterData.*` (accoppiamento semantico leggero, non bloccante in TASK-046.1)
 - Fix richiesti: nessun fix obbligatorio per chiusura TASK-046.1; eventuale disaccoppiamento i18n da pianificare in task dedicato
 - Stato finale: build frontend OK, test frontend OK (10 file, 37 test passed), scope frontend-only rispettato, nessuna modifica backend
+
+### TASK-046.2 - Master Data CRUD form foundation
+
+- Data: 2026-05-07
+- Branch: `task-046-2-master-data-crud-form-foundation`
+- Task: TASK-046.2 - Master Data CRUD form foundation
+- Agente/Modello usato: GPT-5 Codex (verifica tecnica)
+- Area verificata: form foundation frontend Master Data (`create/edit/view`) e test Angular associati
+- Comandi eseguiti: `cd frontend && npm.cmd run build`, `cd frontend && npm.cmd test`
+- Esito: FAIL
+- Regressioni trovate: test unitari KO su `MasterDataFormComponent` (3 test falliti)
+- Dettaglio errore principale: `Cannot find control with unspecified name attribute` in `master-data-form.component.spec.ts`
+- Fix richiesti: correggere binding dei controlli nel template/form setup del componente, poi rieseguire `npm.cmd test`
+- QA manuale browser eseguito/non eseguito: non eseguito manualmente in questo passaggio
+- Stato finale: build frontend OK; test frontend KO (1 file test fallito, 3 test falliti)
+- Verifica successiva post-fix (2026-05-07): `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK (11 file test passed, 41 test passed)
+- Nota fix applicato: inizializzazione form in `ngOnInit`, normalizzazione chiavi campo e binding template con `formControlName` su campi validi
+- Esito aggiornato dopo fix: PASS
+- Miglioria UX post-QA (2026-05-07): apertura form Master Data aggiornata da sezione inline a modal/popup con overlay sopra la pagina, mantenendo invariata la logica funzionale (`create/edit/view`, filtri/paginazione/tabella)
+- Verifica post-miglioria UX: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK (11 file test passed, 41 test passed)

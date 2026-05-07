@@ -3,12 +3,15 @@ import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize } f
 
 import { I18nService } from '../../core/i18n/i18n.service';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { MasterDataFormComponent, MasterDataFormSubmitEvent } from './master-data-form.component';
 import {
   DEFAULT_MASTER_DATA_PAGE_SIZE,
   EMPTY_MASTER_DATA_PAGE,
   MASTER_DATA_CATEGORIES,
   MasterDataCategory,
   MasterDataCategoryId,
+  MasterDataFormConfig,
+  MasterDataFormMode,
   MasterDataPage,
   MasterDataQuery,
   MasterDataRowActionEvent,
@@ -19,7 +22,7 @@ import { MasterDataService } from './master-data.service';
 
 @Component({
   selector: 'app-master-data-admin',
-  imports: [DataTableComponent],
+  imports: [DataTableComponent, MasterDataFormComponent],
   templateUrl: './master-data-admin.component.html',
   styleUrl: './master-data-admin.component.scss'
 })
@@ -47,7 +50,17 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
   protected readonly lastTriggeredRowAction = signal<MasterDataRowActionEvent | null>(null);
+  protected readonly lastFormSubmission = signal<MasterDataFormSubmitEvent | null>(null);
+  protected readonly formMode = signal<MasterDataFormMode | null>(null);
+  protected readonly formValue = signal<MasterDataRow | null>(null);
   protected readonly rows = computed(() => this.pageData().content);
+  protected readonly formConfig = computed<MasterDataFormConfig | null>(() => this.selectedResource().form ?? null);
+  protected readonly formFields = computed(() => this.formConfig()?.fields ?? []);
+  protected readonly openFormMode = computed<MasterDataFormMode>(() => this.formMode() ?? 'view');
+  protected readonly canCreate = computed(
+    () => this.formConfig()?.modes.includes('create') === true
+  );
+  protected readonly isFormOpen = computed(() => this.formMode() !== null && this.formConfig() !== null);
   protected readonly selectedCategory = computed(
     () => this.categories.find((category) => category.id === this.selectedCategoryId()) ?? this.categories[0]
   );
@@ -75,12 +88,14 @@ export class MasterDataAdminComponent implements OnDestroy {
 
     this.selectedCategoryId.set(nextCategory.id);
     this.selectedResourceId.set(nextCategory.resources[0].id);
+    this.closeForm();
     this.pageIndex.set(0);
     this.loadSelectedResource();
   }
 
   protected updateResource(event: Event): void {
     this.selectedResourceId.set((event.target as HTMLSelectElement).value);
+    this.closeForm();
     this.pageIndex.set(0);
     this.loadSelectedResource();
   }
@@ -95,8 +110,34 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.loadSelectedResource();
   }
 
+  protected openCreateForm(): void {
+    this.openForm('create', null);
+  }
+
   protected handleRowAction(event: MasterDataRowActionEvent): void {
     this.lastTriggeredRowAction.set(event);
+
+    if (event.action.id === 'edit') {
+      this.openForm('edit', event.row);
+    }
+
+    if (event.action.id === 'view') {
+      this.openForm('view', event.row);
+    }
+  }
+
+  protected handleFormSave(event: MasterDataFormSubmitEvent): void {
+    this.lastFormSubmission.set(event);
+    this.closeForm();
+  }
+
+  protected handleFormCancel(): void {
+    this.closeForm();
+  }
+
+  protected closeForm(): void {
+    this.formMode.set(null);
+    this.formValue.set(null);
   }
 
   protected goToPreviousPage(): void {
@@ -150,5 +191,15 @@ export class MasterDataAdminComponent implements OnDestroy {
       page: this.pageIndex(),
       size: DEFAULT_MASTER_DATA_PAGE_SIZE
     };
+  }
+
+  private openForm(mode: MasterDataFormMode, row: MasterDataRow | null): void {
+    const config = this.formConfig();
+    if (!config || !config.modes.includes(mode)) {
+      return;
+    }
+
+    this.formMode.set(mode);
+    this.formValue.set(row);
   }
 }

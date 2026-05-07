@@ -186,8 +186,10 @@ describe('MasterDataAdminComponent', () => {
     fixture.detectChanges();
 
     const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    const newButton = fixture.nativeElement.querySelector('.master-data-toolbar-actions .kt-btn-primary') as HTMLButtonElement | null;
 
     expect(actionButtons).toHaveLength(0);
+    expect(newButton).toBeNull();
   });
 
   it('receives row action events for CRUD candidate resources', async () => {
@@ -226,17 +228,51 @@ describe('MasterDataAdminComponent', () => {
 
     const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    expect(actionButtons).toHaveLength(2);
+    expect(actionButtons).toHaveLength(3);
 
     actionButtons[0].click();
     fixture.detectChanges();
 
     expect(component.lastTriggeredRowAction()).toEqual(
       expect.objectContaining({
-        action: expect.objectContaining({ id: 'edit' }),
+        action: expect.objectContaining({ id: 'view' }),
         row: expect.objectContaining({ id: 'department-1' })
       })
     );
+    expect(fixture.nativeElement.textContent).toContain('Visualizza');
+  });
+
+  it('opens create form from toolbar on CRUD-enabled resource', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = {
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(of(createPage([])))
+    };
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const newButton = fixture.nativeElement.querySelector('.master-data-toolbar-actions .kt-btn-primary') as HTMLButtonElement;
+    newButton.click();
+    fixture.detectChanges();
+
+    const formPanel = fixture.nativeElement.querySelector('app-master-data-form');
+    const modalOverlay = fixture.nativeElement.querySelector('.master-data-modal-overlay');
+    const modalDialog = fixture.nativeElement.querySelector('.master-data-modal');
+    expect(formPanel).not.toBeNull();
+    expect(modalOverlay).not.toBeNull();
+    expect(modalDialog).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Nuovo');
+    expect(fixture.nativeElement.textContent).toContain('Salva');
+    expect(fixture.nativeElement.textContent).toContain('Annulla');
   });
 
   it('releases the active subscription on destroy', async () => {

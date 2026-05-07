@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.62
+Versione: 1.66
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -2414,60 +2414,50 @@ Subtask:
     - `DataTableComponent` resta generico e senza logica API Master Data;
     - build e test frontend OK.
 
-- 046.2 - Analisi CRUD Master Data e configurazione form entita
-  - Stato: TODO
+- 046.2 - Master Data CRUD form foundation
+  - Stato: DONE
   - Scope:
-    - analizzare le API CRUD esistenti dei TASK-030, TASK-031 e TASK-032;
-    - distinguere entita read-only, CRUD completo e CRUD limitato;
-    - definire configurazione frontend per `create` / `update` / `delete` per entita;
-    - definire campi form per le prime entita candidate.
+    - introdurre un componente form riusabile nella feature Master Data, guidato da metadata risorsa;
+    - supportare modalita `create` / `edit` / `view` senza introdurre nuove API backend;
+    - collegare azioni `Nuovo`, `Modifica` e `Visualizza` all'apertura del form foundation;
+    - supportare campi base testuali, campo boolean, required validation, stato read-only e pulsanti `Salva` / `Annulla` / `Chiudi`.
   - Acceptance criteria:
-    - mappa entita/operazioni documentata;
-    - nessuna entita complessa/importata resa CRUD completo senza decisione esplicita.
+    - form foundation configurabile per entita candidate (Department, JobTitle, ContractType, WorkMode);
+    - nessuna mutazione backend introdotta, solo hook frontend di salvataggio per evoluzioni successive;
+    - filtri, paginazione e tabella esistenti restano invariati;
+    - build e test frontend OK.
 
-- 046.3 - Form/modal CRUD riutilizzabile
+- 046.3 - Master Data CRUD API integration foundation
   - Stato: TODO
   - Scope:
-    - creare un pattern form riutilizzabile per create/update;
-    - supportare campi base `text`, `number`, `boolean`, `date` e `select` semplice;
-    - applicare validazioni frontend minime;
-    - mostrare messaggi errore/successo coerenti e i18n.
+    - collegare la foundation CRUD form alle API CRUD backend esistenti dei TASK-030/TASK-031/TASK-032;
+    - integrare create/update sulle prime entita semplici e a basso rischio;
+    - mantenere fallback read-only sulle entita non ancora abilitate.
   - Acceptance criteria:
-    - form riusabile e configurabile;
-    - nessun editing inline nelle celle.
-
-- 046.4 - Integrazione CRUD su prime entita semplici
-  - Stato: TODO
-  - Scope:
-    - applicare il pattern a entita semplici e a basso rischio;
-    - candidate: Department, JobTitle, ContractType, WorkMode o simili;
-    - evitare per ora entita complesse/importate come ZIP/CAP se non chiaramente previste.
-  - Acceptance criteria:
-    - almeno una prima integrazione CRUD reale su entita semplice;
+    - chiamate API reali create/update introdotte senza nuove API;
     - comportamento read/list/filter/pagination esistente preservato.
 
-- 046.5 - Estensione progressiva Global / HR-business / Governance-security
+- 046.4 - Master Data CRUD delete, confirmation and error handling foundation
   - Stato: TODO
   - Scope:
-    - applicare progressivamente il pattern alle categorie gia presenti;
-    - gestire differenze tra master globali e tenant-scoped;
-    - mantenere configurazione per entita.
+    - introdurre conferma esplicita per delete/disattivazione;
+    - applicare gestione errori coerente su azioni CRUD;
+    - mantenere UX consistente con i pattern esistenti e i18n.
   - Acceptance criteria:
-    - compatibilita mantenuta con Global, HR/business e Governance/security;
-    - entita read-only o CRUD limitato chiaramente configurate.
+    - delete/disattivazione gestiti con conferma e feedback utente;
+    - error handling CRUD consistente e verificabile.
 
-- 046.6 - Test, QA e documentazione
+- 046.5 - Master Data CRUD QA and stabilization
   - Stato: TODO
   - Scope:
-    - test frontend;
-    - build frontend;
-    - QA manuale `/master-data`;
-    - aggiornamento `TASKS.md` e `ROADMAP.md` solo a completamento.
+    - regressione frontend su `/master-data` con CRUD foundation attiva;
+    - stabilizzazione test, i18n e coerenza UX;
+    - aggiornamento documentazione solo con esiti reali.
   - Acceptance criteria:
     - build frontend OK;
     - test frontend OK;
     - QA manuale documentato;
-    - documentazione aggiornata solo con risultati reali.
+    - documentazione allineata con risultati QA reali.
 
 Fuori scope:
 
@@ -2494,11 +2484,152 @@ Acceptance criteria complessivi TASK-046:
 - nessun mock usato come sostituto dei contratti API backend;
 - nessuna modifica backend salvo bug bloccante documentato.
 
-### TASK-047 - Implementare UI Employee management enterprise
+### TASK-047 - Platform Super Admin and tenant-aware permissions model
 
 Stato: TODO
 
-### TASK-048 - Implementare Security Admin UI
+Tipo: Governance / RBAC strategy
+
+Obiettivo:
+
+- Definire il modello strategico di autorizzazione tenant-aware prima delle implementazioni CRUD backend reali e della gestione utenti avanzata.
+
+Scope:
+
+- definizione ruolo globale `PLATFORM_SUPER_ADMIN`;
+- distinzione esplicita da `TENANT_ADMIN`;
+- ruoli base seed non eliminabili;
+- ruoli custom tenant-specific;
+- permessi CRUD per Global Master Data;
+- permessi CRUD per Tenant Master Data;
+- regole cross-tenant;
+- impatto su backend security e frontend visibility;
+- aggiornamento documentale di eventuali decisioni durevoli (`DECISIONS.md`) se approvate.
+
+Fuori scope:
+
+- implementazione CRUD backend reale;
+- UI completa di amministrazione utenti/ruoli.
+
+### TASK-048 - User, Role and Permission domain review
+
+Stato: TODO
+
+Tipo: Analisi dominio backend/API
+
+Obiettivo:
+
+- Analizzare il dominio gia presente per utenti, ruoli e permessi e identificare i gap rispetto al modello definito in TASK-047.
+
+Scope:
+
+- review entity/backend esistenti;
+- review DTO/API esistenti;
+- review seed/ruoli iniziali;
+- identificazione gap;
+- proposta backlog tecnico minimale per colmare i gap.
+
+Fuori scope:
+
+- implementazione UI completa;
+- enforcement permessi runtime.
+
+### TASK-049 - Permission model foundation by scope/resource/action
+
+Stato: TODO
+
+Tipo: Foundation authorization model
+
+Obiettivo:
+
+- Definire o introdurre una foundation permessi semplice ma scalabile, con formato stabile e leggibile.
+
+Modello iniziale:
+
+- scope: `PLATFORM` / `TENANT`
+- resource: `TENANT`, `USER`, `ROLE`, `PERMISSION`, `MASTER_DATA`, `EMPLOYEE`, `CONTRACT`, `DEVICE`, `PAYROLL_DOCUMENT`, `LEAVE_REQUEST`
+- action: `READ`, `CREATE`, `UPDATE`, `DELETE`, `MANAGE`
+
+Esempi:
+
+- `PLATFORM.TENANT.MANAGE`
+- `TENANT.USER.READ`
+- `TENANT.USER.MANAGE`
+- `TENANT.MASTER_DATA.READ`
+- `TENANT.MASTER_DATA.MANAGE`
+
+Note:
+
+- il frontend usa il modello per visibilita UX (menu/pagine/azioni);
+- il backend usa il modello per enforcement reale delle API;
+- modello iniziale per modulo/risorsa, senza granularita immediata per singola entita Master Data (es. `TENANT.MASTER_DATA.WORK_MODE.CREATE`).
+
+### TASK-050 - Tenant user and role administration foundation
+
+Stato: TODO
+
+Tipo: Frontend + backend foundation
+
+Obiettivo:
+
+- Preparare la base di gestione utenti e ruoli per tenant.
+
+Scope:
+
+- UI foundation per elenco utenti/ruoli;
+- assegnazione ruoli;
+- distinzione vista platform e vista tenant;
+- nessuna gestione avanzata permessi per singola entita.
+
+Fuori scope:
+
+- policy autorizzative granulari per singola entita;
+- enforcement backend completo (demandato a TASK-052).
+
+### TASK-051 - Apply permissions to frontend navigation and actions
+
+Stato: TODO
+
+Tipo: Frontend authorization UX
+
+Obiettivo:
+
+- Applicare i permessi lato frontend per menu, pagine e azioni.
+
+Scope:
+
+- nascondere/disabilitare voci menu non autorizzate;
+- controllare visibilita/accesso pagine in base ai permessi disponibili;
+- nascondere/disabilitare pulsanti CRUD;
+- usare permessi disponibili dall'utente autenticato;
+- mantenere chiaro che il frontend e solo UX, non sicurezza reale.
+
+### TASK-052 - Apply permissions to backend API authorization
+
+Stato: TODO
+
+Tipo: Backend authorization enforcement
+
+Obiettivo:
+
+- Applicare i permessi lato backend alle API.
+
+Scope:
+
+- protezione endpoint;
+- controllo permessi per azioni CRUD;
+- rifiuto richieste non autorizzate anche se inviate manualmente;
+- nessuna fiducia nel solo frontend.
+
+Nota di sicurezza:
+
+- il backend resta il punto di enforcement reale; il frontend non sostituisce mai i controlli API.
+
+### TASK-053 - Implementare UI Employee management enterprise
+
+Stato: TODO
+
+### TASK-054 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -2510,47 +2641,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-049 - Implementare UI Device governance
+### TASK-055 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-050 - Implementare UI PayrollDocument
+### TASK-056 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-051 - Implementare UI LeaveRequest
+### TASK-057 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-052 - Implementare UI HolidayCalendar
+### TASK-058 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-053 - Implementare Audit UI / compliance explorer
+### TASK-059 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-054 - Implementare UI disciplinary governance
+### TASK-060 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-055 - Implementare Platform Operator / Super Admin governance
+### TASK-061 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-056 - Implementare Cross-tenant admin UI
+### TASK-062 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-057 - Configurare logging, monitoring e observability enterprise
+### TASK-063 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-058 - Test integrato MVP enterprise completo
+### TASK-064 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -2560,6 +2691,10 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.66 | 2026-05-07 | Ottimizzati TASK-047..TASK-052 per ridurre sovrapposizioni: 047 strategico/documentale, 048 gap analysis dominio, 049 foundation modello permessi `SCOPE.RESOURCE.ACTION`, 050 foundation utenti/ruoli tenant, 051 UX frontend authorization, 052 enforcement backend reale; chiarita separazione frontend UX vs backend security. |
+| 1.65 | 2026-05-07 | Aggiornato TASK-047 come "Platform Super Admin and tenant-aware permissions model" con scope esplicito su `PLATFORM_SUPER_ADMIN`, distinzione `TENANT_ADMIN`, ruoli seed/custom tenant-specific, permessi CRUD Global/Tenant Master Data, regole cross-tenant e impatto frontend/backend. |
+| 1.64 | 2026-05-07 | Backlog riorganizzato dopo TASK-046: subtask 046 riallineati (`046.1`-`046.5`), introdotto blocco authorization/Super Admin con TASK-047..TASK-052 (strategy, domain review, permission model, tenant user/role foundation, enforcement frontend/backend), task successivi rinumerati in modo coerente fino a TASK-064. |
+| 1.63 | 2026-05-07 | TASK-046.2 completato con Master Data CRUD form foundation frontend: nuovo componente form metadata-driven (create/edit/view), integrazione con azioni `Nuovo`/`Modifica`/`Visualizza`, validazioni base required/read-only, i18n `it/fr/en`, nessuna API backend nuova e test/build frontend validati. |
 | 1.62 | 2026-05-07 | TASK-046.1 completato con CRUD action foundation frontend: `DataTableComponent` esteso con azioni riga configurabili, eventi verso il container `/master-data`, entita candidate abilitate con pulsanti `edit` / `delete`, entita non candidate mantenute read-only e test/build frontend validati. |
 | 1.61 | 2026-05-07 | TASK-046 ridefinito come contenitore "Master Data CRUD standard foundation": standard CRUD frontend riutilizzabile basato su `DataTableComponent`, azioni configurabili per entita, form/modal o pannello laterale per create/update, API CRUD backend esistenti obbligatorie, editing inline e nuove API backend fuori scope. |
 | 1.60 | 2026-05-06 | TASK-045 completato con componente shared read-only `DataTableComponent`, modello colonne configurabile, campi nested, stati loading/error/empty, paginazione tramite eventi e integrazione in `/master-data`; filtri e orchestrazione API restano nel container, build/test frontend validati. |

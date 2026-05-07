@@ -4,9 +4,16 @@
       <div>
         <h1 id="master-data-title" class="text-xl font-semibold text-mono">{{ i18n.t('masterData.title') }}</h1>
       </div>
-      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="loading()" (click)="refresh()">
-        {{ i18n.t('masterData.refresh') }}
-      </button>
+      <div class="master-data-toolbar-actions">
+        @if (canCreate()) {
+          <button class="kt-btn kt-btn-primary kt-btn-sm" type="button" [disabled]="loading()" (click)="openCreateForm()">
+            {{ i18n.t('masterData.actions.new') }}
+          </button>
+        }
+        <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="loading()" (click)="refresh()">
+          {{ i18n.t('masterData.refresh') }}
+        </button>
+      </div>
     </div>
 
     <div class="master-data-filters">
@@ -49,5 +56,20 @@
       (rowAction)="handleRowAction($event)"
       (previousPage)="goToPreviousPage()"
       (nextPage)="goToNextPage()" />
+
+    @if (isFormOpen()) {
+      <div class="master-data-modal-overlay" role="presentation">
+        <div class="master-data-modal" role="dialog" aria-modal="true" aria-labelledby="master-data-form-title">
+          <app-master-data-form
+            [mode]="openFormMode()"
+            [resourceTitleKey]="selectedResource().titleKey"
+            [fields]="formFields()"
+            [value]="formValue()"
+            (save)="handleFormSave($event)"
+            (cancel)="handleFormCancel()"
+            (close)="closeForm()" />
+        </div>
+      </div>
+    }
   </div>
 </section>
