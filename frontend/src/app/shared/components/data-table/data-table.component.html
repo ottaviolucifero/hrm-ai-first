@@ -19,6 +19,9 @@
               {{ i18n.t(column.labelKey) }}
             </th>
           }
+          @if (visibleRowActions().length > 0) {
+            <th scope="col" class="data-table-actions-header">{{ i18n.t('masterData.columns.actions') }}</th>
+          }
         </tr>
       </thead>
       <tbody>
@@ -31,6 +34,24 @@
                 [class.data-table-cell-right]="columnAlignment(column) === 'right'"
               >
                 {{ displayValue(row, column) }}
+              </td>
+            }
+            @if (visibleRowActions().length > 0) {
+              <td class="data-table-actions-cell">
+                <div class="data-table-actions">
+                  @for (action of visibleRowActions(); track trackRowAction($index, action)) {
+                    <button
+                      class="kt-btn kt-btn-outline kt-btn-sm data-table-action"
+                      type="button"
+                      [disabled]="isRowActionDisabled(action, row)"
+                      [class.data-table-action-danger]="action.tone === 'danger'"
+                      [attr.aria-label]="i18n.t(action.labelKey)"
+                      [title]="i18n.t(action.labelKey)"
+                      (click)="emitRowAction(action, row)">
+                      {{ i18n.t(action.labelKey) }}
+                    </button>
+                  }
+                </div>
               </td>
             }
           </tr>

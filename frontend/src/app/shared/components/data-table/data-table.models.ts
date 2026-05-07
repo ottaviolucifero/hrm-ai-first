@@ -15,6 +15,19 @@ export type DataTableColumnAlign = 'left' | 'center' | 'right';
 
 export type DataTableRow = Record<string, unknown>;
 
+export interface DataTableAction<T extends DataTableRow = DataTableRow> {
+  readonly id: string;
+  readonly labelKey: I18nKey;
+  readonly visible?: boolean;
+  readonly tone?: 'default' | 'danger';
+  readonly disabled?: boolean | ((row: T) => boolean);
+}
+
+export interface DataTableRowActionEvent<T extends DataTableRow = DataTableRow> {
+  readonly action: DataTableAction<T>;
+  readonly row: T;
+}
+
 export interface DataTableColumn<T extends DataTableRow = DataTableRow> {
   readonly key: string;
   readonly labelKey: I18nKey;
