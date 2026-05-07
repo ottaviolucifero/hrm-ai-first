@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.60
-Ultimo aggiornamento: 2026-05-06
+Versione: 1.61
+Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
 ---
@@ -2292,7 +2292,7 @@ Subtask:
     - regole di allineamento automatico definite;
     - le colonne standard opzionali si mostrano solo se configurate e disponibili nei dati.
 
-- 045.2 - Creazione componente shared MasterDataTable read-only
+- 045.2 - Creazione componente shared DataTable read-only
   - Stato: DONE
   - Scope:
     - creare il componente shared tabellare read-only;
@@ -2367,21 +2367,130 @@ Acceptance criteria complessivi TASK-045:
 
 Completato:
 
-- Creato componente shared read-only `MasterDataTableComponent` in `frontend/src/app/shared/components/master-data-table/`.
+- Creato componente shared read-only `DataTableComponent` in `frontend/src/app/shared/components/data-table/`.
 - Definito modello colonne configurabile con chiavi nested, visibilita, ordine visuale, `width` / `minWidth`, tipo colonna, allineamento automatico, override `align` e formatter opzionale.
 - Supportati rendering righe generiche, colonne standard opzionali solo se configurate e presenti nei dati, molte colonne con scroll orizzontale, loading/error/empty state e paginazione tramite eventi.
 - Integrata la tabella shared nella pagina `/master-data` mantenendo nel container selezione categoria/entita, filtro generico, debounce, page/search, refresh e chiamate API.
 - Aggiunti test frontend per componente shared e mantenuti test di integrazione della pagina Master Data.
 - Validazione frontend: `npm.cmd run build` OK, `npm.cmd test` OK (34 test passed).
 
-### TASK-046 - Implementare UI Master Data Admin CRUD
+### TASK-046 - Master Data CRUD standard foundation
 
 Stato: TODO
 
+Tipo: Frontend CRUD standard foundation (contenitore)
+
 Obiettivo:
 
-- Implementare create/update/delete UI per Master Data Admin usando le API CRUD backend dei TASK-030, TASK-031 e TASK-032.
-- Non usare mock come sostituto dei contratti API backend.
+- Definire e implementare in modo incrementale uno standard CRUD frontend riutilizzabile per le Master Data, basato sul componente shared generico `DataTableComponent`.
+- Mantenere configurabilita per entita diverse e usare le API CRUD backend gia esistenti dai TASK-030, TASK-031 e TASK-032.
+
+Decisioni funzionali:
+
+- Il CRUD non deve essere una patch specifica per una sola tabella.
+- Il CRUD Master Data deve diventare uno standard riutilizzabile per le Master Data.
+- La tabella resta read-only come rendering principale.
+- Le azioni CRUD devono essere configurabili per entita.
+- L'editing inline nelle celle resta fuori scope iniziale.
+- Il pattern preferito e: `DataTableComponent` read-only, azioni riga e form/modal o pannello laterale per create/update.
+- Le entita importate o globali possono avere CRUD limitato o restare read-only.
+- Le entita tenant-scoped semplici possono essere candidate per CRUD completo.
+- Non usare mock come sostituto delle API backend.
+- Nessuna modifica backend prevista nel TASK-046, salvo bug bloccante documentato.
+- Rispettare i18n `it` / `fr` / `en`.
+- Nessun redesign UI.
+
+Subtask:
+- 046.1 - Analisi CRUD Master Data e configurazione entita
+  - Stato: TODO
+  - Scope:
+    - analizzare le API CRUD esistenti dei TASK-030, TASK-031 e TASK-032;
+    - distinguere entita read-only, CRUD completo e CRUD limitato;
+    - definire configurazione frontend per abilitare/disabilitare create/update/delete per entita;
+    - definire campi form per entita.
+  - Acceptance criteria:
+    - mappa entita/operazioni documentata nel codice o nella configurazione frontend;
+    - nessuna entita complessa/importata resa CRUD completo senza decisione esplicita.
+
+- 046.2 - Azioni standard DataTable/container
+  - Stato: TODO
+  - Scope:
+    - definire pattern per pulsante Nuovo;
+    - definire azioni riga Modifica e Disattiva/Elimina;
+    - gestire eventi dal container `/master-data`;
+    - mantenere `DataTableComponent` generico e non legato alle API Master Data.
+  - Acceptance criteria:
+    - azioni configurabili per entita;
+    - `DataTableComponent` resta riutilizzabile fuori dal dominio Master Data.
+
+- 046.3 - Form/modal CRUD riutilizzabile
+  - Stato: TODO
+  - Scope:
+    - creare un pattern form riutilizzabile per create/update;
+    - supportare campi base `text`, `number`, `boolean`, `date` e `select` semplice;
+    - applicare validazioni frontend minime;
+    - mostrare messaggi errore/successo coerenti e i18n.
+  - Acceptance criteria:
+    - form riusabile e configurabile;
+    - nessun editing inline nelle celle.
+
+- 046.4 - Integrazione CRUD su prime entita semplici
+  - Stato: TODO
+  - Scope:
+    - applicare il pattern a entita semplici e a basso rischio;
+    - candidate: Department, JobTitle, ContractType, WorkMode o simili;
+    - evitare per ora entita complesse/importate come ZIP/CAP se non chiaramente previste.
+  - Acceptance criteria:
+    - almeno una prima integrazione CRUD reale su entita semplice;
+    - comportamento read/list/filter/pagination esistente preservato.
+
+- 046.5 - Estensione progressiva Global / HR-business / Governance-security
+  - Stato: TODO
+  - Scope:
+    - applicare progressivamente il pattern alle categorie gia presenti;
+    - gestire differenze tra master globali e tenant-scoped;
+    - mantenere configurazione per entita.
+  - Acceptance criteria:
+    - compatibilita mantenuta con Global, HR/business e Governance/security;
+    - entita read-only o CRUD limitato chiaramente configurate.
+
+- 046.6 - Test, QA e documentazione
+  - Stato: TODO
+  - Scope:
+    - test frontend;
+    - build frontend;
+    - QA manuale `/master-data`;
+    - aggiornamento `TASKS.md` e `ROADMAP.md` solo a completamento.
+  - Acceptance criteria:
+    - build frontend OK;
+    - test frontend OK;
+    - QA manuale documentato;
+    - documentazione aggiornata solo con risultati reali.
+
+Fuori scope:
+
+- editing inline nelle celle;
+- drag & drop colonne;
+- preferenze utente colonne;
+- lookup remoti complessi;
+- validazioni avanzate cross-field;
+- workflow approvativi;
+- RBAC runtime UI;
+- nuove API backend;
+- redesign della pagina;
+- modifica sidebar/header/shell;
+- modifica login/JWT/security.
+
+Acceptance criteria complessivi TASK-046:
+
+- standard CRUD Master Data chiaro e riutilizzabile;
+- CRUD configurabile per entita;
+- uso delle API backend esistenti dei TASK-030, TASK-031 e TASK-032;
+- `DataTableComponent` resta generico e non contiene logica API Master Data;
+- primo pattern CRUD senza editing inline;
+- i18n `it` / `fr` / `en` rispettato;
+- nessun mock usato come sostituto dei contratti API backend;
+- nessuna modifica backend salvo bug bloccante documentato.
 
 ### TASK-047 - Implementare UI Employee management enterprise
 
@@ -2449,7 +2558,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 1.60 | 2026-05-06 | TASK-045 completato con componente shared read-only `MasterDataTableComponent`, modello colonne configurabile, campi nested, stati loading/error/empty, paginazione tramite eventi e integrazione in `/master-data`; filtri e orchestrazione API restano nel container, build/test frontend validati. |
+| 1.61 | 2026-05-07 | TASK-046 ridefinito come contenitore "Master Data CRUD standard foundation": standard CRUD frontend riutilizzabile basato su `DataTableComponent`, azioni configurabili per entita, form/modal o pannello laterale per create/update, API CRUD backend esistenti obbligatorie, editing inline e nuove API backend fuori scope. |
+| 1.60 | 2026-05-06 | TASK-045 completato con componente shared read-only `DataTableComponent`, modello colonne configurabile, campi nested, stati loading/error/empty, paginazione tramite eventi e integrazione in `/master-data`; filtri e orchestrazione API restano nel container, build/test frontend validati. |
 | 1.59 | 2026-05-06 | TASK-045 scomposto in subtask incrementali 045.1-045.6: configurazione colonne, componente shared read-only, stati UI/paginazione, integrazione `/master-data`, test e backlog evolutivo; confermato che filtri restano nel container e che inline edit/drag&drop/preferenze utente restano fuori scope. |
 | 1.58 | 2026-05-06 | Governance/backlog frontend chiariti: aggiunta regola esplicita su riuso tabelle Master Data in `frontend/AGENTS.md`; introdotto TASK-045 dedicato al refactoring shared della tabella Master Data; task successivi rinumerati di +1 a partire dall'ex TASK-045. |
 | 1.57 | 2026-05-06 | TASK-044 completato: import CAP italiani da dataset JSON acquistato normalizzato in CSV (`8465` record validi), servizio backend idempotente con report import, endpoint `/api/master-data/global/zip-codes/import/italy`, test backend su validazione/idempotenza/casi invalidi e regressione backend/frontend verificata; nessun CAP estero, nessuna modifica frontend/security. |

@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.57
-Ultimo aggiornamento: 2026-05-06
+Versione: 1.58
+Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
 ---
@@ -95,7 +95,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-046: UI Master Data Admin CRUD
+- TASK-046: Master Data CRUD standard foundation
 
 ---
 
@@ -173,11 +173,11 @@ Frontend governance is active: UI tasks must analyze and reuse existing Angular 
 Logo brand color governance is active: frontend UI tasks must use the documented deep indigo, navy, accent blue, violet-blue and soft highlight tint consistently when the task scope includes visual implementation, without opportunistic redesign.
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
-Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 pagination/generic filters plus TASK-045 shared table refactoring are completed before proceeding to full CRUD UI.
+Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 pagination/generic filters plus TASK-045 shared table refactoring are completed before proceeding to the reusable Master Data CRUD standard foundation.
 
 Da fare:
 
-- TASK-046 UI Master Data Admin CRUD
+- TASK-046 Master Data CRUD standard foundation
 
 Nota roadmap TASK-045:
 
@@ -185,6 +185,14 @@ Nota roadmap TASK-045:
 - Filtri fuori dal componente tabella (restano nel container/pagina).
 - Fuori scope in TASK-045: inline editing/CRUD dinamico, drag & drop colonne, preferenze utente colonne.
 - Le estensioni fuori scope verranno trattate con task futuri dedicati.
+
+Nota roadmap TASK-046:
+
+- TASK-046 definisce uno standard CRUD frontend incrementale per Master Data, non una patch CRUD specifica per una sola tabella.
+- Il pattern preferito resta `DataTableComponent` read-only con azioni configurabili e form/modal o pannello laterale per create/update.
+- Il CRUD usa le API backend gia esistenti dei TASK-030, TASK-031 e TASK-032; non sono previste nuove API backend salvo bug bloccante documentato.
+- Editing inline, drag & drop colonne, preferenze utente colonne, lookup remoti complessi, RBAC runtime UI e redesign restano fuori scope.
+- Entita importate o globali possono restare read-only o CRUD limitato; entita tenant-scoped semplici sono candidate per il primo CRUD completo.
 
 ---
 
@@ -262,6 +270,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.58 | 2026-05-07 | TASK-046 ridefinito come "Master Data CRUD standard foundation": prossimo step orientato a standard CRUD frontend riutilizzabile basato su `DataTableComponent`, azioni configurabili, form/modal o pannello laterale, API CRUD backend esistenti e sviluppo incrementale senza editing inline o nuove API backend. |
 | 1.57 | 2026-05-06 | TASK-045 completato con componente shared read-only per tabelle Master Data, colonne configurabili, campi nested, stati UI e paginazione tramite eventi integrati in `/master-data`; prossimo passo aggiornato a TASK-046 UI Master Data Admin CRUD. |
 | 1.56 | 2026-05-06 | TASK-045 riallineato come contenitore di subtask frontend incrementali (045.1-045.6) per Shared Master Data table component: primo rilascio read-only, filtri lasciati al container, evoluzioni avanzate (inline edit/CRUD dinamico, drag&drop colonne, preferenze utente, lookup dinamiche, validazioni avanzate) separate in backlog futuro. |
 | 1.55 | 2026-05-06 | Governance/backlog frontend aggiornati: TASK-044 resta dedicato a import/visualizzazione CAP italiani; refactoring shared della tabella Master Data isolato nel nuovo TASK-045; task successivi rinumerati di +1. |
