@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.67
+Versione: 1.68
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -222,6 +222,7 @@ Nota roadmap TASK-046:
 - Filtro `Attivi` / `Inattivi` e azione `Riattiva` restano follow-up dedicati.
 - TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
 - TASK-047 introduce la cancellazione fisica sicura dei Master Data come azione distinta da `Disattiva`, consentita solo per record non referenziati.
+- TASK-047 e scomposto in tre subtask incrementali: 047.1 backend foundation, 047.2 frontend action, 047.3 QA and hardening.
 - Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-048..TASK-053) con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data.
 - Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
 
@@ -301,6 +302,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.68 | 2026-05-07 | TASK-047 scomposto in subtask incrementali senza rinumerare il backlog successivo: 047.1 backend foundation delete fisico sicuro, 047.2 azione frontend `Elimina`, 047.3 QA/hardening. |
 | 1.67 | 2026-05-07 | Introdotto TASK-047 "Master Data physical delete for non-referenced records" come follow-up distinto dalla disattivazione logica: `Disattiva` resta `active=false`, `Elimina` sara delete fisico solo per record non referenziati; blocco Super Admin/RBAC slittato a TASK-048..TASK-053 e range futuri aggiornati fino a TASK-065. |
 | 1.66 | 2026-05-07 | TASK-046.4 riallineato alla disattivazione logica `active=false`: UX aggiornata da `Elimina` a `Disattiva`, conferma/feedback/error handling i18n coerenti, refresh lista mantenuto e follow-up filtro attivi/inattivi + riattiva demandati a task successivi. |
 | 1.65 | 2026-05-07 | TASK-046.4 completato con delete/disattivazione frontend su `/master-data`, conferma esplicita, feedback successo/errore e refresh coerente della lista; prossimo step aggiornato a TASK-046.5. |
