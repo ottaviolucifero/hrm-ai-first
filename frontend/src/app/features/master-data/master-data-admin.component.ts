@@ -2,13 +2,13 @@ import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize } from 'rxjs';
 
 import { I18nService } from '../../core/i18n/i18n.service';
+import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import {
   DEFAULT_MASTER_DATA_PAGE_SIZE,
   EMPTY_MASTER_DATA_PAGE,
   MASTER_DATA_CATEGORIES,
   MasterDataCategory,
   MasterDataCategoryId,
-  MasterDataColumn,
   MasterDataPage,
   MasterDataQuery,
   MasterDataResource,
@@ -18,10 +18,11 @@ import { MasterDataService } from './master-data.service';
 
 @Component({
   selector: 'app-master-data-admin',
+  imports: [DataTableComponent],
   templateUrl: './master-data-admin.component.html',
   styleUrl: './master-data-admin.component.scss'
 })
-export class MasterDataAdminComponent {
+export class MasterDataAdminComponent implements OnDestroy {
   private readonly masterDataService = inject(MasterDataService);
   protected readonly i18n = inject(I18nService);
 
@@ -45,10 +46,6 @@ export class MasterDataAdminComponent {
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
   protected readonly rows = computed(() => this.pageData().content);
-  protected readonly paginationSummary = computed(() => {
-    const pageData = this.pageData();
-    return `${this.i18n.t('masterData.pagination.page')} ${pageData.page + 1} ${this.i18n.t('masterData.pagination.of')} ${Math.max(pageData.totalPages, 1)} (${pageData.totalElements} ${this.i18n.t('masterData.pagination.results')})`;
-  });
   protected readonly selectedCategory = computed(
     () => this.categories.find((category) => category.id === this.selectedCategoryId()) ?? this.categories[0]
   );
@@ -114,39 +111,6 @@ export class MasterDataAdminComponent {
     this.loadSelectedResource();
   }
 
-  protected trackRow(_index: number, row: MasterDataRow): unknown {
-    return row['id'] ?? _index;
-  }
-
-  protected displayValue(row: MasterDataRow, column: MasterDataColumn): string {
-    const value = this.resolveValue(row, column.key);
-
-    if (value === null || value === undefined || value === '') {
-      return '';
-    }
-
-    if (column.kind === 'boolean') {
-      return value === true ? this.i18n.t('masterData.boolean.yes') : this.i18n.t('masterData.boolean.no');
-    }
-
-    if (column.kind === 'date' && typeof value === 'string') {
-      const parsedDate = new Date(value);
-      if (!Number.isNaN(parsedDate.getTime())) {
-        return new Intl.DateTimeFormat(this.i18n.language(), {
-          dateStyle: 'short',
-          timeStyle: 'short'
-        }).format(parsedDate);
-      }
-    }
-
-    if (typeof value === 'object') {
-      const reference = value as Record<string, unknown>;
-      return String(reference['name'] ?? reference['code'] ?? '');
-    }
-
-    return String(value);
-  }
-
   private loadSelectedResource(): void {
     const resource = this.selectedResource();
     const query = this.buildQuery();
@@ -182,13 +146,4 @@ export class MasterDataAdminComponent {
     };
   }
 
-  private resolveValue(row: MasterDataRow, key: string): unknown {
-    return key.split('.').reduce<unknown>((currentValue, segment) => {
-      if (!currentValue || typeof currentValue !== 'object') {
-        return undefined;
-      }
-
-      return (currentValue as Record<string, unknown>)[segment];
-    }, row);
-  }
 }

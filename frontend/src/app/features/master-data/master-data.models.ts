@@ -1,14 +1,11 @@
 import { I18nKey } from '../../core/i18n/i18n.messages';
+import { DataTableColumn, DataTableColumnType } from '../../shared/components/data-table/data-table.models';
 
 export type MasterDataCategoryId = 'global' | 'hrBusiness' | 'governanceSecurity';
-export type MasterDataColumnKind = 'text' | 'boolean' | 'date';
+export type MasterDataColumnKind = DataTableColumnType;
 export const DEFAULT_MASTER_DATA_PAGE_SIZE = 25;
 
-export interface MasterDataColumn {
-  readonly key: string;
-  readonly labelKey: I18nKey;
-  readonly kind?: MasterDataColumnKind;
-}
+export type MasterDataColumn = DataTableColumn<MasterDataRow>;
 
 export interface MasterDataResource {
   readonly id: string;
@@ -64,13 +61,13 @@ const NAME_COLUMN: MasterDataColumn = {
 const ACTIVE_COLUMN: MasterDataColumn = {
   key: 'active',
   labelKey: 'masterData.columns.active',
-  kind: 'boolean'
+  type: 'boolean'
 };
 
 const UPDATED_AT_COLUMN: MasterDataColumn = {
   key: 'updatedAt',
   labelKey: 'masterData.columns.updatedAt',
-  kind: 'date'
+  type: 'datetime'
 };
 
 const TENANT_COLUMN: MasterDataColumn = {
@@ -121,19 +118,19 @@ const SEVERITY_LEVEL_COLUMN: MasterDataColumn = {
 const STRONG_AUTH_REQUIRED_COLUMN: MasterDataColumn = {
   key: 'strongAuthRequired',
   labelKey: 'masterData.columns.strongAuthRequired',
-  kind: 'boolean'
+  type: 'boolean'
 };
 
 const SYSTEM_ROLE_COLUMN: MasterDataColumn = {
   key: 'systemRole',
   labelKey: 'masterData.columns.systemFlag',
-  kind: 'boolean'
+  type: 'boolean'
 };
 
 const SYSTEM_PERMISSION_COLUMN: MasterDataColumn = {
   key: 'systemPermission',
   labelKey: 'masterData.columns.systemFlag',
-  kind: 'boolean'
+  type: 'boolean'
 };
 
 export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
