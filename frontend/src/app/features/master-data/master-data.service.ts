@@ -33,4 +33,8 @@ export class MasterDataService {
   updateRow(resource: MasterDataResource, id: string, payload: MasterDataMutationRequest): Observable<MasterDataRow> {
     return this.http.put<MasterDataRow>(`${resource.endpoint}/${id}`, payload);
   }
+
+  deleteRow(resource: MasterDataResource, id: string): Observable<void> {
+    return this.http.delete<void>(`${resource.endpoint}/${id}`);
+  }
 }

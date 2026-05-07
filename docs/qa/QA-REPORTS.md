@@ -109,3 +109,19 @@ Nota operativa:
 - Backend test eseguiti/non eseguiti: non eseguiti, perche non risultano file backend modificati nel working tree
 - QA manuale browser eseguita/non eseguita: non eseguita in questo pass
 - Stato finale: build frontend OK; test frontend OK (11 file test passed, 46 test passed); scope TASK-046.3 confermato
+
+### TASK-046.4 - Master Data CRUD delete, confirmation and error handling foundation
+
+- Data: 2026-05-07
+- Branch: `task-046-4-master-data-delete-deactivation`
+- Task: TASK-046.4 - Master Data CRUD delete, confirmation and error handling foundation
+- Agente/Modello usato: GPT-5 Codex (sviluppo e verifica tecnica)
+- Area verificata: disattivazione logica backend+frontend su `/master-data` per entita HR/business candidate, conferma esplicita, feedback successo/errore, refresh lista, i18n `it/fr/en`, mantenimento filtro/paginazione/tabella shared
+- Comandi eseguiti: `cd backend && .\mvnw.cmd test`, `cd frontend && npm.cmd run build`, `cd frontend && npm.cmd test`, `git status --short --branch`
+- Esito: PASS
+- Regressioni trovate: nessuna regressione automatica rilevata; `create` / `edit` / `view`, filtro, paginazione e DataTable shared preservati
+- Fix richiesti: nessuno in questo passaggio
+- Backend test eseguiti/non eseguiti: eseguiti (`mvnw.cmd test`), esito verde (100 test, 0 failure, 0 errori)
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Limiti noti: la lista continua a mostrare anche record inattivi perche le API attuali non filtrano `active=true`; filtro `Attivi` / `Inattivi`, azione `Riattiva` e gestione permessi runtime RBAC restano fuori scope in TASK-046.4
+- Stato finale: backend test OK (100/100), build frontend OK, test frontend OK (11 file test passed, 50 test passed)
