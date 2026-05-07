@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.61
+Versione: 1.62
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -2376,7 +2376,7 @@ Completato:
 
 ### TASK-046 - Master Data CRUD standard foundation
 
-Stato: TODO
+Stato: IN_PROGRESS
 
 Tipo: Frontend CRUD standard foundation (contenitore)
 
@@ -2401,27 +2401,29 @@ Decisioni funzionali:
 - Nessun redesign UI.
 
 Subtask:
-- 046.1 - Analisi CRUD Master Data e configurazione entita
+- 046.1 - Master Data CRUD action foundation
+  - Stato: DONE
+  - Scope:
+    - analizzare la pagina `/master-data` e il componente shared `DataTableComponent`;
+    - definire configurazione frontend per abilitare/disabilitare azioni riga per entita;
+    - estendere `DataTableComponent` con azioni configurabili e output evento verso il container;
+    - mantenere read-only le entita non candidate al CRUD.
+  - Acceptance criteria:
+    - mappa entita/azioni documentata nel codice o nella configurazione frontend;
+    - azioni visuali `edit` / `delete` presenti solo sulle entita candidate;
+    - `DataTableComponent` resta generico e senza logica API Master Data;
+    - build e test frontend OK.
+
+- 046.2 - Analisi CRUD Master Data e configurazione form entita
   - Stato: TODO
   - Scope:
     - analizzare le API CRUD esistenti dei TASK-030, TASK-031 e TASK-032;
     - distinguere entita read-only, CRUD completo e CRUD limitato;
-    - definire configurazione frontend per abilitare/disabilitare create/update/delete per entita;
-    - definire campi form per entita.
+    - definire configurazione frontend per `create` / `update` / `delete` per entita;
+    - definire campi form per le prime entita candidate.
   - Acceptance criteria:
-    - mappa entita/operazioni documentata nel codice o nella configurazione frontend;
+    - mappa entita/operazioni documentata;
     - nessuna entita complessa/importata resa CRUD completo senza decisione esplicita.
-
-- 046.2 - Azioni standard DataTable/container
-  - Stato: TODO
-  - Scope:
-    - definire pattern per pulsante Nuovo;
-    - definire azioni riga Modifica e Disattiva/Elimina;
-    - gestire eventi dal container `/master-data`;
-    - mantenere `DataTableComponent` generico e non legato alle API Master Data.
-  - Acceptance criteria:
-    - azioni configurabili per entita;
-    - `DataTableComponent` resta riutilizzabile fuori dal dominio Master Data.
 
 - 046.3 - Form/modal CRUD riutilizzabile
   - Stato: TODO
@@ -2558,6 +2560,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.62 | 2026-05-07 | TASK-046.1 completato con CRUD action foundation frontend: `DataTableComponent` esteso con azioni riga configurabili, eventi verso il container `/master-data`, entita candidate abilitate con pulsanti `edit` / `delete`, entita non candidate mantenute read-only e test/build frontend validati. |
 | 1.61 | 2026-05-07 | TASK-046 ridefinito come contenitore "Master Data CRUD standard foundation": standard CRUD frontend riutilizzabile basato su `DataTableComponent`, azioni configurabili per entita, form/modal o pannello laterale per create/update, API CRUD backend esistenti obbligatorie, editing inline e nuove API backend fuori scope. |
 | 1.60 | 2026-05-06 | TASK-045 completato con componente shared read-only `DataTableComponent`, modello colonne configurabile, campi nested, stati loading/error/empty, paginazione tramite eventi e integrazione in `/master-data`; filtri e orchestrazione API restano nel container, build/test frontend validati. |
 | 1.59 | 2026-05-06 | TASK-045 scomposto in subtask incrementali 045.1-045.6: configurazione colonne, componente shared read-only, stati UI/paginazione, integrazione `/master-data`, test e backlog evolutivo; confermato che filtri restano nel container e che inline edit/drag&drop/preferenze utente restano fuori scope. |

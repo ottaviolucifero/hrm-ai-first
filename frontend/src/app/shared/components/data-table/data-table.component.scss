@@ -51,6 +51,25 @@
   text-align: right;
 }
 
+.data-table-actions-header,
+.data-table-actions-cell {
+  text-align: right;
+}
+
+.data-table-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.data-table-action {
+  white-space: nowrap;
+}
+
+.data-table-action-danger {
+  color: var(--color-destructive, #b91c1c);
+}
+
 .master-data-pagination {
   display: flex;
   align-items: center;

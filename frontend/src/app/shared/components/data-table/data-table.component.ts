@@ -3,10 +3,12 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 
 import { I18nService } from '../../../core/i18n/i18n.service';
 import {
+  DataTableAction,
   DataTableColumn,
   DataTableColumnAlign,
   DataTableColumnType,
   DataTablePage,
+  DataTableRowActionEvent,
   DataTableRow
 } from './data-table.models';
 
@@ -21,15 +23,21 @@ export class DataTableComponent {
 
   @Input() columns: readonly DataTableColumn[] = [];
   @Input() rows: readonly DataTableRow[] = [];
+  @Input() rowActions: readonly DataTableAction[] = [];
   @Input() pageData: DataTablePage | null = null;
   @Input() loading = false;
   @Input() hasError = false;
 
   @Output() previousPage = new EventEmitter<void>();
   @Output() nextPage = new EventEmitter<void>();
+  @Output() rowAction = new EventEmitter<DataTableRowActionEvent>();
 
   protected visibleColumns(): readonly DataTableColumn[] {
     return this.columns.filter((column) => column.visible !== false);
+  }
+
+  protected visibleRowActions(): readonly DataTableAction[] {
+    return this.rowActions.filter((action) => action.visible !== false);
   }
 
   protected trackColumn(_index: number, column: DataTableColumn): string {
@@ -38,6 +46,10 @@ export class DataTableComponent {
 
   protected trackRow(index: number, row: DataTableRow): unknown {
     return row['id'] ?? index;
+  }
+
+  protected trackRowAction(_index: number, action: DataTableAction): string {
+    return action.id;
   }
 
   protected displayValue(row: DataTableRow, column: DataTableColumn): string {
@@ -100,6 +112,18 @@ export class DataTableComponent {
 
   protected paginationSummary(pageData: DataTablePage): string {
     return `${this.i18n.t('masterData.pagination.page')} ${pageData.page + 1} ${this.i18n.t('masterData.pagination.of')} ${Math.max(pageData.totalPages, 1)} (${pageData.totalElements} ${this.i18n.t('masterData.pagination.results')})`;
+  }
+
+  protected isRowActionDisabled(action: DataTableAction, row: DataTableRow): boolean {
+    return typeof action.disabled === 'function' ? action.disabled(row) : action.disabled === true;
+  }
+
+  protected emitRowAction(action: DataTableAction, row: DataTableRow): void {
+    if (this.isRowActionDisabled(action, row)) {
+      return;
+    }
+
+    this.rowAction.emit({ action, row });
   }
 
   private columnType(column: DataTableColumn): DataTableColumnType {

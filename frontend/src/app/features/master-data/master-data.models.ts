@@ -1,17 +1,25 @@
 import { I18nKey } from '../../core/i18n/i18n.messages';
-import { DataTableColumn, DataTableColumnType } from '../../shared/components/data-table/data-table.models';
+import {
+  DataTableAction,
+  DataTableColumn,
+  DataTableColumnType,
+  DataTableRowActionEvent
+} from '../../shared/components/data-table/data-table.models';
 
 export type MasterDataCategoryId = 'global' | 'hrBusiness' | 'governanceSecurity';
 export type MasterDataColumnKind = DataTableColumnType;
 export const DEFAULT_MASTER_DATA_PAGE_SIZE = 25;
 
 export type MasterDataColumn = DataTableColumn<MasterDataRow>;
+export type MasterDataRowAction = DataTableAction<MasterDataRow>;
+export type MasterDataRowActionEvent = DataTableRowActionEvent<MasterDataRow>;
 
 export interface MasterDataResource {
   readonly id: string;
   readonly titleKey: I18nKey;
   readonly endpoint: string;
   readonly columns: readonly MasterDataColumn[];
+  readonly rowActions?: readonly MasterDataRowAction[];
 }
 
 export interface MasterDataCategory {
@@ -133,6 +141,18 @@ const SYSTEM_PERMISSION_COLUMN: MasterDataColumn = {
   type: 'boolean'
 };
 
+const STANDARD_CRUD_ROW_ACTIONS: readonly MasterDataRowAction[] = [
+  {
+    id: 'edit',
+    labelKey: 'masterData.actions.edit'
+  },
+  {
+    id: 'delete',
+    labelKey: 'masterData.actions.delete',
+    tone: 'danger'
+  }
+] as const;
+
 export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
   {
     id: 'global',
@@ -207,19 +227,22 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         id: 'departments',
         titleKey: 'masterData.entities.departments',
         endpoint: '/api/master-data/hr-business/departments',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_ROW_ACTIONS
       },
       {
         id: 'job-titles',
         titleKey: 'masterData.entities.jobTitles',
         endpoint: '/api/master-data/hr-business/job-titles',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_ROW_ACTIONS
       },
       {
         id: 'contract-types',
         titleKey: 'masterData.entities.contractTypes',
         endpoint: '/api/master-data/hr-business/contract-types',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_ROW_ACTIONS
       },
       {
         id: 'employment-statuses',
@@ -231,7 +254,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         id: 'work-modes',
         titleKey: 'masterData.entities.workModes',
         endpoint: '/api/master-data/hr-business/work-modes',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_ROW_ACTIONS
       },
       {
         id: 'leave-request-types',
