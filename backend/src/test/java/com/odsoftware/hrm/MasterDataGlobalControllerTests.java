@@ -232,6 +232,18 @@ class MasterDataGlobalControllerTests {
 
 	@Test
 	@WithMockUser
+	void masterDataGlobalListsNewestRecordsFirstByDefault() throws Exception {
+		createCountry("Task 0465 Country A", "Z1");
+		createCountry("Task 0465 Country B", "Z2");
+
+		mockMvc.perform(get("/api/master-data/global/countries?search=Task 0465 Country"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].isoCode").value("Z2"))
+				.andExpect(jsonPath("$.content[1].isoCode").value("Z1"));
+	}
+
+	@Test
+	@WithMockUser
 	void masterDataGlobalApiSupportsItalianZipCodeImport() throws Exception {
 		mockMvc.perform(get("/api/master-data/global/zip-codes/import/italy"))
 				.andExpect(status().isOk())

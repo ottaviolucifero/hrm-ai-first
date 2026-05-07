@@ -121,6 +121,18 @@ class MasterDataHrBusinessControllerTests {
 
 	@Test
 	@WithMockUser
+	void masterDataHrBusinessListsNewestRecordsFirstByDefault() throws Exception {
+		createTenantMaster("/api/master-data/hr-business/departments", "TASK0465_SORT_A", "Task 0465 Sort A");
+		createTenantMaster("/api/master-data/hr-business/departments", "TASK0465_SORT_B", "Task 0465 Sort B");
+
+		mockMvc.perform(get("/api/master-data/hr-business/departments?search=TASK0465_SORT"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].code").value("TASK0465_SORT_B"))
+				.andExpect(jsonPath("$.content[1].code").value("TASK0465_SORT_A"));
+	}
+
+	@Test
+	@WithMockUser
 	void masterDataHrBusinessApiReturnsValidationErrorForInvalidPayload() throws Exception {
 		mockMvc.perform(postJson("/api/master-data/hr-business/departments", Map.of("code", "", "name", "")))
 				.andExpect(status().isBadRequest())

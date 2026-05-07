@@ -29,6 +29,13 @@ public final class MasterDataQuerySupport {
 		return PageRequest.of(normalizePage(page), normalizeSize(size), sort);
 	}
 
+	public static Sort defaultNewestFirstSort(Sort fallbackSort) {
+		Sort temporalSort = Sort.by(
+				Sort.Order.desc("createdAt"),
+				Sort.Order.desc("updatedAt"));
+		return fallbackSort == null ? temporalSort : temporalSort.and(fallbackSort);
+	}
+
 	public static <T> Specification<T> searchSpecification(String search, String... fieldPaths) {
 		String normalizedSearch = normalizeSearch(search);
 		if (normalizedSearch == null || fieldPaths.length == 0) {
