@@ -13,6 +13,21 @@ export const DEFAULT_MASTER_DATA_PAGE_SIZE = 25;
 export type MasterDataColumn = DataTableColumn<MasterDataRow>;
 export type MasterDataRowAction = DataTableAction<MasterDataRow>;
 export type MasterDataRowActionEvent = DataTableRowActionEvent<MasterDataRow>;
+export type MasterDataFormMode = 'create' | 'edit' | 'view';
+export type MasterDataFormFieldType = 'text' | 'boolean';
+
+export interface MasterDataFormField {
+  readonly key: string;
+  readonly labelKey: I18nKey;
+  readonly type?: MasterDataFormFieldType;
+  readonly required?: boolean;
+  readonly readOnly?: boolean;
+}
+
+export interface MasterDataFormConfig {
+  readonly modes: readonly MasterDataFormMode[];
+  readonly fields: readonly MasterDataFormField[];
+}
 
 export interface MasterDataResource {
   readonly id: string;
@@ -20,6 +35,7 @@ export interface MasterDataResource {
   readonly endpoint: string;
   readonly columns: readonly MasterDataColumn[];
   readonly rowActions?: readonly MasterDataRowAction[];
+  readonly form?: MasterDataFormConfig;
 }
 
 export interface MasterDataCategory {
@@ -143,6 +159,10 @@ const SYSTEM_PERMISSION_COLUMN: MasterDataColumn = {
 
 const STANDARD_CRUD_ROW_ACTIONS: readonly MasterDataRowAction[] = [
   {
+    id: 'view',
+    labelKey: 'masterData.actions.view'
+  },
+  {
     id: 'edit',
     labelKey: 'masterData.actions.edit'
   },
@@ -152,6 +172,27 @@ const STANDARD_CRUD_ROW_ACTIONS: readonly MasterDataRowAction[] = [
     tone: 'danger'
   }
 ] as const;
+
+const STANDARD_CRUD_FORM: MasterDataFormConfig = {
+  modes: ['create', 'edit', 'view'],
+  fields: [
+    {
+      key: 'code',
+      labelKey: 'masterData.columns.code',
+      required: true
+    },
+    {
+      key: 'name',
+      labelKey: 'masterData.columns.name',
+      required: true
+    },
+    {
+      key: 'active',
+      labelKey: 'masterData.columns.active',
+      type: 'boolean'
+    }
+  ]
+} as const;
 
 export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
   {
@@ -228,21 +269,24 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         titleKey: 'masterData.entities.departments',
         endpoint: '/api/master-data/hr-business/departments',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
-        rowActions: STANDARD_CRUD_ROW_ACTIONS
+        rowActions: STANDARD_CRUD_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'job-titles',
         titleKey: 'masterData.entities.jobTitles',
         endpoint: '/api/master-data/hr-business/job-titles',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
-        rowActions: STANDARD_CRUD_ROW_ACTIONS
+        rowActions: STANDARD_CRUD_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'contract-types',
         titleKey: 'masterData.entities.contractTypes',
         endpoint: '/api/master-data/hr-business/contract-types',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
-        rowActions: STANDARD_CRUD_ROW_ACTIONS
+        rowActions: STANDARD_CRUD_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'employment-statuses',
@@ -255,7 +299,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         titleKey: 'masterData.entities.workModes',
         endpoint: '/api/master-data/hr-business/work-modes',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
-        rowActions: STANDARD_CRUD_ROW_ACTIONS
+        rowActions: STANDARD_CRUD_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'leave-request-types',

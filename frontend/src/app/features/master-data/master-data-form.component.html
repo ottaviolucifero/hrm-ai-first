@@ -1,0 +1,47 @@
+<section class="kt-card master-data-form-panel" aria-labelledby="master-data-form-title">
+  <div class="kt-card-header master-data-form-header">
+    <h2 id="master-data-form-title" class="kt-card-title text-lg">
+      {{ i18n.t(titleKey()) }} - {{ i18n.t(resourceTitleKey) }}
+    </h2>
+    <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" (click)="close.emit()">
+      {{ i18n.t('masterData.form.close') }}
+    </button>
+  </div>
+
+  <form class="kt-card-content master-data-form-body" [formGroup]="form" (ngSubmit)="submit()">
+    @for (field of normalizedFields; track field.key) {
+      <label class="master-data-form-field">
+        <span class="master-data-form-label">
+          {{ i18n.t(field.labelKey) }}
+          @if (field.required) {
+            <span aria-hidden="true">*</span>
+          }
+        </span>
+
+        @if (fieldType(field) === 'boolean') {
+          <input class="master-data-form-checkbox" type="checkbox" [formControlName]="field.key" [disabled]="isFieldReadOnly(field)" />
+        } @else {
+          <input class="kt-input" type="text" [formControlName]="field.key" [readonly]="isFieldReadOnly(field)" />
+        }
+
+        @if (hasRequiredError(field)) {
+          <span class="master-data-form-error">{{ i18n.t('masterData.form.required') }}</span>
+        }
+      </label>
+    }
+
+    <div class="master-data-form-actions">
+      @if (mode !== 'view') {
+        <button class="kt-btn kt-btn-primary kt-btn-sm" type="submit">
+          {{ i18n.t('masterData.form.save') }}
+        </button>
+      }
+      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" (click)="resetAndCancel()">
+        {{ i18n.t('masterData.form.cancel') }}
+      </button>
+      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" (click)="close.emit()">
+        {{ i18n.t('masterData.form.close') }}
+      </button>
+    </div>
+  </form>
+</section>

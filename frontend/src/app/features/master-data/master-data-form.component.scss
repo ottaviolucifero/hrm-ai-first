@@ -1,0 +1,48 @@
+:host {
+  display: block;
+}
+
+.master-data-form-panel {
+  margin-top: 0;
+}
+
+.master-data-form-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.master-data-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.master-data-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.master-data-form-label {
+  color: var(--color-secondary-foreground, #4b5563);
+  font-size: 0.875rem;
+}
+
+.master-data-form-checkbox {
+  accent-color: var(--color-primary, #2563eb);
+  height: 1rem;
+  width: 1rem;
+}
+
+.master-data-form-error {
+  color: var(--color-destructive, #b91c1c);
+  font-size: 0.75rem;
+}
+
+.master-data-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.59
+Versione: 1.63
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -96,7 +96,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-046.2: Analisi CRUD Master Data e configurazione form entita
+- TASK-046.3: Master Data CRUD API integration foundation
 
 ---
 
@@ -153,6 +153,7 @@ Completato:
 - TASK-044 completed: import CAP italiani con dataset normalizzato da JSON acquistato (8465 record validi), import backend idempotente in `global_zip_codes`, endpoint analisi/import dedicato e test backend di coerenza/idempotenza.
 - TASK-045 completed: shared read-only Master Data table component integrated in `/master-data`, with configurable columns, nested fields, loading/error/empty states and pagination events validated by frontend build/test.
 - TASK-046.1 completed: configurable row actions foundation added to `DataTableComponent`, with entity-level enablement and container event wiring in `/master-data`, while non-candidate entities remain read-only.
+- TASK-046.2 completed: Master Data CRUD form foundation added with metadata-driven create/edit/view form, required/read-only handling, i18n keys and frontend save hooks without backend mutations.
 
 Nota:
 
@@ -179,7 +180,22 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-046 Master Data CRUD standard foundation (TASK-046.2 next)
+- TASK-046 Master Data CRUD standard foundation (TASK-046.3 next)
+- TASK-047 Platform Super Admin and tenant-aware permissions model
+- TASK-048 User, Role and Permission domain review
+- TASK-049 Permission model foundation by scope/resource/action
+- TASK-050 Tenant user and role administration foundation
+- TASK-051 Apply permissions to frontend navigation and actions
+- TASK-052 Apply permissions to backend API authorization
+
+Sequenza funzionale prevista per il blocco TASK-047..TASK-052:
+
+- TASK-047: strategia e modello Super Admin / tenant-aware permissions;
+- TASK-048: review dominio esistente e gap analysis;
+- TASK-049: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
+- TASK-050: foundation utenti/ruoli tenant;
+- TASK-051: applicazione permessi lato frontend per UX/visibilita;
+- TASK-052: enforcement reale lato backend sulle API.
 
 Nota roadmap TASK-045:
 
@@ -196,6 +212,12 @@ Nota roadmap TASK-046:
 - Editing inline, drag & drop colonne, preferenze utente colonne, lookup remoti complessi, RBAC runtime UI e redesign restano fuori scope.
 - Entita importate o globali possono restare read-only o CRUD limitato; entita tenant-scoped semplici sono candidate per il primo CRUD completo.
 - TASK-046.1 completa la foundation azioni riga: `DataTableComponent` emette eventi `edit` / `delete` configurabili e il container `/master-data` li riceve senza introdurre ancora form CRUD o mutazioni backend.
+- TASK-046.2 completa la foundation form: componente metadata-driven `create`/`edit`/`view`, validazioni base e hook frontend di salvataggio; la persistenza reale verso backend resta task successivo.
+- TASK-046.3 introduce l'integrazione API CRUD foundation su entita semplici mantenendo il perimetro incrementale.
+- TASK-046.4 introduce delete/disattivazione con conferma ed error handling coerente.
+- TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
+- Dopo TASK-046 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-047..TASK-052) con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data.
+- Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
 
 ---
 
@@ -249,15 +271,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-054
+- TASK-036 -> TASK-060
 
 ### Fase 2I - Platform Operations
 
-- TASK-055 -> TASK-056
+- TASK-061 -> TASK-062
 
 ### Fase 3 - Stabilization
 
-- TASK-057 -> TASK-058
+- TASK-063 -> TASK-064
 
 ---
 
@@ -273,6 +295,10 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.63 | 2026-05-07 | Ottimizzata la roadmap del blocco TASK-047..TASK-052: chiarita sequenza strategia -> review -> foundation permessi -> foundation utenti/ruoli -> UX frontend -> enforcement backend, con separazione esplicita frontend UX vs backend security. |
+| 1.62 | 2026-05-07 | Aggiornato TASK-047 come "Platform Super Admin and tenant-aware permissions model" nel blocco post-TASK-046, con focus su modello permessi tenant-aware, ruoli seed/custom e impatto frontend/backend security. |
+| 1.61 | 2026-05-07 | Backlog riorganizzato dopo TASK-046: subtask 046 riallineati (`046.1`-`046.5`), introdotto blocco authorization/Super Admin con TASK-047..TASK-052 e slittamento coerente dei task successivi/range roadmap fino a TASK-064. |
+| 1.60 | 2026-05-07 | TASK-046.2 completato con Master Data CRUD form foundation: form metadata-driven `create`/`edit`/`view` integrato in `/master-data`, validazioni base e hook frontend senza mutazioni backend; prossimo step aggiornato a TASK-046.3. |
 | 1.59 | 2026-05-07 | TASK-046.1 completato come CRUD action foundation frontend: `DataTableComponent` supporta azioni riga configurabili e il container `/master-data` riceve gli eventi; il prossimo step passa a TASK-046.2 per analisi form/configurazione entita prima di introdurre create/update reali. |
 | 1.58 | 2026-05-07 | TASK-046 ridefinito come "Master Data CRUD standard foundation": prossimo step orientato a standard CRUD frontend riutilizzabile basato su `DataTableComponent`, azioni configurabili, form/modal o pannello laterale, API CRUD backend esistenti e sviluppo incrementale senza editing inline o nuove API backend. |
 | 1.57 | 2026-05-06 | TASK-045 completato con componente shared read-only per tabelle Master Data, colonne configurabili, campi nested, stati UI e paginazione tramite eventi integrati in `/master-data`; prossimo passo aggiornato a TASK-046 UI Master Data Admin CRUD. |
