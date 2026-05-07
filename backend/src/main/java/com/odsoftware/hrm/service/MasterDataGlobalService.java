@@ -88,7 +88,7 @@ public class MasterDataGlobalService {
 				page,
 				size,
 				search,
-				Sort.by("isoCode"),
+				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("isoCode")),
 				MasterDataQuerySupport.searchSpecification(search, "isoCode", "name", "phoneCode"),
 				this::toCountryResponse);
 	}
@@ -132,7 +132,7 @@ public class MasterDataGlobalService {
 				page,
 				size,
 				search,
-				Sort.by("code"),
+				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
 				MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name"),
 				this::toRegionResponse);
 	}
@@ -178,7 +178,7 @@ public class MasterDataGlobalService {
 				page,
 				size,
 				search,
-				Sort.by("code"),
+				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
 				MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name", "region.code", "region.name"),
 				this::toAreaResponse);
 	}
@@ -228,7 +228,7 @@ public class MasterDataGlobalService {
 				page,
 				size,
 				search,
-				Sort.by("postalCode").ascending().and(Sort.by("city")),
+				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("postalCode").ascending().and(Sort.by("city"))),
 				MasterDataQuerySupport.searchSpecification(
 						search,
 						"postalCode",
@@ -296,7 +296,7 @@ public class MasterDataGlobalService {
 				page,
 				size,
 				search,
-				Sort.by("code"),
+				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
 				MasterDataQuerySupport.searchSpecification(search, "code", "name", "symbol"),
 				this::toCurrencyResponse);
 	}
@@ -340,7 +340,7 @@ public class MasterDataGlobalService {
 				page,
 				size,
 				search,
-				Sort.by("code"),
+				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
 				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
 				this::toGenderResponse);
 	}
@@ -384,7 +384,7 @@ public class MasterDataGlobalService {
 				page,
 				size,
 				search,
-				Sort.by("code"),
+				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
 				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
 				this::toMaritalStatusResponse);
 	}
@@ -428,7 +428,7 @@ public class MasterDataGlobalService {
 				page,
 				size,
 				search,
-				Sort.by("code"),
+				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
 				MasterDataQuerySupport.searchSpecification(search, "code", "name", "regexPattern", "country.isoCode", "country.name"),
 				this::toNationalIdentifierTypeResponse);
 	}

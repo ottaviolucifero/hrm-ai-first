@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.64
+Versione: 1.66
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -96,7 +96,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-046.4: Master Data CRUD delete, confirmation and error handling foundation
+- TASK-046.5: Master Data CRUD QA and stabilization
 
 ---
 
@@ -155,6 +155,7 @@ Completato:
 - TASK-046.1 completed: configurable row actions foundation added to `DataTableComponent`, with entity-level enablement and container event wiring in `/master-data`, while non-candidate entities remain read-only.
 - TASK-046.2 completed: Master Data CRUD form foundation added with metadata-driven create/edit/view form, required/read-only handling, i18n keys and frontend save hooks without backend mutations.
 - TASK-046.3 completed: real frontend create/update integration added on existing HR/business CRUD APIs for `Department`, `JobTitle`, `ContractType` and `WorkMode`, with authenticated tenant-aware payloads, modal feedback, post-save refresh and frontend build/test validation.
+- TASK-046.4 completed: Master Data deactivation flow on `/master-data` aligned with existing soft-delete semantics (`active=false`), with explicit confirmation modal, coherent list refresh and i18n `it/fr/en`.
 
 Nota:
 
@@ -181,7 +182,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-046 Master Data CRUD standard foundation (TASK-046.4 next)
+- TASK-046 Master Data CRUD standard foundation (TASK-046.5 next)
 - TASK-047 Platform Super Admin and tenant-aware permissions model
 - TASK-048 User, Role and Permission domain review
 - TASK-049 Permission model foundation by scope/resource/action
@@ -215,7 +216,8 @@ Nota roadmap TASK-046:
 - TASK-046.1 completa la foundation azioni riga: `DataTableComponent` emette eventi `edit` / `delete` configurabili e il container `/master-data` li riceve senza introdurre ancora form CRUD o mutazioni backend.
 - TASK-046.2 completa la foundation form: componente metadata-driven `create`/`edit`/`view`, validazioni base e hook frontend di salvataggio; la persistenza reale verso backend resta task successivo.
 - TASK-046.3 introduce l'integrazione API CRUD foundation su entita semplici mantenendo il perimetro incrementale.
-- TASK-046.4 introduce delete/disattivazione con conferma ed error handling coerente.
+- TASK-046.4 completa la disattivazione logica con conferma ed error handling coerente.
+- Filtro `Attivi` / `Inattivi` e azione `Riattiva` restano follow-up dedicati.
 - TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
 - Dopo TASK-046 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-047..TASK-052) con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data.
 - Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
@@ -296,6 +298,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.66 | 2026-05-07 | TASK-046.4 riallineato alla disattivazione logica `active=false`: UX aggiornata da `Elimina` a `Disattiva`, conferma/feedback/error handling i18n coerenti, refresh lista mantenuto e follow-up filtro attivi/inattivi + riattiva demandati a task successivi. |
+| 1.65 | 2026-05-07 | TASK-046.4 completato con delete/disattivazione frontend su `/master-data`, conferma esplicita, feedback successo/errore e refresh coerente della lista; prossimo step aggiornato a TASK-046.5. |
 | 1.64 | 2026-05-07 | TASK-046.3 completato con integrazione frontend create/update verso le API CRUD Master Data HR/business esistenti per entita semplici candidate, refresh lista post-save, feedback modal e prossimo step aggiornato a TASK-046.4. |
 | 1.63 | 2026-05-07 | Ottimizzata la roadmap del blocco TASK-047..TASK-052: chiarita sequenza strategia -> review -> foundation permessi -> foundation utenti/ruoli -> UX frontend -> enforcement backend, con separazione esplicita frontend UX vs backend security. |
 | 1.62 | 2026-05-07 | Aggiornato TASK-047 come "Platform Super Admin and tenant-aware permissions model" nel blocco post-TASK-046, con focus su modello permessi tenant-aware, ruoli seed/custom e impatto frontend/backend security. |

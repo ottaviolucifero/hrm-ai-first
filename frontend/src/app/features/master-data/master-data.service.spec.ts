@@ -114,4 +114,21 @@ describe('MasterDataService', () => {
     });
     request.flush({ id: 'department-1' });
   });
+
+  it('sends the deactivation request to the expected DELETE endpoint', () => {
+    masterDataService.deleteRow(
+      {
+        id: 'departments',
+        titleKey: 'masterData.entities.departments',
+        endpoint: '/api/master-data/hr-business/departments',
+        columns: []
+      },
+      'department-1'
+    ).subscribe();
+
+    const request = httpTestingController.expectOne('/api/master-data/hr-business/departments/department-1');
+
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
 });

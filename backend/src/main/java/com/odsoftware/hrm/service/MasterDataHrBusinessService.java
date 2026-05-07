@@ -428,7 +428,10 @@ public class MasterDataHrBusinessService {
 		return MasterDataQuerySupport.toPageResponse(
 				repository.findAll(
 						specification,
-						MasterDataQuerySupport.buildPageable(page, size, Sort.by("code"))),
+						MasterDataQuerySupport.buildPageable(
+								page,
+								size,
+								MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")))),
 				mapper);
 	}
 

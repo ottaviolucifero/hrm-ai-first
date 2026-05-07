@@ -50,6 +50,42 @@
   overflow-y: auto;
 }
 
+.master-data-confirm-modal {
+  width: min(100%, 520px);
+}
+
+.master-data-confirm-panel {
+  border-radius: 0.75rem;
+}
+
+.master-data-confirm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.master-data-confirm-message {
+  margin: 0;
+  color: var(--color-mono-700, #374151);
+}
+
+.master-data-confirm-target {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-mono-900, #111827);
+  word-break: break-word;
+}
+
+.master-data-danger-button {
+  background: #b42318;
+  border-color: #b42318;
+  color: #fff;
+}
+
+.master-data-danger-button:disabled {
+  opacity: 0.7;
+}
+
 @media (max-width: 767px) {
   .master-data-toolbar {
     flex-direction: column;

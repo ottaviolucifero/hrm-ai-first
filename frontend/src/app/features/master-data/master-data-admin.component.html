@@ -8,11 +8,11 @@
       </div>
       <div class="master-data-toolbar-actions">
         @if (canCreate()) {
-          <button class="kt-btn kt-btn-primary kt-btn-sm" type="button" [disabled]="loading()" (click)="openCreateForm()">
+          <button class="kt-btn kt-btn-primary kt-btn-sm" type="button" [disabled]="loading() || deleting()" (click)="openCreateForm()">
             {{ i18n.t('masterData.actions.new') }}
           </button>
         }
-        <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="loading()" (click)="refresh()">
+        <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="loading() || deleting()" (click)="refresh()">
           {{ i18n.t('masterData.refresh') }}
         </button>
       </div>
@@ -21,7 +21,7 @@
     <div class="master-data-filters">
       <label class="master-data-field">
         <span>{{ i18n.t('masterData.category') }}</span>
-        <select class="kt-input" [value]="selectedCategoryId()" (change)="updateCategory($event)">
+        <select class="kt-input" [disabled]="deleting()" [value]="selectedCategoryId()" (change)="updateCategory($event)">
           @for (category of categories; track category.id) {
             <option [value]="category.id">{{ i18n.t(category.titleKey) }}</option>
           }
@@ -30,7 +30,7 @@
 
       <label class="master-data-field">
         <span>{{ i18n.t('masterData.entity') }}</span>
-        <select class="kt-input" [value]="selectedResourceId()" (change)="updateResource($event)">
+        <select class="kt-input" [disabled]="deleting()" [value]="selectedResourceId()" (change)="updateResource($event)">
           @for (resource of selectedCategory().resources; track resource.id) {
             <option [value]="resource.id">{{ i18n.t(resource.titleKey) }}</option>
           }
@@ -42,6 +42,7 @@
         <input
           class="kt-input"
           type="search"
+          [disabled]="deleting()"
           [value]="searchInput()"
           [placeholder]="i18n.t('masterData.searchPlaceholder')"
           (input)="updateSearch($event)" />
@@ -51,13 +52,46 @@
     <app-data-table
       [columns]="selectedResource().columns"
       [rows]="rows()"
-      [rowActions]="selectedResource().rowActions ?? []"
+      [rowActions]="rowActions()"
       [pageData]="pageData()"
       [loading]="loading()"
       [hasError]="hasError()"
       (rowAction)="handleRowAction($event)"
       (previousPage)="goToPreviousPage()"
       (nextPage)="goToNextPage()" />
+
+    @if (isDeleteConfirmOpen()) {
+      <div class="master-data-modal-overlay" role="presentation">
+        <div class="master-data-modal master-data-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="master-data-delete-title">
+          <section class="kt-card master-data-confirm-panel">
+            <div class="kt-card-header master-data-form-header">
+              <h2 id="master-data-delete-title" class="kt-card-title text-lg">
+                {{ i18n.t('masterData.delete.confirmTitle') }}
+              </h2>
+            </div>
+
+            <div class="kt-card-content master-data-confirm-body">
+              <app-alert-message type="danger" [message]="deleteErrorMessage()" />
+
+              <p class="master-data-confirm-message">{{ i18n.t('masterData.delete.confirmMessage') }}</p>
+
+              @if (deleteTargetLabel(); as targetLabel) {
+                <p class="master-data-confirm-target">{{ targetLabel }}</p>
+              }
+
+              <div class="master-data-form-actions">
+                <button class="kt-btn kt-btn-primary kt-btn-sm master-data-danger-button" type="button" [disabled]="deleting()" (click)="confirmDelete()">
+                  {{ i18n.t(deleting() ? 'masterData.delete.processing' : 'masterData.delete.confirmAction') }}
+                </button>
+                <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="deleting()" (click)="closeDeleteConfirm()">
+                  {{ i18n.t('masterData.form.cancel') }}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    }
 
     @if (isFormOpen()) {
       <div class="master-data-modal-overlay" role="presentation">

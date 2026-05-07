@@ -303,6 +303,7 @@ describe('MasterDataAdminComponent', () => {
     const fixture = await createFixture(masterDataService);
     const component = fixture.componentInstance as MasterDataAdminComponent & {
       handleFormSave: (event: { mode: 'create'; value: Record<string, unknown> }) => void;
+      pageIndex: { set: (page: number) => void };
     };
     fixture.detectChanges();
 
@@ -310,6 +311,8 @@ describe('MasterDataAdminComponent', () => {
     categorySelect.value = 'hrBusiness';
     categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
     fixture.detectChanges();
+
+    component.pageIndex.set(2);
 
     component.handleFormSave({
       mode: 'create',
@@ -455,6 +458,185 @@ describe('MasterDataAdminComponent', () => {
     );
   });
 
+  it('opens a confirmation modal before deactivation and allows cancel', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        )
+    });
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    actionButtons[2].click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Conferma disattivazione');
+    expect(fixture.nativeElement.textContent).toContain('Human Resources');
+
+    const cancelButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.master-data-confirm-panel button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Annulla')) as HTMLButtonElement;
+
+    cancelButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Conferma disattivazione');
+  });
+
+  it('deactivates a candidate row, keeps page state and reloads the list', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        )
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: false
+              }
+            ])
+          )
+        ),
+      deleteRow: vi.fn(() => of(void 0))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+      confirmDelete: () => void;
+      isDeleteConfirmOpen: () => boolean;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.handleRowAction({
+      action: { id: 'delete' },
+      row: {
+        id: 'department-1',
+        tenantId: 'tenant-1',
+        code: 'HR',
+        name: 'Human Resources',
+        active: true
+      }
+    });
+    fixture.detectChanges();
+
+    component.confirmDelete();
+    fixture.detectChanges();
+
+    expect(masterDataService.deleteRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      'department-1'
+    );
+    expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      { page: 0, size: 25 }
+    );
+    expect(component.isDeleteConfirmOpen()).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain('Record disattivato correttamente.');
+    expect(fixture.nativeElement.textContent).toContain('Human Resources');
+  });
+
+  it('keeps the confirmation open and shows a readable error when delete fails', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        ),
+      deleteRow: vi.fn(() => throwError(() => ({ status: 403 })))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+      confirmDelete: () => void;
+      isDeleteConfirmOpen: () => boolean;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.handleRowAction({
+      action: { id: 'delete' },
+      row: {
+        id: 'department-1',
+        tenantId: 'tenant-1',
+        code: 'HR',
+        name: 'Human Resources',
+        active: true
+      }
+    });
+    fixture.detectChanges();
+
+    component.confirmDelete();
+    fixture.detectChanges();
+
+    expect(component.isDeleteConfirmOpen()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Non sei autorizzato a disattivare questo record.');
+  });
+
   it('releases the active subscription on destroy', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -477,7 +659,7 @@ describe('MasterDataAdminComponent', () => {
   });
 });
 
-async function createFixture(masterDataService: Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow'>) {
+async function createFixture(masterDataService: Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow'>) {
   await TestBed.configureTestingModule({
     imports: [MasterDataAdminComponent],
     providers: [
@@ -495,12 +677,13 @@ async function createFixture(masterDataService: Pick<MasterDataService, 'fetchRo
 }
 
 function createMasterDataService(
-  overrides: Partial<Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow'>>
-): Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow'> {
+  overrides: Partial<Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow'>>
+): Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow'> {
   return {
     fetchRows: vi.fn(() => of(createPage([]))),
     createRow: vi.fn(),
     updateRow: vi.fn(),
+    deleteRow: vi.fn(),
     ...overrides
   };
 }

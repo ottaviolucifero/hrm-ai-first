@@ -37,6 +37,7 @@ export class MasterDataAdminComponent implements OnDestroy {
 
   private loadSubscription?: Subscription;
   private saveSubscription?: Subscription;
+  private deleteSubscription?: Subscription;
   private readonly searchChanges = new Subject<string>();
   private readonly searchSubscription = this.searchChanges
     .pipe(debounceTime(300), distinctUntilChanged())
@@ -60,8 +61,11 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly formMode = signal<MasterDataFormMode | null>(null);
   protected readonly formValue = signal<MasterDataRow | null>(null);
   protected readonly formErrorMessage = signal('');
+  protected readonly deleteErrorMessage = signal('');
   protected readonly feedbackMessage = signal('');
   protected readonly saving = signal(false);
+  protected readonly deleting = signal(false);
+  protected readonly pendingDeleteRow = signal<MasterDataRow | null>(null);
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly formConfig = computed<MasterDataFormConfig | null>(() => this.selectedResource().form ?? null);
   protected readonly formFields = computed(() => this.formConfig()?.fields ?? []);
@@ -70,6 +74,8 @@ export class MasterDataAdminComponent implements OnDestroy {
     () => this.formConfig()?.modes.includes('create') === true
   );
   protected readonly isFormOpen = computed(() => this.formMode() !== null && this.formConfig() !== null);
+  protected readonly isDeleteConfirmOpen = computed(() => this.pendingDeleteRow() !== null);
+  protected readonly deleteTargetLabel = computed(() => this.describeRow(this.pendingDeleteRow()));
   protected readonly selectedCategory = computed(
     () => this.categories.find((category) => category.id === this.selectedCategoryId()) ?? this.categories[0]
   );
@@ -77,6 +83,9 @@ export class MasterDataAdminComponent implements OnDestroy {
     () =>
       this.selectedCategory().resources.find((resource) => resource.id === this.selectedResourceId()) ??
       this.selectedCategory().resources[0]
+  );
+  protected readonly rowActions = computed(
+    () => (this.selectedResource().rowActions ?? []).map((action) => this.decorateRowAction(action))
   );
 
   constructor() {
@@ -86,6 +95,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.loadSubscription?.unsubscribe();
     this.saveSubscription?.unsubscribe();
+    this.deleteSubscription?.unsubscribe();
     this.searchSubscription.unsubscribe();
   }
 
@@ -99,6 +109,7 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.selectedCategoryId.set(nextCategory.id);
     this.selectedResourceId.set(nextCategory.resources[0].id);
     this.closeForm();
+    this.closeDeleteConfirm();
     this.pageIndex.set(0);
     this.loadSelectedResource();
   }
@@ -106,6 +117,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected updateResource(event: Event): void {
     this.selectedResourceId.set((event.target as HTMLSelectElement).value);
     this.closeForm();
+    this.closeDeleteConfirm();
     this.pageIndex.set(0);
     this.loadSelectedResource();
   }
@@ -134,6 +146,10 @@ export class MasterDataAdminComponent implements OnDestroy {
 
     if (event.action.id === 'view') {
       this.openForm('view', event.row);
+    }
+
+    if (event.action.id === 'delete') {
+      this.openDeleteConfirm(event.row);
     }
   }
 
@@ -168,6 +184,9 @@ export class MasterDataAdminComponent implements OnDestroy {
       )
       .subscribe({
         next: () => {
+          if (event.mode === 'create') {
+            this.pageIndex.set(0);
+          }
           this.feedbackMessage.set(
             this.i18n.t(event.mode === 'create'
               ? 'masterData.form.feedback.createSuccess'
@@ -186,10 +205,46 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.closeForm();
   }
 
+  protected confirmDelete(): void {
+    const row = this.pendingDeleteRow();
+    const rowId = typeof row?.['id'] === 'string' ? row['id'] as string : null;
+
+    if (!rowId) {
+      this.deleteErrorMessage.set(this.i18n.t('masterData.delete.error.generic'));
+      return;
+    }
+
+    this.feedbackMessage.set('');
+    this.deleteErrorMessage.set('');
+    this.deleting.set(true);
+    this.deleteSubscription?.unsubscribe();
+    this.deleteSubscription = this.masterDataService.deleteRow(this.selectedResource(), rowId)
+      .pipe(finalize(() => this.deleting.set(false)))
+      .subscribe({
+        next: () => {
+          if (this.rows().length === 1 && this.pageIndex() > 0) {
+            this.pageIndex.update((page) => Math.max(0, page - 1));
+          }
+
+          this.feedbackMessage.set(this.i18n.t('masterData.delete.feedback.success'));
+          this.closeDeleteConfirm();
+          this.loadSelectedResource();
+        },
+        error: (error) => {
+          this.deleteErrorMessage.set(this.resolveDeleteError(error));
+        }
+      });
+  }
+
   protected closeForm(): void {
     this.formMode.set(null);
     this.formValue.set(null);
     this.formErrorMessage.set('');
+  }
+
+  protected closeDeleteConfirm(): void {
+    this.pendingDeleteRow.set(null);
+    this.deleteErrorMessage.set('');
   }
 
   protected goToPreviousPage(): void {
@@ -251,10 +306,18 @@ export class MasterDataAdminComponent implements OnDestroy {
       return;
     }
 
+    this.closeDeleteConfirm();
     this.feedbackMessage.set('');
     this.formErrorMessage.set('');
     this.formMode.set(mode);
     this.formValue.set(row);
+  }
+
+  private openDeleteConfirm(row: MasterDataRow): void {
+    this.closeForm();
+    this.feedbackMessage.set('');
+    this.deleteErrorMessage.set('');
+    this.pendingDeleteRow.set(row);
   }
 
   private buildMutationPayload(formValue: Record<string, unknown>, tenantId: string): MasterDataMutationRequest {
@@ -267,6 +330,43 @@ export class MasterDataAdminComponent implements OnDestroy {
   }
 
   private resolveSaveError(error: unknown): string {
+    const extractedMessage = this.extractApiMessage(error);
+    if (extractedMessage) {
+      return extractedMessage;
+    }
+
+    return this.i18n.t('masterData.form.error.generic');
+  }
+
+  private resolveDeleteError(error: unknown): string {
+    const extractedMessage = this.extractApiMessage(error);
+    if (extractedMessage) {
+      return extractedMessage;
+    }
+
+    const status = error instanceof HttpErrorResponse
+      ? error.status
+      : Number((error as { status?: unknown })?.status ?? 0);
+
+    switch (status) {
+      case 400:
+        return this.i18n.t('masterData.delete.error.badRequest');
+      case 401:
+        return this.i18n.t('masterData.delete.error.unauthorized');
+      case 403:
+        return this.i18n.t('masterData.delete.error.forbidden');
+      case 404:
+        return this.i18n.t('masterData.delete.error.notFound');
+      case 409:
+        return this.i18n.t('masterData.delete.error.conflict');
+      case 500:
+        return this.i18n.t('masterData.delete.error.server');
+      default:
+        return this.i18n.t('masterData.delete.error.generic');
+    }
+  }
+
+  private extractApiMessage(error: unknown): string | null {
     const response = error instanceof HttpErrorResponse
       ? error
       : (error as { error?: { message?: unknown; validationErrors?: unknown } });
@@ -284,6 +384,44 @@ export class MasterDataAdminComponent implements OnDestroy {
       return apiMessage;
     }
 
-    return this.i18n.t('masterData.form.error.generic');
+    return null;
+  }
+
+  private decorateRowAction(action: MasterDataRowActionEvent['action']) {
+    const baseDisabled = action.disabled;
+
+    return {
+      ...action,
+      disabled: (row: MasterDataRow) => {
+        const disabledByAction = typeof baseDisabled === 'function'
+          ? baseDisabled(row)
+          : baseDisabled === true;
+
+        if (disabledByAction) {
+          return true;
+        }
+
+        return this.deleting();
+      }
+    };
+  }
+
+  private describeRow(row: MasterDataRow | null): string {
+    if (!row) {
+      return '';
+    }
+
+    const name = row['name'];
+    if (typeof name === 'string' && name.trim().length > 0) {
+      return name;
+    }
+
+    const code = row['code'];
+    if (typeof code === 'string' && code.trim().length > 0) {
+      return code;
+    }
+
+    const id = row['id'];
+    return typeof id === 'string' ? id : '';
   }
 }

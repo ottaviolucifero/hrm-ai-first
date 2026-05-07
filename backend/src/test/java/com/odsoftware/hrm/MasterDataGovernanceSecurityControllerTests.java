@@ -125,6 +125,18 @@ class MasterDataGovernanceSecurityControllerTests {
 
 	@Test
 	@WithMockUser
+	void masterDataGovernanceSecurityListsNewestRecordsFirstByDefault() throws Exception {
+		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK0465_ROLE_A", "Task 0465 Role A", false));
+		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK0465_ROLE_B", "Task 0465 Role B", false));
+
+		mockMvc.perform(get("/api/master-data/governance-security/roles?search=TASK0465_ROLE"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].code").value("TASK0465_ROLE_B"))
+				.andExpect(jsonPath("$.content[1].code").value("TASK0465_ROLE_A"));
+	}
+
+	@Test
+	@WithMockUser
 	void masterDataGovernanceSecurityApiReturnsValidationErrorForInvalidPayload() throws Exception {
 		mockMvc.perform(postJson("/api/master-data/governance-security/audit-action-types", Map.of("code", "", "name", "")))
 				.andExpect(status().isBadRequest())

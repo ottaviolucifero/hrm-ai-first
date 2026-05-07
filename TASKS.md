@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.67
+Versione: 1.69
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -2446,13 +2446,24 @@ Subtask:
     - comportamento read/list/filter/pagination esistente preservato.
 
 - 046.4 - Master Data CRUD delete, confirmation and error handling foundation
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
-    - introdurre conferma esplicita per delete/disattivazione;
+    - introdurre conferma esplicita per disattivazione logica;
     - applicare gestione errori coerente su azioni CRUD;
     - mantenere UX consistente con i pattern esistenti e i18n.
+  - Completato:
+    - esteso `MasterDataService` con chiamata HTTP reale `DELETE` verso gli endpoint backend esistenti, mantenendo la semantica backend di soft-delete;
+    - collegata la row action `delete` del container `/master-data` alla disattivazione logica (`active=false`) gia prevista dai servizi Master Data;
+    - introdotta conferma utente esplicita in modal locale con overlay, target record leggibile e annullamento sicuro;
+    - aggiunti stato `deleting`, disabilitazione temporanea delle azioni e refresh lista coerente dopo successo;
+    - rinominata la UX da `Elimina` a `Disattiva`, con feedback `Record disattivato correttamente`;
+    - aggiunto mapping errori leggibile con fallback per `400/401/403/404/409/500` e chiavi i18n `it` / `fr` / `en`;
+    - mantenuti invariati filtro, paginazione, colonna `active`, `DataTableComponent` shared e nessuna nuova libreria.
+  - Limiti / follow-up:
+    - la lista continua a mostrare anche record inattivi, coerentemente con le API attuali che non filtrano `active=true`;
+    - filtro `Attivi` / `Inattivi` e azione `Riattiva` sono rimandati a task successivi dedicati.
   - Acceptance criteria:
-    - delete/disattivazione gestiti con conferma e feedback utente;
+    - disattivazione logica gestita con conferma e feedback utente coerente;
     - error handling CRUD consistente e verificabile.
 
 - 046.5 - Master Data CRUD QA and stabilization
@@ -2699,6 +2710,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.69 | 2026-05-07 | TASK-046.4 riallineato alla semantica architetturale esistente: `DELETE` Master Data resta soft-delete/disattivazione `active=false`, UX rinominata da `Elimina` a `Disattiva`, conferma/feedback/error handling i18n aggiornati e follow-up filtro attivi/inattivi + riattiva demandati a task successivi. |
+| 1.68 | 2026-05-07 | TASK-046.4 completato con delete/disattivazione frontend su `/master-data`, conferma esplicita, loading/error handling CRUD, feedback utente e build/test frontend validati; prossimo step TASK-046.5. |
 | 1.67 | 2026-05-07 | TASK-046.3 completato con integrazione CRUD API reale frontend su entita candidate semplici (`Department`, `JobTitle`, `ContractType`, `WorkMode`): create/update via API backend esistenti, feedback successo/errore, refresh lista post-save e test/build frontend validati senza modifiche backend. |
 | 1.66 | 2026-05-07 | Ottimizzati TASK-047..TASK-052 per ridurre sovrapposizioni: 047 strategico/documentale, 048 gap analysis dominio, 049 foundation modello permessi `SCOPE.RESOURCE.ACTION`, 050 foundation utenti/ruoli tenant, 051 UX frontend authorization, 052 enforcement backend reale; chiarita separazione frontend UX vs backend security. |
 | 1.65 | 2026-05-07 | Aggiornato TASK-047 come "Platform Super Admin and tenant-aware permissions model" con scope esplicito su `PLATFORM_SUPER_ADMIN`, distinzione `TENANT_ADMIN`, ruoli seed/custom tenant-specific, permessi CRUD Global/Tenant Master Data, regole cross-tenant e impatto frontend/backend. |
