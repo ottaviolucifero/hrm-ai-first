@@ -17,6 +17,8 @@ import com.odsoftware.hrm.entity.master.WorkMode;
 import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.repository.contract.ContractRepository;
+import com.odsoftware.hrm.repository.employee.EmployeeRepository;
 import com.odsoftware.hrm.repository.master.ContractTypeRepository;
 import com.odsoftware.hrm.repository.master.DepartmentRepository;
 import com.odsoftware.hrm.repository.master.DeviceBrandRepository;
@@ -31,7 +33,9 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +45,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class MasterDataHrBusinessService {
 
 	private final TenantRepository tenantRepository;
+	private final EmployeeRepository employeeRepository;
+	private final ContractRepository contractRepository;
 	private final DepartmentRepository departmentRepository;
 	private final JobTitleRepository jobTitleRepository;
 	private final ContractTypeRepository contractTypeRepository;
@@ -54,6 +60,8 @@ public class MasterDataHrBusinessService {
 
 	public MasterDataHrBusinessService(
 			TenantRepository tenantRepository,
+			EmployeeRepository employeeRepository,
+			ContractRepository contractRepository,
 			DepartmentRepository departmentRepository,
 			JobTitleRepository jobTitleRepository,
 			ContractTypeRepository contractTypeRepository,
@@ -65,6 +73,8 @@ public class MasterDataHrBusinessService {
 			DeviceBrandRepository deviceBrandRepository,
 			DeviceStatusRepository deviceStatusRepository) {
 		this.tenantRepository = tenantRepository;
+		this.employeeRepository = employeeRepository;
+		this.contractRepository = contractRepository;
 		this.departmentRepository = departmentRepository;
 		this.jobTitleRepository = jobTitleRepository;
 		this.contractTypeRepository = contractTypeRepository;
@@ -100,6 +110,11 @@ public class MasterDataHrBusinessService {
 		disable(id, departmentRepository, "Department");
 	}
 
+	@Transactional
+	public void deletePhysicalDepartment(UUID id) {
+		deletePhysical(id, departmentRepository, this::isDepartmentReferenced, "Department");
+	}
+
 	public MasterDataPageResponse<TenantMasterDataResponse> findJobTitles(Integer page, Integer size, String search) {
 		return findAll(jobTitleRepository, page, size, search);
 	}
@@ -123,6 +138,11 @@ public class MasterDataHrBusinessService {
 		disable(id, jobTitleRepository, "Job title");
 	}
 
+	@Transactional
+	public void deletePhysicalJobTitle(UUID id) {
+		deletePhysical(id, jobTitleRepository, this::isJobTitleReferenced, "Job title");
+	}
+
 	public MasterDataPageResponse<TenantMasterDataResponse> findContractTypes(Integer page, Integer size, String search) {
 		return findAll(contractTypeRepository, page, size, search);
 	}
@@ -144,6 +164,11 @@ public class MasterDataHrBusinessService {
 	@Transactional
 	public void disableContractType(UUID id) {
 		disable(id, contractTypeRepository, "Contract type");
+	}
+
+	@Transactional
+	public void deletePhysicalContractType(UUID id) {
+		deletePhysical(id, contractTypeRepository, this::isContractTypeReferenced, "Contract type");
 	}
 
 	public MasterDataPageResponse<TenantMasterDataResponse> findEmploymentStatuses(Integer page, Integer size, String search) {
@@ -190,6 +215,11 @@ public class MasterDataHrBusinessService {
 	@Transactional
 	public void disableWorkMode(UUID id) {
 		disable(id, workModeRepository, "Work mode");
+	}
+
+	@Transactional
+	public void deletePhysicalWorkMode(UUID id) {
+		deletePhysical(id, workModeRepository, this::isWorkModeReferenced, "Work mode");
 	}
 
 	public MasterDataPageResponse<TenantMasterDataResponse> findLeaveRequestTypes(Integer page, Integer size, String search) {
@@ -369,6 +399,24 @@ public class MasterDataHrBusinessService {
 		repository.save(entity);
 	}
 
+	private <T extends BaseTenantMasterEntity> void deletePhysical(
+			UUID id,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
+			Predicate<T> isReferenced,
+			String label) {
+		T entity = findEntity(id, repository, label);
+		if (isReferenced.test(entity)) {
+			throw physicalDeleteConflict(label);
+		}
+		try {
+			repository.delete(entity);
+			repository.flush();
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw physicalDeleteConflict(label);
+		}
+	}
+
 	private <T extends BaseTenantMasterEntity> T findEntity(
 			UUID id,
 			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
@@ -438,5 +486,26 @@ public class MasterDataHrBusinessService {
 	@FunctionalInterface
 	private interface TenantCodeExcludingIdExists {
 		boolean exists(UUID tenantId, String code, UUID id);
+	}
+
+	private boolean isDepartmentReferenced(Department department) {
+		return employeeRepository.existsByTenant_IdAndDepartment(department.getTenantId(), department.getCode());
+	}
+
+	private boolean isJobTitleReferenced(JobTitle jobTitle) {
+		return employeeRepository.existsByTenant_IdAndJobTitle(jobTitle.getTenantId(), jobTitle.getCode());
+	}
+
+	private boolean isContractTypeReferenced(ContractType contractType) {
+		return employeeRepository.existsByTenant_IdAndContractType(contractType.getTenantId(), contractType.getCode())
+				|| contractRepository.existsByContractType_Id(contractType.getId());
+	}
+
+	private boolean isWorkModeReferenced(WorkMode workMode) {
+		return employeeRepository.existsByTenant_IdAndWorkMode(workMode.getTenantId(), workMode.getCode());
+	}
+
+	private ResourceConflictException physicalDeleteConflict(String label) {
+		return new ResourceConflictException(label + " cannot be physically deleted because it is referenced by other data");
 	}
 }

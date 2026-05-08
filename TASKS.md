@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.71
+Versione: 1.72
 Ultimo aggiornamento: 2026-05-07
 Stato: In avanzamento
 
@@ -2505,7 +2505,7 @@ Acceptance criteria complessivi TASK-046:
 
 ### TASK-047 - Master Data physical delete for non-referenced records
 
-Stato: TODO
+Stato: IN_PROGRESS
 
 Tipo: Backend + Frontend CRUD safety foundation
 
@@ -2524,13 +2524,19 @@ Decisione funzionale:
 Subtask:
 
 - 047.1 - Master Data physical delete backend foundation
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - introdurre endpoint/action backend separata per delete fisico;
     - mantenere invariata la disattivazione logica `active=false`;
     - verificare record referenziati tramite controlli FK preventivi dove coerenti oppure gestione controllata di `DataIntegrityViolationException`;
     - restituire errore coerente, preferibilmente `409 Conflict`, quando il record e collegato ad altri dati;
     - non usare `repository.delete()` per sostituire i metodi di disattivazione esistenti.
+  - Completato:
+    - endpoint backend separati `DELETE /api/master-data/hr-business/{resource}/{id}/physical` per `departments`, `job-titles`, `contract-types` e `work-modes`;
+    - disattivazione logica esistente mantenuta invariata sui `DELETE /{id}` gia presenti;
+    - controlli applicativi espliciti su referenze semantiche `Employee` per `Department`, `JobTitle`, `ContractType` e `WorkMode`;
+    - safety net su `DataIntegrityViolationException` tradotta in `409 Conflict`;
+    - test MockMvc/OpenAPI/backend aggiornati e `mvnw.cmd test` validato con esito reale.
   - Acceptance criteria:
     - delete fisico rimuove realmente solo record non referenziati;
     - record referenziati non vengono rimossi e producono errore leggibile;
@@ -2799,6 +2805,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.72 | 2026-05-07 | TASK-047.1 completato con foundation backend per delete fisico sicuro su entita HR/business candidate (`Department`, `JobTitle`, `ContractType`, `WorkMode`): endpoint `/physical` separati dalla disattivazione logica, conflitti `409` per record referenziati e test backend reali validati. |
 | 1.71 | 2026-05-07 | TASK-047 scomposto in subtask incrementali: 047.1 backend foundation delete fisico sicuro, 047.2 azione frontend `Elimina` distinta da `Disattiva`, 047.3 QA/hardening; nessuna rinumerazione dei task successivi. |
 | 1.70 | 2026-05-07 | Introdotto TASK-047 "Master Data physical delete for non-referenced records" come task dedicato a cancellazione fisica sicura distinta dalla disattivazione logica `active=false`; backlog Super Admin/RBAC slittato a TASK-048..TASK-053 e task successivi rinumerati fino a TASK-065. |
 | 1.69 | 2026-05-07 | TASK-046.4 riallineato alla semantica architetturale esistente: `DELETE` Master Data resta soft-delete/disattivazione `active=false`, UX rinominata da `Elimina` a `Disattiva`, conferma/feedback/error handling i18n aggiornati e follow-up filtro attivi/inattivi + riattiva demandati a task successivi. |

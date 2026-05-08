@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ContractRepository extends JpaRepository<Contract, UUID> {
 
 	List<Contract> findByTenant_IdAndEmployee_Id(UUID tenantId, UUID employeeId);
+
+	boolean existsByContractType_Id(UUID contractTypeId);
 }
