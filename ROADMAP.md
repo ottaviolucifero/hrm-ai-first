@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.74
+Versione: 1.75
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -95,10 +95,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - Backlog governance updated: sidebar navigation tree foundation and frontend i18n foundation immediately follow authenticated home shell before Master Data Admin UI
 - TASK-047.2 Master Data physical delete frontend action
 - TASK-047.3 Master Data physical delete QA and hardening
+- TASK-048.1 Master Data design refinement preparation
 
 ### Prossimo passo
 
-- TASK-048.1 Master Data design refinement preparation
+- TASK-048.2 Master Data Stitch mockup validation
 
 ---
 
@@ -188,7 +189,6 @@ Da fare:
 
 - TASK-046 Master Data CRUD standard foundation
 - TASK-048 Master Data table and popup design refinement
-- TASK-048.1 Master Data design refinement preparation
 - TASK-048.2 Master Data Stitch mockup validation
 - TASK-048.3 Master Data design system documentation
 - TASK-048.4 Master Data table and popup UI implementation
@@ -214,8 +214,8 @@ Nota roadmap TASK-048:
 - TASK-048 serve a raffinare il design di tabelle e popup prima di proseguire con ulteriori CRUD e UI.
 - Flusso previsto: mockup con Google Stitch, raccolta screenshot o codice, analisi, definizione standard UI e applicazione controllata.
 - Sequenza prevista: TASK-048.1 preparation, TASK-048.2 Stitch mockup validation, TASK-048.3 design system documentation, TASK-048.4 implementation controllata.
-- Valutare la creazione o l'aggiornamento dedicato di `docs/design/DESIGN-SYSTEM.md`.
-- Fino alla creazione del design system dedicato, `frontend/AGENTS.md` rimane la fonte applicativa vigente per le regole frontend.
+- TASK-048.1 ha creato `docs/design/DESIGN-SYSTEM.md` come draft preparatorio per Master Data table e pop-up CRUD.
+- `frontend/AGENTS.md` rimane fonte applicativa vigente per le regole frontend; `docs/design/DESIGN-SYSTEM.md` dettaglia lo standard UI quando approvato e aggiornato dai task TASK-048.x.
 
 Nota roadmap TASK-045:
 
@@ -318,6 +318,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.75 | 2026-05-08 | TASK-048.1 completato come preparation documentale: creato `docs/design/DESIGN-SYSTEM.md`, formalizzate regole iniziali Master Data table/popup e prossimo passo aggiornato a TASK-048.2 Stitch mockup validation. |
 | 1.74 | 2026-05-08 | TASK-047.3 segnato completato come QA/hardening del delete fisico Master Data; roadmap riallineata con TASK-047.3 tra i completati, rimosso dai da fare e prossimo passo aggiornato a TASK-048.1. |
 | 1.73 | 2026-05-08 | Corretta la rinumerazione dopo TASK-048 e allineati i range roadmap: Fase 2H fino a TASK-062, Fase 2I TASK-063..TASK-064 e Fase 3 TASK-065..TASK-066. |
 | 1.72 | 2026-05-08 | Introdotti i sottotask TASK-048.1..TASK-048.4 per preparation, validazione mockup Stitch, documentazione design system e implementazione controllata del design refinement Master Data; confermato blocco permessi su TASK-049..TASK-054. |

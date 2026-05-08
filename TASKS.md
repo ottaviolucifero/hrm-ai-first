@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.74
+Versione: 1.75
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -2630,13 +2630,15 @@ Acceptance criteria:
 - indicato chiaramente che il mockup viene validato prima dell’implementazione;
 - indicato chiaramente che l’eventuale design system dedicato sarà creato/aggiornato solo nel task;
 - nessuna modifica codice prevista in questa sola modifica documentale;
-- non creare ora `docs/design/DESIGN-SYSTEM.md`;
+- `docs/design/DESIGN-SYSTEM.md` creato come draft preparatorio in TASK-048.1 e aggiornabile nei sottotask successivi;
 - non modificare frontend, backend o QA report;
 - conferma che TASKS.md e ROADMAP.md sono coerenti.
 
 ### TASK-048.1 - Master Data design refinement preparation
 
-Stato: TODO
+Stato: DONE
+
+Tipo: Documentazione / design preparation
 
 Scope:
 
@@ -2645,8 +2647,16 @@ Scope:
 - definire quali screenshot servono;
 - definire quali mockup generare con Google Stitch;
 - preparare prompt Stitch mirati per tabella, popup CRUD e conferme delete/deactivate;
-- non modificare codice;
-- non creare `docs/design/DESIGN-SYSTEM.md`.
+- creare il documento preparatorio `docs/design/DESIGN-SYSTEM.md`;
+- non modificare codice frontend/backend.
+
+Completato:
+
+- analizzato lo stato attuale della UI Master Data, inclusi tabella condivisa, colonne, row actions, filtri, paginazione, stati loading/error/empty, form modal e conferme delete/deactivate;
+- verificato che `frontend/agent.md` non esiste e che le regole frontend/design vigenti sono in `frontend/AGENTS.md`;
+- creato `docs/design/DESIGN-SYSTEM.md` come documento draft preparatorio per Master Data table e pop-up CRUD;
+- documentato il processo di integrazione mockup Stitch come screenshot/codice -> analisi -> regole riusabili -> applicazione incrementale;
+- nessuna modifica a codice frontend, backend, API o QA report.
 
 Acceptance criteria:
 
@@ -2654,7 +2664,7 @@ Acceptance criteria:
 - elenco mockup Stitch richiesti;
 - prompt Stitch documentati;
 - nessuna modifica frontend/backend;
-- nessun nuovo file design system creato.
+- documento design system preparatorio creato.
 
 ### TASK-048.2 - Master Data Stitch mockup validation
 
@@ -2684,7 +2694,7 @@ Stato: TODO
 
 Scope:
 
-- valutare e, se confermato, creare `docs/design/DESIGN-SYSTEM.md`;
+- valutare e, se confermato, aggiornare `docs/design/DESIGN-SYSTEM.md`;
 - formalizzare standard UI per tabelle Master Data;
 - formalizzare standard UI per popup/modali Master Data;
 - formalizzare bottoni, stati, badge, spaziature, empty/loading/error state;
@@ -2693,7 +2703,7 @@ Scope:
 
 Acceptance criteria:
 
-- `docs/design/DESIGN-SYSTEM.md` creato o decisione documentata se non creato;
+- `docs/design/DESIGN-SYSTEM.md` aggiornato o decisione documentata se non aggiornato;
 - standard UI chiaro per tabelle;
 - standard UI chiaro per modali;
 - regole coerenti con frontend/AGENTS.md;
@@ -2930,6 +2940,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.75 | 2026-05-08 | TASK-048.1 completato come preparation documentale: analizzata UI Master Data, creato `docs/design/DESIGN-SYSTEM.md` come draft iniziale, formalizzate regole per tabelle/popup e processo Stitch senza modifiche frontend/backend. |
 | 1.74 | 2026-05-08 | TASK-047.3 segnato DONE come chiusura QA/hardening del delete fisico Master Data; aggiunta sintesi prudente senza inventare nuovi esiti di test non documentati e mantenuto invariato il blocco TASK-048. |
 | 1.73 | 2026-05-08 | Corretta la rinumerazione dopo l'introduzione di TASK-048 e dei sottotask: mantenuto TASK-054 per backend API authorization, eliminato il doppio TASK-054 e slittati i task successivi fino a TASK-066. |
 | 1.72 | 2026-05-07 | TASK-047.1 completato con foundation backend per delete fisico sicuro su entita HR/business candidate (`Department`, `JobTitle`, `ContractType`, `WorkMode`): endpoint `/physical` separati dalla disattivazione logica, conflitti `409` per record referenziati e test backend reali validati. |
