@@ -1,2 +1,8 @@
+# Local IDE settings
 .vscode/
-docs/data-sources/italian-zip-codes/source-json/*.json
+
+# Local Stitch mockup exports
+docs/design/stitch-templates/
+
+# Local raw data-source working files
+docs/data-sources/italian-zip-codes/

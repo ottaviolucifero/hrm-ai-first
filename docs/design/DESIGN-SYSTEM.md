@@ -284,54 +284,47 @@ Regola centrale:
 
 ---
 
-## 17. Applicazione iniziale: Master Data / TASK-048
+## 17. Applicazione iniziale: UI template catalog / TASK-048
 
-Master Data e il primo caso pilota del design system. Le regole specifiche qui sotto applicano i principi generali alla schermata `/master-data`.
+TASK-048 usa i template Stitch come riferimento visuale astratto per definire pattern UI riusabili nella piattaforma HRflow.
 
-Stato attuale:
+I template non sono collegati a una singola feature e non autorizzano implementazioni automatiche. Ogni applicazione concreta deve avvenire tramite task dedicato, patch incrementale e validazione frontend.
 
-- `MasterDataAdminComponent` gestisce container, toolbar, filtri, query, paginazione, apertura form e conferme delete;
-- `DataTableComponent` renderizza colonne configurabili, valori nested, allineamenti, row actions, stati loading/error/empty e paginazione;
-- `MasterDataFormComponent` gestisce form metadata-driven per `create`, `edit` e `view`;
-- `MasterDataService` concentra chiamate API per list, create, update, deactivate e physical delete;
-- `I18nService` e `i18n.messages.ts` gestiscono testi UI in `it`, `fr` ed `en`.
+Obiettivo TASK-048:
 
-Pattern da riusare nel caso pilota:
+- definire un catalogo iniziale di pattern UI riusabili;
+- distinguere template approvati, template extra e pattern futuri;
+- separare la tabella gestionale standard dal bulk editor stile Excel;
+- evitare redesign massivi o duplicazione di componenti esistenti;
+- tradurre le parti approvate in regole applicabili ad Angular, Metronic-adapted patterns e i18n.
+
+Pattern da riusare:
 
 - layout shell, header e sidebar esistenti;
-- classi Metronic-adapted `kt-container-fixed`, `kt-card`, `kt-btn`, `kt-input`;
-- overlay modale gia presente in `master-data-admin`;
-- configurazione colonne e azioni in `master-data.models.ts`;
-- token CSS gia usati, ad esempio `--color-border`, `--color-background`, `--color-destructive`, `--color-primary`.
+- classi Metronic-adapted già presenti nel progetto;
+- componenti tabellari condivisi quando applicabile;
+- token CSS già usati, ad esempio `--color-border`, `--color-background`, `--color-destructive`, `--color-primary`;
+- foundation i18n esistente per `it`, `fr` ed `en`.
 
-Regole specifiche Master Data:
+Regole specifiche TASK-048:
 
-- usare `DataTableComponent` per le tabelle Master Data;
-- configurare colonne da `master-data.models.ts`;
-- mantenere filtri categoria, entita e ricerca nel container pagina;
-- mantenere azioni `Visualizza`, `Modifica`, `Disattiva`, `Elimina` configurate come row actions;
-- mantenere `Disattiva` e `Elimina` semanticamente distinte;
-- usare `MasterDataFormComponent` per create/edit/view;
-- usare conferme dedicate per deactivate e physical delete;
-- evitare nuove tabelle custom o nuovi componenti duplicati.
+- TEMPLATE-10 `Generic DataTable` è il riferimento principale per le tabelle gestionali standard;
+- TEMPLATE-02 `Spreadsheet-style bulk editor` è un pattern avanzato futuro per inserimento/modifica massiva dati;
+- TEMPLATE-01 definisce il pattern pagina lista con toolbar, filtri, tabella e paginazione;
+- TEMPLATE-03 definisce gli stati tabella;
+- TEMPLATE-04 definisce il pattern form modale CRUD;
+- TEMPLATE-05 definisce le conferme azioni;
+- TEMPLATE-06 e TEMPLATE-07 definiscono rispettivamente login e toast;
+- TEMPLATE-08, TEMPLATE-09 e TEMPLATE-11 sono riferimenti extra da valutare prima dell’applicazione.
 
-Mockup Stitch richiesti per TASK-048.2:
+Fuori scope TASK-048.2:
 
-- vista desktop della pagina Master Data con toolbar, filtri, tabella piena, row actions e paginazione;
-- vista empty state della tabella;
-- vista loading/error state;
-- modal create/edit per entita semplice con campi `code`, `name`, `active`;
-- modal view read-only;
-- conferma `Disattiva`;
-- conferma `Elimina` fisico;
-- variante mobile o tablet per tabella, toolbar, filtri e modali.
-
-Prompt Stitch specifici Master Data:
-
-- "Design an enterprise HR Master Data admin table screen for a SaaS backoffice. Include page title, category/entity/search filters, New and Refresh actions, dense but readable data table, row actions for View/Edit/Deactivate/Delete, pagination, neutral surfaces, restrained HRflow brand accents, and accessible states."
-- "Design a CRUD modal for Master Data create, edit and view modes. Use the same layout across modes, show required fields, validation space, primary Save action, secondary Cancel/Close behavior, and a clean enterprise style without decorative redesign."
-- "Design destructive confirmation modals for Deactivate and Permanent Delete. Make the risk level clear, show the target record, use distinct destructive action styling, and keep the cancel action secondary."
-- "Create responsive variants for the Master Data table and modal flow on tablet and mobile, preserving usability of filters, pagination and row actions."
+- applicare direttamente codice Stitch;
+- modificare componenti Angular;
+- cambiare backend o API;
+- rifare la shell;
+- introdurre nuove librerie UI;
+- trasformare tutti i template in componenti condivisi senza task dedicato.
 
 ---
 
@@ -346,6 +339,8 @@ Prompt Stitch specifici Master Data:
 - Definire se empty/error state devono diventare componenti condivisi generici.
 - Definire eventuali token spacing dedicati o riuso dei token esistenti.
 - Definire quando un pattern passa da feature-specific a shared.
+- Definire in quale task applicare TEMPLATE-10 `Generic DataTable` al componente tabellare esistente.
+- Definire se e quando creare un componente dedicato per TEMPLATE-02 `Spreadsheet-style bulk editor`.
 
 ---
 
@@ -354,8 +349,29 @@ Prompt Stitch specifici Master Data:
 - `DataTableComponent` e generico, ma alcune chiavi i18n sono ancora `masterData.*`.
 - Le azioni riga sono testuali e possono occupare troppo spazio con molte azioni.
 - Il form Master Data supporta solo tipi `text` e `boolean`.
+- Esiste una prima validazione visuale Stitch, ma non è ancora stata applicata al codice Angular.
 - I popup non documentano ancora una gestione focus avanzata.
-- Non esiste ancora una validazione visuale Stitch approvata.
 - Non esiste ancora uno standard definitivo per stati inattivi, badge e severity/status.
-- La lista Master Data puo mostrare record inattivi finche non esiste un filtro dedicato attivi/inattivi.
+- La lista puo mostrare record inattivi finche non esiste un filtro dedicato attivi/inattivi.
 
+
+
+## 20. Catalogo template UI validati da Stitch
+
+TASK-048.2 ha prodotto un primo catalogo di template visuali astratti per HRflow.
+
+I template Stitch non sono codice da copiare direttamente, ma riferimenti visuali da tradurre in pattern Angular coerenti con il progetto.
+
+| Template | Nome | Uso previsto | Stato |
+|---|---|---|---|
+| TEMPLATE-01 | Data list page | Pagina standard con titolo, toolbar, filtri, tabella e paginazione | Approvato come riferimento |
+| TEMPLATE-02 | Spreadsheet-style bulk editor | Inserimento e modifica massiva dati in stile Excel | Approvato come pattern avanzato futuro |
+| TEMPLATE-03 | Table states | Loading, empty, error, no results | Approvato come riferimento |
+| TEMPLATE-04 | CRUD modal form | Create, edit, view read-only | Approvato come riferimento |
+| TEMPLATE-05 | Action confirmation dialogs | Conferme normali, warning, destructive, irreversibili | Approvato come riferimento |
+| TEMPLATE-06 | Login page | Login, branding, lingua, accesso | Approvato come riferimento |
+| TEMPLATE-07 | Toast notifications | Success, error, warning, info | Approvato come riferimento |
+| TEMPLATE-08 | Sidebar | Navigazione laterale | Extra, da valutare prima di applicare |
+| TEMPLATE-09 | Header / topbar | Barra superiore, ricerca, profilo utente | Extra, da valutare prima di applicare |
+| TEMPLATE-10 | Generic DataTable | Tabella gestionale standard | Approvato come tabella principale |
+| TEMPLATE-11 | Buttons | Stili pulsanti primari, secondari, outline, destructive | Approvato come riferimento |
