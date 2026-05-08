@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.73
+Versione: 1.74
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -2562,12 +2562,17 @@ Subtask:
     - test frontend coprono conferma, successo, errore `409` e refresh lista.
 
 - 047.3 - Master Data physical delete QA and hardening
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - regressione backend/frontend su `/master-data`;
     - verifica manuale di record eliminabile e record referenziato;
     - verifica che disattivazione logica, create/edit/view, filtro e paginazione non regrediscano;
     - aggiornamento documentazione e report QA solo con esiti reali.
+  - Completato:
+    - chiusura QA/hardening registrata per il flusso di cancellazione fisica Master Data;
+    - mantenuta separazione tra `Disattiva` e `Elimina`;
+    - confermato che i riferimenti QA documentati disponibili restano quelli gia presenti per TASK-047.1 e per le verifiche Master Data precedenti;
+    - nessun aggiornamento a `docs/qa/QA-REPORTS.md` in assenza di un nuovo report QA dedicato da registrare.
   - Acceptance criteria:
     - test backend OK;
     - build/test frontend OK;
@@ -2925,6 +2930,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.74 | 2026-05-08 | TASK-047.3 segnato DONE come chiusura QA/hardening del delete fisico Master Data; aggiunta sintesi prudente senza inventare nuovi esiti di test non documentati e mantenuto invariato il blocco TASK-048. |
 | 1.73 | 2026-05-08 | Corretta la rinumerazione dopo l'introduzione di TASK-048 e dei sottotask: mantenuto TASK-054 per backend API authorization, eliminato il doppio TASK-054 e slittati i task successivi fino a TASK-066. |
 | 1.72 | 2026-05-07 | TASK-047.1 completato con foundation backend per delete fisico sicuro su entita HR/business candidate (`Department`, `JobTitle`, `ContractType`, `WorkMode`): endpoint `/physical` separati dalla disattivazione logica, conflitti `409` per record referenziati e test backend reali validati. |
 | 1.71 | 2026-05-07 | TASK-047 scomposto in subtask incrementali: 047.1 backend foundation delete fisico sicuro, 047.2 azione frontend `Elimina` distinta da `Disattiva`, 047.3 QA/hardening; nessuna rinumerazione dei task successivi. |

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.73
+Versione: 1.74
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -94,10 +94,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
 - Backlog governance updated: sidebar navigation tree foundation and frontend i18n foundation immediately follow authenticated home shell before Master Data Admin UI
 - TASK-047.2 Master Data physical delete frontend action
+- TASK-047.3 Master Data physical delete QA and hardening
 
 ### Prossimo passo
 
-- TASK-047.3: Master Data physical delete QA and hardening
+- TASK-048.1 Master Data design refinement preparation
 
 ---
 
@@ -186,7 +187,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 Da fare:
 
 - TASK-046 Master Data CRUD standard foundation
-- TASK-047.3 Master Data physical delete QA and hardening
 - TASK-048 Master Data table and popup design refinement
 - TASK-048.1 Master Data design refinement preparation
 - TASK-048.2 Master Data Stitch mockup validation
@@ -318,6 +318,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.74 | 2026-05-08 | TASK-047.3 segnato completato come QA/hardening del delete fisico Master Data; roadmap riallineata con TASK-047.3 tra i completati, rimosso dai da fare e prossimo passo aggiornato a TASK-048.1. |
 | 1.73 | 2026-05-08 | Corretta la rinumerazione dopo TASK-048 e allineati i range roadmap: Fase 2H fino a TASK-062, Fase 2I TASK-063..TASK-064 e Fase 3 TASK-065..TASK-066. |
 | 1.72 | 2026-05-08 | Introdotti i sottotask TASK-048.1..TASK-048.4 per preparation, validazione mockup Stitch, documentazione design system e implementazione controllata del design refinement Master Data; confermato blocco permessi su TASK-049..TASK-054. |
 | 1.71 | 2026-05-08 | Introdotto TASK-048 (Master Data table and popup design refinement) prima del blocco Super Admin / permessi; blocco permessi slittato a TASK-049..TASK-054 con flusso precondizionato su design. |
