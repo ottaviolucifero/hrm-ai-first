@@ -1,2 +1,4 @@
 .vscode/
 docs/data-sources/italian-zip-codes/source-json/*.json
+# Local Stitch mockup exports
+docs/design/stitch-templates/
