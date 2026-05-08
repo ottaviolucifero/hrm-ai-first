@@ -66,22 +66,26 @@
           <section class="kt-card master-data-confirm-panel">
             <div class="kt-card-header master-data-form-header">
               <h2 id="master-data-delete-title" class="kt-card-title text-lg">
-                {{ i18n.t('masterData.delete.confirmTitle') }}
+                {{ i18n.t(deleteConfirmTitleKey()) }}
               </h2>
             </div>
 
             <div class="kt-card-content master-data-confirm-body">
               <app-alert-message type="danger" [message]="deleteErrorMessage()" />
 
-              <p class="master-data-confirm-message">{{ i18n.t('masterData.delete.confirmMessage') }}</p>
+              <p class="master-data-confirm-message">{{ i18n.t(deleteConfirmMessageKey()) }}</p>
 
               @if (deleteTargetLabel(); as targetLabel) {
                 <p class="master-data-confirm-target">{{ targetLabel }}</p>
               }
 
               <div class="master-data-form-actions">
-                <button class="kt-btn kt-btn-primary kt-btn-sm master-data-danger-button" type="button" [disabled]="deleting()" (click)="confirmDelete()">
-                  {{ i18n.t(deleting() ? 'masterData.delete.processing' : 'masterData.delete.confirmAction') }}
+                <button
+                  class="kt-btn kt-btn-primary kt-btn-sm master-data-danger-button"
+                  type="button"
+                  [disabled]="deleting()"
+                  (click)="confirmDelete()">
+                  {{ i18n.t(deleting() ? deleteProcessingMessageKey() : deleteConfirmActionKey()) }}
                 </button>
                 <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="deleting()" (click)="closeDeleteConfirm()">
                   {{ i18n.t('masterData.form.cancel') }}
