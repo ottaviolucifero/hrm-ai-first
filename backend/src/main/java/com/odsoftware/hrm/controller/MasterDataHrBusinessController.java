@@ -69,6 +69,13 @@ public class MasterDataHrBusinessController {
 		masterDataHrBusinessService.disableDepartment(id);
 	}
 
+	@DeleteMapping("/departments/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete department")
+	public void deletePhysicalDepartment(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalDepartment(id);
+	}
+
 	@GetMapping("/job-titles")
 	@Operation(summary = "List job titles")
 	public MasterDataPageResponse<TenantMasterDataResponse> findJobTitles(
@@ -104,6 +111,13 @@ public class MasterDataHrBusinessController {
 		masterDataHrBusinessService.disableJobTitle(id);
 	}
 
+	@DeleteMapping("/job-titles/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete job title")
+	public void deletePhysicalJobTitle(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalJobTitle(id);
+	}
+
 	@GetMapping("/contract-types")
 	@Operation(summary = "List contract types")
 	public MasterDataPageResponse<TenantMasterDataResponse> findContractTypes(
@@ -137,6 +151,13 @@ public class MasterDataHrBusinessController {
 	@Operation(summary = "Disable contract type")
 	public void disableContractType(@PathVariable UUID id) {
 		masterDataHrBusinessService.disableContractType(id);
+	}
+
+	@DeleteMapping("/contract-types/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete contract type")
+	public void deletePhysicalContractType(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalContractType(id);
 	}
 
 	@GetMapping("/employment-statuses")
@@ -207,6 +228,13 @@ public class MasterDataHrBusinessController {
 	@Operation(summary = "Disable work mode")
 	public void disableWorkMode(@PathVariable UUID id) {
 		masterDataHrBusinessService.disableWorkMode(id);
+	}
+
+	@DeleteMapping("/work-modes/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete work mode")
+	public void deletePhysicalWorkMode(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalWorkMode(id);
 	}
 
 	@GetMapping("/leave-request-types")

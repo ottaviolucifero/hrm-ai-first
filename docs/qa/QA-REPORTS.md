@@ -6,7 +6,29 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
-Nessun report backend registrato al momento.
+### TASK-047.1 - Master Data physical delete backend foundation
+
+- Data: 2026-05-08
+- Branch: `task-047-1-master-data-physical-delete-backend`
+- Task: TASK-047.1 - Master Data physical delete backend foundation
+- Agente/Modello usato: GPT-5 Codex (QA tecnica finale post-fix)
+- Area verificata: controller/service/repository Master Data HR/business, endpoint backend `/physical`, gestione `204` / `404` / `409`, mantenimento soft-delete esistente, check referenziali tenant-aware e test MockMvc/OpenAPI
+- Comandi eseguiti: `cd backend && .\mvnw.cmd test`
+- QA iniziale:
+  - verifiche su endpoint e casi `204`/`404`/`409` confermate;
+  - identificata criticità: check referenziali non tenant-aware su codice (`EmployeeRepository`) che poteva produrre falsi positivi cross-tenant.
+- Fix applicato:
+  - aggiornati check referenziali in `MasterDataHrBusinessService` a filtraggio per `tenantId` su `Department`, `JobTitle`, `WorkMode`;
+  - mantenuta verifica anche su `ContractType` con query su `ContractRepository` per i riferimenti da `Contract`;
+  - esteso test multi-tenant `masterDataHrBusinessPhysicalDeleteIgnoresSameCodeReferencesFromAnotherTenant` includendo `Department`, `JobTitle`, `ContractType`, `WorkMode`.
+- Comportamenti verificati:
+  - separazione `/physical` da `DELETE /{id}` su `Department`, `JobTitle`, `ContractType`, `WorkMode`;
+  - `DELETE /{id}/physical` su record non referenziati ritorna `204` e rimuove il record;
+  - `DELETE /{id}/physical` su record mancante ritorna `404`;
+  - `DELETE /{id}/physical` su record referenziato ritorna `409`;
+  - test MockMvc/OpenAPI e suite Maven verificati end-to-end.
+- Esito finale: PASS
+- Stato finale: backend test OK (107 test, 0 failure, 0 errori, 0 skipped), fix applicato e validato, nessuna regressione bloccante.
 
 ## Frontend QA reports
 
@@ -124,4 +146,3 @@ Nota operativa:
 - Backend test eseguiti/non eseguiti: eseguiti (`mvnw.cmd test`), esito verde (100 test, 0 failure, 0 errori)
 - QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
 - Limiti noti: la lista continua a mostrare anche record inattivi perche le API attuali non filtrano `active=true`; filtro `Attivi` / `Inattivi`, azione `Riattiva` e gestione permessi runtime RBAC restano fuori scope in TASK-046.4
-- Stato finale: backend test OK (100/100), build frontend OK, test frontend OK (11 file test passed, 50 test passed)
