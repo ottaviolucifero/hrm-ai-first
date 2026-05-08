@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.70
+Versione: 1.73
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -187,21 +187,35 @@ Da fare:
 
 - TASK-046 Master Data CRUD standard foundation
 - TASK-047.3 Master Data physical delete QA and hardening
-- TASK-048 Platform Super Admin and tenant-aware permissions model
-- TASK-049 User, Role and Permission domain review
-- TASK-050 Permission model foundation by scope/resource/action
-- TASK-051 Tenant user and role administration foundation
-- TASK-052 Apply permissions to frontend navigation and actions
-- TASK-053 Apply permissions to backend API authorization
+- TASK-048 Master Data table and popup design refinement
+- TASK-048.1 Master Data design refinement preparation
+- TASK-048.2 Master Data Stitch mockup validation
+- TASK-048.3 Master Data design system documentation
+- TASK-048.4 Master Data table and popup UI implementation
+- TASK-049 Platform Super Admin and tenant-aware permissions model
+- TASK-050 User, Role and Permission domain review
+- TASK-051 Permission model foundation by scope/resource/action
+- TASK-052 Tenant user and role administration foundation
+- TASK-053 Apply permissions to frontend navigation and actions
+- TASK-054 Apply permissions to backend API authorization
 
-Sequenza funzionale prevista per il blocco TASK-048..TASK-053:
+Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
-- TASK-048: strategia e modello Super Admin / tenant-aware permissions;
-- TASK-049: review dominio esistente e gap analysis;
-- TASK-050: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
-- TASK-051: foundation utenti/ruoli tenant;
-- TASK-052: applicazione permessi lato frontend per UX/visibilita;
-- TASK-053: enforcement reale lato backend sulle API.
+- TASK-048: step UI/design prima del blocco permessi, con preparation, Stitch mockup validation, design system documentation e implementation controllata;
+- TASK-049: strategia e modello Super Admin / tenant-aware permissions;
+- TASK-050: review dominio esistente e gap analysis;
+- TASK-051: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
+- TASK-052: foundation utenti/ruoli tenant;
+- TASK-053: applicazione permessi lato frontend per UX/visibilita;
+- TASK-054: enforcement reale lato backend sulle API.
+
+Nota roadmap TASK-048:
+
+- TASK-048 serve a raffinare il design di tabelle e popup prima di proseguire con ulteriori CRUD e UI.
+- Flusso previsto: mockup con Google Stitch, raccolta screenshot o codice, analisi, definizione standard UI e applicazione controllata.
+- Sequenza prevista: TASK-048.1 preparation, TASK-048.2 Stitch mockup validation, TASK-048.3 design system documentation, TASK-048.4 implementation controllata.
+- Valutare la creazione o l'aggiornamento dedicato di `docs/design/DESIGN-SYSTEM.md`.
+- Fino alla creazione del design system dedicato, `frontend/AGENTS.md` rimane la fonte applicativa vigente per le regole frontend.
 
 Nota roadmap TASK-045:
 
@@ -225,7 +239,7 @@ Nota roadmap TASK-046:
 - TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
 - TASK-047 introduce la cancellazione fisica sicura dei Master Data come azione distinta da `Disattiva`, consentita solo per record non referenziati.
 - TASK-047 e scomposto in tre subtask incrementali: 047.1 backend foundation, 047.2 frontend action, 047.3 QA and hardening.
-- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-048..TASK-053) con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data.
+- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-054), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data.
 - Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
 
 ---
@@ -280,15 +294,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-061
+- TASK-036 -> TASK-062
 
 ### Fase 2I - Platform Operations
 
-- TASK-062 -> TASK-063
+- TASK-063 -> TASK-064
 
 ### Fase 3 - Stabilization
 
-- TASK-064 -> TASK-065
+- TASK-065 -> TASK-066
 
 ---
 
@@ -304,6 +318,9 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.73 | 2026-05-08 | Corretta la rinumerazione dopo TASK-048 e allineati i range roadmap: Fase 2H fino a TASK-062, Fase 2I TASK-063..TASK-064 e Fase 3 TASK-065..TASK-066. |
+| 1.72 | 2026-05-08 | Introdotti i sottotask TASK-048.1..TASK-048.4 per preparation, validazione mockup Stitch, documentazione design system e implementazione controllata del design refinement Master Data; confermato blocco permessi su TASK-049..TASK-054. |
+| 1.71 | 2026-05-08 | Introdotto TASK-048 (Master Data table and popup design refinement) prima del blocco Super Admin / permessi; blocco permessi slittato a TASK-049..TASK-054 con flusso precondizionato su design. |
 | 1.70 | 2026-05-08 | TASK-047.2 completato: azione frontend `Elimina` integrata in `/master-data` con conferma, chiamata `DELETE /{id}/physical`, handling errori/`409` e test frontend dedicati; prossimo step impostato su TASK-047.3 QA/hardening. |
 | 1.69 | 2026-05-07 | TASK-047.1 completato con foundation backend delete fisico sicuro su entita HR/business candidate: endpoint `/physical` separati, blocco `409 Conflict` su record referenziati, test backend reali validati e prossimo step aggiornato a TASK-047.2 frontend action. |
 | 1.68 | 2026-05-07 | TASK-047 scomposto in subtask incrementali senza rinumerare il backlog successivo: 047.1 backend foundation delete fisico sicuro, 047.2 azione frontend `Elimina`, 047.3 QA/hardening. |

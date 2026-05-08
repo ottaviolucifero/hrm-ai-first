@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.72
-Ultimo aggiornamento: 2026-05-07
+Versione: 1.73
+Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
 ---
@@ -2604,7 +2604,121 @@ Acceptance criteria:
 - UI aggiorna la lista dopo successo reale;
 - test backend/frontend coprono successo e blocco su record referenziati dove riproducibile.
 
-### TASK-048 - Platform Super Admin and tenant-aware permissions model
+### TASK-048 - Master Data table and popup design refinement
+
+Stato: TODO
+
+Scope:
+
+- definire e raffinare lo standard visuale per tabelle Master Data;
+- definire e raffinare lo standard visuale per popup/modali create, edit, view, deactivate e physical delete;
+- usare mockup preparati con Google Stitch come riferimento visuale;
+- analizzare screenshot o codice Stitch prima di applicare modifiche;
+- evitare lavoro doppio sui prossimi task CRUD e amministrativi;
+- valutare la creazione di `docs/design/DESIGN-SYSTEM.md` come fonte dedicata per linee guida UI;
+- mantenere coerenza con le regole già presenti in `frontend/AGENTS.md`.
+
+Acceptance criteria:
+
+- workflow design documentato nel task;
+- indicato chiaramente che prima si prepara il mockup su Stitch;
+- indicato chiaramente che il mockup viene validato prima dell’implementazione;
+- indicato chiaramente che l’eventuale design system dedicato sarà creato/aggiornato solo nel task;
+- nessuna modifica codice prevista in questa sola modifica documentale;
+- non creare ora `docs/design/DESIGN-SYSTEM.md`;
+- non modificare frontend, backend o QA report;
+- conferma che TASKS.md e ROADMAP.md sono coerenti.
+
+### TASK-048.1 - Master Data design refinement preparation
+
+Stato: TODO
+
+Scope:
+
+- analizzare lo stato attuale della UI Master Data;
+- identificare schermate, tabelle e popup esistenti;
+- definire quali screenshot servono;
+- definire quali mockup generare con Google Stitch;
+- preparare prompt Stitch mirati per tabella, popup CRUD e conferme delete/deactivate;
+- non modificare codice;
+- non creare `docs/design/DESIGN-SYSTEM.md`.
+
+Acceptance criteria:
+
+- elenco schermate/popup da fotografare o generare;
+- elenco mockup Stitch richiesti;
+- prompt Stitch documentati;
+- nessuna modifica frontend/backend;
+- nessun nuovo file design system creato.
+
+### TASK-048.2 - Master Data Stitch mockup validation
+
+Stato: TODO
+
+Scope:
+
+- raccogliere screenshot o codice generato da Google Stitch;
+- confrontare mockup Stitch con UI attuale;
+- validare layout, colori, spacing, azioni, bottoni e comportamento modale;
+- decidere cosa tenere e cosa scartare;
+- definire uno standard visuale approvato per tabelle e popup Master Data;
+- evitare applicazione diretta del codice Stitch senza revisione.
+
+Acceptance criteria:
+
+- mockup Stitch analizzati;
+- decisioni visuali documentate;
+- definite regole per popup create/edit/view;
+- definite regole per conferme deactivate/physical delete;
+- definita regola UX sui bottoni: non usare insieme "Annulla" e "Chiudi" nella bottom action bar quando hanno la stessa funzione;
+- nessuna modifica codice applicativo salvo task esplicitamente autorizzato.
+
+### TASK-048.3 - Master Data design system documentation
+
+Stato: TODO
+
+Scope:
+
+- valutare e, se confermato, creare `docs/design/DESIGN-SYSTEM.md`;
+- formalizzare standard UI per tabelle Master Data;
+- formalizzare standard UI per popup/modali Master Data;
+- formalizzare bottoni, stati, badge, spaziature, empty/loading/error state;
+- mantenere coerenza con `frontend/AGENTS.md`;
+- indicare che i mockup Stitch sono riferimento visuale, non codice finale.
+
+Acceptance criteria:
+
+- `docs/design/DESIGN-SYSTEM.md` creato o decisione documentata se non creato;
+- standard UI chiaro per tabelle;
+- standard UI chiaro per modali;
+- regole coerenti con frontend/AGENTS.md;
+- nessuna implementazione frontend in questo sottotask, salvo diversa decisione esplicita.
+
+### TASK-048.4 - Master Data table and popup UI implementation
+
+Stato: TODO
+
+Scope:
+
+- applicare in Angular lo standard approvato ai componenti Master Data;
+- aggiornare popup create/edit/view;
+- aggiornare conferme deactivate e physical delete;
+- aggiornare tabella Master Data solo dove necessario;
+- riusare componenti esistenti;
+- rispettare i18n it/fr/en;
+- evitare duplicazione di logiche o componenti.
+
+Acceptance criteria:
+
+- popup Master Data coerenti con lo standard approvato;
+- tabella Master Data coerente con lo standard approvato;
+- nessun testo hardcoded;
+- nessuna duplicazione di componenti tabellari;
+- build frontend OK;
+- test frontend eseguiti se presenti/applicabili;
+- documentazione aggiornata se necessario.
+
+### TASK-049 - Platform Super Admin and tenant-aware permissions model
 
 Stato: TODO
 
@@ -2631,7 +2745,7 @@ Fuori scope:
 - implementazione CRUD backend reale;
 - UI completa di amministrazione utenti/ruoli.
 
-### TASK-049 - User, Role and Permission domain review
+### TASK-050 - User, Role and Permission domain review
 
 Stato: TODO
 
@@ -2639,7 +2753,7 @@ Tipo: Analisi dominio backend/API
 
 Obiettivo:
 
-- Analizzare il dominio gia presente per utenti, ruoli e permessi e identificare i gap rispetto al modello definito in TASK-048.
+- Analizzare il dominio gia presente per utenti, ruoli e permessi e identificare i gap rispetto al modello definito in TASK-049.
 
 Scope:
 
@@ -2654,7 +2768,7 @@ Fuori scope:
 - implementazione UI completa;
 - enforcement permessi runtime.
 
-### TASK-050 - Permission model foundation by scope/resource/action
+### TASK-051 - Permission model foundation by scope/resource/action
 
 Stato: TODO
 
@@ -2684,7 +2798,7 @@ Note:
 - il backend usa il modello per enforcement reale delle API;
 - modello iniziale per modulo/risorsa, senza granularita immediata per singola entita Master Data (es. `TENANT.MASTER_DATA.WORK_MODE.CREATE`).
 
-### TASK-051 - Tenant user and role administration foundation
+### TASK-052 - Tenant user and role administration foundation
 
 Stato: TODO
 
@@ -2704,9 +2818,9 @@ Scope:
 Fuori scope:
 
 - policy autorizzative granulari per singola entita;
-- enforcement backend completo (demandato a TASK-053).
+- enforcement backend completo (demandato a TASK-054).
 
-### TASK-052 - Apply permissions to frontend navigation and actions
+### TASK-053 - Apply permissions to frontend navigation and actions
 
 Stato: TODO
 
@@ -2724,7 +2838,7 @@ Scope:
 - usare permessi disponibili dall'utente autenticato;
 - mantenere chiaro che il frontend e solo UX, non sicurezza reale.
 
-### TASK-053 - Apply permissions to backend API authorization
+### TASK-054 - Apply permissions to backend API authorization
 
 Stato: TODO
 
@@ -2745,11 +2859,11 @@ Nota di sicurezza:
 
 - il backend resta il punto di enforcement reale; il frontend non sostituisce mai i controlli API.
 
-### TASK-054 - Implementare UI Employee management enterprise
+### TASK-055 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-055 - Implementare Security Admin UI
+### TASK-056 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -2761,47 +2875,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-056 - Implementare UI Device governance
+### TASK-057 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-057 - Implementare UI PayrollDocument
+### TASK-058 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-058 - Implementare UI LeaveRequest
+### TASK-059 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-059 - Implementare UI HolidayCalendar
+### TASK-060 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-060 - Implementare Audit UI / compliance explorer
+### TASK-061 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-061 - Implementare UI disciplinary governance
+### TASK-062 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-062 - Implementare Platform Operator / Super Admin governance
+### TASK-063 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-063 - Implementare Cross-tenant admin UI
+### TASK-064 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-064 - Configurare logging, monitoring e observability enterprise
+### TASK-065 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-065 - Test integrato MVP enterprise completo
+### TASK-066 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -2811,6 +2925,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.73 | 2026-05-08 | Corretta la rinumerazione dopo l'introduzione di TASK-048 e dei sottotask: mantenuto TASK-054 per backend API authorization, eliminato il doppio TASK-054 e slittati i task successivi fino a TASK-066. |
 | 1.72 | 2026-05-07 | TASK-047.1 completato con foundation backend per delete fisico sicuro su entita HR/business candidate (`Department`, `JobTitle`, `ContractType`, `WorkMode`): endpoint `/physical` separati dalla disattivazione logica, conflitti `409` per record referenziati e test backend reali validati. |
 | 1.71 | 2026-05-07 | TASK-047 scomposto in subtask incrementali: 047.1 backend foundation delete fisico sicuro, 047.2 azione frontend `Elimina` distinta da `Disattiva`, 047.3 QA/hardening; nessuna rinumerazione dei task successivi. |
 | 1.70 | 2026-05-07 | Introdotto TASK-047 "Master Data physical delete for non-referenced records" come task dedicato a cancellazione fisica sicura distinta dalla disattivazione logica `active=false`; backlog Super Admin/RBAC slittato a TASK-048..TASK-053 e task successivi rinumerati fino a TASK-065. |
