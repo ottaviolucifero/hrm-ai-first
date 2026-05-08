@@ -354,7 +354,9 @@ Fuori scope TASK-048.2:
 - Non esiste ancora uno standard definitivo per stati inattivi, badge e severity/status.
 - La lista puo mostrare record inattivi finche non esiste un filtro dedicato attivi/inattivi.
 
-## Catalogo template UI validati da Stitch
+
+
+## 20. Catalogo template UI validati da Stitch
 
 TASK-048.2 ha prodotto un primo catalogo di template visuali astratti per HRflow.
 

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.75
+Versione: 1.76
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -2668,7 +2668,7 @@ Acceptance criteria:
 
 ### TASK-048.2 - Master Data Stitch mockup validation
 
-Stato: TODO
+Stato: DONE
 
 Scope:
 
@@ -2940,6 +2940,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.76 | 2026-05-08 | TASK-048.2 confermato DONE con validazione catalogo astratto UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`; screenshot Stitch locali esclusi dal versionamento via `.gitignore`; nessuna modifica Angular/backend. |
 | 1.75 | 2026-05-08 | TASK-048.1 completato come preparation documentale: analizzata UI Master Data, creato `docs/design/DESIGN-SYSTEM.md` come draft iniziale, formalizzate regole per tabelle/popup e processo Stitch senza modifiche frontend/backend. |
 | 1.74 | 2026-05-08 | TASK-047.3 segnato DONE come chiusura QA/hardening del delete fisico Master Data; aggiunta sintesi prudente senza inventare nuovi esiti di test non documentati e mantenuto invariato il blocco TASK-048. |
 | 1.73 | 2026-05-08 | Corretta la rinumerazione dopo l'introduzione di TASK-048 e dei sottotask: mantenuto TASK-054 per backend API authorization, eliminato il doppio TASK-054 e slittati i task successivi fino a TASK-066. |
