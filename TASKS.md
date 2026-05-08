@@ -2543,13 +2543,19 @@ Subtask:
     - test backend coprono successo e blocco su record referenziati dove riproducibile.
 
 - 047.2 - Master Data physical delete frontend action
-  - Stato: TODO
+  - Stato: DONE
   - Scope:
     - aggiungere in UI azione separata `Elimina`, distinta da `Disattiva`;
     - usare conferma forte prima della cancellazione fisica;
     - mostrare messaggio chiaro: `Il record non puo essere eliminato perche e collegato ad altri dati`;
     - aggiornare messaggi i18n `it` / `fr` / `en`;
     - aggiornare lista solo dopo successo reale del backend.
+  - Completato:
+    - aggiunta azione riga `Elimina` alle entità HR/business candidate (`departments`, `job-titles`, `contract-types`, `work-modes`);
+    - introdotta conferma esplicita con messaggio specifico e stato `deleting`;
+    - integrata chiamata API `DELETE /{id}/physical` e reload pagina corrente coerente con successo;
+    - gestione `409` con errore leggibile e messaggio i18n coerente in `it` / `fr` / `en`;
+    - aggiornamento test frontend per conferma/successo/errore/aggiornamento pagina.
   - Acceptance criteria:
     - `Disattiva` ed `Elimina` sono azioni visivamente e funzionalmente distinte;
     - la UI non nasconde record per simulare delete fisico;

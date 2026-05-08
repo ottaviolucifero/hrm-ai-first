@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.69
-Ultimo aggiornamento: 2026-05-07
+Versione: 1.70
+Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
 ---
@@ -93,10 +93,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - Backlog governance updated: Login foundation precedes administrative UI
 - Backlog governance updated: authenticated home shell, logo integration and frontend design guidelines precede Master Data Admin UI
 - Backlog governance updated: sidebar navigation tree foundation and frontend i18n foundation immediately follow authenticated home shell before Master Data Admin UI
+- TASK-047.2 Master Data physical delete frontend action
 
 ### Prossimo passo
 
-- TASK-047.2: Master Data physical delete frontend action
+- TASK-047.3: Master Data physical delete QA and hardening
 
 ---
 
@@ -185,7 +186,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 Da fare:
 
 - TASK-046 Master Data CRUD standard foundation
-- TASK-047 Master Data physical delete for non-referenced records
+- TASK-047.3 Master Data physical delete QA and hardening
 - TASK-048 Platform Super Admin and tenant-aware permissions model
 - TASK-049 User, Role and Permission domain review
 - TASK-050 Permission model foundation by scope/resource/action
@@ -303,6 +304,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.70 | 2026-05-08 | TASK-047.2 completato: azione frontend `Elimina` integrata in `/master-data` con conferma, chiamata `DELETE /{id}/physical`, handling errori/`409` e test frontend dedicati; prossimo step impostato su TASK-047.3 QA/hardening. |
 | 1.69 | 2026-05-07 | TASK-047.1 completato con foundation backend delete fisico sicuro su entita HR/business candidate: endpoint `/physical` separati, blocco `409 Conflict` su record referenziati, test backend reali validati e prossimo step aggiornato a TASK-047.2 frontend action. |
 | 1.68 | 2026-05-07 | TASK-047 scomposto in subtask incrementali senza rinumerare il backlog successivo: 047.1 backend foundation delete fisico sicuro, 047.2 azione frontend `Elimina`, 047.3 QA/hardening. |
 | 1.67 | 2026-05-07 | Introdotto TASK-047 "Master Data physical delete for non-referenced records" come follow-up distinto dalla disattivazione logica: `Disattiva` resta `active=false`, `Elimina` sara delete fisico solo per record non referenziati; blocco Super Admin/RBAC slittato a TASK-048..TASK-053 e range futuri aggiornati fino a TASK-065. |

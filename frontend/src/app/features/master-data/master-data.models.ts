@@ -14,6 +14,7 @@ export type MasterDataColumn = DataTableColumn<MasterDataRow>;
 export type MasterDataRowAction = DataTableAction<MasterDataRow>;
 export type MasterDataRowActionEvent = DataTableRowActionEvent<MasterDataRow>;
 export type MasterDataFormMode = 'create' | 'edit' | 'view';
+export type MasterDataDeleteMode = 'deactivate' | 'physical';
 export type MasterDataFormFieldType = 'text' | 'boolean';
 
 export interface MasterDataFormField {
@@ -180,6 +181,19 @@ const STANDARD_CRUD_ROW_ACTIONS: readonly MasterDataRowAction[] = [
   }
 ] as const;
 
+const PHYSICAL_DELETE_ROW_ACTION: readonly MasterDataRowAction[] = [
+  {
+    id: 'deletePhysical',
+    labelKey: 'masterData.actions.deletePhysical',
+    tone: 'danger'
+  } as const
+];
+
+const STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS: readonly MasterDataRowAction[] = [
+  ...STANDARD_CRUD_ROW_ACTIONS,
+  ...PHYSICAL_DELETE_ROW_ACTION
+];
+
 const STANDARD_CRUD_FORM: MasterDataFormConfig = {
   modes: ['create', 'edit', 'view'],
   fields: [
@@ -276,7 +290,7 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         titleKey: 'masterData.entities.departments',
         endpoint: '/api/master-data/hr-business/departments',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
-        rowActions: STANDARD_CRUD_ROW_ACTIONS,
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_FORM
       },
       {
@@ -284,7 +298,7 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         titleKey: 'masterData.entities.jobTitles',
         endpoint: '/api/master-data/hr-business/job-titles',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
-        rowActions: STANDARD_CRUD_ROW_ACTIONS,
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_FORM
       },
       {
@@ -292,7 +306,7 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         titleKey: 'masterData.entities.contractTypes',
         endpoint: '/api/master-data/hr-business/contract-types',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
-        rowActions: STANDARD_CRUD_ROW_ACTIONS,
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_FORM
       },
       {
@@ -306,7 +320,7 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         titleKey: 'masterData.entities.workModes',
         endpoint: '/api/master-data/hr-business/work-modes',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
-        rowActions: STANDARD_CRUD_ROW_ACTIONS,
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_FORM
       },
       {

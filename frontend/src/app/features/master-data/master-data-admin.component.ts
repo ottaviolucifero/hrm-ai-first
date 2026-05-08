@@ -13,6 +13,7 @@ import {
   MASTER_DATA_CATEGORIES,
   MasterDataCategory,
   MasterDataCategoryId,
+  MasterDataDeleteMode,
   MasterDataFormConfig,
   MasterDataFormMode,
   MasterDataMutationRequest,
@@ -66,6 +67,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly saving = signal(false);
   protected readonly deleting = signal(false);
   protected readonly pendingDeleteRow = signal<MasterDataRow | null>(null);
+  protected readonly pendingDeleteMode = signal<MasterDataDeleteMode | null>(null);
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly formConfig = computed<MasterDataFormConfig | null>(() => this.selectedResource().form ?? null);
   protected readonly formFields = computed(() => this.formConfig()?.fields ?? []);
@@ -74,8 +76,23 @@ export class MasterDataAdminComponent implements OnDestroy {
     () => this.formConfig()?.modes.includes('create') === true
   );
   protected readonly isFormOpen = computed(() => this.formMode() !== null && this.formConfig() !== null);
-  protected readonly isDeleteConfirmOpen = computed(() => this.pendingDeleteRow() !== null);
+  protected readonly isDeleteConfirmOpen = computed(
+    () => this.pendingDeleteRow() !== null && this.pendingDeleteMode() !== null
+  );
   protected readonly deleteTargetLabel = computed(() => this.describeRow(this.pendingDeleteRow()));
+  protected readonly isDeletePhysical = computed(() => this.pendingDeleteMode() === 'physical');
+  protected readonly deleteConfirmTitleKey = computed(
+    () => this.isDeletePhysical() ? 'masterData.deletePhysical.confirmTitle' : 'masterData.delete.confirmTitle'
+  );
+  protected readonly deleteConfirmMessageKey = computed(
+    () => this.isDeletePhysical() ? 'masterData.deletePhysical.confirmMessage' : 'masterData.delete.confirmMessage'
+  );
+  protected readonly deleteConfirmActionKey = computed(
+    () => this.isDeletePhysical() ? 'masterData.deletePhysical.confirmAction' : 'masterData.delete.confirmAction'
+  );
+  protected readonly deleteProcessingMessageKey = computed(
+    () => this.isDeletePhysical() ? 'masterData.deletePhysical.processing' : 'masterData.delete.processing'
+  );
   protected readonly selectedCategory = computed(
     () => this.categories.find((category) => category.id === this.selectedCategoryId()) ?? this.categories[0]
   );
@@ -148,8 +165,12 @@ export class MasterDataAdminComponent implements OnDestroy {
       this.openForm('view', event.row);
     }
 
+    if (event.action.id === 'deletePhysical') {
+      this.openDeleteConfirm('physical', event.row);
+    }
+
     if (event.action.id === 'delete') {
-      this.openDeleteConfirm(event.row);
+      this.openDeleteConfirm('deactivate', event.row);
     }
   }
 
@@ -208,8 +229,9 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected confirmDelete(): void {
     const row = this.pendingDeleteRow();
     const rowId = typeof row?.['id'] === 'string' ? row['id'] as string : null;
+    const mode = this.pendingDeleteMode();
 
-    if (!rowId) {
+    if (!rowId || !mode) {
       this.deleteErrorMessage.set(this.i18n.t('masterData.delete.error.generic'));
       return;
     }
@@ -218,7 +240,11 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.deleteErrorMessage.set('');
     this.deleting.set(true);
     this.deleteSubscription?.unsubscribe();
-    this.deleteSubscription = this.masterDataService.deleteRow(this.selectedResource(), rowId)
+    const deletion$ = mode === 'physical'
+      ? this.masterDataService.deletePhysicalRow(this.selectedResource(), rowId)
+      : this.masterDataService.deleteRow(this.selectedResource(), rowId);
+
+    this.deleteSubscription = deletion$
       .pipe(finalize(() => this.deleting.set(false)))
       .subscribe({
         next: () => {
@@ -226,12 +252,15 @@ export class MasterDataAdminComponent implements OnDestroy {
             this.pageIndex.update((page) => Math.max(0, page - 1));
           }
 
-          this.feedbackMessage.set(this.i18n.t('masterData.delete.feedback.success'));
+          this.feedbackMessage.set(mode === 'physical'
+            ? this.i18n.t('masterData.deletePhysical.feedback.success')
+            : this.i18n.t('masterData.delete.feedback.success')
+          );
           this.closeDeleteConfirm();
           this.loadSelectedResource();
         },
         error: (error) => {
-          this.deleteErrorMessage.set(this.resolveDeleteError(error));
+          this.deleteErrorMessage.set(this.resolveDeleteError(error, mode));
         }
       });
   }
@@ -244,6 +273,7 @@ export class MasterDataAdminComponent implements OnDestroy {
 
   protected closeDeleteConfirm(): void {
     this.pendingDeleteRow.set(null);
+    this.pendingDeleteMode.set(null);
     this.deleteErrorMessage.set('');
   }
 
@@ -313,10 +343,11 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.formValue.set(row);
   }
 
-  private openDeleteConfirm(row: MasterDataRow): void {
+  private openDeleteConfirm(mode: MasterDataDeleteMode, row: MasterDataRow): void {
     this.closeForm();
     this.feedbackMessage.set('');
     this.deleteErrorMessage.set('');
+    this.pendingDeleteMode.set(mode);
     this.pendingDeleteRow.set(row);
   }
 
@@ -338,7 +369,7 @@ export class MasterDataAdminComponent implements OnDestroy {
     return this.i18n.t('masterData.form.error.generic');
   }
 
-  private resolveDeleteError(error: unknown): string {
+  private resolveDeleteError(error: unknown, mode: MasterDataDeleteMode): string {
     const extractedMessage = this.extractApiMessage(error);
     if (extractedMessage) {
       return extractedMessage;
@@ -348,21 +379,26 @@ export class MasterDataAdminComponent implements OnDestroy {
       ? error.status
       : Number((error as { status?: unknown })?.status ?? 0);
 
+    const keyPrefix = mode === 'physical' ? 'masterData.deletePhysical.error.' : 'masterData.delete.error.';
+
     switch (status) {
       case 400:
-        return this.i18n.t('masterData.delete.error.badRequest');
+        return this.i18n.t(`${keyPrefix}badRequest` as const);
       case 401:
-        return this.i18n.t('masterData.delete.error.unauthorized');
+        return this.i18n.t(`${keyPrefix}unauthorized` as const);
       case 403:
-        return this.i18n.t('masterData.delete.error.forbidden');
+        return this.i18n.t(`${keyPrefix}forbidden` as const);
       case 404:
-        return this.i18n.t('masterData.delete.error.notFound');
+        return this.i18n.t(`${keyPrefix}notFound` as const);
       case 409:
-        return this.i18n.t('masterData.delete.error.conflict');
+        return this.i18n.t(`${keyPrefix}conflict` as const);
       case 500:
-        return this.i18n.t('masterData.delete.error.server');
+        return this.i18n.t(`${keyPrefix}server` as const);
       default:
-        return this.i18n.t('masterData.delete.error.generic');
+        return this.i18n.t(mode === 'physical'
+          ? 'masterData.deletePhysical.error.generic'
+          : 'masterData.delete.error.generic'
+        );
     }
   }
 

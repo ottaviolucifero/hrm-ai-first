@@ -229,7 +229,7 @@ describe('MasterDataAdminComponent', () => {
 
     const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    expect(actionButtons).toHaveLength(3);
+    expect(actionButtons).toHaveLength(4);
 
     actionButtons[0].click();
     fixture.detectChanges();
@@ -505,6 +505,233 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Conferma disattivazione');
   });
 
+  it('opens a physical delete confirmation and deletes row from /physical endpoint', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        )
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        ),
+      deletePhysicalRow: vi.fn(() => of(void 0))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+      confirmDelete: () => void;
+      isDeleteConfirmOpen: () => boolean;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    actionButtons[3].click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Conferma eliminazione');
+    expect(fixture.nativeElement.textContent).toContain('Human Resources');
+
+    component.confirmDelete();
+    fixture.detectChanges();
+
+    expect(masterDataService.deletePhysicalRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      'department-1'
+    );
+    expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      { page: 0, size: 25 }
+    );
+    expect(component.isDeleteConfirmOpen()).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain('Record eliminato correttamente.');
+  });
+
+  it('moves to previous page when deleting the last row on a later page', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              },
+              {
+                id: 'department-2',
+                tenantId: 'tenant-1',
+                code: 'FIN',
+                name: 'Finance',
+                active: true
+              }
+            ], {
+              page: 0,
+              first: true,
+              last: false,
+              totalPages: 2,
+              totalElements: 2
+            })
+          )
+        )
+        .mockReturnValueOnce(
+          of(
+            createPage(
+              [
+                {
+                  id: 'department-3',
+                  tenantId: 'tenant-1',
+                  code: 'IT',
+                  name: 'IT',
+                  active: true
+                }
+              ],
+              {
+                page: 1,
+                first: false,
+                last: true,
+                totalPages: 2,
+                totalElements: 1
+              }
+            )
+          )
+        )
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        ),
+      deletePhysicalRow: vi.fn(() => of(void 0))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      refresh: () => void;
+      pageIndex: { set: (page: number) => void };
+      isDeleteConfirmOpen: () => boolean;
+      confirmDelete: () => void;
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.pageIndex.set(1);
+    component.refresh();
+    fixture.detectChanges();
+
+    expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      { page: 1, size: 25 }
+    );
+
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    actionButtons[3].click();
+    fixture.detectChanges();
+
+    component.confirmDelete();
+    fixture.detectChanges();
+
+    expect(((component as unknown as { pageIndex: () => number }).pageIndex)()).toBe(0);
+    expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      { page: 0, size: 25 }
+    );
+  });
+
+  it('keeps the confirmation open and shows a readable error when physical delete fails', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true
+              }
+            ])
+          )
+        ),
+      deletePhysicalRow: vi.fn(() => throwError(() => ({ status: 409 })))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+      confirmDelete: () => void;
+      isDeleteConfirmOpen: () => boolean;
+    };
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    actionButtons[3].click();
+    fixture.detectChanges();
+
+    component.confirmDelete();
+    fixture.detectChanges();
+
+    expect(component.isDeleteConfirmOpen()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Il record non puo essere eliminato perche e collegato ad altri dati.');
+  });
+
   it('deactivates a candidate row, keeps page state and reloads the list', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -659,7 +886,9 @@ describe('MasterDataAdminComponent', () => {
   });
 });
 
-async function createFixture(masterDataService: Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow'>) {
+async function createFixture(
+  masterDataService: Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow' | 'deletePhysicalRow'>
+) {
   await TestBed.configureTestingModule({
     imports: [MasterDataAdminComponent],
     providers: [
@@ -677,13 +906,16 @@ async function createFixture(masterDataService: Pick<MasterDataService, 'fetchRo
 }
 
 function createMasterDataService(
-  overrides: Partial<Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow'>>
-): Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow'> {
+  overrides: Partial<
+    Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow' | 'deletePhysicalRow'>
+  >
+): Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow' | 'deletePhysicalRow'> {
   return {
     fetchRows: vi.fn(() => of(createPage([]))),
     createRow: vi.fn(),
     updateRow: vi.fn(),
     deleteRow: vi.fn(),
+    deletePhysicalRow: vi.fn(),
     ...overrides
   };
 }

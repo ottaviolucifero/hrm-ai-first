@@ -131,4 +131,21 @@ describe('MasterDataService', () => {
     expect(request.request.method).toBe('DELETE');
     request.flush(null);
   });
+
+  it('sends the physical delete request to the expected /physical endpoint', () => {
+    masterDataService.deletePhysicalRow(
+      {
+        id: 'departments',
+        titleKey: 'masterData.entities.departments',
+        endpoint: '/api/master-data/hr-business/departments',
+        columns: []
+      },
+      'department-1'
+    ).subscribe();
+
+    const request = httpTestingController.expectOne('/api/master-data/hr-business/departments/department-1/physical');
+
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
 });

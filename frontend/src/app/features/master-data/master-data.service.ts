@@ -37,4 +37,8 @@ export class MasterDataService {
   deleteRow(resource: MasterDataResource, id: string): Observable<void> {
     return this.http.delete<void>(`${resource.endpoint}/${id}`);
   }
+
+  deletePhysicalRow(resource: MasterDataResource, id: string): Observable<void> {
+    return this.http.delete<void>(`${resource.endpoint}/${id}/physical`);
+  }
 }
