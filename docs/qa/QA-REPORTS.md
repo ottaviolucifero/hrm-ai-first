@@ -314,3 +314,24 @@ Nota operativa:
 - QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
 - Limiti/note: il pattern e applicato solo alle modali/dialog attualmente presenti nel frontend; eventuali future modali fuori `/master-data` dovranno adottare lo stesso footer standard
 - Stato finale: PASS
+
+### TASK-048.13 - Header/topbar visual alignment to TEMPLATE-09
+
+- Data: 2026-05-09
+- Branch: task-048-13-header-topbar-visual-alignment
+- Task: TASK-048.13 - Header/topbar visual alignment to TEMPLATE-09
+- Agente/Modello usato: GPT-5.4 / GPT-5.5 (sviluppo + QA)
+- Area verificata: `frontend/src/app/layout/header/app-header.component.html/.ts`, template topbar, separazione visuale, menu utente, i18n e resa layout.
+- Comandi eseguiti: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK
+- Esiti reali: build frontend OK; test frontend OK, 15 file di test passed, 84 test passed.
+- QA manuale browser: richiesta da task (desktop/mobile/avatar/sidebar/hover): non eseguita in questa sessione (ambiente CLI senza UI interattiva). Verificata solo coerenza statica del codice e logica template.
+- Rispetto acceptance:
+  - quadratino sinistro non funzionale rimosso ?
+  - area centrale non più vuota e contenuta dal titolo pagina corrente ?
+  - avatar meno invadente e area user menu più leggera ?
+  - separazione header/contenuto tramite `border` e `shadow` leggeri ?
+  - responsive desktop/mobile mantenuto (layout con area centrale nascosta su mobile) ?
+  - sidebar non modificata ?
+- Regressioni rilevate: nessuna regressione automatica rilevata nei test presenti.
+- Limiti note: il controllo toggle mobile sidebar non è stato introdotto, coerente con vincoli del task e stato attuale della shell (sidebar desktop/mobile gestita separatamente).
+- Stato finale: PASS WITH NOTES

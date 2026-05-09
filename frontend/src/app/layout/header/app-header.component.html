@@ -1,45 +1,39 @@
 <header
   id="header"
-  class="kt-header fixed start-0 end-0 top-0 z-10 flex items-center border-b border-border bg-background"
+  class="kt-header fixed start-0 end-0 top-0 z-10 flex items-center border-b border-border bg-background shadow-sm"
 >
-  <div class="kt-container-fluid flex items-center justify-between gap-4">
+  <div class="kt-container-fluid flex min-h-14 items-center justify-between gap-3 px-3">
     <div class="flex min-w-0 items-center gap-3">
-      <button
-        id="sidebar_toggle"
-        class="kt-btn kt-btn-icon kt-btn-ghost lg:hidden"
-        type="button"
-        [attr.aria-label]="i18n.t('header.mobileSidebarToggle')"
-      >
-        <span class="block h-4 w-4 rounded-sm border border-current"></span>
-      </button>
-
       <div class="min-w-0">
         <div class="text-sm font-semibold text-mono">{{ i18n.t('app.brand') }}</div>
-        <div class="text-xs text-secondary-foreground">{{ i18n.t('header.reservedArea') }}</div>
       </div>
+    </div>
+
+    <div class="hidden min-w-0 flex-1 text-center px-4 md:block">
+      <p class="truncate text-sm font-semibold text-foreground">{{ currentPageTitle() }}</p>
     </div>
 
     <div class="relative flex items-center gap-3">
       <button
-        class="flex size-10 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/15"
+        class="flex size-9 items-center justify-center rounded-full border border-border/70 bg-muted/55 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         type="button"
         [attr.aria-label]="i18n.t('header.profileUser')"
         aria-haspopup="menu"
         [attr.aria-expanded]="profileMenuOpen()"
         (click)="toggleProfileMenu()"
       >
-        <i class="ki-filled ki-profile-circle text-2xl" aria-hidden="true"></i>
+        <i class="ki-filled ki-profile-circle text-lg" aria-hidden="true"></i>
       </button>
 
       @if (profileMenuOpen()) {
         <div
-          class="absolute end-0 z-30 mt-2 w-44 rounded-md border border-border bg-background py-1 shadow-lg"
+          class="absolute end-0 z-30 mt-2 w-44 rounded-md border border-border/80 bg-background/95 px-1 py-1 shadow-lg backdrop-blur-sm"
           style="top: 100%;"
           role="menu"
           [attr.aria-label]="i18n.t('header.profileMenu')"
         >
           <button
-            class="flex w-full items-center px-3 py-2 text-left text-sm text-secondary-foreground"
+            class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-secondary-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:bg-muted focus-visible:text-foreground"
             type="button"
             role="menuitem"
             (click)="closeProfileMenu()"
@@ -48,7 +42,7 @@
           </button>
 
           <button
-            class="flex w-full items-center px-3 py-2 text-left text-sm font-bold text-destructive hover:bg-muted"
+            class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium text-destructive transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:bg-muted/70"
             type="button"
             role="menuitem"
             (click)="logout()"
