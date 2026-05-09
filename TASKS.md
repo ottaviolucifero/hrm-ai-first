@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.98
+Versione: 2.00
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -3101,7 +3101,7 @@ Completato:
 
 ### TASK-048.14 - Spreadsheet-style bulk editor planning
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
@@ -3120,6 +3120,16 @@ Acceptance criteria:
 - casi d'uso candidati documentati;
 - rischi e prerequisiti identificati;
 - nessuna implementazione frontend/backend.
+
+Completato:
+
+- formalizzato il pattern `Spreadsheet-style bulk editor` come editor massivo futuro per dataset tabellari semplici e limitati;
+- definiti casi d'uso iniziali compatibili con HRM, con priorita ai master data tenant-scoped a schema semplice;
+- esclusi dal primo rilascio i casi ad alta complessita, ad esempio geografie nidificate, ruoli/permessi, record core HR e dataset molto grandi;
+- chiarito il comportamento atteso per righe/celle editabili, validazione inline, errori per riga/cella, righe nuove/modificate/invalide, salvataggio massivo e annullamento modifiche;
+- documentato il riuso ammesso di shell, toolbar, filtri, feedback, bottoni, modali di conferma e pattern stati gia esistenti;
+- raccomandato un componente futuro dedicato, separato da `DataTableComponent`, per evitare regressioni sul pattern read-only/paginato esistente;
+- identificati vincoli i18n, accessibilita, responsive e performance, oltre ai futuri task tecnici necessari prima di una implementazione reale.
 
 ### TASK-048.15 - Shared form controls and form patterns foundation
 
@@ -3398,6 +3408,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.00 | 2026-05-09 | TASK-048.14 completato come pianificazione documentale del bulk editor stile spreadsheet: definiti use case iniziali, esclusioni del primo rilascio, vincoli i18n/accessibilita/responsive/performance, relazione con `DataTableComponent` e raccomandazione di componente futuro dedicato senza modifiche Angular/backend. |
 | 1.98 | 2026-05-09 | TASK-048.12 completato: rifinita la CRUD modal/form Master Data con `Chiudi` rimosso dal footer, action bar allineata a destra, spacing piu coerenti e checkbox `Attivo` stilizzata localmente; build/test frontend OK, nessuna modifica backend/API. |
 | 1.97 | 2026-05-09 | Backlog TASK-048 aggiornato dopo TASK-048.11: inseriti TASK-048.12 "CRUD modal and form visual refinement" e TASK-048.13 "Header/topbar visual alignment to TEMPLATE-09"; bulk editor, form controls e typography slittati a TASK-048.14, TASK-048.15 e TASK-048.16 senza modifiche applicative. |
 | 1.96 | 2026-05-09 | TASK-048.11 alignment polish: active state parent/submenu distanziati dal bordo destro e search box ricentrata verticalmente nella propria sezione; build/test frontend OK. |

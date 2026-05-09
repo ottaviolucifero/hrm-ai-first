@@ -352,7 +352,7 @@ Fuori scope TASK-048.2:
 - Definire eventuali token spacing dedicati o riuso dei token esistenti.
 - Definire quando un pattern passa da feature-specific a shared.
 - Definire in quale task applicare TEMPLATE-10 `Generic DataTable` al componente tabellare esistente.
-- Definire se e quando creare un componente dedicato per TEMPLATE-02 `Spreadsheet-style bulk editor`.
+- TASK-048.14 chiarisce che TEMPLATE-02 richiedera un componente futuro dedicato, distinto dal `DataTableComponent` read-only; resta da decidere solo quando introdurlo e su quale prima feature reale.
 
 ---
 
@@ -377,7 +377,7 @@ I template Stitch non sono codice da copiare direttamente, ma riferimenti visual
 | Template | Nome | Uso previsto | Stato |
 |---|---|---|---|
 | TEMPLATE-01 | Data list page | Pagina standard con titolo, toolbar, filtri, tabella e paginazione | Approvato come riferimento |
-| TEMPLATE-02 | Spreadsheet-style bulk editor | Inserimento e modifica massiva dati in stile Excel | Approvato come pattern avanzato futuro |
+| TEMPLATE-02 | Spreadsheet-style bulk editor | Inserimento e modifica massiva dati in stile Excel | Approvato come pattern avanzato futuro; planning documentale completato in TASK-048.14 |
 | TEMPLATE-03 | Table states | Loading, empty, error, no results | Approvato come riferimento |
 | TEMPLATE-04 | CRUD modal form | Create, edit, view read-only | Approvato come riferimento; refinement dedicato pianificato in TASK-048.12 |
 | TEMPLATE-05 | Action confirmation dialogs | Conferme normali, warning, destructive, irreversibili | Approvato come riferimento |
@@ -432,3 +432,165 @@ Regole applicate in TASK-048.11:
 - gli active state della sidebar devono restare inset rispetto ai bordi laterali, con padding/margine destro visivamente coerente con il lato sinistro;
 - la search box della sidebar deve essere centrata verticalmente nella propria sezione, evitando padding superiore/inferiore sbilanciato;
 - il riallineamento visuale deve restare locale al componente sidebar e non modificare header/topbar o creare una shell parallela.
+
+---
+
+## 22. TASK-048.14 - Planning del TEMPLATE-02 Spreadsheet-style bulk editor
+
+TASK-048.14 formalizza TEMPLATE-02 come pattern futuro per inserimento e modifica massiva di record tabellari omogenei, senza implementazione Angular in questo passaggio.
+
+### 22.1 Obiettivo del pattern
+
+Il bulk editor stile spreadsheet serve quando l'utente deve creare o modificare piu record simili nella stessa sessione, con confronto rapido tra righe e salvataggio massivo esplicito.
+
+Il pattern non sostituisce:
+
+- la pagina lista standard con `DataTableComponent`;
+- il CRUD modale per modifica puntuale;
+- i flussi operativi complessi con validazioni multi-step o relazioni pesanti.
+
+Nel progetto HRM questo pattern va trattato come modalita specialistica e bounded, non come default universale delle tabelle amministrative.
+
+### 22.2 Casi d'uso iniziali candidati
+
+Primo perimetro consigliato:
+
+- master data tenant-scoped a schema semplice, ad esempio `Department`, `JobTitle`, `ContractType`, `WorkMode`;
+- sessioni di manutenzione rapida con molte righe `code` / `name` / `active`;
+- dataset gia filtrato e contestualizzato prima di entrare in modalita bulk.
+
+Casi candidati solo dopo un primo MVP riuscito:
+
+- altri lookup semplici con campi omogenei e CRUD gia stabile;
+- operazioni di pulizia o attivazione/disattivazione massiva su insiemi limitati.
+
+### 22.3 Casi da escludere dal primo rilascio
+
+Da escludere nel primo rilascio:
+
+- geografie nidificate o record con relazioni `country/region/area` complesse;
+- ruoli, permessi e matrici sicurezza;
+- employee, contract, device, payroll, leave request, holiday calendar, audit log;
+- file upload, allegati, editor multi-tab, formule, drag-fill, multi-sheet, collaborazione realtime;
+- dataset troppo grandi o non bounded;
+- editing distribuito su piu pagine server-side durante la stessa sessione di modifica.
+
+### 22.4 Comportamento atteso
+
+Comportamenti minimi del pattern:
+
+- righe editabili con stato locale `pristine`, `new`, `modified`, `invalid`, `saving`, `error`;
+- celle editabili con editor coerenti col tipo campo, almeno `text`, `select` e `boolean` quando la feature reale lo richiede;
+- validazione inline immediata per required, formato e regole locali semplici;
+- errori per cella e per riga visibili senza dipendere solo dal colore;
+- salvataggio massivo esplicito con azione primaria unica, senza autosave nel primo rilascio;
+- annullamento modifiche che ripristina il draft all'ultimo dataset confermato dal server;
+- gestione righe nuove solo lato client finche non vengono salvate;
+- gestione righe modificate con evidenza chiara del delta locale;
+- gestione righe invalide con blocco del save massivo o con esclusione esplicita e motivata, da decidere per la feature concreta;
+- feedback finale con conteggio righe salvate, righe rifiutate e errori residui.
+
+### 22.5 Relazione con i pattern esistenti
+
+Elementi da riusare:
+
+- shell esistente (`app-shell`, `app-header`, `app-sidebar`);
+- pattern pagina lista di TEMPLATE-01 per contesto, titolo, toolbar e filtri;
+- `DataTableComponent` come riferimento visuale di colonne, densita, paginazione e stati, non come base diretta per l'editing;
+- `app-button` e varianti `kt-btn` per toolbar, save, discard, add row;
+- pattern `AlertMessageComponent` / `NotificationService` per feedback e summary error;
+- modali di conferma gia presenti per uscita con modifiche non salvate o operazioni distruttive sul draft;
+- pattern loading/empty/error gia documentati in TEMPLATE-03.
+
+Elementi che richiedono una foundation dedicata:
+
+- stato draft per riga/cella;
+- mappa errori per cella;
+- navigazione tastiera tra celle;
+- focus management da griglia editabile;
+- tracking delle modifiche locali;
+- merge tra validazione client e risposta server;
+- eventuale incollaggio multi-cella o import testuale strutturato.
+
+### 22.6 DataTableComponent: estendere o separare
+
+Raccomandazione di TASK-048.14:
+
+- non estendere `DataTableComponent` corrente fino a trasformarlo in spreadsheet editor;
+- creare un componente futuro dedicato, inizialmente feature-local, da promuovere a shared solo dopo una seconda adozione reale.
+
+Motivazione:
+
+- `DataTableComponent` attuale e read-only, event-driven e paginato;
+- il bulk editor richiede stato locale ricco, editor per cella, dirty tracking, validazione inline e comportamento tastiera molto diverso;
+- forzare tutto nello stesso componente aumenterebbe accoppiamento e rischio regressione sulle liste esistenti;
+- il principio `extend before create` resta rispettato riusando layout, modelli colonna e feedback, ma non fondendo due pattern con semantica differente.
+
+### 22.7 Vincoli i18n
+
+Vincoli obbligatori:
+
+- nessun testo hardcoded in template o componenti futuri;
+- titoli colonna, placeholder, help text, errori, summary di salvataggio e `aria-label` via i18n;
+- supporto minimo `it`, `fr`, `en`;
+- eventuali messaggi server devono essere mappati in modo coerente con la UX i18n del frontend.
+
+### 22.8 Vincoli accessibilita
+
+Vincoli minimi:
+
+- focus visibile su cella attiva e controlli inline;
+- navigazione tastiera prevedibile tra righe, celle e action bar;
+- errori annunciabili e associati al contesto di riga/cella;
+- nessuna informazione critica affidata solo a colore o icona;
+- eventuale uso di semantica `grid` o equivalente solo se supportato con interazioni tastiera coerenti.
+
+### 22.9 Vincoli responsive
+
+Il pattern e desktop-first.
+
+Regole consigliate:
+
+- viewport desktop/laptop come target primario del primo rilascio;
+- tablet supportato solo se la densita resta usabile;
+- su mobile stretto il bulk editor non deve degradare in una pseudo-spreadsheet ingestibile;
+- per il primo rilascio e accettabile prevedere fallback read-only o indisponibilita del bulk editing sotto una soglia di viewport.
+
+### 22.10 Vincoli performance
+
+Per evitare complessita prematura:
+
+- dataset bounded, con limite iniziale esplicito consigliato tra 50 e 100 righe;
+- evitare editing distribuito su paginazione server-side attiva;
+- preferire payload di salvataggio basati solo sulle righe nuove o modificate;
+- evitare rerender completi della griglia a ogni battitura;
+- nessuna nuova libreria di virtualizzazione o grid enterprise senza task e decisione dedicati.
+
+### 22.11 Rischi e debito tecnico
+
+Rischi principali:
+
+- complessita dello stato locale e dei conflitti tra draft e server;
+- mapping affidabile degli errori backend a livello riga/cella;
+- rischio UX su dataset grandi o con molti campi;
+- accessibilita tastiera facile da degradare;
+- gestione di unsaved changes, refresh e uscita dalla pagina;
+- possibile pressione a duplicare logiche tabellari gia presenti.
+
+Debito tecnico rilevante gia visibile:
+
+- `DataTableComponent` nasce come tabella read-only, non editabile;
+- `MasterDataFormComponent` supporta oggi solo campi `text` e `boolean`;
+- alcune chiavi i18n shared della tabella sono ancora accoppiate al dominio `masterData.*`;
+- manca una foundation condivisa per editor di cella, error summary e dirty state.
+
+### 22.12 Futuri task tecnici suggeriti
+
+Futuri task consigliati prima di una implementazione reale:
+
+- task di scope funzionale per scegliere la prima feature candidata e fissare limite righe/campi;
+- task di foundation form controls shared, coerente con TASK-048.15, per editor cella riusabili;
+- task dedicato al modello dati frontend del draft bulk (`new/modified/invalid/error`);
+- task di implementazione MVP feature-local su una sola entita semplice tenant-scoped;
+- task separato di QA/regression/accessibilita/performance sul bulk editor;
+- eventuale task backend solo se i contratti CRUD esistenti risultassero insufficienti a gestire save massivo in modo accettabile.
