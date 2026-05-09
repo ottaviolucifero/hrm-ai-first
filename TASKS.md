@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.97
+Versione: 1.98
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -3026,7 +3026,7 @@ Completato:
 
 ### TASK-048.12 - CRUD modal and form visual refinement
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
@@ -3053,6 +3053,12 @@ Acceptance criteria:
 - responsive verificato;
 - build frontend OK;
 - test frontend OK.
+
+Completato:
+
+- rimossa la duplicazione di `Chiudi` dal footer della CRUD modal Master Data, mantenendo la chiusura nell'header;
+- riallineato il footer azioni con `Annulla` secondaria e `Salva` primaria allineate a destra;
+- migliorati spacing di header/body/footer e stile locale della checkbox `Attivo`, senza introdurre shared modal/form framework e senza modifiche backend/API.
 
 ### TASK-048.13 - Header/topbar visual alignment to TEMPLATE-09
 
@@ -3384,6 +3390,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.98 | 2026-05-09 | TASK-048.12 completato: rifinita la CRUD modal/form Master Data con `Chiudi` rimosso dal footer, action bar allineata a destra, spacing piu coerenti e checkbox `Attivo` stilizzata localmente; build/test frontend OK, nessuna modifica backend/API. |
 | 1.97 | 2026-05-09 | Backlog TASK-048 aggiornato dopo TASK-048.11: inseriti TASK-048.12 "CRUD modal and form visual refinement" e TASK-048.13 "Header/topbar visual alignment to TEMPLATE-09"; bulk editor, form controls e typography slittati a TASK-048.14, TASK-048.15 e TASK-048.16 senza modifiche applicative. |
 | 1.96 | 2026-05-09 | TASK-048.11 alignment polish: active state parent/submenu distanziati dal bordo destro e search box ricentrata verticalmente nella propria sezione; build/test frontend OK. |
 | 1.95 | 2026-05-09 | TASK-048.11 refinement pass su densita e scrolling sidebar: rimosso overflow laterale, aggiunto scroll verticale interno stabile, compattati header/search/menu item e alleggerito l'active submenu, con build/test frontend nuovamente OK. |

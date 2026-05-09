@@ -32,6 +32,21 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-048.12 - CRUD modal and form visual refinement
+
+- Data: 2026-05-09
+- Branch: `task-048-12-crud-modal-form-visual-refinement`
+- Task: TASK-048.12 - CRUD modal and form visual refinement
+- Agente/Modello usato: GPT-5.5
+- Area verificata: `master-data-form.component.html/.scss/.spec.ts` nella CRUD modal Master Data, con focus su header/footer actions, spacing form e resa checkbox `Attivo`, senza modifiche a logica CRUD, backend o routing
+- Refinement visuali confermati: rimosso `Chiudi` duplicato dal footer, mantenuta la chiusura nell'header, footer azioni separato visivamente dal body e allineato a destra, ordine coerente `Annulla`/`Salva`, spacing campi piu puliti e checkbox `Attivo` resa piu coerente con il design system tramite stile locale accessibile
+- Comandi eseguiti: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK
+- Esiti reali: build frontend OK; test frontend OK, 15 file di test passed, 84 test passed
+- Regressioni trovate: nessuna regressione automatica rilevata; aggiunto test sul fatto che `Chiudi` resti solo nell'header e non nel footer operativo
+- QA manuale browser eseguita/non eseguita: non eseguita in questa sessione CLI
+- Limiti/note: resta consigliata validazione manuale su create/edit/view modal in browser per confermare bilanciamento visivo, checkbox focus state e assenza di regressioni su annullamento/salvataggio/chiusura
+- Stato finale: PASS WITH NOTES
+
 ### TASK-048.11 - Sidebar visual alignment to TEMPLATE-08
 
 - Data: 2026-05-09
