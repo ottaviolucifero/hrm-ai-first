@@ -6,55 +6,64 @@
     <app-button
       variant="ghost"
       size="sm"
-      [label]="i18n.t('masterData.form.close')"
+      icon="ki-filled ki-cross"
+      [iconOnly]="true"
+      buttonClass="master-data-modal-close"
+      [ariaLabel]="i18n.t('masterData.form.close')"
+      [title]="i18n.t('masterData.form.close')"
       [disabled]="submitting"
       (pressed)="close.emit()" />
   </div>
 
-  <form class="kt-card-content master-data-form-body" [formGroup]="form" (ngSubmit)="submit()">
-    @for (field of normalizedFields; track field.key) {
-      <label class="master-data-form-field">
-        <span class="master-data-form-label">
-          {{ i18n.t(field.labelKey) }}
-          @if (field.required) {
-            <span aria-hidden="true">*</span>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="kt-card-content master-data-form-body">
+      @for (field of normalizedFields; track field.key) {
+        <label class="master-data-form-field">
+          <span class="master-data-form-label">
+            {{ i18n.t(field.labelKey) }}
+            @if (field.required) {
+              <span aria-hidden="true">*</span>
+            }
+          </span>
+
+          @if (fieldType(field) === 'boolean') {
+            <input class="master-data-form-checkbox" type="checkbox" [formControlName]="field.key" [disabled]="isFieldReadOnly(field)" />
+          } @else {
+            <input class="kt-input" type="text" [formControlName]="field.key" [readonly]="isFieldReadOnly(field)" />
           }
-        </span>
 
-        @if (fieldType(field) === 'boolean') {
-          <input class="master-data-form-checkbox" type="checkbox" [formControlName]="field.key" [disabled]="isFieldReadOnly(field)" />
-        } @else {
-          <input class="kt-input" type="text" [formControlName]="field.key" [readonly]="isFieldReadOnly(field)" />
-        }
-
-        @if (hasRequiredError(field)) {
-          <span class="master-data-form-error">{{ i18n.t('masterData.form.required') }}</span>
-        }
-      </label>
-    }
-
-    <div class="master-data-form-actions">
-      @if (mode !== 'view') {
-        <app-button
-          variant="primary"
-          size="sm"
-        type="submit"
-        icon="ki-filled ki-check"
-        [label]="i18n.t('masterData.form.save')"
-        [loading]="submitting" />
+          @if (hasRequiredError(field)) {
+            <span class="master-data-form-error">{{ i18n.t('masterData.form.required') }}</span>
+          }
+        </label>
       }
-      <app-button
-        variant="secondary"
-        size="sm"
-        [label]="i18n.t('masterData.form.cancel')"
-        [disabled]="submitting"
-        (pressed)="resetAndCancel()" />
-      <app-button
-        variant="ghost"
-        size="sm"
-        [label]="i18n.t('masterData.form.close')"
-        [disabled]="submitting"
-        (pressed)="close.emit()" />
+    </div>
+
+    <div class="kt-modal-footer">
+      <div class="kt-modal-footer-actions">
+        @if (mode === 'view') {
+          <app-button
+            variant="primary"
+            size="sm"
+            [label]="i18n.t('masterData.form.close')"
+            [disabled]="submitting"
+            (pressed)="close.emit()" />
+        } @else {
+          <app-button
+            variant="outline"
+            size="sm"
+            [label]="i18n.t('masterData.form.cancel')"
+            [disabled]="submitting"
+            (pressed)="resetAndCancel()" />
+          <app-button
+            variant="primary"
+            size="sm"
+            type="submit"
+            icon="ki-filled ki-check"
+            [label]="i18n.t('masterData.form.save')"
+            [loading]="submitting" />
+        }
+      </div>
     </div>
   </form>
 </section>

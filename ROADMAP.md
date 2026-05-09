@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.82
+Versione: 1.83
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -99,12 +99,13 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-048.2 Validated UI template catalog from Stitch
 - TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
 - TASK-048.4 Data list and Generic DataTable refinement
+- TASK-048.5 CRUD modal and action confirmation refinement
 - TASK-048.6 Buttons and toast feedback refinement
 - TASK-048.7 Shared list buttons pattern foundation
 
 ### Prossimo passo
 
-- TASK-048.5 CRUD modal and action confirmation refinement
+- TASK-048.8 Shell navigation visual review
 
 ---
 
@@ -170,6 +171,7 @@ Completato:
 - TASK-048 HRflow design system and validated UI templates
 - TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
 - TASK-048.4 completed: Data list page and shared Generic DataTable refinement applied to `/master-data` with TEMPLATE-01, TEMPLATE-03 and TEMPLATE-10, i18n `it/fr/en`, build/test frontend validated and no backend changes.
+- TASK-048.5 completed: CRUD modal footer and action confirmation dialog refinement applied on `/master-data` with TEMPLATE-04/TEMPLATE-05 coherence, consistent action ordering and no backend/API changes.
 - TASK-048.6 completed: buttons and toast feedback refinement applied with TEMPLATE-07 and TEMPLATE-11, reusing `AlertMessageComponent`, Metronic/Keenicons, global button styles and i18n `it/fr/en`; build/test frontend validated and no backend/API changes.
 
 Nota:
@@ -197,7 +199,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-048.5 CRUD modal and action confirmation refinement
 - TASK-048.8 Shell navigation visual review
 - TASK-048.9 Spreadsheet-style bulk editor planning
 - TASK-048.10 Global typography foundation
@@ -226,6 +227,7 @@ Nota roadmap TASK-048:
 - TASK-048.2 ha validato il catalogo astratto di UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`.
 - Gli screenshot Stitch locali non sono versionati e sono ignorati via `.gitignore`.
 - TASK-048.4 ha applicato TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 a `/master-data` e al `DataTableComponent` shared senza creare componenti tabellari paralleli.
+- TASK-048.5 ha completato il refinement modali/dialog su `/master-data` con footer standard, ordine azioni coerente, action confirmation dialogs allineati a TEMPLATE-05 e nessuna modifica backend/API.
 - Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 shared list button foundation, TASK-048.8 shell navigation review, TASK-048.9 bulk editor planning, TASK-048.10 global typography foundation.
 - TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 guidano lista dati, stati tabella e DataTable principale.
 - TEMPLATE-04 e TEMPLATE-05 guidano modali CRUD e conferme azione.
@@ -338,6 +340,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.83 | 2026-05-09 | TASK-048.5 segnato completato in roadmap: CRUD modal/action confirmation refinement chiuso con TEMPLATE-04/TEMPLATE-05, footer modali/dialog coerenti e nessuna modifica backend/API; prossimo passo aggiornato a TASK-048.8. |
 | 1.82 | 2026-05-09 | TASK-048.7 esteso con wrapper Angular shared `app-button` sopra il design system `kt-btn`, applicato a `/master-data`, `master-data-form` e parti sicure di `DataTableComponent`; build/test frontend rieseguiti, nessuna modifica backend/API. |
 | 1.81 | 2026-05-09 | TASK-048.7 completato: introdotta foundation condivisa pulsanti per pagine lista su `/master-data` e `DataTableComponent` con varianti `kt-btn-secondary`, `kt-btn-ghost`, helper icona/list-action; mantenuto `TEMPLATE-11`, nessuna modifica backend/API. |
 | 1.80 | 2026-05-09 | TASK-048.6 completato in roadmap: applicati TEMPLATE-07 e TEMPLATE-11 a toast e pulsanti, introdotto pattern shared `NotificationService` + `NotificationHostComponent` con `AlertMessageComponent`, Metronic/Keenicons e i18n `it/fr/en`; build test frontend OK, nessuna modifica backend/API. |

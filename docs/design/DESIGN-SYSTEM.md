@@ -1,6 +1,6 @@
 # HRM AI-first Design System
 
-Versione: 0.3
+Versione: 0.5
 Ultimo aggiornamento: 2026-05-09
 Stato: Draft preparatorio
 
@@ -164,8 +164,10 @@ Regole:
 - campi required con indicatore visivo e messaggio di validazione;
 - errori vicino al contesto del form, non solo a livello pagina;
 - salvataggio con stato submitting e disabled state;
-- primary action per salvataggio, secondary action per annullamento o chiusura;
+- primary action per salvataggio, secondary action outline per annullamento o chiusura;
 - evitare `Annulla` e `Chiudi` insieme nella bottom action bar quando sono equivalenti;
+- nei footer modal CRUD usare un gruppo azioni allineato a destra, separato visivamente dal body e con spacing sufficiente tra i pulsanti;
+- in `create/edit` il footer deve esporre `Annulla` secondario e `Salva` primario; in `view` un solo `Chiudi` nel footer;
 - testi, label, placeholder, tooltip e messaggi sempre via i18n.
 
 ---
@@ -183,6 +185,8 @@ Regole:
 - `max-height` e scroll interno per evitare overflow viewport;
 - overlay neutro e non decorativo;
 - chiusura e annullamento devono essere semanticamente chiari;
+- per CRUD modal compatte in stile TEMPLATE-04, preferire larghezze contenute e footer ariosi rispetto a pannelli larghi non necessari;
+- il footer modal puo riusare il pattern shared `kt-modal-footer` + `kt-modal-footer-actions` sopra `kt-btn`/`app-button` quando serve coerenza tra CRUD modal e dialog;
 - gestione focus avanzata da definire nei task futuri se non gia coperta dal pattern esistente.
 
 ---
@@ -345,8 +349,8 @@ Fuori scope TASK-048.2:
 - Definire se le tabelle dati devono avere header sticky.
 - Definire stile definitivo per badge booleani e status.
 - Definire trattamento visuale per record inattivi, locked o system.
-- Definire se il close button in header modale resta sempre visibile.
-- Definire pattern finale per `Annulla` vs `Chiudi` nelle form modal.
+- Definire se il close button in header modale resta sempre visibile su tutte le tipologie di dialog, oltre alle CRUD modal.
+- Estendere il pattern `Annulla` vs `Chiudi` alle future form modal fuori `/master-data`.
 - Definire se empty/error state devono diventare componenti condivisi generici.
 - Definire eventuali token spacing dedicati o riuso dei token esistenti.
 - Definire quando un pattern passa da feature-specific a shared.

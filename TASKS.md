@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.82
+Versione: 1.83
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -2756,7 +2756,7 @@ Completato:
 
 ### TASK-048.5 - CRUD modal and action confirmation refinement
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
@@ -2778,6 +2778,13 @@ Acceptance criteria:
 - regola UX confermata: non usare insieme "Annulla" e "Chiudi" nella bottom action bar quando hanno la stessa funzione;
 - nessun testo hardcoded;
 - nessuna modifica funzionale non autorizzata.
+
+Completato:
+
+- refinement footer modali CRUD applicato su `/master-data` con separazione visiva dal body e ordine azioni coerente;
+- action confirmation dialogs rifiniti con pattern footer coerente per azioni secondarie e destructive;
+- coerenza confermata con TEMPLATE-04 e TEMPLATE-05;
+- nessuna modifica backend/API.
 
 ### TASK-048.6 - Buttons and toast feedback refinement
 
@@ -3136,6 +3143,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.83 | 2026-05-09 | TASK-048.5 segnato DONE: documentata chiusura CRUD modal/action confirmation refinement con footer modali CRUD, action confirmation dialogs, coerenza TEMPLATE-04/TEMPLATE-05 e nessuna modifica backend/API. |
 | 1.80 | 2026-05-09 | TASK-048.6 completato: raffinati pulsanti e feedback toast secondo TEMPLATE-11 e TEMPLATE-07, riusando Metronic/Keenicons e `AlertMessageComponent`; aggiunte chiavi i18n e test frontend, build/test OK, nessuna modifica backend/API. |
 | 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" come task backlog dedicato alla definizione tipografica globale (analisi font attuale, confronto con mockup validati, decisione font globale, centralizzazione gerarchie e aggiornamento DESIGN-SYSTEM al momento di esecuzione); nessuna modifica codice applicativo in questa fase. |
 | 1.78 | 2026-05-08 | TASK-048.4 completato: raffinato pattern `/master-data` secondo TEMPLATE-01, stati tabella secondo TEMPLATE-03 e `DataTableComponent` shared secondo TEMPLATE-10; introdotte chiavi i18n `dataTable.*`, build/test frontend OK, nessuna modifica backend. |

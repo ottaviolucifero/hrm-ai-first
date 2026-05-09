@@ -102,8 +102,15 @@
               @if (deleteTargetLabel(); as targetLabel) {
                 <p class="master-data-confirm-target">{{ targetLabel }}</p>
               }
-
-              <div class="master-data-form-actions">
+            </div>
+            <div class="kt-modal-footer">
+              <div class="kt-modal-footer-actions">
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  [label]="i18n.t('masterData.form.cancel')"
+                  [disabled]="deleting()"
+                  (pressed)="closeDeleteConfirm()" />
                 <app-button
                   variant="destructive"
                   size="sm"
@@ -113,12 +120,6 @@
                   [loading]="deleting()"
                   [disabled]="deleting()"
                   (pressed)="confirmDelete()" />
-                <app-button
-                  variant="secondary"
-                  size="sm"
-                  [label]="i18n.t('masterData.form.cancel')"
-                  [disabled]="deleting()"
-                  (pressed)="closeDeleteConfirm()" />
               </div>
             </div>
           </section>

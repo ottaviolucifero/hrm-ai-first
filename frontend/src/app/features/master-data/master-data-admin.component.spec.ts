@@ -574,9 +574,13 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Conferma disattivazione');
     expect(fixture.nativeElement.textContent).toContain('Human Resources');
 
-    const cancelButton = Array.from(
-      fixture.nativeElement.querySelectorAll('.master-data-confirm-panel button')
-    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Annulla')) as HTMLButtonElement;
+    const footerButtons = Array.from(
+      fixture.nativeElement.querySelectorAll('.master-data-confirm-panel .kt-modal-footer-actions button')
+    ) as HTMLButtonElement[];
+
+    expect(footerButtons[0].textContent).toContain('Annulla');
+
+    const cancelButton = footerButtons[0];
 
     cancelButton.click();
     fixture.detectChanges();
