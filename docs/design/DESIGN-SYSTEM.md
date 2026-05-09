@@ -147,6 +147,9 @@ Regole:
 - preferire pattern coerenti tra toolbar, row actions e modali;
 - valutare icone solo se migliorano scansione e restano accessibili.
 - non introdurre nuove librerie icone: usare icone disponibili nel bundle Keenicons/Metronic gia caricato.
+- In codice, il pattern shared per pagine lista deve usare `kt-btn` con varianti `kt-btn-primary`, `kt-btn-secondary`, `kt-btn-outline`, `kt-btn-ghost`, `kt-btn-destructive` e helper `kt-btn-sm`, `kt-btn-icon`, `kt-btn-list-action`.
+- Quando conviene ridurre duplicazioni nei template Angular, il wrapper shared `app-button` puo essere usato sopra `kt-btn`, senza duplicare lo stile nel componente e senza sostituire il design system CSS come fonte ufficiale.
+- Per i pulsanti `iconOnly`, il nome accessibile deve essere esplicito: il wrapper Angular shared richiede `ariaLabel` non vuoto e non deve affidarsi a fallback impliciti.
 
 ---
 

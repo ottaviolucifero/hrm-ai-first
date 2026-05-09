@@ -1,8 +1,9 @@
-import { NgClass, NgStyle } from '@angular/common';
+import { NgStyle } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 
 import { I18nKey } from '../../../core/i18n/i18n.messages';
 import { I18nService } from '../../../core/i18n/i18n.service';
+import { AppButtonComponent } from '../button/app-button.component';
 import {
   DataTableAction,
   DataTableColumn,
@@ -16,7 +17,7 @@ import {
 
 @Component({
   selector: 'app-data-table',
-  imports: [NgStyle, NgClass],
+  imports: [NgStyle, AppButtonComponent],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.scss'
 })
@@ -236,6 +237,30 @@ export class DataTableComponent {
   protected rowActionIconClass(action: DataTableAction): readonly string[] {
     const normalizedActionId = action.id.trim().toLowerCase();
     return this.rowActionIconMap[normalizedActionId] ?? ['ki-filled', 'ki-magnifier'];
+  }
+
+  protected rowActionButtonClass(action: DataTableAction): string {
+    return [
+      'kt-btn-list-action',
+      'data-table-action',
+      action.tone === 'danger' ? 'data-table-action-danger' : ''
+    ]
+      .filter((className) => className.length > 0)
+      .join(' ');
+  }
+
+  protected rowActionIcon(action: DataTableAction): string {
+    return ['data-table-action-icon', ...this.rowActionIconClass(action)].join(' ');
+  }
+
+  protected paginationPageButtonClass(active: boolean): string {
+    return active
+      ? 'data-table-pagination-page data-table-pagination-page-active'
+      : 'data-table-pagination-page';
+  }
+
+  protected paginationLinkLabel(value: string | number): string {
+    return String(value);
   }
 
   private columnType(column: DataTableColumn): DataTableColumnType {

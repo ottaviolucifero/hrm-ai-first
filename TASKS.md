@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.80
+Versione: 1.82
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -2824,27 +2824,39 @@ Completato:
 - build frontend OK;
 - test frontend OK (toast service/host verificabili dai test aggiornati su `master-data-admin` e `login`).
 
-### TASK-048.7 - Login visual alignment review
+### TASK-048.7 - Shared list buttons pattern foundation
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
-- TEMPLATE-06 Login page.
+- TEMPLATE-11 Buttons.
 
 Scope:
 
-- verificare la login esistente rispetto al template validato;
-- valutare branding, lingua, accesso e layout;
-- evitare redesign non richiesto;
-- documentare eventuali gap prima di applicare modifiche.
+- introdurre una foundation minima condivisa per pulsanti di pagina lista;
+- supportare varianti coerenti con `TEMPLATE-11` (primary, secondary, outline, ghost, destructive dove già necessario);
+- applicare lo standard a toolbar, paginazione e azioni inline su `/master-data`;
+- evitare duplicazioni HTML/CSS locali e preferire riuso di `kt-btn`;
+- confermare piena compatibilità con stati disabled/loading e i18n.
 
 Acceptance criteria:
 
-- login confrontata con TEMPLATE-06;
-- gap visuali documentati;
-- nessun redesign massivo introdotto;
-- nessuna modifica funzionale non autorizzata.
+- pulizia visuale e gerarchia coerente tra pulsanti su list page;
+- varianti `primary`, `secondary`/`outline`, `ghost`, `destructive` applicate con ruoli coerenti;
+- nessuna libreria UI nuova introdotta;
+- nessuna modifica backend/API;
+- nessun testo hardcoded.
+
+Completato:
+
+- introdotte varianti condivise `kt-btn-secondary`, `kt-btn-ghost`, `kt-btn-icon`, `kt-btn-list-action` in `styles.scss`;
+- creato wrapper Angular shared `app-button` sopra il pattern `kt-btn`, con supporto minimo a `variant`, `size`, `type`, `disabled`, `loading`, `icon`, `iconOnly` e `ariaLabel`;
+- applicato pattern condiviso su `/master-data` (toolbar, modal/form actions, azioni inline riga, paginazione);
+- consolidati classi locale in componenti lista con varianti semantiche (`primary`, `secondary`, `ghost`, `destructive`);
+- eliminata sovrapposizione visiva duplicata (`master-data-danger-button`) nel CSS di pagina;
+- coerenza con `TEMPLATE-11` mantenuta e nessun cambio backend/API/librerie;
+- test build/frontend rieseguiti dopo la patch del wrapper Angular shared.
 
 ### TASK-048.8 - Shell navigation visual review
 
