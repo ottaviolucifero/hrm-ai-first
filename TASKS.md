@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.91
+Versione: 1.92
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -2626,7 +2626,7 @@ Scope:
 Acceptance criteria:
 
 - TASK-048 non e piu limitato al solo perimetro Master Data;
-- i sottotask TASK-048.3..TASK-048.13 sono allineati ai template UI validati e alla governance frontend collegata;
+- i sottotask TASK-048.3..TASK-048.14 sono allineati ai template UI validati e alla governance frontend collegata;
 - i template approvati, extra e futuri sono distinti nei task operativi;
 - nessuna modifica Angular/backend prevista nel solo riallineamento documentale;
 - non modificare frontend, backend o QA report;
@@ -2701,7 +2701,7 @@ Scope:
 
 Completato:
 
-- riallineati i sottotask TASK-048.4..TASK-048.13 al catalogo template UI validato e alla governance frontend collegata;
+- riallineati i sottotask TASK-048.4..TASK-048.14 al catalogo template UI validato e alla governance frontend collegata;
 - TASK-048 ridefinito come iniziativa generale HRflow design system/template UI;
 - Master Data mantenuto solo come caso pilota;
 - ROADMAP.md aggiornato con nuova sequenza e prossimo step;
@@ -2709,7 +2709,7 @@ Completato:
 
 Acceptance criteria:
 
-- TASK-048.4..TASK-048.13 definiti in base ai template validati e alla governance frontend collegata;
+- TASK-048.4..TASK-048.14 definiti in base ai template validati e alla governance frontend collegata;
 - TASK-048.1 e TASK-048.2 mantenuti come DONE;
 - ROADMAP.md allineato al nuovo prossimo passo TASK-048.3;
 - nessuna modifica Angular/backend.
@@ -2900,7 +2900,7 @@ Completato:
 
 ### TASK-048.9 - Configure Angular AI skills and project agent integration
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Documentazione / AI governance / frontend Angular
 
@@ -2944,9 +2944,18 @@ Acceptance criteria:
 - nessuna modifica backend/API;
 - nessuna nuova dipendenza.
 
+Completato:
+
+- documentata la governance della skill Angular `angular-developer` come supporto complementare alle regole repository;
+- integrata la skill repository-local sotto `.agents/skills/angular-developer`;
+- incluso `skills-lock.json` come riferimento lock della skill approvata;
+- esclusa esplicitamente la skill `angular-new-app` perche il frontend Angular esiste gia;
+- aggiornati governance prompt, `AGENTS.md`, `frontend/AGENTS.md` e `DECISIONS.md`;
+- nessuna modifica applicativa, backend/API, package o dipendenze.
+
 ### TASK-048.10 - Shell navigation visual review
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
@@ -2958,15 +2967,52 @@ Scope:
 - valutare sidebar, header e topbar come riferimenti extra;
 - verificare coerenza con navigazione esistente;
 - decidere se e quando applicare i pattern extra;
-- non applicare modifiche concrete senza task dedicato.
+- documentare che la sidebar verra riallineata al mockup TEMPLATE-08 in un task dedicato successivo;
+- non applicare modifiche concrete alla sidebar, all'header/topbar o alla shell in questo task;
+- non modificare componenti Angular.
 
 Acceptance criteria:
 
 - TEMPLATE-08 e TEMPLATE-09 valutati come extra;
 - decisioni documentate prima di qualunque applicazione;
-- nessun redesign della shell non autorizzato.
+- nessun redesign della shell non autorizzato;
+- nessuna modifica applicativa Angular/backend/API.
 
-### TASK-048.11 - Spreadsheet-style bulk editor planning
+Completato:
+
+- valutato TEMPLATE-08 come riferimento visuale futuro per la sidebar esistente;
+- valutato TEMPLATE-09 come riferimento extra futuro per header/topbar, senza applicazione concreta in questo task;
+- confermato che il riallineamento visuale della sidebar va trattato in TASK-048.11 dedicato;
+- nessuna modifica Angular, backend/API, package o librerie.
+
+### TASK-048.11 - Sidebar visual alignment to TEMPLATE-08
+
+Stato: TODO
+
+Template:
+
+- TEMPLATE-08 Sidebar.
+
+Scope:
+
+- applicare alla sidebar esistente il riferimento visuale del mockup TEMPLATE-08;
+- preservare routing, i18n, ricerca, collapse desktop, toggle mobile e stato active;
+- mantenere il componente sidebar esistente senza creare una shell parallela;
+- non toccare header/topbar;
+- non fare redesign globale della shell;
+- non introdurre nuove librerie UI;
+- non modificare backend/API.
+
+Acceptance criteria:
+
+- sidebar allineata visualmente a TEMPLATE-08 in modo compatibile con Angular, Metronic-adapted patterns e `kt-*`;
+- routing, i18n, ricerca, collapse desktop, toggle mobile e stato active preservati;
+- header/topbar non modificati;
+- nessuna nuova libreria UI introdotta;
+- build frontend OK;
+- test frontend OK.
+
+### TASK-048.12 - Spreadsheet-style bulk editor planning
 
 Stato: TODO
 
@@ -2988,7 +3034,7 @@ Acceptance criteria:
 - rischi e prerequisiti identificati;
 - nessuna implementazione frontend/backend.
 
-### TASK-048.12 - Shared form controls and form patterns foundation
+### TASK-048.13 - Shared form controls and form patterns foundation
 
 Stato: TODO
 
@@ -3031,7 +3077,7 @@ Acceptance criteria:
 - test frontend OK;
 - TASKS.md e ROADMAP.md aggiornati.
 
-### TASK-048.13 - Global typography foundation
+### TASK-048.14 - Global typography foundation
 
 Stato: TODO
 
@@ -3265,6 +3311,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.92 | 2026-05-09 | TASK-048.10 completato come shell navigation visual review documentale: TEMPLATE-08 e TEMPLATE-09 valutati senza modifiche Angular/backend/API; inserito TASK-048.11 "Sidebar visual alignment to TEMPLATE-08" come task dedicato futuro e rinumerati i successivi TASK-048.x fino a TASK-048.14. |
 | 1.91 | 2026-05-09 | TASK-048.9 esteso da sola governance a governance + integrazione repository-local skill Angular approvata: inclusi `.agents/skills/angular-developer` e `skills-lock.json`, esclusa `angular-new-app`, allineati scope/acceptance e riferimenti documentali senza modifiche applicative/backend/API. |
 | 1.90 | 2026-05-09 | Inserito TASK-048.9 "Configure Angular AI skills and project agent integration" per documentare l'uso della skill Angular `angular-developer` come supporto complementare alla governance repository; esclusa `angular-new-app`, documentati Plan mode e IDE context, rinumerati i successivi TASK-048.x fino a TASK-048.13, senza modifiche applicative/backend/API. |
 | 1.89 | 2026-05-09 | TASK-048.8 final refinement: aggiunti link visuale password dimenticata e footer legale i18n alla login, rimosso marker decorativo dal selettore lingua, senza routing/logica recovery/backend. |
@@ -3355,4 +3402,3 @@ Stato: TODO
 | 1.2 | 2026-05-01 | Aggiornato stato dopo TASK-005 e aggiunto TASK-006 per integrazione Metronic Angular. |
 | 1.1 | 2026-05-01 | Aggiornato stato task dopo completamento TASK-001, TASK-002, TASK-003 e TASK-004. |
 | 1.0 | 2026-05-01 | Prima versione task operativi MVP. |
-

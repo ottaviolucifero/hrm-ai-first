@@ -1,6 +1,6 @@
 # HRM AI-first Design System
 
-Versione: 0.3
+Versione: 0.4
 Ultimo aggiornamento: 2026-05-09
 Stato: Draft preparatorio
 
@@ -326,7 +326,8 @@ Regole specifiche TASK-048:
 - TEMPLATE-04 definisce il pattern form modale CRUD;
 - TEMPLATE-05 definisce le conferme azioni;
 - TEMPLATE-06 e TEMPLATE-07 definiscono rispettivamente login e toast;
-- TEMPLATE-08, TEMPLATE-09 e TEMPLATE-11 sono riferimenti extra da valutare prima dell’applicazione.
+- TEMPLATE-08 e TEMPLATE-09 sono riferimenti extra da valutare prima dell'applicazione;
+- TEMPLATE-11 e stato applicato come riferimento pulsanti nei task dedicati a buttons/list actions.
 
 Fuori scope TASK-048.2:
 
@@ -382,7 +383,32 @@ I template Stitch non sono codice da copiare direttamente, ma riferimenti visual
 | TEMPLATE-05 | Action confirmation dialogs | Conferme normali, warning, destructive, irreversibili | Approvato come riferimento |
 | TEMPLATE-06 | Login page | Login, branding, lingua, accesso | Approvato come riferimento |
 | TEMPLATE-07 | Toast notifications | Success, error, warning, info | Applicato in TASK-048.6 come riferimento feedback toast |
-| TEMPLATE-08 | Sidebar | Navigazione laterale | Extra, da valutare prima di applicare |
-| TEMPLATE-09 | Header / topbar | Barra superiore, ricerca, profilo utente | Extra, da valutare prima di applicare |
+| TEMPLATE-08 | Sidebar | Navigazione laterale | Valutato in TASK-048.10; candidato a TASK-048.11 dedicato |
+| TEMPLATE-09 | Header / topbar | Barra superiore, ricerca, profilo utente | Valutato in TASK-048.10; extra da rimandare a task dedicato |
 | TEMPLATE-10 | Generic DataTable | Tabella gestionale standard | Approvato come tabella principale |
 | TEMPLATE-11 | Buttons | Stili pulsanti primari, secondari, outline, destructive | Applicato in TASK-048.6 come riferimento pulsanti |
+
+---
+
+## 21. TASK-048.10 - Review shell navigation
+
+TASK-048.10 ha valutato TEMPLATE-08 Sidebar e TEMPLATE-09 Header/topbar come riferimenti extra per la shell esistente, senza autorizzare modifiche applicative.
+
+Stato attuale sidebar:
+
+- la sidebar Angular esistente usa `app-sidebar`, base Metronic-adapted `kt-sidebar` / `kt-menu`, routing Angular, i18n, ricerca menu, collapse desktop e stato active;
+- il pattern e gia funzionale e va preservato durante futuri riallineamenti visuali;
+- TEMPLATE-08 e coerente come direzione visuale per una sidebar piu marcata, con fondo navy, active state primario e gerarchia link piu chiara.
+
+Stato attuale header/topbar:
+
+- l'header esistente usa `app-header`, area brand/riservata, toggle mobile sidebar e menu profilo/logout;
+- TEMPLATE-09 introduce pattern piu ampi come ricerca globale, notifiche, help e profilo utente dettagliato;
+- questi elementi non vanno introdotti senza task dedicato per evitare funzionalita e UI fuori scope.
+
+Decisione:
+
+- TASK-048.10 non applica modifiche concrete alla shell;
+- la sidebar verra riallineata visualmente a TEMPLATE-08 solo in TASK-048.11 dedicato;
+- TEMPLATE-09 resta riferimento extra per eventuale review futura di header/topbar;
+- eventuali applicazioni devono preservare routing, i18n, accessibilita, responsive/collapse e componenti Angular esistenti.
