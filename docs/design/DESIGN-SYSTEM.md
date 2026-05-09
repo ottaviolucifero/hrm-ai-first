@@ -1,6 +1,6 @@
 # HRM AI-first Design System
 
-Versione: 0.4
+Versione: 0.9
 Ultimo aggiornamento: 2026-05-09
 Stato: Draft preparatorio
 
@@ -379,12 +379,12 @@ I template Stitch non sono codice da copiare direttamente, ma riferimenti visual
 | TEMPLATE-01 | Data list page | Pagina standard con titolo, toolbar, filtri, tabella e paginazione | Approvato come riferimento |
 | TEMPLATE-02 | Spreadsheet-style bulk editor | Inserimento e modifica massiva dati in stile Excel | Approvato come pattern avanzato futuro |
 | TEMPLATE-03 | Table states | Loading, empty, error, no results | Approvato come riferimento |
-| TEMPLATE-04 | CRUD modal form | Create, edit, view read-only | Approvato come riferimento |
+| TEMPLATE-04 | CRUD modal form | Create, edit, view read-only | Approvato come riferimento; refinement dedicato pianificato in TASK-048.12 |
 | TEMPLATE-05 | Action confirmation dialogs | Conferme normali, warning, destructive, irreversibili | Approvato come riferimento |
 | TEMPLATE-06 | Login page | Login, branding, lingua, accesso | Approvato come riferimento |
 | TEMPLATE-07 | Toast notifications | Success, error, warning, info | Applicato in TASK-048.6 come riferimento feedback toast |
 | TEMPLATE-08 | Sidebar | Navigazione laterale | Valutato in TASK-048.10; candidato a TASK-048.11 dedicato |
-| TEMPLATE-09 | Header / topbar | Barra superiore, ricerca, profilo utente | Valutato in TASK-048.10; extra da rimandare a task dedicato |
+| TEMPLATE-09 | Header / topbar | Barra superiore, ricerca, profilo utente | Valutato in TASK-048.10; refinement dedicato pianificato in TASK-048.13 |
 | TEMPLATE-10 | Generic DataTable | Tabella gestionale standard | Approvato come tabella principale |
 | TEMPLATE-11 | Buttons | Stili pulsanti primari, secondari, outline, destructive | Applicato in TASK-048.6 come riferimento pulsanti |
 
@@ -410,5 +410,25 @@ Decisione:
 
 - TASK-048.10 non applica modifiche concrete alla shell;
 - la sidebar verra riallineata visualmente a TEMPLATE-08 solo in TASK-048.11 dedicato;
-- TEMPLATE-09 resta riferimento extra per eventuale review futura di header/topbar;
+- TEMPLATE-09 resta riferimento extra non applicato in TASK-048.10 e viene demandato al task dedicato TASK-048.13;
 - eventuali applicazioni devono preservare routing, i18n, accessibilita, responsive/collapse e componenti Angular esistenti.
+
+Note backlog post TASK-048.11:
+
+- TEMPLATE-04 sara oggetto di refinement dedicato in TASK-048.12 su CRUD modal e form esistenti, senza introdurre shared modal/form framework prematuro;
+- TEMPLATE-09 sara oggetto di refinement dedicato in TASK-048.13 su header/topbar esistente, senza modificare sidebar o introdurre funzionalita fuori scope.
+
+Regole applicate in TASK-048.11:
+
+- la sidebar puo usare una superficie dark/navy come eccezione controllata della shell, senza estendere automaticamente la palette a header o contenuto;
+- i top-level navigation items possono usare un trattamento a pill con marker compatto e active state primario pieno;
+- i parent nodes con route attiva discendente possono usare uno stato intermedio branch-active, distinto dall'active pieno della voce finale;
+- la ricerca nella sidebar dark puo usare una superficie translucida con contrasto alto, senza cambiare la logica del filtro locale;
+- il trattamento active/sidebar deve privilegiare contrasto e struttura rispetto a glow o blur aggressivi;
+- il tree annidato puo aumentare leggermente contrasto della linea verticale, migliorare l'ancoraggio bullet -> label e ridurre gli sbilanciamenti di indent;
+- la scrollbar della sidebar puo essere integrata con styling CSS leggero e dark, senza librerie esterne o componenti custom;
+- la sidebar deve evitare overflow orizzontale e mantenere lo scroll verticale confinato all'area menu, lasciando header/logo sempre accessibili;
+- nella sidebar amministrativa la densita dei menu puo essere leggermente piu compatta rispetto a pattern dashboard/showcase, pur mantenendo focus states e leggibilita accessibili;
+- gli active state della sidebar devono restare inset rispetto ai bordi laterali, con padding/margine destro visivamente coerente con il lato sinistro;
+- la search box della sidebar deve essere centrata verticalmente nella propria sezione, evitando padding superiore/inferiore sbilanciato;
+- il riallineamento visuale deve restare locale al componente sidebar e non modificare header/topbar o creare una shell parallela.
