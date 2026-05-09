@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.82
+Versione: 1.89
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -2626,7 +2626,7 @@ Scope:
 Acceptance criteria:
 
 - TASK-048 non e piu limitato al solo perimetro Master Data;
-- i sottotask TASK-048.3..TASK-048.9 sono allineati ai template UI validati;
+- i sottotask TASK-048.3..TASK-048.10 sono allineati ai template UI validati;
 - i template approvati, extra e futuri sono distinti nei task operativi;
 - nessuna modifica Angular/backend prevista nel solo riallineamento documentale;
 - non modificare frontend, backend o QA report;
@@ -2701,7 +2701,7 @@ Scope:
 
 Completato:
 
-- riallineati i sottotask TASK-048.4..TASK-048.9 al catalogo template UI validato;
+- riallineati i sottotask TASK-048.4..TASK-048.10 al catalogo template UI validato;
 - TASK-048 ridefinito come iniziativa generale HRflow design system/template UI;
 - Master Data mantenuto solo come caso pilota;
 - ROADMAP.md aggiornato con nuova sequenza e prossimo step;
@@ -2709,7 +2709,7 @@ Completato:
 
 Acceptance criteria:
 
-- TASK-048.4..TASK-048.9 definiti in base ai template validati;
+- TASK-048.4..TASK-048.10 definiti in base ai template validati;
 - TASK-048.1 e TASK-048.2 mantenuti come DONE;
 - ROADMAP.md allineato al nuovo prossimo passo TASK-048.3;
 - nessuna modifica Angular/backend.
@@ -2756,7 +2756,7 @@ Completato:
 
 ### TASK-048.5 - CRUD modal and action confirmation refinement
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
@@ -2778,6 +2778,15 @@ Acceptance criteria:
 - regola UX confermata: non usare insieme "Annulla" e "Chiudi" nella bottom action bar quando hanno la stessa funzione;
 - nessun testo hardcoded;
 - nessuna modifica funzionale non autorizzata.
+
+Completato:
+
+- standardizzato il footer modal su `/master-data` con separazione visiva dal body, allineamento a destra e spacing coerente;
+- introdotto pattern minimo condiviso `kt-modal-footer` + `kt-modal-footer-actions` sopra la base visuale `kt-btn`;
+- modali CRUD aggiornate: in `create/edit` il footer espone solo `Annulla` secondario e `Salva` primario; in `view` espone un solo `Chiudi`;
+- confirmation dialog aggiornato con ordine coerente `Annulla` secondario + azione destructive;
+- riallineato il pattern visuale al mockup HTML validato: modal CRUD compatta, footer piu arioso, cancel outline e pulsanti con larghezza minima coerente;
+- mantenuti `app-button`, stati `disabled/loading`, tipi `button/submit` corretti, nessun testo hardcoded e nessuna modifica backend.
 
 ### TASK-048.6 - Buttons and toast feedback refinement
 
@@ -2858,7 +2867,38 @@ Completato:
 - coerenza con `TEMPLATE-11` mantenuta e nessun cambio backend/API/librerie;
 - test build/frontend rieseguiti dopo la patch del wrapper Angular shared.
 
-### TASK-048.8 - Shell navigation visual review
+### TASK-048.8 - Login visual alignment review
+
+Stato: DONE
+
+Template:
+
+- TEMPLATE-06 Login page.
+
+Scope:
+
+- verificare l'allineamento visuale della pagina login rispetto al template validato;
+- consolidare gerarchia di titolo, campi, CTA e feedback in stato idle/loading/error;
+- mantenere coerenza con foundation autenticazione esistente e i18n `it/fr/en`;
+- non introdurre nuove librerie UI e non cambiare logica funzionale login.
+
+Acceptance criteria:
+
+- layout login coerente con TEMPLATE-06 senza redesign massivo;
+- stati visuali principali login documentati/validati;
+- nessuna modifica backend/API;
+- nessun testo hardcoded.
+
+Completato:
+
+- riallineata la gerarchia visuale login rispetto a TEMPLATE-06: selettore lingua in alto a destra, logo con tagline sopra la card, titolo + testo introduttivo nella card;
+- seconda iterazione visuale completata con card piu compatta, padding interno coerente col template, brand cluster piu equilibrato, selettore lingua integrato e CTA full-width piu evidente;
+- refinement finale completato con link visuale `Password dimenticata?`, footer legale i18n e selettore lingua ripulito dall'icona decorativa non necessaria;
+- rifinite spaziature, posizione verticale del blocco login e responsive mobile/tablet senza redesign massivo;
+- consolidati stati visuali principali senza cambiare logica: CTA con `disabled`/`aria-busy` in loading, errori campo condivisi e toast credenziali errate invariati;
+- mantenuti componenti shared esistenti (`app-email-field`, `app-password-field`), i18n `it/fr/en`, nessuna modifica backend/API o dipendenze.
+
+### TASK-048.9 - Shell navigation visual review
 
 Stato: TODO
 
@@ -2880,7 +2920,7 @@ Acceptance criteria:
 - decisioni documentate prima di qualunque applicazione;
 - nessun redesign della shell non autorizzato.
 
-### TASK-048.9 - Spreadsheet-style bulk editor planning
+### TASK-048.10 - Spreadsheet-style bulk editor planning
 
 Stato: TODO
 
@@ -2902,7 +2942,50 @@ Acceptance criteria:
 - rischi e prerequisiti identificati;
 - nessuna implementazione frontend/backend.
 
-### TASK-048.10 - Global typography foundation
+### TASK-048.11 - Shared form controls and form patterns foundation
+
+Stato: TODO
+
+Tipo: Design system / frontend foundation
+
+Contesto:
+
+- durante TASK-048.5 e emerso che il checkbox della modale CRUD Master Data usa ancora uno stile troppo vicino al browser-default;
+- il fix definitivo va pianificato come foundation progressiva dei form controls, non come intervento isolato.
+
+Scope:
+
+- censire le tipologie di form control gia presenti o previste:
+  - text input;
+  - textarea;
+  - select;
+  - checkbox;
+  - radio;
+  - switch/toggle;
+  - date input/date picker placeholder;
+  - number input;
+  - search/filter input;
+  - validation/error/help text;
+- definire pattern condivisi coerenti con HRflow, Metronic e design system;
+- valutare componenti shared Angular dove utile, iniziando dai controlli piu riusabili;
+- creare almeno la foundation per `app-checkbox`, se coerente con l'analisi;
+- integrare il primo controllo condiviso in un punto sicuro, preferibilmente CRUD modal Master Data;
+- non introdurre nuove librerie UI;
+- non cambiare logica funzionale dei form;
+- rispettare i18n e accessibilita;
+- aggiornare `docs/design/DESIGN-SYSTEM.md` se vengono formalizzate regole durevoli.
+
+Acceptance criteria:
+
+- elenco controlli form censito;
+- regole base form controls documentate;
+- almeno un controllo shared candidato/implementato oppure motivazione documentata se rimandato;
+- checkbox Master Data non piu browser-default, se incluso nello scope implementativo;
+- build frontend OK;
+- test frontend OK;
+- TASKS.md e ROADMAP.md aggiornati.
+
+### TASK-048.12 - Global typography foundation
 
 Stato: TODO
 
@@ -3136,8 +3219,15 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.89 | 2026-05-09 | TASK-048.8 final refinement: aggiunti link visuale password dimenticata e footer legale i18n alla login, rimosso marker decorativo dal selettore lingua, senza routing/logica recovery/backend. |
+| 1.88 | 2026-05-09 | TASK-048.8 seconda iterazione: login visual alignment review approfondita con layout/card/brand/language selector/CTA piu aderenti a TEMPLATE-06, mantenendo componenti shared email/password e nessuna modifica funzionale/backend. |
+| 1.87 | 2026-05-09 | TASK-048.8 completato: login visual alignment review allineata a TEMPLATE-06 con patch minima su layout/login styles+i18n, senza modifiche funzionali o backend; build/test frontend rieseguiti e QA report aggiornato. |
+| 1.86 | 2026-05-09 | Rinumerati i subtask TASK-048.x: inserito TASK-048.8 "Login visual alignment review", slittati i successivi (`048.9` shell navigation, `048.10` bulk editor planning, `048.11` shared form controls, `048.12` global typography) e riallineati i riferimenti interni. |
+| 1.85 | 2026-05-09 | Aggiunto TASK-048.10 "Shared form controls and form patterns foundation" come TODO per censimento e standardizzazione progressiva dei form controls; rinumerata la typography foundation a TASK-048.11; nessuna modifica codice/frontend/backend. |
+| 1.84 | 2026-05-09 | TASK-048.5 follow-up: riallineato il footer modal/dialog al mockup HTML validato con modal CRUD compatta, spacing footer piu coerente, cancel outline e documentazione aggiornata; build/test frontend rieseguiti, nessuna modifica backend/API. |
+| 1.83 | 2026-05-09 | TASK-048.5 completato: standardizzati i footer di CRUD modal e confirmation dialog su `/master-data` con ordine azioni coerente, `app-button` e footer condiviso sopra `kt-btn`; build/test frontend OK, nessuna modifica backend/API. |
 | 1.80 | 2026-05-09 | TASK-048.6 completato: raffinati pulsanti e feedback toast secondo TEMPLATE-11 e TEMPLATE-07, riusando Metronic/Keenicons e `AlertMessageComponent`; aggiunte chiavi i18n e test frontend, build/test OK, nessuna modifica backend/API. |
-| 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" come task backlog dedicato alla definizione tipografica globale (analisi font attuale, confronto con mockup validati, decisione font globale, centralizzazione gerarchie e aggiornamento DESIGN-SYSTEM al momento di esecuzione); nessuna modifica codice applicativo in questa fase. |
+| 1.79 | 2026-05-09 | Introdotto "Global typography foundation" come task backlog dedicato alla definizione tipografica globale, successivamente rinumerato a TASK-048.12; nessuna modifica codice applicativo in questa fase. |
 | 1.78 | 2026-05-08 | TASK-048.4 completato: raffinato pattern `/master-data` secondo TEMPLATE-01, stati tabella secondo TEMPLATE-03 e `DataTableComponent` shared secondo TEMPLATE-10; introdotte chiavi i18n `dataTable.*`, build/test frontend OK, nessuna modifica backend. |
 | 1.77 | 2026-05-08 | TASK-048.3 riallinea i sottotask TASK-048 al catalogo template UI validato in TASK-048.2; TASK-048 diventa iniziativa generale HRflow design system/template UI, Master Data resta caso pilota; nessuna modifica Angular/backend. |
 | 1.76 | 2026-05-08 | TASK-048.2 confermato DONE con validazione catalogo astratto UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`; screenshot Stitch locali esclusi dal versionamento via `.gitignore`; nessuna modifica Angular/backend. |

@@ -32,6 +32,35 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-048.8 - Login visual alignment review
+
+- Data: 2026-05-09
+- Branch: `task-048-5-modal-footer-actions-refinement`
+- Task: TASK-048.8 - Login visual alignment review
+- Agente/Modello usato: GPT-5 Codex
+- Area verificata: `/login` (`login.component.html/.scss`), i18n `it/fr/en`, riuso `app-email-field` e `app-password-field`, coerenza TEMPLATE-06 senza modifiche funzionali; seconda iterazione su layout/card/brand/language selector/CTA/responsive e final refinement su forgot-password/footer legale
+- Stati visuali verificati: idle (layout/gerarchia card), loading (CTA disabled + label submitting + `aria-busy`), error (toast credenziali errate invariato), disabled CTA, selettore lingua `it/fr/en` senza icona decorativa, link visuale password dimenticata sotto il campo password, footer legale responsive, decorazione bassa resa piu discreta
+- Comandi eseguiti: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK
+- Esiti reali: build frontend OK; test frontend OK, 15 file di test passed, 82 test passed
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio (ambiente CLI senza sessione browser interattiva)
+- Regressioni trovate: nessuna regressione automatica rilevata
+- Limiti/note: validazione manuale live su `/login` (desktop/mobile, credenziali errate, cambio lingua, login reale) resta raccomandata in sessione browser dedicata
+- Stato finale: PASS WITH NOTES
+
+### TASK-048.5 - Modal/footer actions refinement follow-up
+
+- Data: 2026-05-09
+- Branch: `task-048-5-modal-footer-actions-refinement`
+- Task: TASK-048.5 - Modal/footer actions refinement
+- Agente/Modello usato: GPT-5.3 Codex
+- Area verificata: footer CRUD modal e confirmation dialog `/master-data`, confronto con mockup HTML validato, `app-button` sopra `kt-btn`, spacing/allineamento/ordine azioni, documentazione `TASKS.md`, `ROADMAP.md`, `docs/design/DESIGN-SYSTEM.md`
+- Comandi eseguiti: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK
+- Esiti reali: build frontend OK; test frontend OK, 15 file di test passed, 85 test passed
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Regressioni trovate: nessuna regressione rilevata dai test automatici
+- Limiti/note: `Codex-Prompt-Governancev2.txt` non e stato localizzato nei percorsi disponibili; applicate le regole operative gia presenti nel prompt e nei documenti di governance letti. Nessuna modifica backend/API/security e nessuna nuova libreria.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-048.4 - Data list and Generic DataTable refinement
 
 - Data: 2026-05-08
@@ -237,4 +266,21 @@ Nota operativa:
 - Esito test frontend: OK
 - Fix applicati: `iconOnly` ora richiede `ariaLabel` esplicito con errore runtime chiaro su configurazione invalida; aggiunti test per `submit`, `reset`, `disabled`, `outline`, `destructive` e caso invalido `iconOnly` senza `ariaLabel`
 - QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Stato finale: PASS
+
+### TASK-048.5 - CRUD modal and action confirmation refinement
+
+- Data: 2026-05-09
+- Branch: `task-048-5-modal-footer-actions-refinement`
+- Task: TASK-048.5 - CRUD modal and action confirmation refinement
+- Agente/Modello usato: GPT-5.3 Codex
+- Area verificata: footer azioni modali/dialog `/master-data`, `master-data-form`, confirmation dialog, shared `app-button`, pattern globale `kt-modal-footer`
+- Template applicati: TEMPLATE-04 CRUD modal form; TEMPLATE-05 Action confirmation dialogs
+- Comandi eseguiti: `cd frontend && npm.cmd run build`; `cd frontend && npm.cmd test`
+- Esito build frontend: OK
+- Esito test frontend: OK, 15 file di test passed, 84 test passed
+- Regressioni trovate: nessuna regressione automatica rilevata
+- Fix applicati: footer CRUD separato dal body, ordine `Annulla` -> `Salva` in create/edit, `Chiudi` unico nel footer view, ordine `Annulla` -> azione destructive nei confirmation dialog
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Limiti/note: il pattern e applicato solo alle modali/dialog attualmente presenti nel frontend; eventuali future modali fuori `/master-data` dovranno adottare lo stesso footer standard
 - Stato finale: PASS
