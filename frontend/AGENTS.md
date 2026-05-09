@@ -1,8 +1,8 @@
-\# frontend/AGENTS.md
+# frontend/AGENTS.md
 
 
 
-\## Frontend Angular Operational Rules
+## Frontend Angular Operational Rules
 
 
 
@@ -14,11 +14,25 @@ These rules extend the root `AGENTS.md` and must be followed by AI agents workin
 
 
 
-\---
+---
+
+## 0. Angular AI Skills Reference
+
+When available, AI agents may use the Angular `angular-developer` skill as an operational aid for Angular components, services, routing, forms, accessibility, testing, styling and frontend best practices.
+
+Do not use `angular-new-app` in this repository because the Angular frontend already exists.
+
+The skill is advisory and does not replace root `AGENTS.md`, this `frontend/AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` or `docs/design/DESIGN-SYSTEM.md`.
+
+Prompt and skills governance is documented in `docs/ai-prompts/codex-prompt-governance.md`.
 
 
 
-\## 1. Reuse First
+---
+
+
+
+## 1. Reuse First
 
 
 
@@ -30,19 +44,19 @@ The agent must prefer reuse of:
 
 
 
-\- existing shell layout;
+- existing shell layout;
 
-\- existing header;
+- existing header;
 
-\- existing sidebar;
+- existing sidebar;
 
-\- existing page structure;
+- existing page structure;
 
-\- existing feature components;
+- existing feature components;
 
-\- existing shared components;
+- existing shared components;
 
-\- existing styles and Metronic-adapted patterns.
+- existing styles and Metronic-adapted patterns.
 
 
 
@@ -54,11 +68,11 @@ Every new UI implementation must explicitly state which existing components, lay
 
 
 
-\---
+---
 
 
 
-\## 2. Extend Before Creating
+## 2. Extend Before Creating
 
 
 
@@ -70,29 +84,29 @@ Do not duplicate:
 
 
 
-\- shell layout;
+- shell layout;
 
-\- header;
+- header;
 
-\- sidebar;
+- sidebar;
 
-\- toolbar;
+- toolbar;
 
-\- page header;
+- page header;
 
-\- cards;
+- cards;
 
-\- tables;
+- tables;
 
-\- forms;
+- forms;
 
-\- buttons;
+- buttons;
 
-\- badges;
+- badges;
 
-\- modals;
+- modals;
 
-\- generic layout wrappers.
+- generic layout wrappers.
 
 
 
@@ -100,11 +114,11 @@ The existing `app-shell`, `app-header`, `app-sidebar` and approved layout struct
 
 
 
-\---
+---
 
 
 
-\## 3. Shared Components Governance
+## 3. Shared Components Governance
 
 
 
@@ -128,11 +142,11 @@ Do not create speculative shared components.
 
 
 
-\---
+---
 
 
 
-\## 4. Shared Component Creation Threshold
+## 4. Shared Component Creation Threshold
 
 
 
@@ -140,11 +154,11 @@ A component may become shared only if at least one of these conditions is true:
 
 
 
-\- it is required by at least two different feature areas;
+- it is required by at least two different feature areas;
 
-\- it represents a stable UI pattern already present in the project;
+- it represents a stable UI pattern already present in the project;
 
-\- it standardizes a recurring enterprise structure such as table wrapper, page header, filter bar, status badge or form field group.
+- it standardizes a recurring enterprise structure such as table wrapper, page header, filter bar, status badge or form field group.
 
 
 
@@ -160,23 +174,23 @@ Before creating a shared component, the agent must document:
 
 
 
-\- component name;
+- component name;
 
-\- intended responsibility;
+- intended responsibility;
 
-\- features expected to reuse it;
+- features expected to reuse it;
 
-\- existing components or patterns checked first;
+- existing components or patterns checked first;
 
-\- reason why extension or reuse is not enough.
-
-
-
-\---
+- reason why extension or reuse is not enough.
 
 
 
-\## 5. Feature Components Governance
+---
+
+
+
+## 5. Feature Components Governance
 
 
 
@@ -192,9 +206,9 @@ Do not expand a frontend task into unrelated shared UI refactoring.
 
 
 
-\---
+---
 
-\## 5.1 Master Data Table Reuse Rule
+## 5.1 Master Data Table Reuse Rule
 
 Le tabelle Master Data non devono essere duplicate quando condividono struttura, paginazione, filtro, loading/error state e azioni simili.
 
@@ -208,22 +222,22 @@ Il refactoring shared deve essere esplicitamente autorizzato dal task.
 
 Un componente shared Master Data table deve supportare:
 
-\- colonne configurabili;
-\- campi nested, es. `country.code`;
-\- paginazione;
-\- filtro generico;
-\- loading/error state;
-\- azioni standard;
-\- i18n;
-\- test frontend.
+- colonne configurabili;
+- campi nested, es. `country.code`;
+- paginazione;
+- filtro generico;
+- loading/error state;
+- azioni standard;
+- i18n;
+- test frontend.
 
 Se un task funzionale richiede una nuova tabella simile a una già esistente, l'agente deve dichiarare il debito tecnico oppure proporre un task dedicato prima di duplicare ulteriore logica.
 
-\---
+---
 
 
 
-\## 6. Metronic Governance
+## 6. Metronic Governance
 
 
 
@@ -239,11 +253,11 @@ Do not import, duplicate or fork Metronic layouts outside the approved Angular s
 
 
 
-\---
+---
 
 
 
-\## 7. Validation
+## 7. Validation
 
 
 
@@ -255,9 +269,9 @@ For markdown-only governance tasks, validate with:
 
 
 
-\- `git status`;
+- `git status`;
 
-\- `git diff`.
+- `git diff`.
 
 
 
@@ -265,92 +279,92 @@ Do not modify backend files during frontend-only tasks unless explicitly request
 
 
 
-\---
+---
 
 
 
-\## 8. Auth Frontend Rules
+## 8. Auth Frontend Rules
 
 
 
-\- For login foundation, store JWT access tokens in `sessionStorage`, not `localStorage`, unless a later architecture decision says otherwise.
+- For login foundation, store JWT access tokens in `sessionStorage`, not `localStorage`, unless a later architecture decision says otherwise.
 
-\- Use relative API URLs, for example `/api/auth/login` and `/api/auth/me`.
+- Use relative API URLs, for example `/api/auth/login` and `/api/auth/me`.
 
-\- Auth interceptors must add `Authorization: Bearer <token>` only when a token is present.
+- Auth interceptors must add `Authorization: Bearer <token>` only when a token is present.
 
-\- Do not introduce refresh tokens, advanced expiry handling, advanced multitab handling, frontend proxy configuration or global error handling without a dedicated task.
+- Do not introduce refresh tokens, advanced expiry handling, advanced multitab handling, frontend proxy configuration or global error handling without a dedicated task.
 
-\- Login errors must remain generic, for example `Email o password non corretti.`
-
-
-
-\---
+- Login errors must remain generic, for example `Email o password non corretti.`
 
 
 
-\## 9. Frontend i18n Rules
+---
 
 
 
-\- Do not add new hardcoded UI text in Angular templates or components.
-
-\- Use the existing runtime i18n foundation under `frontend/src/app/core/i18n/`.
-
-\- Every new label, message, placeholder, title, tooltip or `aria-label` must have a key in `frontend/src/app/core/i18n/i18n.messages.ts`.
-
-\- Always update all supported languages when adding or changing an i18n key: `it`, `fr` and `en`.
-
-\- Italian (`it`) is the baseline language and fallback.
-
-\- Do not translate dynamic data coming from backend APIs, database records or tenant/user content.
-
-\- Do not introduce new i18n libraries, including Angular localize, Transloco or ngx-translate, without a documented architecture decision.
-
-\- Frontend tests should avoid fragile assertions on hardcoded UI strings when possible; when string assertions are necessary, align them with the current i18n keys and translations.
-
-\- New UI components must be verified at least in Italian and, when language behavior is relevant, with language changes through `I18nService` or the persisted `localStorage` language.
+## 9. Frontend i18n Rules
 
 
 
-\---
+- Do not add new hardcoded UI text in Angular templates or components.
+
+- Use the existing runtime i18n foundation under `frontend/src/app/core/i18n/`.
+
+- Every new label, message, placeholder, title, tooltip or `aria-label` must have a key in `frontend/src/app/core/i18n/i18n.messages.ts`.
+
+- Always update all supported languages when adding or changing an i18n key: `it`, `fr` and `en`.
+
+- Italian (`it`) is the baseline language and fallback.
+
+- Do not translate dynamic data coming from backend APIs, database records or tenant/user content.
+
+- Do not introduce new i18n libraries, including Angular localize, Transloco or ngx-translate, without a documented architecture decision.
+
+- Frontend tests should avoid fragile assertions on hardcoded UI strings when possible; when string assertions are necessary, align them with the current i18n keys and translations.
+
+- New UI components must be verified at least in Italian and, when language behavior is relevant, with language changes through `I18nService` or the persisted `localStorage` language.
 
 
 
-\## 10. Angular UI State Rules
+---
 
 
 
-\- Every loading state activated by an HTTP call must be restored on both success and error, preferably with RxJS `finalize()`.
-
-\- UI errors must appear immediately after the HTTP response, without depending on focus, blur or other user interactions.
-
-\- If signals or `OnPush` are used, explicitly verify that the UI updates immediately.
-
-\- Stuck loading states or delayed error messages are functional regressions.
+## 10. Angular UI State Rules
 
 
 
-\---
+- Every loading state activated by an HTTP call must be restored on both success and error, preferably with RxJS `finalize()`.
+
+- UI errors must appear immediately after the HTTP response, without depending on focus, blur or other user interactions.
+
+- If signals or `OnPush` are used, explicitly verify that the UI updates immediately.
+
+- Stuck loading states or delayed error messages are functional regressions.
 
 
 
-\## 11. Frontend Manual Validation
+---
 
 
 
-\- When a task introduces or changes screens, manual UI validation is required in addition to build/test.
-
-\- Verify rendering, basic responsive behavior, error states, loading states, disabled/re-enabled buttons and main interactions.
-
-\- On Windows, prefer `npm.cmd` in documented commands when `npm.ps1` may be blocked by PowerShell execution policy.
-
-
-\---
+## 11. Frontend Manual Validation
 
 
 
-\## 12. Frontend Brand Color Guidelines
+- When a task introduces or changes screens, manual UI validation is required in addition to build/test.
+
+- Verify rendering, basic responsive behavior, error states, loading states, disabled/re-enabled buttons and main interactions.
+
+- On Windows, prefer `npm.cmd` in documented commands when `npm.ps1` may be blocked by PowerShell execution policy.
+
+
+---
+
+
+
+## 12. Frontend Brand Color Guidelines
 
 
 
@@ -362,15 +376,15 @@ Logo-derived palette:
 
 
 
-\- Primary deep indigo: `#203070`.
+- Primary deep indigo: `#203070`.
 
-\- Primary navy support: `#202050`.
+- Primary navy support: `#202050`.
 
-\- Accent blue: `#2080F0`.
+- Accent blue: `#2080F0`.
 
-\- Secondary violet-blue: `#6060F0`.
+- Secondary violet-blue: `#6060F0`.
 
-\- Soft highlight tint: `#F0F0FF`.
+- Soft highlight tint: `#F0F0FF`.
 
 
 
@@ -378,44 +392,44 @@ Usage rules:
 
 
 
-\- Use the deep indigo as the main brand anchor for primary accents, active navigation and important identity moments.
+- Use the deep indigo as the main brand anchor for primary accents, active navigation and important identity moments.
 
-\- Use accent blue for primary actions, focused states, selected states and links when the existing Metronic/Tailwind token allows it.
+- Use accent blue for primary actions, focused states, selected states and links when the existing Metronic/Tailwind token allows it.
 
-\- Use violet-blue sparingly for secondary accents, illustrations, badges or subtle emphasis.
+- Use violet-blue sparingly for secondary accents, illustrations, badges or subtle emphasis.
 
-\- Use the soft highlight tint only for low-emphasis backgrounds, hover surfaces or gentle visual grouping.
+- Use the soft highlight tint only for low-emphasis backgrounds, hover surfaces or gentle visual grouping.
 
-\- Keep neutral surfaces, borders, body text and enterprise layout density aligned with the existing Metronic/Tailwind-adapted style.
+- Keep neutral surfaces, borders, body text and enterprise layout density aligned with the existing Metronic/Tailwind-adapted style.
 
-\- Login, shell, header, sidebar, buttons, links, badges and UI states must use brand colors consistently, but only when the task scope includes UI implementation.
+- Login, shell, header, sidebar, buttons, links, badges and UI states must use brand colors consistently, but only when the task scope includes UI implementation.
 
-\- Do not recolor existing screens opportunistically during unrelated frontend tasks.
+- Do not recolor existing screens opportunistically during unrelated frontend tasks.
 
-\- Do not introduce a full theme rewrite, broad palette replacement, decorative gradients or general redesign under the pretext of brand alignment.
+- Do not introduce a full theme rewrite, broad palette replacement, decorative gradients or general redesign under the pretext of brand alignment.
 
-\- Reuse existing shell, header, sidebar, login UI, buttons, badges and layout patterns before changing styles.
+- Reuse existing shell, header, sidebar, login UI, buttons, badges and layout patterns before changing styles.
 
-\- Create or promote shared components only when the existing shared component rules justify it and the task explicitly documents the reason.
+- Create or promote shared components only when the existing shared component rules justify it and the task explicitly documents the reason.
 
-\## 13. Frontend QA and Model Separation
+## 13. Frontend QA and Model Separation
 
 
 Per task frontend significativi prevedere QA separato.
 
 Il QA frontend deve verificare almeno:
 
-\- i18n obbligatorio;
-\- assenza di testi hardcoded;
-\- route e sidebar;
-\- regressioni su login/home/shell/header/sidebar;
-\- build e test Angular;
-\- coerenza UI senza redesign non richiesti.
+- i18n obbligatorio;
+- assenza di testi hardcoded;
+- route e sidebar;
+- regressioni su login/home/shell/header/sidebar;
+- build e test Angular;
+- coerenza UI senza redesign non richiesti.
 
 Il QA frontend non introduce nuove funzionalità.
 
 I fix frontend post-QA devono essere piccoli e mirati, con patch minima.
-\## 14. Frontend QA Reporting
+## 14. Frontend QA Reporting
 
 Ogni report QA frontend deve essere registrato in `docs/qa/QA-REPORTS.md` nella sezione **Frontend**.
 
