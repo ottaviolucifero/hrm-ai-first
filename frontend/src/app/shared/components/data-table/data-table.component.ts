@@ -1,6 +1,7 @@
-import { NgStyle } from '@angular/common';
+import { NgClass, NgStyle } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 
+import { I18nKey } from '../../../core/i18n/i18n.messages';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import {
   DataTableAction,
@@ -8,28 +9,46 @@ import {
   DataTableColumnAlign,
   DataTableColumnType,
   DataTablePage,
+  DataTablePageLink,
   DataTableRowActionEvent,
   DataTableRow
 } from './data-table.models';
 
 @Component({
   selector: 'app-data-table',
-  imports: [NgStyle],
+  imports: [NgStyle, NgClass],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.scss'
 })
 export class DataTableComponent {
   protected readonly i18n = inject(I18nService);
+  protected readonly skeletonRows = Array.from({ length: 6 });
+  private readonly rowActionIconMap: Record<string, readonly string[]> = {
+    view: ['ki-filled', 'ki-eye'],
+    details: ['ki-filled', 'ki-eye'],
+    read: ['ki-filled', 'ki-eye'],
+    edit: ['ki-filled', 'ki-pencil'],
+    update: ['ki-filled', 'ki-pencil'],
+    deactivate: ['ki-filled', 'ki-minus-circle'],
+    delete: ['ki-filled', 'ki-trash'],
+    deletephysical: ['ki-filled', 'ki-trash']
+  };
 
   @Input() columns: readonly DataTableColumn[] = [];
   @Input() rows: readonly DataTableRow[] = [];
   @Input() rowActions: readonly DataTableAction[] = [];
   @Input() pageData: DataTablePage | null = null;
+  @Input() pageSizeOptions: readonly number[] = [10, 20, 50];
   @Input() loading = false;
   @Input() hasError = false;
+  @Input() loadingMessageKey: I18nKey = 'dataTable.loading';
+  @Input() errorMessageKey: I18nKey = 'dataTable.error';
+  @Input() emptyMessageKey: I18nKey = 'dataTable.empty';
 
   @Output() previousPage = new EventEmitter<void>();
   @Output() nextPage = new EventEmitter<void>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
   @Output() rowAction = new EventEmitter<DataTableRowActionEvent>();
 
   protected visibleColumns(): readonly DataTableColumn[] {
@@ -66,7 +85,7 @@ export class DataTableComponent {
     const type = this.columnType(column);
 
     if (type === 'boolean') {
-      return value === true ? this.i18n.t('masterData.boolean.yes') : this.i18n.t('masterData.boolean.no');
+      return value === true ? this.i18n.t('dataTable.boolean.yes') : this.i18n.t('dataTable.boolean.no');
     }
 
     if ((type === 'date' || type === 'datetime') && typeof value === 'string') {
@@ -111,7 +130,95 @@ export class DataTableComponent {
   }
 
   protected paginationSummary(pageData: DataTablePage): string {
-    return `${this.i18n.t('masterData.pagination.page')} ${pageData.page + 1} ${this.i18n.t('masterData.pagination.of')} ${Math.max(pageData.totalPages, 1)} (${pageData.totalElements} ${this.i18n.t('masterData.pagination.results')})`;
+    return `${this.i18n.t('dataTable.pagination.page')} ${pageData.page + 1} ${this.i18n.t('dataTable.pagination.of')} ${Math.max(pageData.totalPages, 1)} (${pageData.totalElements} ${this.i18n.t('dataTable.pagination.results')})`;
+  }
+
+  protected paginationLinks(pageData: DataTablePage): readonly DataTablePageLink[] {
+    if (pageData.totalPages <= 0) {
+      return [];
+    }
+
+    const currentPage = pageData.page + 1;
+    const totalPages = pageData.totalPages;
+    const pages = new Set<number>();
+
+    if (totalPages <= 7) {
+      for (let page = 1; page <= totalPages; page += 1) {
+        pages.add(page);
+      }
+    } else {
+      [1, 2, currentPage - 1, currentPage, currentPage + 1, totalPages - 1, totalPages]
+        .filter((page) => page >= 1 && page <= totalPages)
+        .forEach((page) => pages.add(page));
+    }
+
+    const orderedPages = Array.from(pages).sort((left, right) => left - right);
+    const links: DataTablePageLink[] = [];
+
+    orderedPages.forEach((page, index) => {
+      if (index > 0 && page - orderedPages[index - 1] > 1) {
+        links.push({
+          type: 'ellipsis',
+          value: `ellipsis-${orderedPages[index - 1]}-${page}`,
+          active: false
+        });
+      }
+
+      links.push({
+        type: 'page',
+        value: page,
+        active: page === currentPage
+      });
+    });
+
+    return links;
+  }
+
+  protected emitPageChange(page: number, currentPage: number): void {
+    if (this.loading || page === currentPage) {
+      return;
+    }
+
+    this.pageChange.emit(page - 1);
+  }
+
+  protected emitPageSizeChange(event: Event): void {
+    const target = event.target as HTMLSelectElement | null;
+    const nextSize = Number(target?.value);
+
+    if (!Number.isFinite(nextSize) || nextSize <= 0) {
+      return;
+    }
+
+    this.pageSizeChange.emit(nextSize);
+  }
+
+  protected isPageSizeSelected(option: number, pageData: DataTablePage): boolean {
+    return option === pageData.size;
+  }
+
+  protected stateMessageKey(): I18nKey {
+    if (this.loading) {
+      return this.loadingMessageKey;
+    }
+
+    if (this.hasError) {
+      return this.errorMessageKey;
+    }
+
+    return this.emptyMessageKey;
+  }
+
+  protected stateRole(): 'status' | 'alert' {
+    return this.hasError && !this.loading ? 'alert' : 'status';
+  }
+
+  protected isBooleanColumn(column: DataTableColumn): boolean {
+    return this.columnType(column) === 'boolean';
+  }
+
+  protected isBooleanActive(row: DataTableRow, column: DataTableColumn): boolean {
+    return this.resolveValue(row, column.key) === true;
   }
 
   protected isRowActionDisabled(action: DataTableAction, row: DataTableRow): boolean {
@@ -124,6 +231,11 @@ export class DataTableComponent {
     }
 
     this.rowAction.emit({ action, row });
+  }
+
+  protected rowActionIconClass(action: DataTableAction): readonly string[] {
+    const normalizedActionId = action.id.trim().toLowerCase();
+    return this.rowActionIconMap[normalizedActionId] ?? ['ki-filled', 'ki-magnifier'];
   }
 
   private columnType(column: DataTableColumn): DataTableColumnType {

@@ -1,64 +1,87 @@
-<section class="kt-container-fixed py-4" aria-labelledby="master-data-title">
+<section class="kt-container-fixed py-4 master-data-page" aria-labelledby="master-data-title">
   <div class="master-data-layout">
     <app-alert-message type="success" [message]="feedbackMessage()" />
 
-    <div class="master-data-toolbar">
-      <div>
+    <header class="master-data-page-header">
+      <div class="master-data-heading">
+        <span class="master-data-eyebrow">{{ i18n.t('nav.governance') }}</span>
         <h1 id="master-data-title" class="text-xl font-semibold text-mono">{{ i18n.t('masterData.title') }}</h1>
+        <p class="master-data-subtitle">{{ i18n.t('masterData.subtitle') }}</p>
       </div>
-      <div class="master-data-toolbar-actions">
+      <div class="master-data-page-actions master-data-toolbar-actions" role="group" [attr.aria-label]="i18n.t('masterData.actionsLabel')">
         @if (canCreate()) {
-          <button class="kt-btn kt-btn-primary kt-btn-sm" type="button" [disabled]="loading() || deleting()" (click)="openCreateForm()">
+          <button class="kt-btn kt-btn-primary kt-btn-sm master-data-primary-action" type="button" [disabled]="loading() || deleting()" (click)="openCreateForm()">
             {{ i18n.t('masterData.actions.new') }}
           </button>
         }
-        <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="loading() || deleting()" (click)="refresh()">
-          {{ i18n.t('masterData.refresh') }}
-        </button>
       </div>
-    </div>
+    </header>
 
-    <div class="master-data-filters">
-      <label class="master-data-field">
-        <span>{{ i18n.t('masterData.category') }}</span>
-        <select class="kt-input" [disabled]="deleting()" [value]="selectedCategoryId()" (change)="updateCategory($event)">
-          @for (category of categories; track category.id) {
-            <option [value]="category.id">{{ i18n.t(category.titleKey) }}</option>
-          }
-        </select>
-      </label>
+    <section class="kt-card master-data-list-card" aria-labelledby="master-data-list-title">
+      <div class="master-data-list-toolbar">
+        <div class="master-data-list-heading">
+          <h2 id="master-data-list-title" class="master-data-list-title">{{ i18n.t(selectedResource().titleKey) }}</h2>
+          <div class="master-data-list-meta-row">
+            <p class="master-data-list-meta">{{ i18n.t(selectedCategory().titleKey) }}</p>
+            <span class="master-data-record-count">{{ pageData().totalElements }} {{ i18n.t('dataTable.pagination.results') }}</span>
+          </div>
+        </div>
 
-      <label class="master-data-field">
-        <span>{{ i18n.t('masterData.entity') }}</span>
-        <select class="kt-input" [disabled]="deleting()" [value]="selectedResourceId()" (change)="updateResource($event)">
-          @for (resource of selectedCategory().resources; track resource.id) {
-            <option [value]="resource.id">{{ i18n.t(resource.titleKey) }}</option>
-          }
-        </select>
-      </label>
+        <label class="master-data-table-search">
+          <span class="master-data-search-label">{{ i18n.t('masterData.search') }}</span>
+          <input
+            class="kt-input master-data-search-input"
+            type="search"
+            [disabled]="deleting()"
+            [value]="searchInput()"
+            [placeholder]="i18n.t('masterData.searchPlaceholder')"
+            (input)="updateSearch($event)" />
+        </label>
+      </div>
 
-      <label class="master-data-field">
-        <span>{{ i18n.t('masterData.search') }}</span>
-        <input
-          class="kt-input"
-          type="search"
-          [disabled]="deleting()"
-          [value]="searchInput()"
-          [placeholder]="i18n.t('masterData.searchPlaceholder')"
-          (input)="updateSearch($event)" />
-      </label>
-    </div>
+      <div class="master-data-filters-panel">
+        <div class="master-data-filters-intro">
+          <h3 class="master-data-filters-title">{{ i18n.t('masterData.filtersTitle') }}</h3>
+          <p class="master-data-filters-description">{{ i18n.t('masterData.filtersDescription') }}</p>
+        </div>
 
-    <app-data-table
-      [columns]="selectedResource().columns"
-      [rows]="rows()"
-      [rowActions]="rowActions()"
-      [pageData]="pageData()"
-      [loading]="loading()"
-      [hasError]="hasError()"
-      (rowAction)="handleRowAction($event)"
-      (previousPage)="goToPreviousPage()"
-      (nextPage)="goToNextPage()" />
+        <div class="master-data-filters">
+          <label class="master-data-field">
+            <span>{{ i18n.t('masterData.category') }}</span>
+            <select class="kt-input" [disabled]="deleting()" [value]="selectedCategoryId()" (change)="updateCategory($event)">
+              @for (category of categories; track category.id) {
+                <option [value]="category.id">{{ i18n.t(category.titleKey) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="master-data-field">
+            <span>{{ i18n.t('masterData.entity') }}</span>
+            <select class="kt-input" [disabled]="deleting()" [value]="selectedResourceId()" (change)="updateResource($event)">
+              @for (resource of selectedCategory().resources; track resource.id) {
+                <option [value]="resource.id">{{ i18n.t(resource.titleKey) }}</option>
+              }
+            </select>
+          </label>
+
+        </div>
+      </div>
+
+      <app-data-table
+        [columns]="selectedResource().columns"
+        [rows]="rows()"
+        [rowActions]="rowActions()"
+        [pageData]="pageData()"
+        [pageSizeOptions]="pageSizeOptions"
+        [loading]="loading()"
+        [hasError]="hasError()"
+        [emptyMessageKey]="tableEmptyMessageKey()"
+        (rowAction)="handleRowAction($event)"
+        (previousPage)="goToPreviousPage()"
+        (nextPage)="goToNextPage()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="updatePageSize($event)" />
+    </section>
 
     @if (isDeleteConfirmOpen()) {
       <div class="master-data-modal-overlay" role="presentation">

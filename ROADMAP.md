@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.76
+Versione: 1.79
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -96,11 +96,13 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-047.2 Master Data physical delete frontend action
 - TASK-047.3 Master Data physical delete QA and hardening
 - TASK-048.1 Master Data design refinement preparation
-- TASK-048.2 Master Data Stitch mockup validation
+- TASK-048.2 Validated UI template catalog from Stitch
+- TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
+- TASK-048.4 Data list and Generic DataTable refinement
 
 ### Prossimo passo
 
-- TASK-048.3 Master Data design system documentation
+- TASK-048.5 CRUD modal and action confirmation refinement
 
 ---
 
@@ -156,12 +158,16 @@ Completato:
 - TASK-042 completed: global seed foundation with `countries.default_currency_id` nullable, ISO 3166-1 alpha-2 seed (249 Paesi/territori), source documentation and Flyway V17 vendor-specific migrations for PostgreSQL/H2 validated with backend tests.
 - TASK-044 completed: import CAP italiani con dataset normalizzato da JSON acquistato (8465 record validi), import backend idempotente in `global_zip_codes`, endpoint analisi/import dedicato e test backend di coerenza/idempotenza.
 - TASK-045 completed: shared read-only Master Data table component integrated in `/master-data`, with configurable columns, nested fields, loading/error/empty states and pagination events validated by frontend build/test.
+- TASK-046 Master Data CRUD standard foundation
 - TASK-046.1 completed: configurable row actions foundation added to `DataTableComponent`, with entity-level enablement and container event wiring in `/master-data`, while non-candidate entities remain read-only.
 - TASK-046.2 completed: Master Data CRUD form foundation added with metadata-driven create/edit/view form, required/read-only handling, i18n keys and frontend save hooks without backend mutations.
 - TASK-046.3 completed: real frontend create/update integration added on existing HR/business CRUD APIs for `Department`, `JobTitle`, `ContractType` and `WorkMode`, with authenticated tenant-aware payloads, modal feedback, post-save refresh and frontend build/test validation.
 - TASK-046.4 completed: Master Data deactivation flow on `/master-data` aligned with existing soft-delete semantics (`active=false`), with explicit confirmation modal, coherent list refresh and i18n `it/fr/en`.
 - Backlog governance updated: Master Data physical delete is separated from logical deactivation and planned as TASK-047.
 - TASK-047.1 completed: backend foundation for physical delete on HR/business CRUD candidates (`Department`, `JobTitle`, `ContractType`, `WorkMode`) with dedicated `/physical` endpoints, `409 Conflict` on referenced records and backend tests validated.
+- TASK-048 HRflow design system and validated UI templates
+- TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
+- TASK-048.4 completed: Data list page and shared Generic DataTable refinement applied to `/master-data` with TEMPLATE-01, TEMPLATE-03 and TEMPLATE-10, i18n `it/fr/en`, build/test frontend validated and no backend changes.
 
 Nota:
 
@@ -188,10 +194,12 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-046 Master Data CRUD standard foundation
-- TASK-048 Master Data table and popup design refinement
-- TASK-048.3 Master Data design system documentation
-- TASK-048.4 Master Data table and popup UI implementation
+- TASK-048.5 CRUD modal and action confirmation refinement
+- TASK-048.6 Buttons and toast feedback refinement
+- TASK-048.7 Login visual alignment review
+- TASK-048.8 Shell navigation visual review
+- TASK-048.9 Spreadsheet-style bulk editor planning
+- TASK-048.10 Global typography foundation
 - TASK-049 Platform Super Admin and tenant-aware permissions model
 - TASK-050 User, Role and Permission domain review
 - TASK-051 Permission model foundation by scope/resource/action
@@ -201,7 +209,7 @@ Da fare:
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
-- TASK-048: step UI/design prima del blocco permessi, con preparation, Stitch mockup validation, design system documentation e implementation controllata;
+- TASK-048: iniziativa generale HRflow design system/template UI basata sul catalogo Stitch validato, con Master Data come caso pilota prima del blocco permessi;
 - TASK-049: strategia e modello Super Admin / tenant-aware permissions;
 - TASK-050: review dominio esistente e gap analysis;
 - TASK-051: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
@@ -211,16 +219,22 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
 Nota roadmap TASK-048:
 
-- TASK-048 serve a raffinare il design di tabelle e popup prima di proseguire con ulteriori CRUD e UI.
-- Flusso previsto: mockup con Google Stitch, raccolta screenshot o codice, analisi, definizione standard UI e applicazione controllata.
-- Sequenza prevista: TASK-048.1 preparation, TASK-048.2 Stitch mockup validation, TASK-048.3 design system documentation, TASK-048.4 implementation controllata.
-- TASK-048.1 ha creato `docs/design/DESIGN-SYSTEM.md` come draft preparatorio per Master Data table e pop-up CRUD.
-- TASK-048.2 ha validato un catalogo astratto di UI template Stitch.
-- I template validati sono documentati in `docs/design/DESIGN-SYSTEM.md`.
+- TASK-048 non e piu un task solo Master Data: diventa iniziativa generale per design system e template UI HRflow.
+- Master Data resta la prima applicazione concreta/caso pilota per evitare lavoro doppio sui prossimi CRUD e UI amministrative.
+- TASK-048.1 ha creato `docs/design/DESIGN-SYSTEM.md` come draft preparatorio.
+- TASK-048.2 ha validato il catalogo astratto di UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`.
 - Gli screenshot Stitch locali non sono versionati e sono ignorati via `.gitignore`.
-- Nessuna modifica Angular o backend e stata introdotta in TASK-048.2.
+- TASK-048.4 ha applicato TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 a `/master-data` e al `DataTableComponent` shared senza creare componenti tabellari paralleli.
+- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 login visual alignment, TASK-048.8 shell navigation review, TASK-048.9 bulk editor planning, TASK-048.10 global typography foundation.
+- TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 guidano lista dati, stati tabella e DataTable principale.
+- TEMPLATE-04 e TEMPLATE-05 guidano modali CRUD e conferme azione.
+- TEMPLATE-07 e TEMPLATE-11 guidano toast e pulsanti.
+- TEMPLATE-06 guida solo la review visuale della login esistente, senza redesign non richiesto.
+- TEMPLATE-08 e TEMPLATE-09 restano extra da valutare prima di applicazioni concrete.
+- TEMPLATE-02 resta pattern avanzato futuro per pianificazione bulk editor stile spreadsheet.
+- TASK-048.10 e dedicato alla foundation tipografica globale: analisi font attuale/Metronic, confronto con mockup validati, decisione su font globale (Inter/Manrope o alternativa), preferenza per asset locali e centralizzazione gerarchie tipografiche.
+- Nessuna modifica Angular o backend è prevista in TASK-048.3.
 - `frontend/AGENTS.md` rimane fonte applicativa vigente per le regole frontend; `docs/design/DESIGN-SYSTEM.md` dettaglia lo standard UI quando approvato e aggiornato dai task TASK-048.x.
-
 Nota roadmap TASK-045:
 
 - TASK-045 resta frontend-only ed e completato come primo rilascio read-only.
@@ -322,6 +336,9 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" nella roadmap come step backlog dedicato alla tipografia globale (analisi font corrente/Metronic, confronto con mockup validati, scelta centralizzata e aggiornamento design system quando eseguito), senza modifiche codice in questa fase. |
+| 1.78 | 2026-05-08 | TASK-048.4 completato in roadmap: applicati TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 al pattern lista `/master-data` e al `DataTableComponent` shared; prossimo passo aggiornato a TASK-048.5, build/test frontend OK e nessuna modifica backend. |
+| 1.77 | 2026-05-08 | TASK-048.3 riallinea i sottotask TASK-048 al catalogo template UI validato in TASK-048.2: TASK-048 diventa iniziativa generale HRflow design system/template UI, Master Data resta caso pilota e nessuna modifica Angular/backend è prevista. |
 | 1.76 | 2026-05-08 | TASK-048.2 chiuso come completato in roadmap: validato catalogo astratto di UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`, screenshot locali ignorati via `.gitignore`, nessuna modifica Angular/backend; prossimo passo aggiornato a TASK-048.3. |
 | 1.75 | 2026-05-08 | TASK-048.1 completato come preparation documentale: creato `docs/design/DESIGN-SYSTEM.md`, formalizzate regole iniziali Master Data table/popup e prossimo passo aggiornato a TASK-048.2 Stitch mockup validation. |
 | 1.74 | 2026-05-08 | TASK-047.3 segnato completato come QA/hardening del delete fisico Master Data; roadmap riallineata con TASK-047.3 tra i completati, rimosso dai da fare e prossimo passo aggiornato a TASK-048.1. |
@@ -399,3 +416,4 @@ Metronic è riferimento UI, non template da copiare integralmente.
 | 1.2 | 2026-05-01 | Aggiornato avanzamento dopo TASK-004 Docker Compose PostgreSQL. |
 | 1.1 | 2026-05-01 | Aggiornato avanzamento dopo TASK-001, TASK-002 e TASK-003. |
 | 1.0 | 2026-05-01 | Prima versione roadmap MVP. |
+

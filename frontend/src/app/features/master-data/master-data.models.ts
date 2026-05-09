@@ -8,7 +8,7 @@ import {
 
 export type MasterDataCategoryId = 'global' | 'hrBusiness' | 'governanceSecurity';
 export type MasterDataColumnKind = DataTableColumnType;
-export const DEFAULT_MASTER_DATA_PAGE_SIZE = 25;
+export const DEFAULT_MASTER_DATA_PAGE_SIZE = 20;
 
 export type MasterDataColumn = DataTableColumn<MasterDataRow>;
 export type MasterDataRowAction = DataTableAction<MasterDataRow>;
@@ -175,7 +175,7 @@ const STANDARD_CRUD_ROW_ACTIONS: readonly MasterDataRowAction[] = [
     labelKey: 'masterData.actions.edit'
   },
   {
-    id: 'delete',
+    id: 'deactivate',
     labelKey: 'masterData.actions.delete',
     tone: 'danger'
   }

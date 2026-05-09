@@ -3,6 +3,7 @@ import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { AlertMessageComponent } from '../../shared/feedback/alert-message.component';
@@ -49,10 +50,12 @@ export class MasterDataAdminComponent implements OnDestroy {
     });
 
   protected readonly categories = MASTER_DATA_CATEGORIES;
+  protected readonly pageSizeOptions = [10, 20, 50] as const;
   protected readonly selectedCategoryId = signal<MasterDataCategoryId>(MASTER_DATA_CATEGORIES[0].id);
   protected readonly selectedResourceId = signal(MASTER_DATA_CATEGORIES[0].resources[0].id);
   protected readonly pageData = signal<MasterDataPage<MasterDataRow>>(EMPTY_MASTER_DATA_PAGE);
   protected readonly pageIndex = signal(0);
+  protected readonly pageSize = signal(DEFAULT_MASTER_DATA_PAGE_SIZE);
   protected readonly searchInput = signal('');
   protected readonly appliedSearch = signal('');
   protected readonly loading = signal(false);
@@ -103,6 +106,9 @@ export class MasterDataAdminComponent implements OnDestroy {
   );
   protected readonly rowActions = computed(
     () => (this.selectedResource().rowActions ?? []).map((action) => this.decorateRowAction(action))
+  );
+  protected readonly tableEmptyMessageKey = computed<I18nKey>(
+    () => this.appliedSearch() ? 'dataTable.noResults' : 'dataTable.empty'
   );
 
   constructor() {
@@ -169,7 +175,7 @@ export class MasterDataAdminComponent implements OnDestroy {
       this.openDeleteConfirm('physical', event.row);
     }
 
-    if (event.action.id === 'delete') {
+    if (event.action.id === 'deactivate') {
       this.openDeleteConfirm('deactivate', event.row);
     }
   }
@@ -295,6 +301,25 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.loadSelectedResource();
   }
 
+  protected goToPage(page: number): void {
+    if (this.loading() || page === this.pageIndex()) {
+      return;
+    }
+
+    this.pageIndex.set(page);
+    this.loadSelectedResource();
+  }
+
+  protected updatePageSize(size: number): void {
+    if (this.loading() || size === this.pageSize()) {
+      return;
+    }
+
+    this.pageSize.set(size);
+    this.pageIndex.set(0);
+    this.loadSelectedResource();
+  }
+
   private loadSelectedResource(): void {
     const resource = this.selectedResource();
     const query = this.buildQuery();
@@ -317,7 +342,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   private buildQuery(): MasterDataQuery {
     return {
       page: this.pageIndex(),
-      size: DEFAULT_MASTER_DATA_PAGE_SIZE,
+      size: this.pageSize(),
       ...(this.appliedSearch() ? { search: this.appliedSearch() } : {})
     };
   }
@@ -326,7 +351,7 @@ export class MasterDataAdminComponent implements OnDestroy {
     return {
       ...EMPTY_MASTER_DATA_PAGE,
       page: this.pageIndex(),
-      size: DEFAULT_MASTER_DATA_PAGE_SIZE
+      size: this.pageSize()
     };
   }
 
