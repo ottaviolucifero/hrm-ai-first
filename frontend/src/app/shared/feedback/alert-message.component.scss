@@ -1,3 +1,110 @@
 :host {
   display: block;
 }
+
+.app-toast-feedback {
+  --app-toast-accent: #0055ff;
+  --app-toast-soft: #e1efff;
+  --app-toast-text: #0f172a;
+
+  align-items: flex-start;
+  background: #ffffff;
+  border: 1px solid color-mix(in oklab, var(--app-toast-accent) 20%, #d9e2ef);
+  border-radius: 0.875rem;
+  box-shadow: 0 18px 45px rgb(15 23 42 / 12%);
+  color: var(--app-toast-text);
+  display: flex;
+  gap: 0.875rem;
+  overflow: hidden;
+  padding: 0.875rem 1rem 0.875rem 1.25rem;
+  position: relative;
+}
+
+.app-toast-feedback-accent {
+  background: var(--app-toast-accent);
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 0.25rem;
+}
+
+.app-toast-feedback-icon {
+  align-items: center;
+  background: var(--app-toast-soft);
+  border-radius: 999px;
+  color: var(--app-toast-accent);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+  height: 2rem;
+  justify-content: center;
+  line-height: 1;
+  margin-top: 0.0625rem;
+  width: 2rem;
+}
+
+.app-toast-feedback-icon i {
+  color: currentColor;
+  display: inline-flex;
+  font-size: inherit;
+  line-height: 1;
+}
+
+.app-toast-feedback-content {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.app-toast-feedback-title {
+  color: #111827;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+}
+
+.app-toast-feedback-description {
+  color: #475569;
+  font-size: 0.875rem;
+  line-height: 1.35rem;
+}
+
+.app-toast-feedback-close {
+  align-items: center;
+  border-radius: 999px;
+  color: #64748b;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 1.75rem;
+  justify-content: center;
+  line-height: 1;
+  margin: -0.125rem -0.25rem 0 0;
+  width: 1.75rem;
+}
+
+.app-toast-feedback-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.kt-alert-success.app-toast-feedback {
+  --app-toast-accent: #1e7e34;
+  --app-toast-soft: #e6f4ea;
+}
+
+.kt-alert-warning.app-toast-feedback {
+  --app-toast-accent: #b45d00;
+  --app-toast-soft: #fff4e5;
+}
+
+.kt-alert-destructive.app-toast-feedback {
+  --app-toast-accent: #d32f2f;
+  --app-toast-soft: #fde8e8;
+}
+
+.kt-alert-info.app-toast-feedback {
+  --app-toast-accent: #0055ff;
+  --app-toast-soft: #e1efff;
+}

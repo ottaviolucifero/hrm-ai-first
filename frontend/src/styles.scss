@@ -42,3 +42,85 @@
   background-color: color-mix(in oklab, var(--muted) 45%, transparent);
   color: var(--foreground);
 }
+
+.kt-btn {
+  align-items: center;
+  border-radius: 0.625rem;
+  display: inline-flex;
+  font-weight: 500;
+  gap: 0.5rem;
+  letter-spacing: 0.005em;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.kt-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.kt-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.kt-btn:disabled,
+.kt-btn:disabled:hover {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.kt-btn:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, #0055ff 28%, transparent);
+  outline: none;
+}
+
+.kt-btn i {
+  color: currentColor;
+  display: inline-flex;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.kt-btn-primary {
+  background: #0055ff;
+  border-color: #0055ff;
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgb(0 85 255 / 18%);
+}
+
+.kt-btn-primary:hover:not(:disabled) {
+  background: #0046d6;
+  border-color: #0046d6;
+  color: #ffffff;
+}
+
+.kt-btn-outline {
+  background: #ffffff;
+  border-color: #d9e2ef;
+  color: #0f172a;
+}
+
+.kt-btn-outline:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #b8c5d6;
+  color: #0f172a;
+}
+
+.kt-btn-destructive,
+.kt-btn-primary.master-data-danger-button {
+  background: #d32f2f;
+  border-color: #d32f2f;
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgb(211 47 47 / 18%);
+}
+
+.kt-btn-destructive:hover:not(:disabled),
+.kt-btn-primary.master-data-danger-button:hover:not(:disabled) {
+  background: #b42323;
+  border-color: #b42323;
+  color: #ffffff;
+}

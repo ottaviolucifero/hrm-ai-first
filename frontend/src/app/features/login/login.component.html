@@ -21,8 +21,6 @@
       </div>
 
       <form class="kt-card-content flex flex-col gap-5" [formGroup]="loginForm" (ngSubmit)="submit()">
-        <app-alert-message type="danger" [message]="errorMessage()" />
-
         <app-email-field
           [control]="loginForm.controls.email"
           [submitted]="submitted"

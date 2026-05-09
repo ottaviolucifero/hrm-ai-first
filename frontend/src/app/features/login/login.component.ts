@@ -6,15 +6,14 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageCode } from '../../core/i18n/i18n.models';
 import { I18nService } from '../../core/i18n/i18n.service';
-import { AlertMessageComponent } from '../../shared/feedback/alert-message.component';
 import { EmailFieldComponent } from '../../shared/form-fields/email-field.component';
 import { PasswordFieldComponent } from '../../shared/form-fields/password-field.component';
+import { NotificationService } from '../../shared/feedback/notification.service';
 
 @Component({
   selector: 'app-login',
   imports: [
     ReactiveFormsModule,
-    AlertMessageComponent,
     EmailFieldComponent,
     PasswordFieldComponent
   ],
@@ -25,6 +24,7 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
   protected readonly i18n = inject(I18nService);
 
   protected readonly loginForm = this.formBuilder.group({
@@ -34,7 +34,6 @@ export class LoginComponent {
 
   protected submitted = false;
   protected readonly loading = signal(false);
-  protected readonly errorMessage = signal('');
   protected readonly languageOptions: ReadonlyArray<{ readonly code: LanguageCode; readonly label: string }> = [
     { code: 'it', label: 'Italiano' },
     { code: 'fr', label: 'Français' },
@@ -48,8 +47,6 @@ export class LoginComponent {
 
   protected submit(): void {
     this.submitted = true;
-    this.errorMessage.set('');
-
     const email = this.loginForm.controls.email.value.trim().toLowerCase();
     const password = this.loginForm.controls.password.value;
     this.loginForm.controls.email.setValue(email);
@@ -68,7 +65,11 @@ export class LoginComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => void this.router.navigateByUrl('/'),
-        error: () => this.errorMessage.set(this.i18n.t('login.errorInvalidCredentials'))
+        error: () =>
+          this.notificationService.error(this.i18n.t('login.errorInvalidCredentials'), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          })
       });
   }
 }

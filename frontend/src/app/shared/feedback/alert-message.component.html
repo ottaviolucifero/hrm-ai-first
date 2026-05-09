@@ -1,19 +1,26 @@
 @if (visible) {
   <div
-    class="kt-alert kt-alert-light"
+    class="kt-alert kt-alert-light app-toast-feedback"
     [class.kt-alert-destructive]="type === 'danger'"
     [class.kt-alert-warning]="type === 'warning'"
     [class.kt-alert-success]="type === 'success'"
     [class.kt-alert-info]="type === 'info'"
     role="alert"
   >
-    <div class="kt-alert-content">
-      <div class="kt-alert-description">{{ message }}</div>
+    <span class="app-toast-feedback-accent" aria-hidden="true"></span>
+
+    <span class="app-toast-feedback-icon" aria-hidden="true">
+      <i [ngClass]="iconClass()"></i>
+    </span>
+
+    <div class="kt-alert-content app-toast-feedback-content">
+      <div class="kt-alert-title app-toast-feedback-title">{{ title() }}</div>
+      <div class="kt-alert-description app-toast-feedback-description">{{ message }}</div>
     </div>
 
     @if (dismissible) {
-      <button class="kt-alert-close" type="button" [attr.aria-label]="i18n.t('alert.close')" (click)="dismiss()">
-        <i class="ki-filled ki-cross"></i>
+      <button class="kt-alert-close app-toast-feedback-close" type="button" [attr.aria-label]="i18n.t('alert.close')" (click)="dismiss()">
+        <i class="ki-filled ki-cross" aria-hidden="true"></i>
       </button>
     }
   </div>

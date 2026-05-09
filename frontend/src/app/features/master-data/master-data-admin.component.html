@@ -1,7 +1,5 @@
 <section class="kt-container-fixed py-4 master-data-page" aria-labelledby="master-data-title">
   <div class="master-data-layout">
-    <app-alert-message type="success" [message]="feedbackMessage()" />
-
     <header class="master-data-page-header">
       <div class="master-data-heading">
         <span class="master-data-eyebrow">{{ i18n.t('nav.governance') }}</span>
@@ -11,6 +9,7 @@
       <div class="master-data-page-actions master-data-toolbar-actions" role="group" [attr.aria-label]="i18n.t('masterData.actionsLabel')">
         @if (canCreate()) {
           <button class="kt-btn kt-btn-primary kt-btn-sm master-data-primary-action" type="button" [disabled]="loading() || deleting()" (click)="openCreateForm()">
+            <i class="ki-filled ki-plus" aria-hidden="true"></i>
             {{ i18n.t('masterData.actions.new') }}
           </button>
         }
@@ -94,8 +93,6 @@
             </div>
 
             <div class="kt-card-content master-data-confirm-body">
-              <app-alert-message type="danger" [message]="deleteErrorMessage()" />
-
               <p class="master-data-confirm-message">{{ i18n.t(deleteConfirmMessageKey()) }}</p>
 
               @if (deleteTargetLabel(); as targetLabel) {
@@ -104,10 +101,11 @@
 
               <div class="master-data-form-actions">
                 <button
-                  class="kt-btn kt-btn-primary kt-btn-sm master-data-danger-button"
+                  class="kt-btn kt-btn-destructive kt-btn-sm master-data-danger-button"
                   type="button"
                   [disabled]="deleting()"
                   (click)="confirmDelete()">
+                  <i class="ki-filled ki-trash" aria-hidden="true"></i>
                   {{ i18n.t(deleting() ? deleteProcessingMessageKey() : deleteConfirmActionKey()) }}
                 </button>
                 <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="deleting()" (click)="closeDeleteConfirm()">
@@ -129,7 +127,6 @@
             [fields]="formFields()"
             [value]="formValue()"
             [submitting]="saving()"
-            [errorMessage]="formErrorMessage()"
             (save)="handleFormSave($event)"
             (cancel)="handleFormCancel()"
             (close)="closeForm()" />

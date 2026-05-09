@@ -2,6 +2,10 @@ import { I18nDictionary } from './i18n.models';
 
 export const IT_MESSAGES = {
   'alert.close': 'Chiudi messaggio',
+  'alert.title.danger': 'Errore',
+  'alert.title.info': 'Informazione',
+  'alert.title.success': 'Operazione completata',
+  'alert.title.warning': 'Attenzione',
   'app.brand': 'HRflow',
   'form.email.invalid': 'Formato email non valido.',
   'form.email.required': 'Email obbligatoria.',
@@ -172,6 +176,10 @@ export const I18N_MESSAGES: I18nDictionary<I18nKey> = {
   it: IT_MESSAGES,
   fr: {
     'alert.close': 'Fermer le message',
+    'alert.title.danger': 'Erreur',
+    'alert.title.info': 'Information',
+    'alert.title.success': 'Operation terminee',
+    'alert.title.warning': 'Attention',
     'app.brand': 'HRflow',
     'form.email.invalid': 'Format email non valide.',
     'form.email.required': 'Email obligatoire.',
@@ -337,6 +345,10 @@ export const I18N_MESSAGES: I18nDictionary<I18nKey> = {
   },
   en: {
     'alert.close': 'Close message',
+    'alert.title.danger': 'Error',
+    'alert.title.info': 'Information',
+    'alert.title.success': 'Operation completed',
+    'alert.title.warning': 'Warning',
     'app.brand': 'HRflow',
     'form.email.invalid': 'Invalid email format.',
     'form.email.required': 'Email is required.',
