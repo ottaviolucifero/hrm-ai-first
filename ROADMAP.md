@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.90
+Versione: 1.91
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -105,7 +105,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-048.9 Configure Angular AI skills and project agent integration
+- TASK-048.9 Configure Angular AI skills and project agent integration (governance + repository-local skill versioning)
 
 ---
 
@@ -200,7 +200,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-048.9 Configure Angular AI skills and project agent integration
+- TASK-048.9 Configure Angular AI skills and project agent integration (governance + repository-local skill versioning)
 - TASK-048.10 Shell navigation visual review
 - TASK-048.11 Spreadsheet-style bulk editor planning
 - TASK-048.12 Shared form controls and form patterns foundation
@@ -237,7 +237,8 @@ Nota roadmap TASK-048:
 - TEMPLATE-07 e TEMPLATE-11 guidano toast e pulsanti.
 - TASK-048.6 applica TEMPLATE-07 e TEMPLATE-11 a feedback toast e pulsanti condivisi, senza introdurre nuove librerie UI o modifiche backend/API.
 - TEMPLATE-06 guida solo la review visuale della login esistente, senza redesign non richiesto.
-- TASK-048.9 introduce governance documentale per usare la skill Angular `angular-developer` come supporto complementare a `AGENTS.md`, `frontend/AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` e design system; `angular-new-app` resta esclusa perche il frontend Angular esiste gia.
+- TASK-048.9 introduce governance documentale e integrazione repository-local per usare la skill Angular `angular-developer` come supporto complementare a `AGENTS.md`, `frontend/AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` e design system; `angular-new-app` resta esclusa perche il frontend Angular esiste gia.
+- TASK-048.9 include `.agents/skills/angular-developer` e `skills-lock.json` come asset versionabili del repository per standardizzare il lavoro agentico sul frontend Angular.
 - TEMPLATE-08 e TEMPLATE-09 restano extra da valutare prima di applicazioni concrete.
 - TEMPLATE-02 resta pattern avanzato futuro per pianificazione bulk editor stile spreadsheet.
 - TASK-048.8 e completato come login visual alignment review: consolidato l'allineamento visuale login rispetto al template validato con seconda iterazione piu profonda su layout/card/brand/language selector/CTA e final refinement su password link/footer legale, senza modifiche funzionali.
@@ -346,6 +347,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.91 | 2026-05-09 | TASK-048.9 aggiornato in roadmap con decisione durevole: oltre alla governance documentale include integrazione/versionamento repository-local della skill approvata `angular-developer` tramite `.agents/` e `skills-lock.json`; `angular-new-app` esclusa, nessuna modifica applicativa/backend/API. |
 | 1.90 | 2026-05-09 | Inserito TASK-048.9 "Configure Angular AI skills and project agent integration" nella roadmap: governance documentale per skill Angular `angular-developer`, esclusione di `angular-new-app`, Plan mode e IDE context; rinumerati i successivi TASK-048.x fino a TASK-048.13 e prossimo passo aggiornato, senza modifiche applicative/backend/API. |
 | 1.89 | 2026-05-09 | TASK-048.8 final refinement completato in roadmap: aggiunti link visuale password dimenticata e footer legale i18n alla login, ripulito il selettore lingua, nessuna modifica backend/API/routing. |
 | 1.88 | 2026-05-09 | TASK-048.8 seconda iterazione completata in roadmap: login visual alignment review approfondita rispetto a TEMPLATE-06 con patch visuale piu incisiva su card, brand cluster, language selector, CTA e responsive; nessuna modifica backend/API. |

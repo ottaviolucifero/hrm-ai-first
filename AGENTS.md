@@ -126,6 +126,7 @@ Per ogni task significativo, prima dell'esecuzione va suggerito il modello/agent
 La selezione deve seguire anche `docs/ai/MODEL-SELECTION-GUIDE.md`, che resta la guida centrale.
 
 La governance prompt e l'uso di eventuali skills operative, incluse skills Angular, sono documentati in `docs/ai-prompts/codex-prompt-governance.md` e restano subordinati alla gerarchia di governance del repository.
+Quando previste da decisioni approvate, le skills operative possono essere versionate localmente nel repository (esempio: `.agents/` e `skills-lock.json`).
 
 Le scelte devono distinguere almeno:
 

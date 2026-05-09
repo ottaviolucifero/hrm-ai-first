@@ -23,6 +23,8 @@ Il contesto allegato nel prompt e utile, ma non sostituisce la verifica dello st
 
 Per task frontend Angular, gli agenti devono considerare la skill Angular `angular-developer` quando disponibile.
 
+Quando la skill e presente nel repository, usare prioritariamente la versione locale sotto `.agents/skills/angular-developer` per garantire allineamento operativo tra agenti sullo stesso branch/repo.
+
 La skill puo essere installata o gestita manualmente con:
 
 ```powershell
@@ -41,6 +43,8 @@ La skill `angular-developer` va usata come supporto operativo per:
 - best practice Angular coerenti con il progetto.
 
 Non usare `angular-new-app` nel progetto `hrm-ai-first`: il frontend Angular esiste gia e i task devono evolvere la codebase corrente, non crearne una nuova.
+
+Il file `skills-lock.json` traccia la skill approvata versionata nel repository (sorgente e lock/hash). Gli agenti devono considerarlo come riferimento operativo per la skill locale approvata.
 
 La skill non autorizza:
 

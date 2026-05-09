@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.90
+Versione: 1.91
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -2912,11 +2912,14 @@ Contesto:
 
 - la skill Angular ufficiale `angular-developer` puo essere installata o gestita manualmente tramite `npx skills add https://github.com/angular/skills --skill angular-developer`;
 - la skill `angular-new-app` non deve essere usata in questo progetto, perche il frontend Angular esiste gia;
-- la skill deve supportare gli agenti AI/Codex senza sostituire la governance del repository.
+- la skill deve supportare gli agenti AI/Codex senza sostituire la governance del repository;
+- la skill approvata deve essere integrata anche in forma repository-local e versionata nel repo.
 
 Scope:
 
 - documentare l'uso della skill Angular `angular-developer`;
+- includere integrazione repository-local della skill approvata sotto `.agents/skills/angular-developer`;
+- includere `skills-lock.json` come tracciamento della skill approvata e del relativo lock;
 - chiarire quando deve essere considerata dagli agenti AI/Codex per task Angular;
 - collegarla alle regole frontend esistenti in `frontend/AGENTS.md`;
 - collegarla alla governance prompt Codex in `docs/ai-prompts/codex-prompt-governance.md`;
@@ -2932,6 +2935,8 @@ Acceptance criteria:
 - `ROADMAP.md` coerente con la nuova sequenza TASK-048;
 - governance Codex aggiornata con uso della skill Angular `angular-developer`;
 - `angular-new-app` esclusa esplicitamente dal progetto;
+- `.agents/` e `skills-lock.json` presenti e inclusi nel perimetro TASK-048.9 come asset repository-local della skill approvata;
+- chiaro che `skills-lock.json` traccia la skill approvata corrente;
 - Plan mode documentato per analisi iniziale senza modifiche file;
 - IDE context documentato come fonte da verificare insieme al prompt;
 - collegamento chiaro tra Angular skill, `AGENTS.md`, `frontend/AGENTS.md`, i18n, design system, testing e regole frontend;
@@ -3260,6 +3265,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.91 | 2026-05-09 | TASK-048.9 esteso da sola governance a governance + integrazione repository-local skill Angular approvata: inclusi `.agents/skills/angular-developer` e `skills-lock.json`, esclusa `angular-new-app`, allineati scope/acceptance e riferimenti documentali senza modifiche applicative/backend/API. |
 | 1.90 | 2026-05-09 | Inserito TASK-048.9 "Configure Angular AI skills and project agent integration" per documentare l'uso della skill Angular `angular-developer` come supporto complementare alla governance repository; esclusa `angular-new-app`, documentati Plan mode e IDE context, rinumerati i successivi TASK-048.x fino a TASK-048.13, senza modifiche applicative/backend/API. |
 | 1.89 | 2026-05-09 | TASK-048.8 final refinement: aggiunti link visuale password dimenticata e footer legale i18n alla login, rimosso marker decorativo dal selettore lingua, senza routing/logica recovery/backend. |
 | 1.88 | 2026-05-09 | TASK-048.8 seconda iterazione: login visual alignment review approfondita con layout/card/brand/language selector/CTA piu aderenti a TEMPLATE-06, mantenendo componenti shared email/password e nessuna modifica funzionale/backend. |

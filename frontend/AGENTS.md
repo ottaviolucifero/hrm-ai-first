@@ -26,6 +26,8 @@ The skill is advisory and does not replace root `AGENTS.md`, this `frontend/AGEN
 
 Prompt and skills governance is documented in `docs/ai-prompts/codex-prompt-governance.md`.
 
+When present, prefer the repository-local skill under `.agents/skills/angular-developer` and treat `skills-lock.json` as the lock reference for approved skill usage in this project.
+
 
 
 ---
