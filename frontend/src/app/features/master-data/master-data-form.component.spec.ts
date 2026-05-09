@@ -76,4 +76,24 @@ describe('MasterDataFormComponent', () => {
     const input = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
     expect(input.readOnly).toBe(true);
   });
+
+  it('keeps close action only in the header and operational actions in the footer', () => {
+    component.mode = 'create';
+    component.resourceTitleKey = 'masterData.entities.departments';
+    component.fields = [
+      { key: 'code', labelKey: 'masterData.columns.code', required: true },
+      { key: 'active', labelKey: 'masterData.columns.active', type: 'boolean' }
+    ];
+
+    fixture.detectChanges();
+
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
+    const closeButtons = buttons.filter((button) => button.getAttribute('aria-label') === 'Chiudi');
+    const footer = fixture.nativeElement.querySelector('.master-data-form-actions') as HTMLElement;
+
+    expect(closeButtons).toHaveLength(1);
+    expect(footer?.textContent).toContain('Annulla');
+    expect(footer?.textContent).toContain('Salva');
+    expect(footer?.textContent).not.toContain('Chiudi');
+  });
 });

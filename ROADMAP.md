@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.97
+Versione: 1.98
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -108,7 +108,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-048.12 CRUD modal and form visual refinement
+- TASK-048.13 Header/topbar visual alignment to TEMPLATE-09
 
 ---
 
@@ -203,7 +203,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-048.12 CRUD modal and form visual refinement
 - TASK-048.13 Header/topbar visual alignment to TEMPLATE-09
 - TASK-048.14 Spreadsheet-style bulk editor planning
 - TASK-048.15 Shared form controls and form patterns foundation
@@ -248,7 +247,7 @@ Nota roadmap TASK-048:
 - il refinement finale TASK-048.11 privilegia contrasto, densita e leggibilita enterprise rispetto a glow/effetti aggressivi, inclusi submenu tree e scrollbar integrata.
 - il pass finale di TASK-048.11 chiude anche la parte UX/layout della sidebar: niente scrollbar orizzontale, area menu con scroll verticale interno, search piu compatta e navigazione piu densa in chiave enterprise.
 - l'ultimo polish TASK-048.11 corregge l'aderenza degli active state al bordo destro e ricentra verticalmente la search box nella propria sezione.
-- TASK-048.12 pianifica un refinement dedicato di popup CRUD e form esistenti su TEMPLATE-04, senza shared modal/form framework prematuro e senza backend/API.
+- TASK-048.12 completa il refinement dedicato di popup CRUD e form esistenti su TEMPLATE-04: rimossa la duplicazione di `Chiudi` nel footer CRUD, footer azioni riallineato a destra, spacing piu coerenti e checkbox `Attivo` migliorata localmente senza shared framework prematuro o backend/API.
 - TASK-048.13 pianifica il riallineamento visuale dell'header/topbar esistente a TEMPLATE-09, senza modificare sidebar o backend/API.
 - TEMPLATE-09 resta non applicato in TASK-048.10 e viene demandato al task dedicato TASK-048.13.
 - TEMPLATE-02 resta pattern avanzato futuro per pianificazione bulk editor stile spreadsheet.
@@ -358,6 +357,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.98 | 2026-05-09 | TASK-048.12 completato in roadmap: raffinata la CRUD modal/form Master Data su TEMPLATE-04 con `Chiudi` rimosso dal footer, action bar allineata a destra, checkbox locale migliorata e build/test frontend OK; prossimo passo aggiornato a TASK-048.13. |
 | 1.97 | 2026-05-09 | Backlog TASK-048 riordinato dopo TASK-048.11: inseriti TASK-048.12 CRUD modal/form visual refinement e TASK-048.13 Header/topbar visual alignment to TEMPLATE-09; bulk editor, shared form controls e typography slittati a TASK-048.14, TASK-048.15 e TASK-048.16; prossimo passo aggiornato a TASK-048.12. |
 | 1.96 | 2026-05-09 | TASK-048.11 alignment polish in roadmap: active state parent/submenu non aderenti al bordo destro e search box ricentrata verticalmente, con build/test frontend OK e prossimo passo invariato su TASK-048.12. |
 | 1.95 | 2026-05-09 | TASK-048.11 refinement finale in roadmap su densita e scrolling sidebar: eliminato overflow orizzontale, resa scrollabile internamente l'area menu, compattati header/search/item e confermato il prossimo passo su TASK-048.12. |
