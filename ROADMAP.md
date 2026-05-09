@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.82
+Versione: 1.89
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -99,12 +99,13 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-048.2 Validated UI template catalog from Stitch
 - TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
 - TASK-048.4 Data list and Generic DataTable refinement
+- TASK-048.5 CRUD modal and action confirmation refinement
 - TASK-048.6 Buttons and toast feedback refinement
 - TASK-048.7 Shared list buttons pattern foundation
 
 ### Prossimo passo
 
-- TASK-048.5 CRUD modal and action confirmation refinement
+- TASK-048.9 Shell navigation visual review
 
 ---
 
@@ -170,7 +171,9 @@ Completato:
 - TASK-048 HRflow design system and validated UI templates
 - TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
 - TASK-048.4 completed: Data list page and shared Generic DataTable refinement applied to `/master-data` with TEMPLATE-01, TEMPLATE-03 and TEMPLATE-10, i18n `it/fr/en`, build/test frontend validated and no backend changes.
+- TASK-048.5 completed: CRUD modal and confirmation dialog footers refined on `/master-data` with a shared modal footer pattern, coherent action ordering, compact TEMPLATE-04 alignment and removal of duplicated `Annulla`/`Chiudi` semantics in read-only footer.
 - TASK-048.6 completed: buttons and toast feedback refinement applied with TEMPLATE-07 and TEMPLATE-11, reusing `AlertMessageComponent`, Metronic/Keenicons, global button styles and i18n `it/fr/en`; build/test frontend validated and no backend/API changes.
+- TASK-048.8 completed: login visual alignment review applied with TEMPLATE-06, refining hierarchy/layout/states on `/login` with card, brand, language selector, CTA, responsive behavior, forgot-password visual link and legal footer; i18n consistent and no backend/API changes.
 
 Nota:
 
@@ -197,10 +200,10 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-048.5 CRUD modal and action confirmation refinement
-- TASK-048.8 Shell navigation visual review
-- TASK-048.9 Spreadsheet-style bulk editor planning
-- TASK-048.10 Global typography foundation
+- TASK-048.9 Shell navigation visual review
+- TASK-048.10 Spreadsheet-style bulk editor planning
+- TASK-048.11 Shared form controls and form patterns foundation
+- TASK-048.12 Global typography foundation
 - TASK-049 Platform Super Admin and tenant-aware permissions model
 - TASK-050 User, Role and Permission domain review
 - TASK-051 Permission model foundation by scope/resource/action
@@ -226,7 +229,8 @@ Nota roadmap TASK-048:
 - TASK-048.2 ha validato il catalogo astratto di UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`.
 - Gli screenshot Stitch locali non sono versionati e sono ignorati via `.gitignore`.
 - TASK-048.4 ha applicato TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 a `/master-data` e al `DataTableComponent` shared senza creare componenti tabellari paralleli.
-- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 shared list button foundation, TASK-048.8 shell navigation review, TASK-048.9 bulk editor planning, TASK-048.10 global typography foundation.
+- TASK-048.5 completa il pattern modal/dialog su `/master-data` con footer standard condiviso, ordine azioni coerente, spacing allineato al mockup HTML validato e rimozione del doppio `Annulla`/`Chiudi` nel read-only footer.
+- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 shared list button foundation, TASK-048.8 login visual alignment review, TASK-048.9 shell navigation review, TASK-048.10 bulk editor planning, TASK-048.11 shared form controls foundation, TASK-048.12 global typography foundation.
 - TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 guidano lista dati, stati tabella e DataTable principale.
 - TEMPLATE-04 e TEMPLATE-05 guidano modali CRUD e conferme azione.
 - TEMPLATE-07 e TEMPLATE-11 guidano toast e pulsanti.
@@ -234,7 +238,9 @@ Nota roadmap TASK-048:
 - TEMPLATE-06 guida solo la review visuale della login esistente, senza redesign non richiesto.
 - TEMPLATE-08 e TEMPLATE-09 restano extra da valutare prima di applicazioni concrete.
 - TEMPLATE-02 resta pattern avanzato futuro per pianificazione bulk editor stile spreadsheet.
-- TASK-048.10 e dedicato alla foundation tipografica globale: analisi font attuale/Metronic, confronto con mockup validati, decisione su font globale (Inter/Manrope o alternativa), preferenza per asset locali e centralizzazione gerarchie tipografiche.
+- TASK-048.8 e completato come login visual alignment review: consolidato l'allineamento visuale login rispetto al template validato con seconda iterazione piu profonda su layout/card/brand/language selector/CTA e final refinement su password link/footer legale, senza modifiche funzionali.
+- TASK-048.11 e dedicato alla foundation dei form controls condivisi: censimento input/textarea/select/checkbox/radio/switch/date/number/search e pattern validazione/help text, con possibile `app-checkbox` come primo controllo condiviso.
+- TASK-048.12 e dedicato alla foundation tipografica globale: analisi font attuale/Metronic, confronto con mockup validati, decisione su font globale (Inter/Manrope o alternativa), preferenza per asset locali e centralizzazione gerarchie tipografiche.
 - Nessuna modifica Angular o backend è prevista in TASK-048.3.
 - `frontend/AGENTS.md` rimane fonte applicativa vigente per le regole frontend; `docs/design/DESIGN-SYSTEM.md` dettaglia lo standard UI quando approvato e aggiornato dai task TASK-048.x.
 Nota roadmap TASK-045:
@@ -338,10 +344,17 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.89 | 2026-05-09 | TASK-048.8 final refinement completato in roadmap: aggiunti link visuale password dimenticata e footer legale i18n alla login, ripulito il selettore lingua, nessuna modifica backend/API/routing. |
+| 1.88 | 2026-05-09 | TASK-048.8 seconda iterazione completata in roadmap: login visual alignment review approfondita rispetto a TEMPLATE-06 con patch visuale piu incisiva su card, brand cluster, language selector, CTA e responsive; nessuna modifica backend/API. |
+| 1.87 | 2026-05-09 | TASK-048.8 completato in roadmap: login visual alignment review su TEMPLATE-06 con patch visuale minima su `/login`, coerenza i18n e nessuna modifica backend/API; prossimo passo aggiornato a TASK-048.9. |
+| 1.86 | 2026-05-09 | Rinumerati i subtask TASK-048.x: inserito TASK-048.8 "Login visual alignment review", slittati i successivi (`048.9` shell navigation, `048.10` bulk editor planning, `048.11` shared form controls, `048.12` global typography) e riallineati prossimi passi/riferimenti interni. |
+| 1.85 | 2026-05-09 | Aggiunto TASK-048.10 "Shared form controls and form patterns foundation" alla roadmap come TODO e rinumerata la typography foundation a TASK-048.11; aggiornato backlog TASK-048 senza modifiche codice/frontend/backend. |
+| 1.84 | 2026-05-09 | TASK-048.5 follow-up completato: riallineati CRUD modal e confirmation dialog footer al mockup HTML validato con modal compatta, spacing/footer actions coerenti e cancel outline; build/test frontend rieseguiti, nessuna modifica backend/API. |
+| 1.83 | 2026-05-09 | TASK-048.5 completato: standardizzati footer e action ordering di CRUD modal e confirmation dialog su `/master-data` con `app-button`, `kt-modal-footer` e regola read-only `Chiudi` unico nel footer; build/test frontend OK, nessuna modifica backend/API. |
 | 1.82 | 2026-05-09 | TASK-048.7 esteso con wrapper Angular shared `app-button` sopra il design system `kt-btn`, applicato a `/master-data`, `master-data-form` e parti sicure di `DataTableComponent`; build/test frontend rieseguiti, nessuna modifica backend/API. |
 | 1.81 | 2026-05-09 | TASK-048.7 completato: introdotta foundation condivisa pulsanti per pagine lista su `/master-data` e `DataTableComponent` con varianti `kt-btn-secondary`, `kt-btn-ghost`, helper icona/list-action; mantenuto `TEMPLATE-11`, nessuna modifica backend/API. |
 | 1.80 | 2026-05-09 | TASK-048.6 completato in roadmap: applicati TEMPLATE-07 e TEMPLATE-11 a toast e pulsanti, introdotto pattern shared `NotificationService` + `NotificationHostComponent` con `AlertMessageComponent`, Metronic/Keenicons e i18n `it/fr/en`; build test frontend OK, nessuna modifica backend/API. |
-| 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" nella roadmap come step backlog dedicato alla tipografia globale (analisi font corrente/Metronic, confronto con mockup validati, scelta centralizzata e aggiornamento design system quando eseguito), senza modifiche codice in questa fase. |
+| 1.79 | 2026-05-09 | Introdotta la "Global typography foundation" nella roadmap come step backlog dedicato alla tipografia globale, successivamente rinumerata a TASK-048.12; senza modifiche codice in questa fase. |
 | 1.78 | 2026-05-08 | TASK-048.4 completato in roadmap: applicati TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 al pattern lista `/master-data` e al `DataTableComponent` shared; prossimo passo aggiornato a TASK-048.5, build/test frontend OK e nessuna modifica backend. |
 | 1.77 | 2026-05-08 | TASK-048.3 riallinea i sottotask TASK-048 al catalogo template UI validato in TASK-048.2: TASK-048 diventa iniziativa generale HRflow design system/template UI, Master Data resta caso pilota e nessuna modifica Angular/backend è prevista. |
 | 1.76 | 2026-05-08 | TASK-048.2 chiuso come completato in roadmap: validato catalogo astratto di UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`, screenshot locali ignorati via `.gitignore`, nessuna modifica Angular/backend; prossimo passo aggiornato a TASK-048.3. |

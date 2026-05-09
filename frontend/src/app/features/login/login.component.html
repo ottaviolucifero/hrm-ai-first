@@ -1,48 +1,71 @@
 <main class="login-page">
-  <section class="login-panel">
-    <div class="login-logo">
-      <img src="assets/logos/hrm-logo.png" [alt]="i18n.t('login.logoAlt')" />
+  <div class="login-shell">
+    <div class="login-language">
+      <select
+        class="login-language-selector app-select app-select--compact"
+        [attr.aria-label]="i18n.t('login.languageSelector')"
+        [value]="i18n.language()"
+        (change)="updateLanguage($event)"
+      >
+        @for (language of languageOptions; track language.code) {
+          <option [value]="language.code" [selected]="language.code === i18n.language()">{{ language.label }}</option>
+        }
+      </select>
     </div>
 
-    <div class="kt-card">
-      <div class="login-card-header kt-card-header">
-        <span aria-hidden="true"></span>
-        <h1 class="kt-card-title text-xl">{{ i18n.t('login.title') }}</h1>
-        <select
-          class="login-language-selector app-select app-select--compact app-select--ghost"
-          [attr.aria-label]="i18n.t('login.languageSelector')"
-          [value]="i18n.language()"
-          (change)="updateLanguage($event)"
-        >
-          @for (language of languageOptions; track language.code) {
-            <option [value]="language.code" [selected]="language.code === i18n.language()">{{ language.label }}</option>
-          }
-        </select>
+    <section class="login-panel" [attr.aria-labelledby]="'loginTitle'">
+      <header class="login-brand">
+        <img src="assets/logos/hrm-logo.png" [alt]="i18n.t('login.logoAlt')" />
+        <p class="login-tagline">{{ i18n.t('login.tagline') }}</p>
+      </header>
+
+      <div class="kt-card login-card">
+        <div class="login-card-body">
+          <div class="login-card-header">
+            <h1 id="loginTitle" class="kt-card-title text-xl">{{ i18n.t('login.title') }}</h1>
+            <p class="login-subtitle">{{ i18n.t('login.subtitle') }}</p>
+          </div>
+
+          <form class="kt-card-content login-form" [formGroup]="loginForm" (ngSubmit)="submit()">
+            <app-email-field
+              [control]="loginForm.controls.email"
+              [submitted]="submitted"
+              [label]="i18n.t('login.emailLabel')"
+              [placeholder]="i18n.t('login.emailPlaceholder')"
+            />
+
+            <div class="login-password-group">
+              <app-password-field
+                [control]="loginForm.controls.password"
+                [submitted]="submitted"
+                [label]="i18n.t('login.passwordLabel')"
+                [placeholder]="i18n.t('login.passwordPlaceholder')"
+              />
+
+              <a class="login-forgot-password" href="#" aria-disabled="true" (click)="$event.preventDefault()">
+                {{ i18n.t('login.forgotPassword') }}
+              </a>
+            </div>
+
+            <button class="kt-btn kt-btn-primary w-full login-submit-button" type="submit" [disabled]="loading()" [attr.aria-busy]="loading()">
+              @if (loading()) {
+                <span>{{ i18n.t('login.submitting') }}</span>
+              } @else {
+                <span>{{ i18n.t('login.submit') }}</span>
+              }
+            </button>
+          </form>
+        </div>
       </div>
 
-      <form class="kt-card-content flex flex-col gap-5" [formGroup]="loginForm" (ngSubmit)="submit()">
-        <app-email-field
-          [control]="loginForm.controls.email"
-          [submitted]="submitted"
-          [label]="i18n.t('login.emailLabel')"
-          [placeholder]="i18n.t('login.emailPlaceholder')"
-        />
-
-        <app-password-field
-          [control]="loginForm.controls.password"
-          [submitted]="submitted"
-          [label]="i18n.t('login.passwordLabel')"
-          [placeholder]="i18n.t('login.passwordPlaceholder')"
-        />
-
-        <button class="kt-btn kt-btn-primary w-full" type="submit" [disabled]="loading()">
-          @if (loading()) {
-            <span>{{ i18n.t('login.submitting') }}</span>
-          } @else {
-            <span>{{ i18n.t('login.submit') }}</span>
-          }
-        </button>
-      </form>
-    </div>
-  </section>
+      <footer class="login-footer" aria-label="Login legal links">
+        <nav class="login-footer-links" aria-label="Legal">
+          <a href="#" (click)="$event.preventDefault()">{{ i18n.t('login.footer.privacy') }}</a>
+          <a href="#" (click)="$event.preventDefault()">{{ i18n.t('login.footer.terms') }}</a>
+          <a href="#" (click)="$event.preventDefault()">{{ i18n.t('login.footer.security') }}</a>
+        </nav>
+        <p>{{ i18n.t('login.footer.copyright') }}</p>
+      </footer>
+    </section>
+  </div>
 </main>
