@@ -1,0 +1,14 @@
+<div class="app-notification-host" role="status" aria-live="polite" aria-atomic="true">
+  <div class="app-notification-host-list">
+    @for (notification of notifications(); track notification.id) {
+      <app-alert-message
+        [type]="notification.type"
+        [titleKey]="notification.titleKey ?? null"
+        [message]="notification.message"
+        [autoHideMs]="notification.autoHideMs"
+        [dismissible]="notification.dismissible"
+        (dismissedEvent)="dismiss(notification.id)"
+      />
+    }
+  </div>
+</div>

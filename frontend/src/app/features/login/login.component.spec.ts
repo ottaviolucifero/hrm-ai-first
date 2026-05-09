@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { throwError } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { NotificationService } from '../../shared/feedback/notification.service';
 import { LoginComponent } from './login.component';
 
 describe('LoginComponent', () => {
@@ -20,6 +21,9 @@ describe('LoginComponent', () => {
 
     const fixture = await createLoginFixture(authService);
     fixture.detectChanges();
+
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
 
     const component = fixture.componentInstance as unknown as {
       loginForm: {
@@ -39,7 +43,7 @@ describe('LoginComponent', () => {
 
     const button = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
     expect(button.disabled).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain('Email o password non corretti.');
+    expect(errorSpy).toHaveBeenCalledWith('Email o password non corretti.', expect.objectContaining({ titleKey: 'alert.title.danger' }));
   });
 
   it('syncs the language selector with the current fr language', async () => {

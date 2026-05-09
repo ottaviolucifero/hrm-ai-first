@@ -161,3 +161,34 @@ Nota operativa:
 - Backend test eseguiti/non eseguiti: eseguiti (`mvnw.cmd test`), esito verde (100 test, 0 failure, 0 errori)
 - QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
 - Limiti noti: la lista continua a mostrare anche record inattivi perche le API attuali non filtrano `active=true`; filtro `Attivi` / `Inattivi`, azione `Riattiva` e gestione permessi runtime RBAC restano fuori scope in TASK-046.4
+
+### TASK-048.6 - Buttons and toast feedback refinement
+
+- Data: 2026-05-09
+- Branch: `task-048-4-data-list-datatable-refinement`
+- Task: TASK-048.6 - Buttons and toast feedback refinement
+- Agente/Modello usato: GPT-5 Codex
+- Area verificata: pulsanti globali `kt-btn`, feedback toast `AlertMessageComponent`, i18n `it/fr/en`, integrazione Master Data, riuso Metronic/Keenicons, assenza modifiche backend/API
+- Template applicati: TEMPLATE-07 Toast notifications; TEMPLATE-11 Buttons
+- Comandi eseguiti: `cd frontend && npm.cmd run build`; `cd frontend && npm.cmd test`
+- Esito build frontend: OK
+- Esito test frontend: OK, 12 file di test passed, 60 test passed
+- Regressioni trovate: nessuna regressione automatica rilevata
+- Fix richiesti: nessuno in questo passaggio
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Limiti/note: validazione visuale manuale consigliata su `/master-data` per confermare resa finale di toast, pulsanti e responsive; nessuna nuova libreria UI introdotta
+- Stato finale: PASS
+
+### TASK-048.6 - Buttons and toast feedback refinement (shared toast pattern fix)
+
+- Data: 2026-05-09
+- Branch: `task-048-4-data-list-datatable-refinement`
+- Task: TASK-048.6 - Buttons and toast feedback refinement
+- Agente/Modello usato: Codex
+- Area verificata: `NotificationService`, `NotificationHostComponent`, integrazione login/master-data con toast via `NotificationService`, coerenza `TEMPLATE-07` e `TEMPLATE-11`
+- Comandi eseguiti: `cd frontend && npm.cmd run build`
+- Esito build frontend: OK
+- Regressioni trovate: nessuna dopo correzione `NotificationHostComponent` (`@for track` e type binding `titleKey`);
+- Fix richiesti: nessuno dopo la correzione applicata nel prompt corrente.
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Stato finale: PASS

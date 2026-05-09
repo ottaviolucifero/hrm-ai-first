@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.79
-Ultimo aggiornamento: 2026-05-08
+Versione: 1.80
+Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
 ---
@@ -99,6 +99,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-048.2 Validated UI template catalog from Stitch
 - TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
 - TASK-048.4 Data list and Generic DataTable refinement
+- TASK-048.6 Buttons and toast feedback refinement
 
 ### Prossimo passo
 
@@ -168,6 +169,7 @@ Completato:
 - TASK-048 HRflow design system and validated UI templates
 - TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
 - TASK-048.4 completed: Data list page and shared Generic DataTable refinement applied to `/master-data` with TEMPLATE-01, TEMPLATE-03 and TEMPLATE-10, i18n `it/fr/en`, build/test frontend validated and no backend changes.
+- TASK-048.6 completed: buttons and toast feedback refinement applied with TEMPLATE-07 and TEMPLATE-11, reusing `AlertMessageComponent`, Metronic/Keenicons, global button styles and i18n `it/fr/en`; build/test frontend validated and no backend/API changes.
 
 Nota:
 
@@ -195,7 +197,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 Da fare:
 
 - TASK-048.5 CRUD modal and action confirmation refinement
-- TASK-048.6 Buttons and toast feedback refinement
 - TASK-048.7 Login visual alignment review
 - TASK-048.8 Shell navigation visual review
 - TASK-048.9 Spreadsheet-style bulk editor planning
@@ -229,6 +230,7 @@ Nota roadmap TASK-048:
 - TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 guidano lista dati, stati tabella e DataTable principale.
 - TEMPLATE-04 e TEMPLATE-05 guidano modali CRUD e conferme azione.
 - TEMPLATE-07 e TEMPLATE-11 guidano toast e pulsanti.
+- TASK-048.6 applica TEMPLATE-07 e TEMPLATE-11 a feedback toast e pulsanti condivisi, senza introdurre nuove librerie UI o modifiche backend/API.
 - TEMPLATE-06 guida solo la review visuale della login esistente, senza redesign non richiesto.
 - TEMPLATE-08 e TEMPLATE-09 restano extra da valutare prima di applicazioni concrete.
 - TEMPLATE-02 resta pattern avanzato futuro per pianificazione bulk editor stile spreadsheet.
@@ -336,6 +338,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.80 | 2026-05-09 | TASK-048.6 completato in roadmap: applicati TEMPLATE-07 e TEMPLATE-11 a toast e pulsanti, introdotto pattern shared `NotificationService` + `NotificationHostComponent` con `AlertMessageComponent`, Metronic/Keenicons e i18n `it/fr/en`; build test frontend OK, nessuna modifica backend/API. |
 | 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" nella roadmap come step backlog dedicato alla tipografia globale (analisi font corrente/Metronic, confronto con mockup validati, scelta centralizzata e aggiornamento design system quando eseguito), senza modifiche codice in questa fase. |
 | 1.78 | 2026-05-08 | TASK-048.4 completato in roadmap: applicati TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 al pattern lista `/master-data` e al `DataTableComponent` shared; prossimo passo aggiornato a TASK-048.5, build/test frontend OK e nessuna modifica backend. |
 | 1.77 | 2026-05-08 | TASK-048.3 riallinea i sottotask TASK-048 al catalogo template UI validato in TASK-048.2: TASK-048 diventa iniziativa generale HRflow design system/template UI, Master Data resta caso pilota e nessuna modifica Angular/backend è prevista. |

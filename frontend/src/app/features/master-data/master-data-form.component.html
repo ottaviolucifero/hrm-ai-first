@@ -9,8 +9,6 @@
   </div>
 
   <form class="kt-card-content master-data-form-body" [formGroup]="form" (ngSubmit)="submit()">
-    <app-alert-message type="danger" [message]="errorMessage" />
-
     @for (field of normalizedFields; track field.key) {
       <label class="master-data-form-field">
         <span class="master-data-form-label">
@@ -35,6 +33,7 @@
     <div class="master-data-form-actions">
       @if (mode !== 'view') {
         <button class="kt-btn kt-btn-primary kt-btn-sm" type="submit" [disabled]="submitting">
+          <i class="ki-filled ki-check" aria-hidden="true"></i>
           {{ i18n.t('masterData.form.save') }}
         </button>
       }

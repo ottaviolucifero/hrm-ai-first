@@ -5,6 +5,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { MasterDataAdminComponent } from './master-data-admin.component';
 import { MasterDataPage, MasterDataRow } from './master-data.models';
 import { MasterDataService } from './master-data.service';
+import { NotificationService } from '../../shared/feedback/notification.service';
 
 describe('MasterDataAdminComponent', () => {
   afterEach(() => {
@@ -369,6 +370,8 @@ describe('MasterDataAdminComponent', () => {
     });
 
     const fixture = await createFixture(masterDataService);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
     const component = fixture.componentInstance as MasterDataAdminComponent & {
       handleFormSave: (event: { mode: 'create'; value: Record<string, unknown> }) => void;
       pageIndex: { set: (page: number) => void };
@@ -401,7 +404,10 @@ describe('MasterDataAdminComponent', () => {
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
       { page: 0, size: 20 }
     );
-    expect(fixture.nativeElement.textContent).toContain('Elemento creato con successo.');
+    expect(successSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Elemento creato con successo.'),
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
   });
 
   it('keeps the form open and shows a readable error when save fails', async () => {
@@ -423,6 +429,8 @@ describe('MasterDataAdminComponent', () => {
     });
 
     const fixture = await createFixture(masterDataService);
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
     const component = fixture.componentInstance as MasterDataAdminComponent & {
       openCreateForm: () => void;
       handleFormSave: (event: { mode: 'create'; value: Record<string, unknown> }) => void;
@@ -445,7 +453,10 @@ describe('MasterDataAdminComponent', () => {
     fixture.detectChanges();
 
     expect(component.isFormOpen()).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('Department code already exists for tenant: HR');
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Department code already exists for tenant: HR',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
   });
 
   it('updates an existing row and preserves the row tenant id', async () => {
@@ -610,6 +621,8 @@ describe('MasterDataAdminComponent', () => {
     });
 
     const fixture = await createFixture(masterDataService);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
     const component = fixture.componentInstance as MasterDataAdminComponent & {
       handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
       confirmDelete: () => void;
@@ -641,7 +654,10 @@ describe('MasterDataAdminComponent', () => {
       { page: 0, size: 20 }
     );
     expect(component.isDeleteConfirmOpen()).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain('Record eliminato correttamente.');
+    expect(successSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Record eliminato correttamente.'),
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
   });
 
   it('moves to previous page when deleting the last row on a later page', async () => {
@@ -777,6 +793,8 @@ describe('MasterDataAdminComponent', () => {
     });
 
     const fixture = await createFixture(masterDataService);
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
     const component = fixture.componentInstance as MasterDataAdminComponent & {
       handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
       confirmDelete: () => void;
@@ -797,7 +815,10 @@ describe('MasterDataAdminComponent', () => {
     fixture.detectChanges();
 
     expect(component.isDeleteConfirmOpen()).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('Il record non puo essere eliminato perche e collegato ad altri dati.');
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Il record non puo essere eliminato perche e collegato ad altri dati.',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
   });
 
   it('deactivates a candidate row, keeps page state and reloads the list', async () => {
@@ -837,6 +858,8 @@ describe('MasterDataAdminComponent', () => {
     });
 
     const fixture = await createFixture(masterDataService);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
     const component = fixture.componentInstance as MasterDataAdminComponent & {
       handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
       confirmDelete: () => void;
@@ -873,7 +896,10 @@ describe('MasterDataAdminComponent', () => {
       { page: 0, size: 20 }
     );
     expect(component.isDeleteConfirmOpen()).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain('Record disattivato correttamente.');
+    expect(successSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Record disattivato correttamente.'),
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
     expect(fixture.nativeElement.textContent).toContain('Human Resources');
   });
 
@@ -901,6 +927,8 @@ describe('MasterDataAdminComponent', () => {
     });
 
     const fixture = await createFixture(masterDataService);
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
     const component = fixture.componentInstance as MasterDataAdminComponent & {
       handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
       confirmDelete: () => void;
@@ -929,7 +957,10 @@ describe('MasterDataAdminComponent', () => {
     fixture.detectChanges();
 
     expect(component.isDeleteConfirmOpen()).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('Non sei autorizzato a disattivare questo record.');
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Non sei autorizzato a disattivare questo record.',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
   });
 
   it('releases the active subscription on destroy', async () => {

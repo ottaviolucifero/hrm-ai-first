@@ -1,7 +1,7 @@
 # HRM AI-first Design System
 
-Versione: 0.2
-Ultimo aggiornamento: 2026-05-08
+Versione: 0.3
+Ultimo aggiornamento: 2026-05-09
 Stato: Draft preparatorio
 
 ---
@@ -137,12 +137,16 @@ Le azioni devono rendere evidente impatto, priorita e rischio.
 Regole:
 
 - distinguere primary, secondary, outline/ghost e destructive;
+- primary: una sola azione dominante per area operativa, preferibilmente associata a creazione/salvataggio o conferma positiva;
+- outline/secondary: azioni reversibili o di supporto, come annullamento, chiusura, reset o navigazione;
+- destructive: azioni rischiose o irreversibili, con colore e icona coerenti con il rischio;
 - usare azioni destructive solo per operazioni irreversibili o rischiose;
 - non usare due bottoni con stessa funzione nella stessa action bar;
 - disabilitare azioni durante operazioni in corso quando un doppio submit sarebbe rischioso;
 - usare label, tooltip o `aria-label` via i18n;
 - preferire pattern coerenti tra toolbar, row actions e modali;
 - valutare icone solo se migliorano scansione e restano accessibili.
+- non introdurre nuove librerie icone: usare icone disponibili nel bundle Keenicons/Metronic gia caricato.
 
 ---
 
@@ -206,6 +210,10 @@ Regole:
 - empty: messaggio neutro, senza suggerire errore;
 - error: tono destructive e messaggio comprensibile;
 - success: feedback breve e non invasivo;
+- toast/alert: superficie chiara, bordo e barra/accento semantico, icona visibile, titolo breve e descrizione leggibile;
+- varianti toast standard: success verde, error rosso, warning arancione, info blu;
+- pattern condiviso consigliato: `NotificationService` + `NotificationHostComponent` + `AlertMessageComponent` per renderizzare feedback toast centralizzati;
+- toast dismissible solo quando la chiusura manuale migliora l'esperienza e senza perdere informazioni critiche;
 - stati HTTP o API devono apparire appena disponibili;
 - con Angular signals o OnPush, verificare che lo stato si aggiorni immediatamente quando si modifica codice UI;
 - non usare solo colore per comunicare stato.
@@ -370,8 +378,8 @@ I template Stitch non sono codice da copiare direttamente, ma riferimenti visual
 | TEMPLATE-04 | CRUD modal form | Create, edit, view read-only | Approvato come riferimento |
 | TEMPLATE-05 | Action confirmation dialogs | Conferme normali, warning, destructive, irreversibili | Approvato come riferimento |
 | TEMPLATE-06 | Login page | Login, branding, lingua, accesso | Approvato come riferimento |
-| TEMPLATE-07 | Toast notifications | Success, error, warning, info | Approvato come riferimento |
+| TEMPLATE-07 | Toast notifications | Success, error, warning, info | Applicato in TASK-048.6 come riferimento feedback toast |
 | TEMPLATE-08 | Sidebar | Navigazione laterale | Extra, da valutare prima di applicare |
 | TEMPLATE-09 | Header / topbar | Barra superiore, ricerca, profilo utente | Extra, da valutare prima di applicare |
 | TEMPLATE-10 | Generic DataTable | Tabella gestionale standard | Approvato come tabella principale |
-| TEMPLATE-11 | Buttons | Stili pulsanti primari, secondari, outline, destructive | Approvato come riferimento |
+| TEMPLATE-11 | Buttons | Stili pulsanti primari, secondari, outline, destructive | Applicato in TASK-048.6 come riferimento pulsanti |

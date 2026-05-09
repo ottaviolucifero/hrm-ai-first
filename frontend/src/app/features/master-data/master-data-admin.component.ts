@@ -6,8 +6,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
-import { AlertMessageComponent } from '../../shared/feedback/alert-message.component';
 import { MasterDataFormComponent, MasterDataFormSubmitEvent } from './master-data-form.component';
+import { NotificationService } from '../../shared/feedback/notification.service';
 import {
   DEFAULT_MASTER_DATA_PAGE_SIZE,
   EMPTY_MASTER_DATA_PAGE,
@@ -28,13 +28,14 @@ import { MasterDataService } from './master-data.service';
 
 @Component({
   selector: 'app-master-data-admin',
-  imports: [DataTableComponent, MasterDataFormComponent, AlertMessageComponent],
+  imports: [DataTableComponent, MasterDataFormComponent],
   templateUrl: './master-data-admin.component.html',
   styleUrl: './master-data-admin.component.scss'
 })
 export class MasterDataAdminComponent implements OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly masterDataService = inject(MasterDataService);
+  private readonly notificationService = inject(NotificationService);
   protected readonly i18n = inject(I18nService);
 
   private loadSubscription?: Subscription;
@@ -64,9 +65,6 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly lastFormSubmission = signal<MasterDataFormSubmitEvent | null>(null);
   protected readonly formMode = signal<MasterDataFormMode | null>(null);
   protected readonly formValue = signal<MasterDataRow | null>(null);
-  protected readonly formErrorMessage = signal('');
-  protected readonly deleteErrorMessage = signal('');
-  protected readonly feedbackMessage = signal('');
   protected readonly saving = signal(false);
   protected readonly deleting = signal(false);
   protected readonly pendingDeleteRow = signal<MasterDataRow | null>(null);
@@ -152,7 +150,6 @@ export class MasterDataAdminComponent implements OnDestroy {
   }
 
   protected refresh(): void {
-    this.feedbackMessage.set('');
     this.loadSelectedResource();
   }
 
@@ -187,12 +184,13 @@ export class MasterDataAdminComponent implements OnDestroy {
     const recordId = typeof this.formValue()?.['id'] === 'string' ? this.formValue()?.['id'] as string : null;
 
     if (event.mode === 'edit' && !recordId) {
-      this.formErrorMessage.set(this.i18n.t('masterData.form.error.generic'));
+      this.notificationService.error(this.i18n.t('masterData.form.error.generic'), {
+        titleKey: 'alert.title.danger',
+        dismissible: true
+      });
       return;
     }
 
-    this.feedbackMessage.set('');
-    this.formErrorMessage.set('');
     this.saving.set(true);
     this.saveSubscription?.unsubscribe();
     this.saveSubscription = this.authService.loadAuthenticatedUser()
@@ -214,16 +212,20 @@ export class MasterDataAdminComponent implements OnDestroy {
           if (event.mode === 'create') {
             this.pageIndex.set(0);
           }
-          this.feedbackMessage.set(
+          this.notificationService.success(
             this.i18n.t(event.mode === 'create'
               ? 'masterData.form.feedback.createSuccess'
-              : 'masterData.form.feedback.updateSuccess')
+              : 'masterData.form.feedback.updateSuccess'),
+            { titleKey: 'alert.title.success' }
           );
           this.closeForm();
           this.loadSelectedResource();
         },
         error: (error) => {
-          this.formErrorMessage.set(this.resolveSaveError(error));
+          this.notificationService.error(this.resolveSaveError(error), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
         }
       });
   }
@@ -238,12 +240,13 @@ export class MasterDataAdminComponent implements OnDestroy {
     const mode = this.pendingDeleteMode();
 
     if (!rowId || !mode) {
-      this.deleteErrorMessage.set(this.i18n.t('masterData.delete.error.generic'));
+      this.notificationService.error(this.i18n.t('masterData.delete.error.generic'), {
+        titleKey: 'alert.title.danger',
+        dismissible: true
+      });
       return;
     }
 
-    this.feedbackMessage.set('');
-    this.deleteErrorMessage.set('');
     this.deleting.set(true);
     this.deleteSubscription?.unsubscribe();
     const deletion$ = mode === 'physical'
@@ -258,15 +261,20 @@ export class MasterDataAdminComponent implements OnDestroy {
             this.pageIndex.update((page) => Math.max(0, page - 1));
           }
 
-          this.feedbackMessage.set(mode === 'physical'
-            ? this.i18n.t('masterData.deletePhysical.feedback.success')
-            : this.i18n.t('masterData.delete.feedback.success')
+          this.notificationService.success(
+            mode === 'physical'
+              ? this.i18n.t('masterData.deletePhysical.feedback.success')
+              : this.i18n.t('masterData.delete.feedback.success'),
+            { titleKey: 'alert.title.success' }
           );
           this.closeDeleteConfirm();
           this.loadSelectedResource();
         },
         error: (error) => {
-          this.deleteErrorMessage.set(this.resolveDeleteError(error, mode));
+          this.notificationService.error(this.resolveDeleteError(error, mode), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
         }
       });
   }
@@ -274,13 +282,11 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected closeForm(): void {
     this.formMode.set(null);
     this.formValue.set(null);
-    this.formErrorMessage.set('');
   }
 
   protected closeDeleteConfirm(): void {
     this.pendingDeleteRow.set(null);
     this.pendingDeleteMode.set(null);
-    this.deleteErrorMessage.set('');
   }
 
   protected goToPreviousPage(): void {
@@ -362,16 +368,12 @@ export class MasterDataAdminComponent implements OnDestroy {
     }
 
     this.closeDeleteConfirm();
-    this.feedbackMessage.set('');
-    this.formErrorMessage.set('');
     this.formMode.set(mode);
     this.formValue.set(row);
   }
 
   private openDeleteConfirm(mode: MasterDataDeleteMode, row: MasterDataRow): void {
     this.closeForm();
-    this.feedbackMessage.set('');
-    this.deleteErrorMessage.set('');
     this.pendingDeleteMode.set(mode);
     this.pendingDeleteRow.set(row);
   }

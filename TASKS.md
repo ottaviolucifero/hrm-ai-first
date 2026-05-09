@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.79
-Ultimo aggiornamento: 2026-05-08
+Versione: 1.80
+Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
 ---
@@ -118,7 +118,7 @@ Validazione:
 
 ### TASK-011 - Creare modello dati iniziale enterprise normalizzato
 
-Stato: TODO
+Stato: DONE
 
 Descrizione:
 
@@ -2781,7 +2781,7 @@ Acceptance criteria:
 
 ### TASK-048.6 - Buttons and toast feedback refinement
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
@@ -2792,9 +2792,18 @@ Scope:
 
 - standardizzare pulsanti primari, secondari, outline e destructive;
 - standardizzare feedback toast success, error, warning e info;
+- consolidare i toast come pattern shared riusabile;
+- riusare o raffinare AlertMessageComponent come componente visuale shared per i feedback;
+- introdurre o consolidare un servizio shared di notification/toast, se non già presente;
+- permettere l’invocazione centralizzata dei toast tramite metodi success, error, warning e info;
+- integrare i toast solo nei flussi reali già esistenti, ad esempio create/edit/save se già disponibili;
+- non simulare toast su CRUD o azioni non ancora implementate;
 - mantenere coerenza tra azioni inline, toolbar e modali;
-- verificare naming, priorita visiva e stati interattivi;
-- rispettare i18n.
+- verificare naming, priorità visiva e stati interattivi;
+- rispettare i18n;
+- non introdurre nuove librerie UI;
+- non modificare backend/API.
+
 
 Acceptance criteria:
 
@@ -2803,6 +2812,17 @@ Acceptance criteria:
 - azioni destructive distinguibili dalle azioni standard;
 - nessun testo hardcoded;
 - nessuna nuova libreria UI introdotta.
+
+Completato:
+
+- raffinato `AlertMessageComponent` come componente visuale shared per feedback toast success, error, warning e info secondo TEMPLATE-07;
+- introdotto `NotificationService` e `NotificationHostComponent` come punto di integrazione shared per invocazioni centralizzate `success`, `error`, `warning`, `info`;
+- standardizzati pulsanti primari, secondary/outline e destructive via stili globali `kt-btn`;
+- aggiunte icone Keenicons confermate per azioni principali Master Data e form, senza introdurre nuove librerie;
+- aggiunte chiavi i18n `it/fr/en` per titoli e messaggi toast;
+- inserito host notifiche nell'`App` per rendere i feedback globali e non legati ai singoli template;
+- build frontend OK;
+- test frontend OK (toast service/host verificabili dai test aggiornati su `master-data-admin` e `login`).
 
 ### TASK-048.7 - Login visual alignment review
 
@@ -3104,6 +3124,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.80 | 2026-05-09 | TASK-048.6 completato: raffinati pulsanti e feedback toast secondo TEMPLATE-11 e TEMPLATE-07, riusando Metronic/Keenicons e `AlertMessageComponent`; aggiunte chiavi i18n e test frontend, build/test OK, nessuna modifica backend/API. |
 | 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" come task backlog dedicato alla definizione tipografica globale (analisi font attuale, confronto con mockup validati, decisione font globale, centralizzazione gerarchie e aggiornamento DESIGN-SYSTEM al momento di esecuzione); nessuna modifica codice applicativo in questa fase. |
 | 1.78 | 2026-05-08 | TASK-048.4 completato: raffinato pattern `/master-data` secondo TEMPLATE-01, stati tabella secondo TEMPLATE-03 e `DataTableComponent` shared secondo TEMPLATE-10; introdotte chiavi i18n `dataTable.*`, build/test frontend OK, nessuna modifica backend. |
 | 1.77 | 2026-05-08 | TASK-048.3 riallinea i sottotask TASK-048 al catalogo template UI validato in TASK-048.2; TASK-048 diventa iniziativa generale HRflow design system/template UI, Master Data resta caso pilota; nessuna modifica Angular/backend. |
