@@ -1,0 +1,19 @@
+<button
+  [class]="className()"
+  [type]="type"
+  [disabled]="isDisabled()"
+  [attr.aria-label]="resolvedAriaLabel()"
+  [attr.aria-current]="ariaCurrent"
+  [attr.aria-busy]="loading ? 'true' : null"
+  [attr.title]="resolvedTitle()"
+  (click)="emitClick($event)">
+  @if (loading) {
+    <span class="app-button-spinner" aria-hidden="true"></span>
+  } @else if (icon; as iconClass) {
+    <i [class]="iconClass" aria-hidden="true"></i>
+  }
+
+  @if (showLabel()) {
+    <span class="app-button-label">{{ currentLabel() }}</span>
+  }
+</button>

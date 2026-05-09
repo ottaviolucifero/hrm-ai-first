@@ -5,6 +5,7 @@ import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, sw
 import { AuthService } from '../../core/auth/auth.service';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { MasterDataFormComponent, MasterDataFormSubmitEvent } from './master-data-form.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
@@ -28,7 +29,7 @@ import { MasterDataService } from './master-data.service';
 
 @Component({
   selector: 'app-master-data-admin',
-  imports: [DataTableComponent, MasterDataFormComponent],
+  imports: [AppButtonComponent, DataTableComponent, MasterDataFormComponent],
   templateUrl: './master-data-admin.component.html',
   styleUrl: './master-data-admin.component.scss'
 })

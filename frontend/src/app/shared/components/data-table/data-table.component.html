@@ -107,19 +107,16 @@
                 <td class="data-table-actions-cell">
                   <div class="data-table-actions">
                     @for (action of visibleRowActions(); track trackRowAction($index, action)) {
-                      <button
-                        class="kt-btn kt-btn-outline kt-btn-sm data-table-action"
-                        type="button"
+                      <app-button
+                        variant="ghost"
+                        size="sm"
+                        [icon]="rowActionIcon(action)"
+                        [iconOnly]="true"
+                        [buttonClass]="rowActionButtonClass(action)"
                         [disabled]="isRowActionDisabled(action, row)"
-                        [class.data-table-action-danger]="action.tone === 'danger'"
-                        [attr.aria-label]="i18n.t(action.labelKey)"
+                        [ariaLabel]="i18n.t(action.labelKey)"
                         [title]="i18n.t(action.labelKey)"
-                        (click)="emitRowAction(action, row)">
-                        <i
-                          class="data-table-action-icon"
-                          [ngClass]="rowActionIconClass(action)"
-                          aria-hidden="true"></i>
-                      </button>
+                        (pressed)="emitRowAction(action, row)" />
                     }
                   </div>
                 </td>
@@ -148,43 +145,42 @@
           </label>
         </div>
         <div class="data-table-pagination-actions master-data-pagination-actions">
-          <button
-            class="kt-btn kt-btn-outline kt-btn-sm data-table-pagination-nav"
-            type="button"
-            [attr.aria-label]="i18n.t('dataTable.pagination.previous')"
+          <app-button
+            variant="outline"
+            size="sm"
+            buttonClass="data-table-pagination-nav"
+            [label]="'\u2039'"
+            [ariaLabel]="i18n.t('dataTable.pagination.previous')"
             [title]="i18n.t('dataTable.pagination.previous')"
             [disabled]="loading || pagination.first"
-            (click)="previousPage.emit()">
-            &lsaquo;
-          </button>
+            (pressed)="previousPage.emit()" />
           <div class="data-table-pagination-pages" [attr.aria-label]="i18n.t('dataTable.pagination.page')">
             @for (link of paginationLinks(pagination); track link.value) {
               @if (link.type === 'ellipsis') {
                 <span class="data-table-pagination-ellipsis" aria-hidden="true">...</span>
               } @else {
-                <button
-                  class="kt-btn kt-btn-outline kt-btn-sm data-table-pagination-page"
-                  type="button"
-                  [class.data-table-pagination-page-active]="link.active"
-                  [attr.aria-current]="link.active ? 'page' : null"
-                  [attr.aria-label]="i18n.t('dataTable.pagination.goToPage') + ' ' + link.value"
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  [buttonClass]="paginationPageButtonClass(link.active)"
+                  [label]="paginationLinkLabel(link.value)"
+                  [ariaCurrent]="link.active ? 'page' : null"
+                  [ariaLabel]="i18n.t('dataTable.pagination.goToPage') + ' ' + link.value"
                   [title]="i18n.t('dataTable.pagination.goToPage') + ' ' + link.value"
                   [disabled]="loading || link.active"
-                  (click)="emitPageChange($any(link.value), pagination.page + 1)">
-                  {{ link.value }}
-                </button>
+                  (pressed)="emitPageChange($any(link.value), pagination.page + 1)" />
               }
             }
           </div>
-          <button
-            class="kt-btn kt-btn-outline kt-btn-sm data-table-pagination-nav"
-            type="button"
-            [attr.aria-label]="i18n.t('dataTable.pagination.next')"
+          <app-button
+            variant="outline"
+            size="sm"
+            buttonClass="data-table-pagination-nav"
+            [label]="'\u203a'"
+            [ariaLabel]="i18n.t('dataTable.pagination.next')"
             [title]="i18n.t('dataTable.pagination.next')"
             [disabled]="loading || pagination.last"
-            (click)="nextPage.emit()">
-            &rsaquo;
-          </button>
+            (pressed)="nextPage.emit()" />
         </div>
       </div>
     }

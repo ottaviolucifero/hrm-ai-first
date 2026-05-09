@@ -192,3 +192,49 @@ Nota operativa:
 - Fix richiesti: nessuno dopo la correzione applicata nel prompt corrente.
 - QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
 - Stato finale: PASS
+
+### TASK-048.7 - Shared list buttons pattern foundation
+
+- Data: 2026-05-09
+- Branch: `task-048-7-shared-button-list-pages`
+- Task: TASK-048.7 - Shared list buttons pattern foundation
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: toolbar/pagine lista `/master-data`, `DataTableComponent` actions e `master-data-form`, varianti `kt-btn` globali e documentazione Task/Roadmap
+- Template applicato: TEMPLATE-11 Buttons
+- Comandi eseguiti: `cd frontend && npm.cmd run build`; `cd frontend && npm.cmd test`
+- Esito build frontend: OK
+- Esito test frontend: OK (valutazione suite corrente)
+- Regressioni trovate: nessuna regressione bloccante rilevata; riduzione duplicazioni classi locali su pulsanti lista
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Limiti/note: manual test su `/master-data` consigliato (toolbar, azioni inline, paginazione) per conferma resa responsive/aria
+- Stato finale: PASS
+
+### TASK-048.7 - Shared Button Angular component patch
+
+- Data: 2026-05-09
+- Branch: `task-048-7-shared-button-list-pages`
+- Task: TASK-048.7 - Shared list buttons pattern foundation
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: nuovo wrapper Angular shared `app-button`, integrazione su `master-data-admin`, `master-data-form` e porzioni sicure di `DataTableComponent`
+- Template applicato: TEMPLATE-11 Buttons
+- Comandi eseguiti: `cd frontend && npm.cmd run build`; `cd frontend && npm.cmd test`
+- Esito build frontend: OK
+- Esito test frontend: OK
+- Regressioni trovate: nessuna regressione bloccante automatica; il design system CSS `kt-btn` resta la base ufficiale
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Limiti/note: `DataTableComponent` non e stato convertito integralmente oltre row actions e paginazione; eventuale estensione futura ad altre feature resta follow-up separato
+- Stato finale: PASS
+
+### TASK-048.7 - Shared Button review findings patch
+
+- Data: 2026-05-09
+- Branch: `task-048-7-shared-button-list-pages`
+- Task: TASK-048.7 - Shared list buttons pattern foundation
+- Agente/Modello usato: GPT-5.3 Codex
+- Area verificata: contratto accessibile `iconOnly` del wrapper `app-button` e copertura test minima del componente shared
+- Comandi eseguiti: `cd frontend && npm.cmd run build`; `cd frontend && npm.cmd test`
+- Esito build frontend: OK
+- Esito test frontend: OK
+- Fix applicati: `iconOnly` ora richiede `ariaLabel` esplicito con errore runtime chiaro su configurazione invalida; aggiunti test per `submit`, `reset`, `disabled`, `outline`, `destructive` e caso invalido `iconOnly` senza `ariaLabel`
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Stato finale: PASS

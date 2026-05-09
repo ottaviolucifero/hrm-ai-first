@@ -8,10 +8,14 @@
       </div>
       <div class="master-data-page-actions master-data-toolbar-actions" role="group" [attr.aria-label]="i18n.t('masterData.actionsLabel')">
         @if (canCreate()) {
-          <button class="kt-btn kt-btn-primary kt-btn-sm master-data-primary-action" type="button" [disabled]="loading() || deleting()" (click)="openCreateForm()">
-            <i class="ki-filled ki-plus" aria-hidden="true"></i>
-            {{ i18n.t('masterData.actions.new') }}
-          </button>
+          <app-button
+            variant="primary"
+            size="sm"
+            buttonClass="master-data-primary-action"
+            icon="ki-filled ki-plus"
+            [label]="i18n.t('masterData.actions.new')"
+            [disabled]="loading() || deleting()"
+            (pressed)="openCreateForm()" />
         }
       </div>
     </header>
@@ -100,17 +104,21 @@
               }
 
               <div class="master-data-form-actions">
-                <button
-                  class="kt-btn kt-btn-destructive kt-btn-sm master-data-danger-button"
-                  type="button"
+                <app-button
+                  variant="destructive"
+                  size="sm"
+                  icon="ki-filled ki-trash"
+                  [label]="i18n.t(deleteConfirmActionKey())"
+                  [loadingLabel]="i18n.t(deleteProcessingMessageKey())"
+                  [loading]="deleting()"
                   [disabled]="deleting()"
-                  (click)="confirmDelete()">
-                  <i class="ki-filled ki-trash" aria-hidden="true"></i>
-                  {{ i18n.t(deleting() ? deleteProcessingMessageKey() : deleteConfirmActionKey()) }}
-                </button>
-                <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="deleting()" (click)="closeDeleteConfirm()">
-                  {{ i18n.t('masterData.form.cancel') }}
-                </button>
+                  (pressed)="confirmDelete()" />
+                <app-button
+                  variant="secondary"
+                  size="sm"
+                  [label]="i18n.t('masterData.form.cancel')"
+                  [disabled]="deleting()"
+                  (pressed)="closeDeleteConfirm()" />
               </div>
             </div>
           </section>

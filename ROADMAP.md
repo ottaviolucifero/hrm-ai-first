@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.80
+Versione: 1.82
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -100,6 +100,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-048.3 Reframe TASK-048 subtasks around validated UI templates
 - TASK-048.4 Data list and Generic DataTable refinement
 - TASK-048.6 Buttons and toast feedback refinement
+- TASK-048.7 Shared list buttons pattern foundation
 
 ### Prossimo passo
 
@@ -197,7 +198,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 Da fare:
 
 - TASK-048.5 CRUD modal and action confirmation refinement
-- TASK-048.7 Login visual alignment review
 - TASK-048.8 Shell navigation visual review
 - TASK-048.9 Spreadsheet-style bulk editor planning
 - TASK-048.10 Global typography foundation
@@ -226,7 +226,7 @@ Nota roadmap TASK-048:
 - TASK-048.2 ha validato il catalogo astratto di UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`.
 - Gli screenshot Stitch locali non sono versionati e sono ignorati via `.gitignore`.
 - TASK-048.4 ha applicato TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 a `/master-data` e al `DataTableComponent` shared senza creare componenti tabellari paralleli.
-- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 login visual alignment, TASK-048.8 shell navigation review, TASK-048.9 bulk editor planning, TASK-048.10 global typography foundation.
+- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 shared list button foundation, TASK-048.8 shell navigation review, TASK-048.9 bulk editor planning, TASK-048.10 global typography foundation.
 - TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 guidano lista dati, stati tabella e DataTable principale.
 - TEMPLATE-04 e TEMPLATE-05 guidano modali CRUD e conferme azione.
 - TEMPLATE-07 e TEMPLATE-11 guidano toast e pulsanti.
@@ -338,6 +338,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.82 | 2026-05-09 | TASK-048.7 esteso con wrapper Angular shared `app-button` sopra il design system `kt-btn`, applicato a `/master-data`, `master-data-form` e parti sicure di `DataTableComponent`; build/test frontend rieseguiti, nessuna modifica backend/API. |
+| 1.81 | 2026-05-09 | TASK-048.7 completato: introdotta foundation condivisa pulsanti per pagine lista su `/master-data` e `DataTableComponent` con varianti `kt-btn-secondary`, `kt-btn-ghost`, helper icona/list-action; mantenuto `TEMPLATE-11`, nessuna modifica backend/API. |
 | 1.80 | 2026-05-09 | TASK-048.6 completato in roadmap: applicati TEMPLATE-07 e TEMPLATE-11 a toast e pulsanti, introdotto pattern shared `NotificationService` + `NotificationHostComponent` con `AlertMessageComponent`, Metronic/Keenicons e i18n `it/fr/en`; build test frontend OK, nessuna modifica backend/API. |
 | 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" nella roadmap come step backlog dedicato alla tipografia globale (analisi font corrente/Metronic, confronto con mockup validati, scelta centralizzata e aggiornamento design system quando eseguito), senza modifiche codice in questa fase. |
 | 1.78 | 2026-05-08 | TASK-048.4 completato in roadmap: applicati TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 al pattern lista `/master-data` e al `DataTableComponent` shared; prossimo passo aggiornato a TASK-048.5, build/test frontend OK e nessuna modifica backend. |

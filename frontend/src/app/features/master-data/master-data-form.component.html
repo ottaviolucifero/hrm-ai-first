@@ -3,9 +3,12 @@
     <h2 id="master-data-form-title" class="kt-card-title text-lg">
       {{ i18n.t(titleKey()) }} - {{ i18n.t(resourceTitleKey) }}
     </h2>
-    <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="submitting" (click)="close.emit()">
-      {{ i18n.t('masterData.form.close') }}
-    </button>
+    <app-button
+      variant="ghost"
+      size="sm"
+      [label]="i18n.t('masterData.form.close')"
+      [disabled]="submitting"
+      (pressed)="close.emit()" />
   </div>
 
   <form class="kt-card-content master-data-form-body" [formGroup]="form" (ngSubmit)="submit()">
@@ -32,17 +35,26 @@
 
     <div class="master-data-form-actions">
       @if (mode !== 'view') {
-        <button class="kt-btn kt-btn-primary kt-btn-sm" type="submit" [disabled]="submitting">
-          <i class="ki-filled ki-check" aria-hidden="true"></i>
-          {{ i18n.t('masterData.form.save') }}
-        </button>
+        <app-button
+          variant="primary"
+          size="sm"
+        type="submit"
+        icon="ki-filled ki-check"
+        [label]="i18n.t('masterData.form.save')"
+        [loading]="submitting" />
       }
-      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="submitting" (click)="resetAndCancel()">
-        {{ i18n.t('masterData.form.cancel') }}
-      </button>
-      <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="submitting" (click)="close.emit()">
-        {{ i18n.t('masterData.form.close') }}
-      </button>
+      <app-button
+        variant="secondary"
+        size="sm"
+        [label]="i18n.t('masterData.form.cancel')"
+        [disabled]="submitting"
+        (pressed)="resetAndCancel()" />
+      <app-button
+        variant="ghost"
+        size="sm"
+        [label]="i18n.t('masterData.form.close')"
+        [disabled]="submitting"
+        (pressed)="close.emit()" />
     </div>
   </form>
 </section>

@@ -135,16 +135,13 @@
 }
 
 .data-table-action {
+  color: var(--color-secondary-foreground, #4b5563);
+}
+
+.data-table-action :is(i, .app-button-spinner) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0;
-  color: var(--color-secondary-foreground, #4b5563);
-  background: transparent;
-  border-color: transparent;
 }
 
 .data-table-action-icon {
@@ -174,6 +171,10 @@
 .data-table-action-danger:focus-visible:not(:disabled) {
   color: var(--color-destructive, #b91c1c);
   background: rgba(185, 28, 28, 0.12);
+}
+
+.data-table-action-danger :is(i, .app-button-spinner) {
+  color: currentColor;
 }
 
 .data-table-boolean-badge {
