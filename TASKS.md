@@ -3062,7 +3062,7 @@ Completato:
 
 ### TASK-048.13 - Header/topbar visual alignment to TEMPLATE-09
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
@@ -3090,6 +3090,14 @@ Acceptance criteria:
 - sidebar non modificata;
 - build frontend OK;
 - test frontend OK.
+
+Completato:
+
+- rimosso il quadratino sinistro non funzionale dalla topbar;
+- sostituito “Area riservata” con titolo pagina corrente contestuale (i18n);
+- introdotta area centrale con titolo pagina per bilanciare la header;
+- alleggerito menu utente/hover/focus e separazione header/contenuto;
+- mantenuta coerenza con sidebar/template esistente e senza modifiche backend/API.
 
 ### TASK-048.14 - Spreadsheet-style bulk editor planning
 

@@ -108,7 +108,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-048.13 Header/topbar visual alignment to TEMPLATE-09
+- TASK-048.14 Spreadsheet-style bulk editor planning
 
 ---
 
@@ -177,6 +177,7 @@ Completato:
 - TASK-048.5 completed: CRUD modal and confirmation dialog footers refined on `/master-data` with a shared modal footer pattern, coherent action ordering, compact TEMPLATE-04 alignment and removal of duplicated `Annulla`/`Chiudi` semantics in read-only footer.
 - TASK-048.6 completed: buttons and toast feedback refinement applied with TEMPLATE-07 and TEMPLATE-11, reusing `AlertMessageComponent`, Metronic/Keenicons, global button styles and i18n `it/fr/en`; build/test frontend validated and no backend/API changes.
 - TASK-048.8 completed: login visual alignment review applied with TEMPLATE-06, refining hierarchy/layout/states on `/login` with card, brand, language selector, CTA, responsive behavior, forgot-password visual link and legal footer; i18n consistent and no backend/API changes.
+- TASK-048.13 completed: header/topbar visual alignment refined to TEMPLATE-09 scope, adding contextual page title, centered content balance and lighter avatar/user menu; sidebar unchanged and no backend/API modifications.
 
 Nota:
 
@@ -203,7 +204,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-048.13 Header/topbar visual alignment to TEMPLATE-09
 - TASK-048.14 Spreadsheet-style bulk editor planning
 - TASK-048.15 Shared form controls and form patterns foundation
 - TASK-048.16 Global typography foundation
@@ -248,7 +248,7 @@ Nota roadmap TASK-048:
 - il pass finale di TASK-048.11 chiude anche la parte UX/layout della sidebar: niente scrollbar orizzontale, area menu con scroll verticale interno, search piu compatta e navigazione piu densa in chiave enterprise.
 - l'ultimo polish TASK-048.11 corregge l'aderenza degli active state al bordo destro e ricentra verticalmente la search box nella propria sezione.
 - TASK-048.12 completa il refinement dedicato di popup CRUD e form esistenti su TEMPLATE-04: rimossa la duplicazione di `Chiudi` nel footer CRUD, footer azioni riallineato a destra, spacing piu coerenti e checkbox `Attivo` migliorata localmente senza shared framework prematuro o backend/API.
-- TASK-048.13 pianifica il riallineamento visuale dell'header/topbar esistente a TEMPLATE-09, senza modificare sidebar o backend/API.
+- TASK-048.13 allineamento visuale dell'header/topbar esistente a TEMPLATE-09 eseguito in modalità refinement, senza modificare sidebar o backend/API.
 - TEMPLATE-09 resta non applicato in TASK-048.10 e viene demandato al task dedicato TASK-048.13.
 - TEMPLATE-02 resta pattern avanzato futuro per pianificazione bulk editor stile spreadsheet.
 - TASK-048.8 e completato come login visual alignment review: consolidato l'allineamento visuale login rispetto al template validato con seconda iterazione piu profonda su layout/card/brand/language selector/CTA e final refinement su password link/footer legale, senza modifiche funzionali.
@@ -357,6 +357,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.99 | 2026-05-09 | TASK-048.13 completato: header/topbar visual refinement a TEMPLATE-09 con titolo pagina corrente, area centrale bilanciata e menu utente più sobrio; sidebar non modificata; prossimo passo aggiornato a TASK-048.14. |
 | 1.98 | 2026-05-09 | TASK-048.12 completato in roadmap: raffinata la CRUD modal/form Master Data su TEMPLATE-04 con `Chiudi` rimosso dal footer, action bar allineata a destra, checkbox locale migliorata e build/test frontend OK; prossimo passo aggiornato a TASK-048.13. |
 | 1.97 | 2026-05-09 | Backlog TASK-048 riordinato dopo TASK-048.11: inseriti TASK-048.12 CRUD modal/form visual refinement e TASK-048.13 Header/topbar visual alignment to TEMPLATE-09; bulk editor, shared form controls e typography slittati a TASK-048.14, TASK-048.15 e TASK-048.16; prossimo passo aggiornato a TASK-048.12. |
 | 1.96 | 2026-05-09 | TASK-048.11 alignment polish in roadmap: active state parent/submenu non aderenti al bordo destro e search box ricentrata verticalmente, con build/test frontend OK e prossimo passo invariato su TASK-048.12. |
