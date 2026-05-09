@@ -79,6 +79,15 @@ describe('DataTableComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Nessun dato disponibile.');
   });
 
+  it('renders the configured no results state', () => {
+    component.columns = [];
+    component.rows = [];
+    component.emptyMessageKey = 'dataTable.noResults';
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Nessun risultato per i filtri correnti.');
+  });
+
   it('renders the loading state', () => {
     component.loading = true;
     fixture.detectChanges();

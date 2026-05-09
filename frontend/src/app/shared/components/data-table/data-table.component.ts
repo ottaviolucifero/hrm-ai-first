@@ -1,6 +1,7 @@
 import { NgStyle } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 
+import { I18nKey } from '../../../core/i18n/i18n.messages';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import {
   DataTableAction,
@@ -27,6 +28,9 @@ export class DataTableComponent {
   @Input() pageData: DataTablePage | null = null;
   @Input() loading = false;
   @Input() hasError = false;
+  @Input() loadingMessageKey: I18nKey = 'dataTable.loading';
+  @Input() errorMessageKey: I18nKey = 'dataTable.error';
+  @Input() emptyMessageKey: I18nKey = 'dataTable.empty';
 
   @Output() previousPage = new EventEmitter<void>();
   @Output() nextPage = new EventEmitter<void>();
@@ -66,7 +70,7 @@ export class DataTableComponent {
     const type = this.columnType(column);
 
     if (type === 'boolean') {
-      return value === true ? this.i18n.t('masterData.boolean.yes') : this.i18n.t('masterData.boolean.no');
+      return value === true ? this.i18n.t('dataTable.boolean.yes') : this.i18n.t('dataTable.boolean.no');
     }
 
     if ((type === 'date' || type === 'datetime') && typeof value === 'string') {
@@ -111,7 +115,23 @@ export class DataTableComponent {
   }
 
   protected paginationSummary(pageData: DataTablePage): string {
-    return `${this.i18n.t('masterData.pagination.page')} ${pageData.page + 1} ${this.i18n.t('masterData.pagination.of')} ${Math.max(pageData.totalPages, 1)} (${pageData.totalElements} ${this.i18n.t('masterData.pagination.results')})`;
+    return `${this.i18n.t('dataTable.pagination.page')} ${pageData.page + 1} ${this.i18n.t('dataTable.pagination.of')} ${Math.max(pageData.totalPages, 1)} (${pageData.totalElements} ${this.i18n.t('dataTable.pagination.results')})`;
+  }
+
+  protected stateMessageKey(): I18nKey {
+    if (this.loading) {
+      return this.loadingMessageKey;
+    }
+
+    if (this.hasError) {
+      return this.errorMessageKey;
+    }
+
+    return this.emptyMessageKey;
+  }
+
+  protected stateRole(): 'status' | 'alert' {
+    return this.hasError && !this.loading ? 'alert' : 'status';
   }
 
   protected isRowActionDisabled(action: DataTableAction, row: DataTableRow): boolean {

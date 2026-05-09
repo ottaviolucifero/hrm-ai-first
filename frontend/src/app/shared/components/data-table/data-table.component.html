@@ -1,84 +1,101 @@
 @if (loading) {
-  <div class="master-data-state">{{ i18n.t('masterData.loading') }}</div>
+  <div
+    class="data-table-state master-data-state"
+    [attr.role]="stateRole()"
+    aria-live="polite">
+    <span class="data-table-state-label">{{ i18n.t(stateMessageKey()) }}</span>
+  </div>
 } @else if (hasError) {
-  <div class="master-data-state master-data-state-error">{{ i18n.t('masterData.error') }}</div>
+  <div
+    class="data-table-state data-table-state-error master-data-state master-data-state-error"
+    [attr.role]="stateRole()"
+    aria-live="polite">
+    <span class="data-table-state-label">{{ i18n.t(stateMessageKey()) }}</span>
+  </div>
 } @else if (rows.length === 0) {
-  <div class="master-data-state">{{ i18n.t('masterData.empty') }}</div>
+  <div
+    class="data-table-state data-table-state-empty master-data-state"
+    [attr.role]="stateRole()"
+    aria-live="polite">
+    <span class="data-table-state-label">{{ i18n.t(stateMessageKey()) }}</span>
+  </div>
 } @else {
-  <div class="data-table-wrapper">
-    <table class="data-table">
-      <thead>
-        <tr>
-          @for (column of visibleColumns(); track trackColumn($index, column)) {
-            <th
-              scope="col"
-              [ngStyle]="columnStyle(column)"
-              [class.data-table-cell-center]="columnAlignment(column) === 'center'"
-              [class.data-table-cell-right]="columnAlignment(column) === 'right'"
-            >
-              {{ i18n.t(column.labelKey) }}
-            </th>
-          }
-          @if (visibleRowActions().length > 0) {
-            <th scope="col" class="data-table-actions-header">{{ i18n.t('masterData.columns.actions') }}</th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows; track trackRow($index, row)) {
+  <div class="data-table-shell">
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
           <tr>
             @for (column of visibleColumns(); track trackColumn($index, column)) {
-              <td
+              <th
+                scope="col"
                 [ngStyle]="columnStyle(column)"
                 [class.data-table-cell-center]="columnAlignment(column) === 'center'"
                 [class.data-table-cell-right]="columnAlignment(column) === 'right'"
               >
-                {{ displayValue(row, column) }}
-              </td>
+                {{ i18n.t(column.labelKey) }}
+              </th>
             }
             @if (visibleRowActions().length > 0) {
-              <td class="data-table-actions-cell">
-                <div class="data-table-actions">
-                  @for (action of visibleRowActions(); track trackRowAction($index, action)) {
-                    <button
-                      class="kt-btn kt-btn-outline kt-btn-sm data-table-action"
-                      type="button"
-                      [disabled]="isRowActionDisabled(action, row)"
-                      [class.data-table-action-danger]="action.tone === 'danger'"
-                      [attr.aria-label]="i18n.t(action.labelKey)"
-                      [title]="i18n.t(action.labelKey)"
-                      (click)="emitRowAction(action, row)">
-                      {{ i18n.t(action.labelKey) }}
-                    </button>
-                  }
-                </div>
-              </td>
+              <th scope="col" class="data-table-actions-header">{{ i18n.t('dataTable.columns.actions') }}</th>
             }
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-
-  @if (pageData; as pagination) {
-    <div class="master-data-pagination">
-      <span class="master-data-pagination-summary">{{ paginationSummary(pagination) }}</span>
-      <div class="master-data-pagination-actions">
-        <button
-          class="kt-btn kt-btn-outline kt-btn-sm"
-          type="button"
-          [disabled]="loading || pagination.first"
-          (click)="previousPage.emit()">
-          {{ i18n.t('masterData.pagination.previous') }}
-        </button>
-        <button
-          class="kt-btn kt-btn-outline kt-btn-sm"
-          type="button"
-          [disabled]="loading || pagination.last"
-          (click)="nextPage.emit()">
-          {{ i18n.t('masterData.pagination.next') }}
-        </button>
-      </div>
+        </thead>
+        <tbody>
+          @for (row of rows; track trackRow($index, row)) {
+            <tr>
+              @for (column of visibleColumns(); track trackColumn($index, column)) {
+                <td
+                  [ngStyle]="columnStyle(column)"
+                  [class.data-table-cell-center]="columnAlignment(column) === 'center'"
+                  [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+                >
+                  {{ displayValue(row, column) }}
+                </td>
+              }
+              @if (visibleRowActions().length > 0) {
+                <td class="data-table-actions-cell">
+                  <div class="data-table-actions">
+                    @for (action of visibleRowActions(); track trackRowAction($index, action)) {
+                      <button
+                        class="kt-btn kt-btn-outline kt-btn-sm data-table-action"
+                        type="button"
+                        [disabled]="isRowActionDisabled(action, row)"
+                        [class.data-table-action-danger]="action.tone === 'danger'"
+                        [attr.aria-label]="i18n.t(action.labelKey)"
+                        [title]="i18n.t(action.labelKey)"
+                        (click)="emitRowAction(action, row)">
+                        {{ i18n.t(action.labelKey) }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
-  }
+
+    @if (pageData; as pagination) {
+      <div class="data-table-pagination master-data-pagination">
+        <span class="data-table-pagination-summary master-data-pagination-summary">{{ paginationSummary(pagination) }}</span>
+        <div class="data-table-pagination-actions master-data-pagination-actions">
+          <button
+            class="kt-btn kt-btn-outline kt-btn-sm"
+            type="button"
+            [disabled]="loading || pagination.first"
+            (click)="previousPage.emit()">
+            {{ i18n.t('dataTable.pagination.previous') }}
+          </button>
+          <button
+            class="kt-btn kt-btn-outline kt-btn-sm"
+            type="button"
+            [disabled]="loading || pagination.last"
+            (click)="nextPage.emit()">
+            {{ i18n.t('dataTable.pagination.next') }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
 }

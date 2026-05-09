@@ -32,6 +32,21 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-048.4 - Data list and Generic DataTable refinement
+
+- Data: 2026-05-08
+- Branch: `task-048-3-reframe-ui-template-subtasks`
+- Task: TASK-048.4 - Data list and Generic DataTable refinement
+- Agente/Modello usato: GPT-5.5 Thinking (sviluppo e verifica tecnica)
+- Area verificata: pagina `/master-data`, `DataTableComponent` shared, stati tabella, paginazione, azioni riga, filtro/ricerca, i18n `it/fr/en`, aggiornamenti documentali `TASKS.md` e `ROADMAP.md`
+- Template applicati: TEMPLATE-01 Data list page, TEMPLATE-03 Table states, TEMPLATE-10 Generic DataTable
+- Comandi eseguiti: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK
+- Esiti reali: build frontend OK; test frontend OK, 11 file di test passed, 55 test passed
+- QA manuale browser eseguita/non eseguita: non eseguita in questo passaggio
+- Regressioni trovate: nessuna regressione rilevata dai test automatici
+- Limiti/note: nessuna modifica backend/API/security/auth; validazione manuale `/master-data` ancora consigliata per rendering, responsive base e stati simulabili
+- Stato finale: PASS
+
 ### TASK-041 - UI Master Data Admin
 
 - Data: 2026-05-06

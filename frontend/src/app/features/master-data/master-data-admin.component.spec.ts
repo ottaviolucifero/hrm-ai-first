@@ -107,6 +107,7 @@ describe('MasterDataAdminComponent', () => {
       expect.objectContaining({ endpoint: '/api/master-data/global/countries' }),
       { page: 0, size: 25, search: 'ital' }
     );
+    expect(fixture.nativeElement.textContent).toContain('Nessun risultato per i filtri correnti.');
   });
 
   it('changes page with the pagination controls', async () => {

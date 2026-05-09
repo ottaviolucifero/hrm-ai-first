@@ -3,6 +3,7 @@ import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { AlertMessageComponent } from '../../shared/feedback/alert-message.component';
@@ -103,6 +104,9 @@ export class MasterDataAdminComponent implements OnDestroy {
   );
   protected readonly rowActions = computed(
     () => (this.selectedResource().rowActions ?? []).map((action) => this.decorateRowAction(action))
+  );
+  protected readonly tableEmptyMessageKey = computed<I18nKey>(
+    () => this.appliedSearch() ? 'dataTable.noResults' : 'dataTable.empty'
   );
 
   constructor() {

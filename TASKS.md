@@ -1,8 +1,8 @@
-# TASKS.md
+﻿# TASKS.md
 
 ## Progetto HRM AI-first
 
-Versione: 1.76
+Versione: 1.78
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -2609,28 +2609,26 @@ Acceptance criteria:
 - UI aggiorna la lista dopo successo reale;
 - test backend/frontend coprono successo e blocco su record referenziati dove riproducibile.
 
-### TASK-048 - Master Data table and popup design refinement
+### TASK-048 - HRflow design system and validated UI templates
 
-Stato: TODO
+Stato: DONE
 
 Scope:
 
-- definire e raffinare lo standard visuale per tabelle Master Data;
-- definire e raffinare lo standard visuale per popup/modali create, edit, view, deactivate e physical delete;
-- usare mockup preparati con Google Stitch come riferimento visuale;
-- analizzare screenshot o codice Stitch prima di applicare modifiche;
+- trasformare TASK-048 in iniziativa generale di design system e template UI HRflow;
+- usare Master Data solo come prima applicazione concreta/caso pilota;
+- basare i refinement successivi sul catalogo di template UI validato in TASK-048.2;
+- mantenere `docs/design/DESIGN-SYSTEM.md` come fonte documentale del catalogo e delle regole UI;
+- applicare i template in modo incrementale, senza redesign massivo non autorizzato;
 - evitare lavoro doppio sui prossimi task CRUD e amministrativi;
-- valutare la creazione di `docs/design/DESIGN-SYSTEM.md` come fonte dedicata per linee guida UI;
-- mantenere coerenza con le regole già presenti in `frontend/AGENTS.md`.
+- mantenere coerenza con le regole gia presenti in `frontend/AGENTS.md`.
 
 Acceptance criteria:
 
-- workflow design documentato nel task;
-- indicato chiaramente che prima si prepara il mockup su Stitch;
-- indicato chiaramente che il mockup viene validato prima dell’implementazione;
-- indicato chiaramente che l’eventuale design system dedicato sarà creato/aggiornato solo nel task;
-- nessuna modifica codice prevista in questa sola modifica documentale;
-- `docs/design/DESIGN-SYSTEM.md` creato come draft preparatorio in TASK-048.1 e aggiornabile nei sottotask successivi;
+- TASK-048 non e piu limitato al solo perimetro Master Data;
+- i sottotask TASK-048.3..TASK-048.9 sono allineati ai template UI validati;
+- i template approvati, extra e futuri sono distinti nei task operativi;
+- nessuna modifica Angular/backend prevista nel solo riallineamento documentale;
 - non modificare frontend, backend o QA report;
 - conferma che TASKS.md e ROADMAP.md sono coerenti.
 
@@ -2666,72 +2664,211 @@ Acceptance criteria:
 - nessuna modifica frontend/backend;
 - documento design system preparatorio creato.
 
-### TASK-048.2 - Master Data Stitch mockup validation
+### TASK-048.2 - Validated UI template catalog from Stitch
 
 Stato: DONE
 
 Scope:
 
 - raccogliere screenshot o codice generato da Google Stitch;
-- confrontare mockup Stitch con UI attuale;
-- validare layout, colori, spacing, azioni, bottoni e comportamento modale;
-- decidere cosa tenere e cosa scartare;
-- definire uno standard visuale approvato per tabelle e popup Master Data;
+- validare un catalogo astratto di template UI HRflow;
+- distinguere template approvati come riferimento, template extra da valutare e pattern avanzati futuri;
+- documentare i template validati in `docs/design/DESIGN-SYSTEM.md`;
+- ignorare gli screenshot Stitch locali dal versionamento;
+- evitare applicazione diretta del codice Stitch senza revisione;
+- non modificare codice Angular o backend.
+
+Acceptance criteria:
+
+- catalogo TEMPLATE-01..TEMPLATE-11 validato e documentato;
+- template approvati, extra e futuri classificati;
+- `docs/design/DESIGN-SYSTEM.md` aggiornato con il catalogo astratto;
+- screenshot Stitch locali non versionati;
+- nessuna modifica Angular/backend.
+
+Completato:
+
+- validato il catalogo astratto di template UI HRflow generato da Stitch;
+- template documentati in `docs/design/DESIGN-SYSTEM.md`;
+- screenshot Stitch locali esclusi dal versionamento;
+- nessuna modifica Angular/backend.
+
+### TASK-048.3 - Reframe TASK-048 subtasks around validated UI templates
+
+Stato: DONE
+
+Scope:
+
+Completato:
+
+- riallineati i sottotask TASK-048.4..TASK-048.9 al catalogo template UI validato;
+- TASK-048 ridefinito come iniziativa generale HRflow design system/template UI;
+- Master Data mantenuto solo come caso pilota;
+- ROADMAP.md aggiornato con nuova sequenza e prossimo step;
+- nessuna modifica Angular/backend.
+
+Acceptance criteria:
+
+- TASK-048.4..TASK-048.9 definiti in base ai template validati;
+- TASK-048.1 e TASK-048.2 mantenuti come DONE;
+- ROADMAP.md allineato al nuovo prossimo passo TASK-048.3;
+- nessuna modifica Angular/backend.
+
+### TASK-048.4 - Data list and Generic DataTable refinement
+
+Stato: DONE
+
+Template:
+
+- TEMPLATE-01 Data list page;
+- TEMPLATE-03 Table states;
+- TEMPLATE-10 Generic DataTable.
+
+Scope:
+
+- rifinire pagina lista standard con titolo, toolbar, filtri, tabella e paginazione;
+- rifinire tabella gestionale standard;
+- rifinire stati loading, empty, error e no results;
+- applicare le regole in modo incrementale, partendo dai componenti esistenti;
+- riusare componenti esistenti;
+- evitare duplicazione di componenti tabellari.
+
+Acceptance criteria:
+
+- pagina lista coerente con TEMPLATE-01;
+- stati tabella coerenti con TEMPLATE-03;
+- DataTable coerente con TEMPLATE-10;
+- nessun testo hardcoded;
+- nessuna duplicazione di componenti tabellari;
+- build frontend OK;
+- test frontend eseguiti se presenti/applicabili.
+
+Completato:
+
+- riusato e rifinito il componente shared `DataTableComponent`, senza creare DataTable parallele;
+- applicato TEMPLATE-01 al pattern pagina lista `/master-data` con header, toolbar, azioni principali, filtri, ricerca e card lista;
+- applicato TEMPLATE-03 agli stati tabella loading, empty, error e no results;
+- applicato TEMPLATE-10 alla tabella gestionale shared, con paginazione/footer e azioni riga mantenute nel componente generico;
+- introdotte chiavi i18n generiche `dataTable.*` e nuove label Master Data in `it` / `fr` / `en`;
+- mantenute invariate API backend, security/auth, routing e logiche CRUD;
+- build frontend OK;
+- test frontend OK.
+
+### TASK-048.5 - CRUD modal and action confirmation refinement
+
+Stato: TODO
+
+Template:
+
+- TEMPLATE-04 CRUD modal form;
+- TEMPLATE-05 Action confirmation dialogs.
+
+Scope:
+
+- rifinire modali create, edit e view read-only;
+- rifinire conferme azioni normali, warning, destructive e irreversibili;
+- separare pattern form da pattern conferma;
+- mantenere coerenza i18n;
 - evitare applicazione diretta del codice Stitch senza revisione.
 
 Acceptance criteria:
 
-- mockup Stitch analizzati;
-- decisioni visuali documentate;
-- definite regole per popup create/edit/view;
-- definite regole per conferme deactivate/physical delete;
-- definita regola UX sui bottoni: non usare insieme "Annulla" e "Chiudi" nella bottom action bar quando hanno la stessa funzione;
-- nessuna modifica codice applicativo salvo task esplicitamente autorizzato.
-
-### TASK-048.3 - Master Data design system documentation
-
-Stato: TODO
-
-Scope:
-
-- valutare e, se confermato, aggiornare `docs/design/DESIGN-SYSTEM.md`;
-- formalizzare standard UI per tabelle Master Data;
-- formalizzare standard UI per popup/modali Master Data;
-- formalizzare bottoni, stati, badge, spaziature, empty/loading/error state;
-- mantenere coerenza con `frontend/AGENTS.md`;
-- indicare che i mockup Stitch sono riferimento visuale, non codice finale.
-
-Acceptance criteria:
-
-- `docs/design/DESIGN-SYSTEM.md` aggiornato o decisione documentata se non aggiornato;
-- standard UI chiaro per tabelle;
-- standard UI chiaro per modali;
-- regole coerenti con frontend/AGENTS.md;
-- nessuna implementazione frontend in questo sottotask, salvo diversa decisione esplicita.
-
-### TASK-048.4 - Master Data table and popup UI implementation
-
-Stato: TODO
-
-Scope:
-
-- applicare in Angular lo standard approvato ai componenti Master Data;
-- aggiornare popup create/edit/view;
-- aggiornare conferme deactivate e physical delete;
-- aggiornare tabella Master Data solo dove necessario;
-- riusare componenti esistenti;
-- rispettare i18n it/fr/en;
-- evitare duplicazione di logiche o componenti.
-
-Acceptance criteria:
-
-- popup Master Data coerenti con lo standard approvato;
-- tabella Master Data coerente con lo standard approvato;
+- modali CRUD coerenti con TEMPLATE-04;
+- conferme azione coerenti con TEMPLATE-05;
+- regola UX confermata: non usare insieme "Annulla" e "Chiudi" nella bottom action bar quando hanno la stessa funzione;
 - nessun testo hardcoded;
-- nessuna duplicazione di componenti tabellari;
-- build frontend OK;
-- test frontend eseguiti se presenti/applicabili;
-- documentazione aggiornata se necessario.
+- nessuna modifica funzionale non autorizzata.
+
+### TASK-048.6 - Buttons and toast feedback refinement
+
+Stato: TODO
+
+Template:
+
+- TEMPLATE-07 Toast notifications;
+- TEMPLATE-11 Buttons.
+
+Scope:
+
+- standardizzare pulsanti primari, secondari, outline e destructive;
+- standardizzare feedback toast success, error, warning e info;
+- mantenere coerenza tra azioni inline, toolbar e modali;
+- verificare naming, priorita visiva e stati interattivi;
+- rispettare i18n.
+
+Acceptance criteria:
+
+- pulsanti coerenti con TEMPLATE-11;
+- toast coerenti con TEMPLATE-07;
+- azioni destructive distinguibili dalle azioni standard;
+- nessun testo hardcoded;
+- nessuna nuova libreria UI introdotta.
+
+### TASK-048.7 - Login visual alignment review
+
+Stato: TODO
+
+Template:
+
+- TEMPLATE-06 Login page.
+
+Scope:
+
+- verificare la login esistente rispetto al template validato;
+- valutare branding, lingua, accesso e layout;
+- evitare redesign non richiesto;
+- documentare eventuali gap prima di applicare modifiche.
+
+Acceptance criteria:
+
+- login confrontata con TEMPLATE-06;
+- gap visuali documentati;
+- nessun redesign massivo introdotto;
+- nessuna modifica funzionale non autorizzata.
+
+### TASK-048.8 - Shell navigation visual review
+
+Stato: TODO
+
+Template:
+
+- TEMPLATE-08 Sidebar;
+- TEMPLATE-09 Header / topbar.
+
+Scope:
+
+- valutare sidebar, header e topbar come riferimenti extra;
+- verificare coerenza con navigazione esistente;
+- decidere se e quando applicare i pattern extra;
+- non applicare modifiche concrete senza task dedicato.
+
+Acceptance criteria:
+
+- TEMPLATE-08 e TEMPLATE-09 valutati come extra;
+- decisioni documentate prima di qualunque applicazione;
+- nessun redesign della shell non autorizzato.
+
+### TASK-048.9 - Spreadsheet-style bulk editor planning
+
+Stato: TODO
+
+Template:
+
+- TEMPLATE-02 Spreadsheet-style bulk editor.
+
+Scope:
+
+- analizzare il pattern avanzato futuro di inserimento/modifica massiva stile Excel;
+- identificare casi d'uso candidati;
+- valutare impatti su validazione, i18n, accessibilita e performance;
+- non implementare il componente in questo task.
+
+Acceptance criteria:
+
+- TEMPLATE-02 analizzato come pattern futuro;
+- casi d'uso candidati documentati;
+- rischi e prerequisiti identificati;
+- nessuna implementazione frontend/backend.
 
 ### TASK-049 - Platform Super Admin and tenant-aware permissions model
 
@@ -2940,6 +3077,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.78 | 2026-05-08 | TASK-048.4 completato: raffinato pattern `/master-data` secondo TEMPLATE-01, stati tabella secondo TEMPLATE-03 e `DataTableComponent` shared secondo TEMPLATE-10; introdotte chiavi i18n `dataTable.*`, build/test frontend OK, nessuna modifica backend. |
+| 1.77 | 2026-05-08 | TASK-048.3 riallinea i sottotask TASK-048 al catalogo template UI validato in TASK-048.2; TASK-048 diventa iniziativa generale HRflow design system/template UI, Master Data resta caso pilota; nessuna modifica Angular/backend. |
 | 1.76 | 2026-05-08 | TASK-048.2 confermato DONE con validazione catalogo astratto UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`; screenshot Stitch locali esclusi dal versionamento via `.gitignore`; nessuna modifica Angular/backend. |
 | 1.75 | 2026-05-08 | TASK-048.1 completato come preparation documentale: analizzata UI Master Data, creato `docs/design/DESIGN-SYSTEM.md` come draft iniziale, formalizzate regole per tabelle/popup e processo Stitch senza modifiche frontend/backend. |
 | 1.74 | 2026-05-08 | TASK-047.3 segnato DONE come chiusura QA/hardening del delete fisico Master Data; aggiunta sintesi prudente senza inventare nuovi esiti di test non documentati e mantenuto invariato il blocco TASK-048. |
@@ -3017,3 +3156,4 @@ Stato: TODO
 | 1.2 | 2026-05-01 | Aggiornato stato dopo TASK-005 e aggiunto TASK-006 per integrazione Metronic Angular. |
 | 1.1 | 2026-05-01 | Aggiornato stato task dopo completamento TASK-001, TASK-002, TASK-003 e TASK-004. |
 | 1.0 | 2026-05-01 | Prima versione task operativi MVP. |
+
