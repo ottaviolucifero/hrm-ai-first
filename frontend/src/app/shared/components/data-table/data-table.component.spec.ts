@@ -114,37 +114,76 @@ describe('DataTableComponent', () => {
   it('emits pagination events', () => {
     const previousSpy = vi.fn();
     const nextSpy = vi.fn();
+    const pageChangeSpy = vi.fn();
+    const pageSizeChangeSpy = vi.fn();
     component.previousPage.subscribe(previousSpy);
     component.nextPage.subscribe(nextSpy);
+    component.pageChange.subscribe(pageChangeSpy);
+    component.pageSizeChange.subscribe(pageSizeChangeSpy);
     component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
     component.rows = [{ id: 'country-1', name: 'Italy' }];
     component.pageData = {
       page: 1,
-      size: 25,
+      size: 20,
       totalElements: 50,
-      totalPages: 2,
+      totalPages: 4,
       first: false,
       last: false
     };
 
     fixture.detectChanges();
 
-    const buttons = fixture.nativeElement.querySelectorAll('.master-data-pagination-actions button') as NodeListOf<HTMLButtonElement>;
-    buttons[0].click();
-    buttons[1].click();
+    const navButtons = fixture.nativeElement.querySelectorAll('.data-table-pagination-nav') as NodeListOf<HTMLButtonElement>;
+    const pageButtons = fixture.nativeElement.querySelectorAll('.data-table-pagination-page') as NodeListOf<HTMLButtonElement>;
+    const pageSizeSelect = fixture.nativeElement.querySelector('.data-table-page-size-select') as HTMLSelectElement;
+    expect(pageSizeSelect.value).toBe('20');
+    navButtons[0].click();
+    pageButtons[0].click();
+    pageSizeSelect.value = '50';
+    pageSizeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    navButtons[1].click();
 
     expect(previousSpy).toHaveBeenCalledTimes(1);
     expect(nextSpy).toHaveBeenCalledTimes(1);
+    expect(pageChangeSpy).toHaveBeenCalledWith(0);
+    expect(pageSizeChangeSpy).toHaveBeenCalledWith(50);
   });
 
-  it('renders configured row actions and emits the selected action', () => {
+  it('renders numeric pagination with ellipsis for long result sets', () => {
+    component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
+    component.rows = [{ id: 'country-1', name: 'Italy' }];
+    component.pageData = {
+      page: 3,
+      size: 20,
+      totalElements: 240,
+      totalPages: 12,
+      first: false,
+      last: false
+    };
+
+    fixture.detectChanges();
+
+    const pageButtons = Array.from(
+      fixture.nativeElement.querySelectorAll('.data-table-pagination-page') as NodeListOf<HTMLButtonElement>
+    ).map((button) => button.textContent?.trim());
+    const ellipsis = fixture.nativeElement.querySelectorAll('.data-table-pagination-ellipsis');
+    const pageSizeLabel = fixture.nativeElement.querySelector('.data-table-page-size-label');
+
+    expect(pageButtons).toEqual(['1', '2', '3', '4', '5', '11', '12']);
+    expect(ellipsis).toHaveLength(1);
+    expect(pageSizeLabel?.textContent).toContain('Elementi per pagina');
+  });
+
+  it('renders an icon for every configured row action and emits the selected action', () => {
     const rowActionSpy = vi.fn();
     component.rowAction.subscribe(rowActionSpy);
     component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
     component.rows = [{ id: 'department-1', name: 'Human Resources' }];
     component.rowActions = [
+      { id: 'view', labelKey: 'masterData.actions.view' },
       { id: 'edit', labelKey: 'masterData.actions.edit' },
-      { id: 'delete', labelKey: 'masterData.actions.delete', tone: 'danger' }
+      { id: 'deactivate', labelKey: 'masterData.actions.delete', tone: 'danger' },
+      { id: 'deletePhysical', labelKey: 'masterData.actions.deletePhysical', tone: 'danger' }
     ] satisfies readonly DataTableAction<DataTableRow>[];
 
     fixture.detectChanges();
@@ -152,11 +191,22 @@ describe('DataTableComponent', () => {
     const headerElements = fixture.nativeElement.querySelectorAll('th') as NodeListOf<HTMLTableCellElement>;
     const headers = Array.from(headerElements).map((header) => header.textContent?.trim());
     const buttons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    const icons = fixture.nativeElement.querySelectorAll('.data-table-action .data-table-action-icon') as NodeListOf<HTMLElement>;
 
     expect(headers).toContain('Azioni');
-    expect(buttons).toHaveLength(2);
+    expect(buttons).toHaveLength(4);
+    expect(icons).toHaveLength(4);
+    expect(buttons[0].textContent?.trim()).toBe('');
+    expect(icons[0].className).toContain('ki-eye');
+    expect(icons[1].className).toContain('ki-pencil');
+    expect(icons[2].className).toContain('ki-minus-circle');
+    expect(icons[3].className).toContain('ki-trash');
+    expect(buttons[0].getAttribute('aria-label')).toBe('Visualizza');
+    expect(buttons[1].getAttribute('aria-label')).toBe('Modifica');
+    expect(buttons[2].getAttribute('aria-label')).toBe('Disattiva');
+    expect(buttons[3].getAttribute('aria-label')).toBe('Elimina');
 
-    buttons[0].click();
+    buttons[1].click();
 
     expect(rowActionSpy).toHaveBeenCalledWith(
       expect.objectContaining({

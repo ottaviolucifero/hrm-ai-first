@@ -8,25 +8,35 @@
         <h1 id="master-data-title" class="text-xl font-semibold text-mono">{{ i18n.t('masterData.title') }}</h1>
         <p class="master-data-subtitle">{{ i18n.t('masterData.subtitle') }}</p>
       </div>
+      <div class="master-data-page-actions master-data-toolbar-actions" role="group" [attr.aria-label]="i18n.t('masterData.actionsLabel')">
+        @if (canCreate()) {
+          <button class="kt-btn kt-btn-primary kt-btn-sm master-data-primary-action" type="button" [disabled]="loading() || deleting()" (click)="openCreateForm()">
+            {{ i18n.t('masterData.actions.new') }}
+          </button>
+        }
+      </div>
     </header>
 
     <section class="kt-card master-data-list-card" aria-labelledby="master-data-list-title">
       <div class="master-data-list-toolbar">
         <div class="master-data-list-heading">
           <h2 id="master-data-list-title" class="master-data-list-title">{{ i18n.t(selectedResource().titleKey) }}</h2>
-          <p class="master-data-list-meta">{{ i18n.t(selectedCategory().titleKey) }}</p>
+          <div class="master-data-list-meta-row">
+            <p class="master-data-list-meta">{{ i18n.t(selectedCategory().titleKey) }}</p>
+            <span class="master-data-record-count">{{ pageData().totalElements }} {{ i18n.t('dataTable.pagination.results') }}</span>
+          </div>
         </div>
 
-        <div class="master-data-toolbar-actions" role="group" [attr.aria-label]="i18n.t('masterData.actionsLabel')">
-          @if (canCreate()) {
-            <button class="kt-btn kt-btn-primary kt-btn-sm" type="button" [disabled]="loading() || deleting()" (click)="openCreateForm()">
-              {{ i18n.t('masterData.actions.new') }}
-            </button>
-          }
-          <button class="kt-btn kt-btn-outline kt-btn-sm" type="button" [disabled]="loading() || deleting()" (click)="refresh()">
-            {{ i18n.t('masterData.refresh') }}
-          </button>
-        </div>
+        <label class="master-data-table-search">
+          <span class="master-data-search-label">{{ i18n.t('masterData.search') }}</span>
+          <input
+            class="kt-input master-data-search-input"
+            type="search"
+            [disabled]="deleting()"
+            [value]="searchInput()"
+            [placeholder]="i18n.t('masterData.searchPlaceholder')"
+            (input)="updateSearch($event)" />
+        </label>
       </div>
 
       <div class="master-data-filters-panel">
@@ -54,16 +64,6 @@
             </select>
           </label>
 
-          <label class="master-data-field master-data-search-field">
-            <span>{{ i18n.t('masterData.search') }}</span>
-            <input
-              class="kt-input"
-              type="search"
-              [disabled]="deleting()"
-              [value]="searchInput()"
-              [placeholder]="i18n.t('masterData.searchPlaceholder')"
-              (input)="updateSearch($event)" />
-          </label>
         </div>
       </div>
 
@@ -72,12 +72,15 @@
         [rows]="rows()"
         [rowActions]="rowActions()"
         [pageData]="pageData()"
+        [pageSizeOptions]="pageSizeOptions"
         [loading]="loading()"
         [hasError]="hasError()"
         [emptyMessageKey]="tableEmptyMessageKey()"
         (rowAction)="handleRowAction($event)"
         (previousPage)="goToPreviousPage()"
-        (nextPage)="goToNextPage()" />
+        (nextPage)="goToNextPage()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="updatePageSize($event)" />
     </section>
 
     @if (isDeleteConfirmOpen()) {

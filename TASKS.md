@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.78
+Versione: 1.79
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -2870,6 +2870,33 @@ Acceptance criteria:
 - rischi e prerequisiti identificati;
 - nessuna implementazione frontend/backend.
 
+### TASK-048.10 - Global typography foundation
+
+Stato: TODO
+
+Tipo: Design system / frontend foundation
+
+Scope:
+
+- analizzare font attuale dell'app e font ereditati da Metronic;
+- confrontare la tipografia attuale con i mockup UI validati;
+- decidere se introdurre Inter, Manrope o altro font globale;
+- preferire asset locali se si decide di introdurre nuovi font;
+- centralizzare font family, pesi, dimensioni base e gerarchie tipografiche;
+- aggiornare `docs/design/DESIGN-SYSTEM.md` con regole tipografiche definitive;
+- applicare la scelta globalmente, evitando override locali non necessari;
+- verificare impatto su pagine esistenti e componenti shared.
+
+Acceptance criteria:
+
+- scelta tipografica documentata;
+- font globale centralizzato;
+- nessun import/font duplicato nei componenti;
+- `docs/design/DESIGN-SYSTEM.md` aggiornato;
+- build frontend OK;
+- test frontend eseguiti se presenti/applicabili;
+- validazione manuale UI base eseguita o dichiarata non eseguita.
+
 ### TASK-049 - Platform Super Admin and tenant-aware permissions model
 
 Stato: TODO
@@ -3077,6 +3104,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" come task backlog dedicato alla definizione tipografica globale (analisi font attuale, confronto con mockup validati, decisione font globale, centralizzazione gerarchie e aggiornamento DESIGN-SYSTEM al momento di esecuzione); nessuna modifica codice applicativo in questa fase. |
 | 1.78 | 2026-05-08 | TASK-048.4 completato: raffinato pattern `/master-data` secondo TEMPLATE-01, stati tabella secondo TEMPLATE-03 e `DataTableComponent` shared secondo TEMPLATE-10; introdotte chiavi i18n `dataTable.*`, build/test frontend OK, nessuna modifica backend. |
 | 1.77 | 2026-05-08 | TASK-048.3 riallinea i sottotask TASK-048 al catalogo template UI validato in TASK-048.2; TASK-048 diventa iniziativa generale HRflow design system/template UI, Master Data resta caso pilota; nessuna modifica Angular/backend. |
 | 1.76 | 2026-05-08 | TASK-048.2 confermato DONE con validazione catalogo astratto UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`; screenshot Stitch locali esclusi dal versionamento via `.gitignore`; nessuna modifica Angular/backend. |

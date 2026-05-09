@@ -1,9 +1,51 @@
 @if (loading) {
-  <div
-    class="data-table-state master-data-state"
-    [attr.role]="stateRole()"
-    aria-live="polite">
-    <span class="data-table-state-label">{{ i18n.t(stateMessageKey()) }}</span>
+  <div class="data-table-shell data-table-loading-shell" aria-busy="true">
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            @for (column of visibleColumns(); track trackColumn($index, column)) {
+              <th
+                scope="col"
+                [ngStyle]="columnStyle(column)"
+                [class.data-table-cell-center]="columnAlignment(column) === 'center'"
+                [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+              >
+                {{ i18n.t(column.labelKey) }}
+              </th>
+            }
+            @if (visibleRowActions().length > 0) {
+              <th scope="col" class="data-table-actions-header">{{ i18n.t('dataTable.columns.actions') }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (_row of skeletonRows; track $index) {
+            <tr>
+              @for (column of visibleColumns(); track trackColumn($index, column)) {
+                <td
+                  [ngStyle]="columnStyle(column)"
+                  [class.data-table-cell-center]="columnAlignment(column) === 'center'"
+                  [class.data-table-cell-right]="columnAlignment(column) === 'right'">
+                  <span class="data-table-skeleton-line"></span>
+                </td>
+              }
+              @if (visibleRowActions().length > 0) {
+                <td class="data-table-actions-cell">
+                  <span class="data-table-skeleton-action"></span>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="data-table-loading-overlay" [attr.role]="stateRole()" aria-live="polite">
+      <div class="data-table-loading-card">
+        <span class="data-table-loading-spinner" aria-hidden="true"></span>
+        <span class="data-table-state-label">{{ i18n.t(stateMessageKey()) }}</span>
+      </div>
+    </div>
   </div>
 } @else if (hasError) {
   <div
@@ -43,15 +85,24 @@
         <tbody>
           @for (row of rows; track trackRow($index, row)) {
             <tr>
-              @for (column of visibleColumns(); track trackColumn($index, column)) {
-                <td
-                  [ngStyle]="columnStyle(column)"
-                  [class.data-table-cell-center]="columnAlignment(column) === 'center'"
-                  [class.data-table-cell-right]="columnAlignment(column) === 'right'"
-                >
+            @for (column of visibleColumns(); track trackColumn($index, column)) {
+              <td
+                [ngStyle]="columnStyle(column)"
+                [class.data-table-cell-center]="columnAlignment(column) === 'center'"
+                [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+              >
+                @if (isBooleanColumn(column)) {
+                  <span
+                    class="data-table-boolean-badge"
+                    [class.data-table-boolean-badge-inactive]="!isBooleanActive(row, column)">
+                    <span class="data-table-boolean-dot" aria-hidden="true"></span>
+                    {{ displayValue(row, column) }}
+                  </span>
+                } @else {
                   {{ displayValue(row, column) }}
-                </td>
-              }
+                }
+              </td>
+            }
               @if (visibleRowActions().length > 0) {
                 <td class="data-table-actions-cell">
                   <div class="data-table-actions">
@@ -64,7 +115,10 @@
                         [attr.aria-label]="i18n.t(action.labelKey)"
                         [title]="i18n.t(action.labelKey)"
                         (click)="emitRowAction(action, row)">
-                        {{ i18n.t(action.labelKey) }}
+                        <i
+                          class="data-table-action-icon"
+                          [ngClass]="rowActionIconClass(action)"
+                          aria-hidden="true"></i>
                       </button>
                     }
                   </div>
@@ -78,21 +132,58 @@
 
     @if (pageData; as pagination) {
       <div class="data-table-pagination master-data-pagination">
-        <span class="data-table-pagination-summary master-data-pagination-summary">{{ paginationSummary(pagination) }}</span>
+        <div class="data-table-pagination-left">
+          <span class="data-table-pagination-summary master-data-pagination-summary">{{ paginationSummary(pagination) }}</span>
+          <label class="data-table-page-size">
+            <span class="data-table-page-size-label">{{ i18n.t('dataTable.pagination.itemsPerPage') }}</span>
+            <select
+              class="kt-input data-table-page-size-select"
+              [value]="pagination.size"
+              [disabled]="loading"
+              (change)="emitPageSizeChange($event)">
+              @for (option of pageSizeOptions; track option) {
+                <option [value]="option" [selected]="isPageSizeSelected(option, pagination)">{{ option }}</option>
+              }
+            </select>
+          </label>
+        </div>
         <div class="data-table-pagination-actions master-data-pagination-actions">
           <button
-            class="kt-btn kt-btn-outline kt-btn-sm"
+            class="kt-btn kt-btn-outline kt-btn-sm data-table-pagination-nav"
             type="button"
+            [attr.aria-label]="i18n.t('dataTable.pagination.previous')"
+            [title]="i18n.t('dataTable.pagination.previous')"
             [disabled]="loading || pagination.first"
             (click)="previousPage.emit()">
-            {{ i18n.t('dataTable.pagination.previous') }}
+            &lsaquo;
           </button>
+          <div class="data-table-pagination-pages" [attr.aria-label]="i18n.t('dataTable.pagination.page')">
+            @for (link of paginationLinks(pagination); track link.value) {
+              @if (link.type === 'ellipsis') {
+                <span class="data-table-pagination-ellipsis" aria-hidden="true">...</span>
+              } @else {
+                <button
+                  class="kt-btn kt-btn-outline kt-btn-sm data-table-pagination-page"
+                  type="button"
+                  [class.data-table-pagination-page-active]="link.active"
+                  [attr.aria-current]="link.active ? 'page' : null"
+                  [attr.aria-label]="i18n.t('dataTable.pagination.goToPage') + ' ' + link.value"
+                  [title]="i18n.t('dataTable.pagination.goToPage') + ' ' + link.value"
+                  [disabled]="loading || link.active"
+                  (click)="emitPageChange($any(link.value), pagination.page + 1)">
+                  {{ link.value }}
+                </button>
+              }
+            }
+          </div>
           <button
-            class="kt-btn kt-btn-outline kt-btn-sm"
+            class="kt-btn kt-btn-outline kt-btn-sm data-table-pagination-nav"
             type="button"
+            [attr.aria-label]="i18n.t('dataTable.pagination.next')"
+            [title]="i18n.t('dataTable.pagination.next')"
             [disabled]="loading || pagination.last"
             (click)="nextPage.emit()">
-            {{ i18n.t('dataTable.pagination.next') }}
+            &rsaquo;
           </button>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.78
+Versione: 1.79
 Ultimo aggiornamento: 2026-05-08
 Stato: In avanzamento
 
@@ -199,6 +199,7 @@ Da fare:
 - TASK-048.7 Login visual alignment review
 - TASK-048.8 Shell navigation visual review
 - TASK-048.9 Spreadsheet-style bulk editor planning
+- TASK-048.10 Global typography foundation
 - TASK-049 Platform Super Admin and tenant-aware permissions model
 - TASK-050 User, Role and Permission domain review
 - TASK-051 Permission model foundation by scope/resource/action
@@ -224,13 +225,14 @@ Nota roadmap TASK-048:
 - TASK-048.2 ha validato il catalogo astratto di UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`.
 - Gli screenshot Stitch locali non sono versionati e sono ignorati via `.gitignore`.
 - TASK-048.4 ha applicato TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 a `/master-data` e al `DataTableComponent` shared senza creare componenti tabellari paralleli.
-- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 login visual alignment, TASK-048.8 shell navigation review, TASK-048.9 bulk editor planning.
+- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 login visual alignment, TASK-048.8 shell navigation review, TASK-048.9 bulk editor planning, TASK-048.10 global typography foundation.
 - TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 guidano lista dati, stati tabella e DataTable principale.
 - TEMPLATE-04 e TEMPLATE-05 guidano modali CRUD e conferme azione.
 - TEMPLATE-07 e TEMPLATE-11 guidano toast e pulsanti.
 - TEMPLATE-06 guida solo la review visuale della login esistente, senza redesign non richiesto.
 - TEMPLATE-08 e TEMPLATE-09 restano extra da valutare prima di applicazioni concrete.
 - TEMPLATE-02 resta pattern avanzato futuro per pianificazione bulk editor stile spreadsheet.
+- TASK-048.10 e dedicato alla foundation tipografica globale: analisi font attuale/Metronic, confronto con mockup validati, decisione su font globale (Inter/Manrope o alternativa), preferenza per asset locali e centralizzazione gerarchie tipografiche.
 - Nessuna modifica Angular o backend è prevista in TASK-048.3.
 - `frontend/AGENTS.md` rimane fonte applicativa vigente per le regole frontend; `docs/design/DESIGN-SYSTEM.md` dettaglia lo standard UI quando approvato e aggiornato dai task TASK-048.x.
 Nota roadmap TASK-045:
@@ -334,6 +336,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.79 | 2026-05-09 | Introdotto TASK-048.10 "Global typography foundation" nella roadmap come step backlog dedicato alla tipografia globale (analisi font corrente/Metronic, confronto con mockup validati, scelta centralizzata e aggiornamento design system quando eseguito), senza modifiche codice in questa fase. |
 | 1.78 | 2026-05-08 | TASK-048.4 completato in roadmap: applicati TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 al pattern lista `/master-data` e al `DataTableComponent` shared; prossimo passo aggiornato a TASK-048.5, build/test frontend OK e nessuna modifica backend. |
 | 1.77 | 2026-05-08 | TASK-048.3 riallinea i sottotask TASK-048 al catalogo template UI validato in TASK-048.2: TASK-048 diventa iniziativa generale HRflow design system/template UI, Master Data resta caso pilota e nessuna modifica Angular/backend è prevista. |
 | 1.76 | 2026-05-08 | TASK-048.2 chiuso come completato in roadmap: validato catalogo astratto di UI template Stitch documentato in `docs/design/DESIGN-SYSTEM.md`, screenshot locali ignorati via `.gitignore`, nessuna modifica Angular/backend; prossimo passo aggiornato a TASK-048.3. |

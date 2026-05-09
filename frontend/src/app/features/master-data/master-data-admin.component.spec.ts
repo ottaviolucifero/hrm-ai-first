@@ -37,11 +37,12 @@ describe('MasterDataAdminComponent', () => {
 
     expect(masterDataService.fetchRows).toHaveBeenCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/global/countries' }),
-      { page: 0, size: 25 }
+      { page: 0, size: 20 }
     );
     expect(fixture.nativeElement.textContent).toContain('Dati di base');
     expect(fixture.nativeElement.textContent).toContain('Italia');
     expect(fixture.nativeElement.textContent).toContain('Si');
+    expect((fixture.nativeElement.querySelector('.data-table-page-size-select') as HTMLSelectElement).value).toBe('20');
   });
 
   it('reloads the first resource of the selected category', async () => {
@@ -77,7 +78,7 @@ describe('MasterDataAdminComponent', () => {
 
     expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
-      { page: 0, size: 25 }
+      { page: 0, size: 20 }
     );
     expect(fixture.nativeElement.textContent).toContain('Human Resources');
   });
@@ -105,7 +106,7 @@ describe('MasterDataAdminComponent', () => {
 
     expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/global/countries' }),
-      { page: 0, size: 25, search: 'ital' }
+      { page: 0, size: 20, search: 'ital' }
     );
     expect(fixture.nativeElement.textContent).toContain('Nessun risultato per i filtri correnti.');
   });
@@ -153,15 +154,77 @@ describe('MasterDataAdminComponent', () => {
     const fixture = await createFixture(masterDataService);
     fixture.detectChanges();
 
-    const nextButton = fixture.nativeElement.querySelectorAll('.master-data-pagination-actions button')[1] as HTMLButtonElement;
+    const nextButton = fixture.nativeElement.querySelectorAll('.data-table-pagination-nav')[1] as HTMLButtonElement;
     nextButton.click();
     fixture.detectChanges();
 
     expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/global/countries' }),
-      { page: 1, size: 25 }
+      { page: 1, size: 20 }
     );
     expect(fixture.nativeElement.textContent).toContain('Francia');
+  });
+
+  it('reloads from the first page when page size changes', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage(
+              [
+                {
+                  id: 'department-1',
+                  tenantId: 'tenant-1',
+                  code: 'HR',
+                  name: 'Human Resources',
+                  active: true,
+                  updatedAt: '2026-05-06T09:00:00Z'
+                }
+              ],
+              { totalElements: 42, totalPages: 3, last: false }
+            )
+          )
+        )
+        .mockReturnValueOnce(
+          of(
+            createPage(
+              [
+                {
+                  id: 'department-1',
+                  tenantId: 'tenant-1',
+                  code: 'HR',
+                  name: 'Human Resources',
+                  active: true,
+                  updatedAt: '2026-05-06T09:00:00Z'
+                }
+              ],
+              { size: 50, totalElements: 42, totalPages: 1 }
+            )
+          )
+        )
+    });
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const pageSizeSelect = fixture.nativeElement.querySelector('.data-table-page-size-select') as HTMLSelectElement;
+    pageSizeSelect.value = '50';
+    pageSizeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
+      { page: 0, size: 50 }
+    );
   });
 
   it('shows the generic error state when the resource load fails', async () => {
@@ -189,9 +252,11 @@ describe('MasterDataAdminComponent', () => {
 
     const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
     const newButton = fixture.nativeElement.querySelector('.master-data-toolbar-actions .kt-btn-primary') as HTMLButtonElement | null;
+    const toolbarButtons = fixture.nativeElement.querySelectorAll('.master-data-toolbar-actions button') as NodeListOf<HTMLButtonElement>;
 
     expect(actionButtons).toHaveLength(0);
     expect(newButton).toBeNull();
+    expect(toolbarButtons).toHaveLength(0);
   });
 
   it('receives row action events for CRUD candidate resources', async () => {
@@ -263,6 +328,8 @@ describe('MasterDataAdminComponent', () => {
     fixture.detectChanges();
 
     const newButton = fixture.nativeElement.querySelector('.master-data-toolbar-actions .kt-btn-primary') as HTMLButtonElement;
+    const toolbarButtons = fixture.nativeElement.querySelectorAll('.master-data-toolbar-actions button') as NodeListOf<HTMLButtonElement>;
+    expect(toolbarButtons).toHaveLength(1);
     newButton.click();
     fixture.detectChanges();
 
@@ -332,7 +399,7 @@ describe('MasterDataAdminComponent', () => {
     );
     expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
-      { page: 0, size: 25 }
+      { page: 0, size: 20 }
     );
     expect(fixture.nativeElement.textContent).toContain('Elemento creato con successo.');
   });
@@ -571,7 +638,7 @@ describe('MasterDataAdminComponent', () => {
     );
     expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
-      { page: 0, size: 25 }
+      { page: 0, size: 20 }
     );
     expect(component.isDeleteConfirmOpen()).toBe(false);
     expect(fixture.nativeElement.textContent).toContain('Record eliminato correttamente.');
@@ -669,7 +736,7 @@ describe('MasterDataAdminComponent', () => {
 
     expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
-      { page: 1, size: 25 }
+      { page: 1, size: 20 }
     );
 
     const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
@@ -682,7 +749,7 @@ describe('MasterDataAdminComponent', () => {
     expect(((component as unknown as { pageIndex: () => number }).pageIndex)()).toBe(0);
     expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
-      { page: 0, size: 25 }
+      { page: 0, size: 20 }
     );
   });
 
@@ -783,7 +850,7 @@ describe('MasterDataAdminComponent', () => {
     fixture.detectChanges();
 
     component.handleRowAction({
-      action: { id: 'delete' },
+      action: { id: 'deactivate' },
       row: {
         id: 'department-1',
         tenantId: 'tenant-1',
@@ -803,7 +870,7 @@ describe('MasterDataAdminComponent', () => {
     );
     expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
-      { page: 0, size: 25 }
+      { page: 0, size: 20 }
     );
     expect(component.isDeleteConfirmOpen()).toBe(false);
     expect(fixture.nativeElement.textContent).toContain('Record disattivato correttamente.');
@@ -847,7 +914,7 @@ describe('MasterDataAdminComponent', () => {
     fixture.detectChanges();
 
     component.handleRowAction({
-      action: { id: 'delete' },
+      action: { id: 'deactivate' },
       row: {
         id: 'department-1',
         tenantId: 'tenant-1',
@@ -928,7 +995,7 @@ function createPage(
   return {
     content,
     page: 0,
-    size: 25,
+    size: 20,
     totalElements: content.length,
     totalPages: content.length > 0 ? 1 : 0,
     first: true,
@@ -936,3 +1003,4 @@ function createPage(
     ...overrides
   };
 }
+

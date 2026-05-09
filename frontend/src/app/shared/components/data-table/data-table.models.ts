@@ -47,3 +47,9 @@ export interface DataTablePage {
   readonly first: boolean;
   readonly last: boolean;
 }
+
+export interface DataTablePageLink {
+  readonly type: 'page' | 'ellipsis';
+  readonly value: number | string;
+  readonly active: boolean;
+}
