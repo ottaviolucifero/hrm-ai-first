@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.89
+Versione: 1.91
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -105,7 +105,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-048.9 Shell navigation visual review
+- TASK-048.9 Configure Angular AI skills and project agent integration (governance + repository-local skill versioning)
 
 ---
 
@@ -200,10 +200,11 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Da fare:
 
-- TASK-048.9 Shell navigation visual review
-- TASK-048.10 Spreadsheet-style bulk editor planning
-- TASK-048.11 Shared form controls and form patterns foundation
-- TASK-048.12 Global typography foundation
+- TASK-048.9 Configure Angular AI skills and project agent integration (governance + repository-local skill versioning)
+- TASK-048.10 Shell navigation visual review
+- TASK-048.11 Spreadsheet-style bulk editor planning
+- TASK-048.12 Shared form controls and form patterns foundation
+- TASK-048.13 Global typography foundation
 - TASK-049 Platform Super Admin and tenant-aware permissions model
 - TASK-050 User, Role and Permission domain review
 - TASK-051 Permission model foundation by scope/resource/action
@@ -230,17 +231,19 @@ Nota roadmap TASK-048:
 - Gli screenshot Stitch locali non sono versionati e sono ignorati via `.gitignore`.
 - TASK-048.4 ha applicato TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 a `/master-data` e al `DataTableComponent` shared senza creare componenti tabellari paralleli.
 - TASK-048.5 completa il pattern modal/dialog su `/master-data` con footer standard condiviso, ordine azioni coerente, spacing allineato al mockup HTML validato e rimozione del doppio `Annulla`/`Chiudi` nel read-only footer.
-- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 shared list button foundation, TASK-048.8 login visual alignment review, TASK-048.9 shell navigation review, TASK-048.10 bulk editor planning, TASK-048.11 shared form controls foundation, TASK-048.12 global typography foundation.
+- Sequenza aggiornata: TASK-048.3 reframe sottotask, TASK-048.4 Data list/Generic DataTable, TASK-048.5 CRUD modal/action confirmations, TASK-048.6 buttons/toast, TASK-048.7 shared list button foundation, TASK-048.8 login visual alignment review, TASK-048.9 Angular AI skills/project agent integration, TASK-048.10 shell navigation review, TASK-048.11 bulk editor planning, TASK-048.12 shared form controls foundation, TASK-048.13 global typography foundation.
 - TEMPLATE-01, TEMPLATE-03 e TEMPLATE-10 guidano lista dati, stati tabella e DataTable principale.
 - TEMPLATE-04 e TEMPLATE-05 guidano modali CRUD e conferme azione.
 - TEMPLATE-07 e TEMPLATE-11 guidano toast e pulsanti.
 - TASK-048.6 applica TEMPLATE-07 e TEMPLATE-11 a feedback toast e pulsanti condivisi, senza introdurre nuove librerie UI o modifiche backend/API.
 - TEMPLATE-06 guida solo la review visuale della login esistente, senza redesign non richiesto.
+- TASK-048.9 introduce governance documentale e integrazione repository-local per usare la skill Angular `angular-developer` come supporto complementare a `AGENTS.md`, `frontend/AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` e design system; `angular-new-app` resta esclusa perche il frontend Angular esiste gia.
+- TASK-048.9 include `.agents/skills/angular-developer` e `skills-lock.json` come asset versionabili del repository per standardizzare il lavoro agentico sul frontend Angular.
 - TEMPLATE-08 e TEMPLATE-09 restano extra da valutare prima di applicazioni concrete.
 - TEMPLATE-02 resta pattern avanzato futuro per pianificazione bulk editor stile spreadsheet.
 - TASK-048.8 e completato come login visual alignment review: consolidato l'allineamento visuale login rispetto al template validato con seconda iterazione piu profonda su layout/card/brand/language selector/CTA e final refinement su password link/footer legale, senza modifiche funzionali.
-- TASK-048.11 e dedicato alla foundation dei form controls condivisi: censimento input/textarea/select/checkbox/radio/switch/date/number/search e pattern validazione/help text, con possibile `app-checkbox` come primo controllo condiviso.
-- TASK-048.12 e dedicato alla foundation tipografica globale: analisi font attuale/Metronic, confronto con mockup validati, decisione su font globale (Inter/Manrope o alternativa), preferenza per asset locali e centralizzazione gerarchie tipografiche.
+- TASK-048.12 e dedicato alla foundation dei form controls condivisi: censimento input/textarea/select/checkbox/radio/switch/date/number/search e pattern validazione/help text, con possibile `app-checkbox` come primo controllo condiviso.
+- TASK-048.13 e dedicato alla foundation tipografica globale: analisi font attuale/Metronic, confronto con mockup validati, decisione su font globale (Inter/Manrope o alternativa), preferenza per asset locali e centralizzazione gerarchie tipografiche.
 - Nessuna modifica Angular o backend è prevista in TASK-048.3.
 - `frontend/AGENTS.md` rimane fonte applicativa vigente per le regole frontend; `docs/design/DESIGN-SYSTEM.md` dettaglia lo standard UI quando approvato e aggiornato dai task TASK-048.x.
 Nota roadmap TASK-045:
@@ -344,6 +347,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.91 | 2026-05-09 | TASK-048.9 aggiornato in roadmap con decisione durevole: oltre alla governance documentale include integrazione/versionamento repository-local della skill approvata `angular-developer` tramite `.agents/` e `skills-lock.json`; `angular-new-app` esclusa, nessuna modifica applicativa/backend/API. |
+| 1.90 | 2026-05-09 | Inserito TASK-048.9 "Configure Angular AI skills and project agent integration" nella roadmap: governance documentale per skill Angular `angular-developer`, esclusione di `angular-new-app`, Plan mode e IDE context; rinumerati i successivi TASK-048.x fino a TASK-048.13 e prossimo passo aggiornato, senza modifiche applicative/backend/API. |
 | 1.89 | 2026-05-09 | TASK-048.8 final refinement completato in roadmap: aggiunti link visuale password dimenticata e footer legale i18n alla login, ripulito il selettore lingua, nessuna modifica backend/API/routing. |
 | 1.88 | 2026-05-09 | TASK-048.8 seconda iterazione completata in roadmap: login visual alignment review approfondita rispetto a TEMPLATE-06 con patch visuale piu incisiva su card, brand cluster, language selector, CTA e responsive; nessuna modifica backend/API. |
 | 1.87 | 2026-05-09 | TASK-048.8 completato in roadmap: login visual alignment review su TEMPLATE-06 con patch visuale minima su `/login`, coerenza i18n e nessuna modifica backend/API; prossimo passo aggiornato a TASK-048.9. |

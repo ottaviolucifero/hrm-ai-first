@@ -14,6 +14,7 @@ Primary governance documents:
 Operational support documents:
 - `docs/qa/QA-REPORTS.md`
 - `docs/ai/MODEL-SELECTION-GUIDE.md`
+- `docs/ai-prompts/codex-prompt-governance.md`
 
 Supporting historical analysis input:
 - `/docs/analysis/Manifesto_e_Intenzioni_HRM_AI_First`
@@ -123,6 +124,9 @@ Before implementing major changes:
 Per ogni task significativo, prima dell'esecuzione va suggerito il modello/agente piu adatto e, quando viene preparato un prompt operativo, va sempre inclusa una sezione obbligatoria `Modello consigliato`.
 
 La selezione deve seguire anche `docs/ai/MODEL-SELECTION-GUIDE.md`, che resta la guida centrale.
+
+La governance prompt e l'uso di eventuali skills operative, incluse skills Angular, sono documentati in `docs/ai-prompts/codex-prompt-governance.md` e restano subordinati alla gerarchia di governance del repository.
+Quando previste da decisioni approvate, le skills operative possono essere versionate localmente nel repository (esempio: `.agents/` e `skills-lock.json`).
 
 Le scelte devono distinguere almeno:
 

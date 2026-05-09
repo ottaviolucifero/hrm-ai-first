@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.89
+Versione: 1.91
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -2626,7 +2626,7 @@ Scope:
 Acceptance criteria:
 
 - TASK-048 non e piu limitato al solo perimetro Master Data;
-- i sottotask TASK-048.3..TASK-048.10 sono allineati ai template UI validati;
+- i sottotask TASK-048.3..TASK-048.13 sono allineati ai template UI validati e alla governance frontend collegata;
 - i template approvati, extra e futuri sono distinti nei task operativi;
 - nessuna modifica Angular/backend prevista nel solo riallineamento documentale;
 - non modificare frontend, backend o QA report;
@@ -2701,7 +2701,7 @@ Scope:
 
 Completato:
 
-- riallineati i sottotask TASK-048.4..TASK-048.10 al catalogo template UI validato;
+- riallineati i sottotask TASK-048.4..TASK-048.13 al catalogo template UI validato e alla governance frontend collegata;
 - TASK-048 ridefinito come iniziativa generale HRflow design system/template UI;
 - Master Data mantenuto solo come caso pilota;
 - ROADMAP.md aggiornato con nuova sequenza e prossimo step;
@@ -2709,7 +2709,7 @@ Completato:
 
 Acceptance criteria:
 
-- TASK-048.4..TASK-048.10 definiti in base ai template validati;
+- TASK-048.4..TASK-048.13 definiti in base ai template validati e alla governance frontend collegata;
 - TASK-048.1 e TASK-048.2 mantenuti come DONE;
 - ROADMAP.md allineato al nuovo prossimo passo TASK-048.3;
 - nessuna modifica Angular/backend.
@@ -2898,7 +2898,53 @@ Completato:
 - consolidati stati visuali principali senza cambiare logica: CTA con `disabled`/`aria-busy` in loading, errori campo condivisi e toast credenziali errate invariati;
 - mantenuti componenti shared esistenti (`app-email-field`, `app-password-field`), i18n `it/fr/en`, nessuna modifica backend/API o dipendenze.
 
-### TASK-048.9 - Shell navigation visual review
+### TASK-048.9 - Configure Angular AI skills and project agent integration
+
+Stato: TODO
+
+Tipo: Documentazione / AI governance / frontend Angular
+
+Template:
+
+- nessun template UI applicativo.
+
+Contesto:
+
+- la skill Angular ufficiale `angular-developer` puo essere installata o gestita manualmente tramite `npx skills add https://github.com/angular/skills --skill angular-developer`;
+- la skill `angular-new-app` non deve essere usata in questo progetto, perche il frontend Angular esiste gia;
+- la skill deve supportare gli agenti AI/Codex senza sostituire la governance del repository;
+- la skill approvata deve essere integrata anche in forma repository-local e versionata nel repo.
+
+Scope:
+
+- documentare l'uso della skill Angular `angular-developer`;
+- includere integrazione repository-local della skill approvata sotto `.agents/skills/angular-developer`;
+- includere `skills-lock.json` come tracciamento della skill approvata e del relativo lock;
+- chiarire quando deve essere considerata dagli agenti AI/Codex per task Angular;
+- collegarla alle regole frontend esistenti in `frontend/AGENTS.md`;
+- collegarla alla governance prompt Codex in `docs/ai-prompts/codex-prompt-governance.md`;
+- chiarire che la skill e complementare, non sostitutiva, rispetto a `AGENTS.md`, `frontend/AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` e `docs/design/DESIGN-SYSTEM.md`;
+- documentare uso per componenti, servizi, routing, forms, accessibilita, testing, styling e best practice frontend;
+- documentare regole operative su Plan mode e IDE context;
+- evitare modifiche codice applicativo, backend/API, package, dipendenze o configurazioni build.
+
+Acceptance criteria:
+
+- TASK-048.9 presente in `TASKS.md`;
+- task successivi TASK-048.x rinumerati in modo coerente;
+- `ROADMAP.md` coerente con la nuova sequenza TASK-048;
+- governance Codex aggiornata con uso della skill Angular `angular-developer`;
+- `angular-new-app` esclusa esplicitamente dal progetto;
+- `.agents/` e `skills-lock.json` presenti e inclusi nel perimetro TASK-048.9 come asset repository-local della skill approvata;
+- chiaro che `skills-lock.json` traccia la skill approvata corrente;
+- Plan mode documentato per analisi iniziale senza modifiche file;
+- IDE context documentato come fonte da verificare insieme al prompt;
+- collegamento chiaro tra Angular skill, `AGENTS.md`, `frontend/AGENTS.md`, i18n, design system, testing e regole frontend;
+- nessuna modifica applicativa;
+- nessuna modifica backend/API;
+- nessuna nuova dipendenza.
+
+### TASK-048.10 - Shell navigation visual review
 
 Stato: TODO
 
@@ -2920,7 +2966,7 @@ Acceptance criteria:
 - decisioni documentate prima di qualunque applicazione;
 - nessun redesign della shell non autorizzato.
 
-### TASK-048.10 - Spreadsheet-style bulk editor planning
+### TASK-048.11 - Spreadsheet-style bulk editor planning
 
 Stato: TODO
 
@@ -2942,7 +2988,7 @@ Acceptance criteria:
 - rischi e prerequisiti identificati;
 - nessuna implementazione frontend/backend.
 
-### TASK-048.11 - Shared form controls and form patterns foundation
+### TASK-048.12 - Shared form controls and form patterns foundation
 
 Stato: TODO
 
@@ -2985,7 +3031,7 @@ Acceptance criteria:
 - test frontend OK;
 - TASKS.md e ROADMAP.md aggiornati.
 
-### TASK-048.12 - Global typography foundation
+### TASK-048.13 - Global typography foundation
 
 Stato: TODO
 
@@ -3219,6 +3265,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.91 | 2026-05-09 | TASK-048.9 esteso da sola governance a governance + integrazione repository-local skill Angular approvata: inclusi `.agents/skills/angular-developer` e `skills-lock.json`, esclusa `angular-new-app`, allineati scope/acceptance e riferimenti documentali senza modifiche applicative/backend/API. |
+| 1.90 | 2026-05-09 | Inserito TASK-048.9 "Configure Angular AI skills and project agent integration" per documentare l'uso della skill Angular `angular-developer` come supporto complementare alla governance repository; esclusa `angular-new-app`, documentati Plan mode e IDE context, rinumerati i successivi TASK-048.x fino a TASK-048.13, senza modifiche applicative/backend/API. |
 | 1.89 | 2026-05-09 | TASK-048.8 final refinement: aggiunti link visuale password dimenticata e footer legale i18n alla login, rimosso marker decorativo dal selettore lingua, senza routing/logica recovery/backend. |
 | 1.88 | 2026-05-09 | TASK-048.8 seconda iterazione: login visual alignment review approfondita con layout/card/brand/language selector/CTA piu aderenti a TEMPLATE-06, mantenendo componenti shared email/password e nessuna modifica funzionale/backend. |
 | 1.87 | 2026-05-09 | TASK-048.8 completato: login visual alignment review allineata a TEMPLATE-06 con patch minima su layout/login styles+i18n, senza modifiche funzionali o backend; build/test frontend rieseguiti e QA report aggiornato. |

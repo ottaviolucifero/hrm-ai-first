@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.21
-Ultimo aggiornamento: 2026-05-07
+Versione: 1.22
+Ultimo aggiornamento: 2026-05-09
 Stato: Attivo
 
 ---
@@ -1087,10 +1087,50 @@ Il backlog introduce TASK-047 come task dedicato alla cancellazione fisica sicur
 
 ---
 
+### DEC-029 - Repository-local versioning policy for approved AI skills
+
+Data: 2026-05-09
+Stato: Approvata
+
+Decisione:
+
+Le AI skills approvate per il progetto possono essere versionate nel repository quando servono a standardizzare il lavoro degli agenti.
+
+Per lo stato corrente e approvata solo la skill Angular `angular-developer`, da integrare anche in forma repository-local sotto `.agents/skills/angular-developer` con lock in `skills-lock.json`.
+
+La skill `angular-new-app` e esplicitamente esclusa dal progetto `hrm-ai-first` perche il frontend Angular esiste gia e il lavoro deve evolvere la codebase corrente.
+
+Nuove skill future possono essere aggiunte solo tramite decisione dedicata in `DECISIONS.md` e task dedicato in `TASKS.md`/`ROADMAP.md`.
+
+Motivazione:
+
+- standardizzare il comportamento operativo degli agenti su task Angular;
+- rendere riproducibile e verificabile il set di skill approvate;
+- evitare uso opportunistico di skill non allineate alla governance repository;
+- mantenere controllo esplicito sul perimetro AI operativo.
+
+Alternative escluse:
+
+- usare skill non versionate/locali come riferimento primario;
+- approvare implicitamente tutte le skill disponibili;
+- usare `angular-new-app` in un repository con frontend gia esistente;
+- introdurre nuove skill senza decisione e task dedicati.
+
+Impatto:
+
+`TASK-048.9` include governance piu integrazione repository-local della skill approvata (`.agents/` + `skills-lock.json`).
+
+`docs/ai-prompts/codex-prompt-governance.md` deve chiarire uso della skill locale quando presente e subordinazione alle fonti di governance.
+
+`AGENTS.md` e `frontend/AGENTS.md` restano le fonti operative principali; le skill sono complementari e non sostitutive.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.22 | 2026-05-09 | Aggiunta DEC-029: policy durevole per versionamento repository-local delle AI skills approvate; al momento approvata solo `angular-developer` con `.agents/skills` e `skills-lock.json`, `angular-new-app` esclusa e nuove skill ammesse solo con decisione/task dedicati. |
 | 1.21 | 2026-05-07 | Aggiunta DEC-028 per definire la doppia policy Master Data: `Disattiva` come soft-delete `active=false` e `Elimina` come delete fisico solo per record non referenziati, con blocco coerente dei record collegati e messaggi UI distinti. |
 | 1.20 | 2026-05-04 | Aggiunta DEC-027 per definire backend login/JWT foundation: email globale case-insensitive come identificativo login, JWT stateless con Spring Security OAuth2 Resource Server / Jose e claim principali `sub`, `userId`, `tenantId`, `userType`. |
 | 1.19 | 2026-05-04 | Aggiunta DEC-026 per introdurre backend login/JWT foundation e frontend login foundation prima delle UI amministrative, spostando Master Data Admin dopo login foundation e mantenendo fuori scope OTP/MFA, RBAC runtime, tenant switching e impersonation. |
