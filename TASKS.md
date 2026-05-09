@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.92
+Versione: 1.97
 Ultimo aggiornamento: 2026-05-09
 Stato: In avanzamento
 
@@ -2626,7 +2626,7 @@ Scope:
 Acceptance criteria:
 
 - TASK-048 non e piu limitato al solo perimetro Master Data;
-- i sottotask TASK-048.3..TASK-048.14 sono allineati ai template UI validati e alla governance frontend collegata;
+- i sottotask TASK-048.3..TASK-048.16 sono allineati ai template UI validati e alla governance frontend collegata;
 - i template approvati, extra e futuri sono distinti nei task operativi;
 - nessuna modifica Angular/backend prevista nel solo riallineamento documentale;
 - non modificare frontend, backend o QA report;
@@ -2701,7 +2701,7 @@ Scope:
 
 Completato:
 
-- riallineati i sottotask TASK-048.4..TASK-048.14 al catalogo template UI validato e alla governance frontend collegata;
+- riallineati i sottotask TASK-048.4..TASK-048.16 al catalogo template UI validato e alla governance frontend collegata;
 - TASK-048 ridefinito come iniziativa generale HRflow design system/template UI;
 - Master Data mantenuto solo come caso pilota;
 - ROADMAP.md aggiornato con nuova sequenza e prossimo step;
@@ -2709,7 +2709,7 @@ Completato:
 
 Acceptance criteria:
 
-- TASK-048.4..TASK-048.14 definiti in base ai template validati e alla governance frontend collegata;
+- TASK-048.4..TASK-048.16 definiti in base ai template validati e alla governance frontend collegata;
 - TASK-048.1 e TASK-048.2 mantenuti come DONE;
 - ROADMAP.md allineato al nuovo prossimo passo TASK-048.3;
 - nessuna modifica Angular/backend.
@@ -2987,7 +2987,7 @@ Completato:
 
 ### TASK-048.11 - Sidebar visual alignment to TEMPLATE-08
 
-Stato: TODO
+Stato: DONE
 
 Template:
 
@@ -3012,7 +3012,80 @@ Acceptance criteria:
 - build frontend OK;
 - test frontend OK.
 
-### TASK-048.12 - Spreadsheet-style bulk editor planning
+Completato:
+
+- riallineata la sidebar esistente a TEMPLATE-08 senza creare una shell parallela;
+- introdotta resa visuale navy con gerarchia piu marcata per top-level items, stato active a pill primaria e stato branch-active piu morbido;
+- raffinati submenu tree, contrasti secondari, arrows, densita verticale, search box e scrollbar con patch locale solo visuale;
+- completato un ulteriore refinement di densita enterprise e scrolling: eliminato overflow orizzontale, resa scrollabile internamente l'area menu, compattati item/search/header e reso il submenu active meno massiccio;
+- completato l'allineamento finale: active state parent/submenu non aderenti al bordo destro e search box centrata verticalmente nella propria sezione;
+- mantenuti routing Angular, i18n, ricerca locale, collapse desktop ed header/topbar invariati;
+- aggiunti test sidebar sul mantenimento dell'highlight della route attiva;
+- build frontend OK;
+- test frontend OK.
+
+### TASK-048.12 - CRUD modal and form visual refinement
+
+Stato: TODO
+
+Template:
+
+- TEMPLATE-04 CRUD modal form.
+
+Scope:
+
+- migliorare popup CRUD e form esistenti;
+- riallineare a TEMPLATE-04 CRUD modal form;
+- considerare anche conferme azione se ancora collegate al vecchio TASK-048.5;
+- migliorare header modal, body, footer, spacing, input, checkbox, focus state e responsive;
+- non creare ancora shared modal framework;
+- non creare ancora shared form framework;
+- non anticipare TASK-048.15;
+- non modificare backend/API;
+- non introdurre nuove librerie UI.
+
+Acceptance criteria:
+
+- popup CRUD piu coerente con TEMPLATE-04;
+- form piu leggibili e compatti;
+- footer actions coerenti;
+- checkbox/input migliorati senza framework shared prematuro;
+- responsive verificato;
+- build frontend OK;
+- test frontend OK.
+
+### TASK-048.13 - Header/topbar visual alignment to TEMPLATE-09
+
+Stato: TODO
+
+Template:
+
+- TEMPLATE-09 Header / topbar.
+
+Scope:
+
+- migliorare header/topbar esistente secondo TEMPLATE-09;
+- rendere header piu compatta;
+- migliorare allineamento verticale titolo, icone, avatar/user menu;
+- migliorare separazione header/contenuto;
+- migliorare hover/focus area utente;
+- verificare responsive mobile;
+- mantenere coerenza visuale con la sidebar rifinita;
+- non modificare sidebar;
+- non modificare backend/API;
+- non introdurre nuove librerie UI.
+
+Acceptance criteria:
+
+- header/topbar allineata a TEMPLATE-09;
+- contenuti centrati verticalmente;
+- area utente/avatar piu pulita;
+- responsive verificato;
+- sidebar non modificata;
+- build frontend OK;
+- test frontend OK.
+
+### TASK-048.14 - Spreadsheet-style bulk editor planning
 
 Stato: TODO
 
@@ -3034,7 +3107,7 @@ Acceptance criteria:
 - rischi e prerequisiti identificati;
 - nessuna implementazione frontend/backend.
 
-### TASK-048.13 - Shared form controls and form patterns foundation
+### TASK-048.15 - Shared form controls and form patterns foundation
 
 Stato: TODO
 
@@ -3077,7 +3150,7 @@ Acceptance criteria:
 - test frontend OK;
 - TASKS.md e ROADMAP.md aggiornati.
 
-### TASK-048.14 - Global typography foundation
+### TASK-048.16 - Global typography foundation
 
 Stato: TODO
 
@@ -3311,6 +3384,11 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.97 | 2026-05-09 | Backlog TASK-048 aggiornato dopo TASK-048.11: inseriti TASK-048.12 "CRUD modal and form visual refinement" e TASK-048.13 "Header/topbar visual alignment to TEMPLATE-09"; bulk editor, form controls e typography slittati a TASK-048.14, TASK-048.15 e TASK-048.16 senza modifiche applicative. |
+| 1.96 | 2026-05-09 | TASK-048.11 alignment polish: active state parent/submenu distanziati dal bordo destro e search box ricentrata verticalmente nella propria sezione; build/test frontend OK. |
+| 1.95 | 2026-05-09 | TASK-048.11 refinement pass su densita e scrolling sidebar: rimosso overflow laterale, aggiunto scroll verticale interno stabile, compattati header/search/menu item e alleggerito l'active submenu, con build/test frontend nuovamente OK. |
+| 1.94 | 2026-05-09 | TASK-048.11 rifinito ulteriormente: submenu, contrasti, densita, active state e scrollbar della sidebar sono stati resi piu puliti e leggibili mantenendo invariati routing/i18n/ricerca/collapse; build/test frontend rieseguiti con esito OK. |
+| 1.93 | 2026-05-09 | TASK-048.11 completato: sidebar esistente riallineata visivamente a TEMPLATE-08 con patch mirata su componente Angular esistente, active/branch-active piu chiari, ricerca su superficie dark, nessuna modifica backend/API/header e build/test frontend OK. |
 | 1.92 | 2026-05-09 | TASK-048.10 completato come shell navigation visual review documentale: TEMPLATE-08 e TEMPLATE-09 valutati senza modifiche Angular/backend/API; inserito TASK-048.11 "Sidebar visual alignment to TEMPLATE-08" come task dedicato futuro e rinumerati i successivi TASK-048.x fino a TASK-048.14. |
 | 1.91 | 2026-05-09 | TASK-048.9 esteso da sola governance a governance + integrazione repository-local skill Angular approvata: inclusi `.agents/skills/angular-developer` e `skills-lock.json`, esclusa `angular-new-app`, allineati scope/acceptance e riferimenti documentali senza modifiche applicative/backend/API. |
 | 1.90 | 2026-05-09 | Inserito TASK-048.9 "Configure Angular AI skills and project agent integration" per documentare l'uso della skill Angular `angular-developer` come supporto complementare alla governance repository; esclusa `angular-new-app`, documentati Plan mode e IDE context, rinumerati i successivi TASK-048.x fino a TASK-048.13, senza modifiche applicative/backend/API. |

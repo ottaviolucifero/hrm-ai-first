@@ -1,24 +1,18 @@
 <aside
   id="sidebar"
-  class="kt-sidebar fixed bottom-0 start-0 top-0 z-20 hidden shrink-0 flex-col border-e border-border bg-background transition-all duration-200 lg:flex"
+  class="kt-sidebar app-sidebar-shell fixed bottom-0 start-0 top-0 z-20 hidden shrink-0 flex-col border-e border-border transition-all duration-200 lg:flex"
   [class.overflow-hidden]="sidebarCollapsed()"
   [class.w-20]="sidebarCollapsed()"
   [style.--sidebar-width]="sidebarCollapsed() ? '80px' : null"
 >
   <div id="sidebar_wrapper" class="kt-sidebar-wrapper flex grow flex-col">
     <div
-      class="kt-sidebar-header flex items-center gap-2 border-b border-border px-5"
+      class="kt-sidebar-header app-sidebar-header flex items-center gap-2 border-b border-border px-5"
       [class.justify-center]="sidebarCollapsed()"
       [class.px-3]="sidebarCollapsed()"
     >
-      @if (!sidebarCollapsed()) {
-        <a class="sidebar-focus kt-sidebar-logo flex min-w-0 items-center gap-3" href="/" [attr.aria-label]="i18n.t('sidebar.logoHome')">
-          <img class="default-logo h-8" src="assets/logos/hrm-logo.png" [alt]="i18n.t('app.brand')" />
-          <img class="small-logo h-8" src="assets/logos/hrm-logo.png" [alt]="i18n.t('app.brand')" />
-        </a>
-      }
       <button
-        class="sidebar-focus kt-btn kt-btn-icon kt-btn-ghost kt-btn-sm shrink-0"
+        class="sidebar-focus kt-btn kt-btn-icon kt-btn-ghost kt-btn-sm app-sidebar-toggle shrink-0"
         type="button"
         [class.ms-auto]="!sidebarCollapsed()"
         [attr.aria-label]="sidebarCollapsed() ? i18n.t('sidebar.expandMenu') : i18n.t('sidebar.collapseMenu')"
@@ -34,10 +28,10 @@
       </button>
     </div>
 
-    <div id="sidebar_scrollable" class="kt-sidebar-content kt-scrollable-y-auto grow py-4">
+    <div id="sidebar_scrollable" class="kt-sidebar-content app-sidebar-content kt-scrollable-y-auto grow">
       @if (!sidebarCollapsed()) {
-        <div class="px-4 pb-3">
-          <div class="kt-input kt-input-sm">
+        <div class="app-sidebar-search">
+          <div class="kt-input kt-input-sm app-sidebar-search-input">
             <i class="ki-filled ki-magnifier" aria-hidden="true"></i>
             <input
               type="search"
@@ -52,13 +46,13 @@
 
       <nav
         id="sidebar_menu"
-        class="kt-menu kt-menu-default flex-col px-2"
+        class="kt-menu kt-menu-default app-sidebar-nav flex-col px-2"
         data-kt-menu="true"
         [attr.aria-label]="i18n.t('sidebar.navigationLabel')"
       >
         @for (node of displayedNavigationTree(); track node.id) {
           <div
-            class="kt-menu-item"
+            class="kt-menu-item app-sidebar-item"
             [class.active]="isActiveRoute(node)"
             [class.here]="hasActiveDescendant(node)"
             [class.show]="isExpanded(node)"
@@ -66,27 +60,23 @@
             @if (hasChildren(node)) {
               @if (sidebarCollapsed()) {
                 <button
-                  class="kt-menu-link w-full justify-center opacity-60"
+                  class="kt-menu-link app-sidebar-link app-sidebar-link--top app-sidebar-link--collapsed w-full opacity-60"
                   type="button"
                   disabled
+                  [class.app-sidebar-link--branch-active]="isNodeHighlighted(node)"
                   [attr.title]="nodeTitle(node)"
                 >
-                  <span class="text-sm font-semibold leading-none">{{ navigationInitial(node) }}</span>
+                  <span class="app-sidebar-mark">{{ navigationInitial(node) }}</span>
                 </button>
               } @else {
                 <button
-                  class="sidebar-focus kt-menu-link w-full"
+                  class="sidebar-focus kt-menu-link app-sidebar-link app-sidebar-link--top w-full"
                   type="button"
+                  [class.app-sidebar-link--branch-active]="isNodeHighlighted(node)"
                   [attr.aria-expanded]="isExpanded(node)"
                   (click)="toggleNode(node)"
                 >
-                  <span class="kt-menu-bullet">
-                    <span
-                      class="size-1.5 rounded-full"
-                      [class.bg-primary]="hasActiveDescendant(node)"
-                      [class.bg-muted]="!hasActiveDescendant(node)"
-                    ></span>
-                  </span>
+                  <span class="app-sidebar-mark">{{ navigationInitial(node) }}</span>
                   <span class="kt-menu-title">{{ nodeTitle(node) }}</span>
                   <span class="kt-menu-arrow">
                     <i
@@ -100,18 +90,19 @@
               }
 
               @if (isExpanded(node)) {
-                <div class="kt-menu-accordion flex-col">
+                <div class="kt-menu-accordion app-sidebar-subtree flex-col">
                   @for (childNode of node.children; track childNode.id) {
                     <div
-                      class="kt-menu-item"
+                      class="kt-menu-item app-sidebar-item"
                       [class.active]="isActiveRoute(childNode)"
                       [class.here]="hasActiveDescendant(childNode)"
                       [class.show]="isExpanded(childNode)"
                     >
                       @if (hasChildren(childNode)) {
                         <button
-                          class="sidebar-focus kt-menu-link w-full"
+                          class="sidebar-focus kt-menu-link app-sidebar-link app-sidebar-link--nested w-full"
                           type="button"
+                          [class.app-sidebar-link--branch-active]="isNodeHighlighted(childNode)"
                           [attr.aria-expanded]="isExpanded(childNode)"
                           (click)="toggleNode(childNode)"
                         >
@@ -134,14 +125,18 @@
                         </button>
 
                         @if (isExpanded(childNode)) {
-                          <div class="kt-menu-accordion flex-col">
+                          <div class="kt-menu-accordion app-sidebar-subtree flex-col">
                             @for (grandchildNode of childNode.children; track grandchildNode.id) {
                               <div
-                                class="kt-menu-item"
+                                class="kt-menu-item app-sidebar-item"
                                 [class.active]="isActiveRoute(grandchildNode)"
                               >
                                 @if (grandchildNode.route; as route) {
-                                  <a class="sidebar-focus kt-menu-link" [routerLink]="route">
+                                  <a
+                                    class="sidebar-focus kt-menu-link app-sidebar-link app-sidebar-link--deep"
+                                    [routerLink]="route"
+                                    [class.app-sidebar-link--active]="isActiveRoute(grandchildNode)"
+                                  >
                                     <span class="kt-menu-bullet">
                                       <span
                                         class="size-1.5 rounded-full"
@@ -152,7 +147,7 @@
                                     <span class="kt-menu-title">{{ nodeTitle(grandchildNode) }}</span>
                                   </a>
                                 } @else {
-                                  <button class="kt-menu-link w-full opacity-60" type="button" disabled>
+                                  <button class="kt-menu-link app-sidebar-link app-sidebar-link--deep w-full opacity-60" type="button" disabled>
                                     <span class="kt-menu-bullet">
                                       <span class="size-1.5 rounded-full bg-muted"></span>
                                     </span>
@@ -164,7 +159,11 @@
                           </div>
                         }
                       } @else if (childNode.route; as route) {
-                        <a class="sidebar-focus kt-menu-link" [routerLink]="route">
+                        <a
+                          class="sidebar-focus kt-menu-link app-sidebar-link app-sidebar-link--nested"
+                          [routerLink]="route"
+                          [class.app-sidebar-link--active]="isActiveRoute(childNode)"
+                        >
                           <span class="kt-menu-bullet">
                             <span
                               class="size-1.5 rounded-full"
@@ -175,7 +174,7 @@
                           <span class="kt-menu-title">{{ nodeTitle(childNode) }}</span>
                         </a>
                       } @else {
-                        <button class="kt-menu-link w-full opacity-60" type="button" disabled>
+                        <button class="kt-menu-link app-sidebar-link app-sidebar-link--nested w-full opacity-60" type="button" disabled>
                           <span class="kt-menu-bullet">
                             <span class="size-1.5 rounded-full bg-muted"></span>
                           </span>
@@ -188,30 +187,19 @@
               }
             } @else if (node.route; as route) {
               <a
-                class="sidebar-focus kt-menu-link"
+                class="sidebar-focus kt-menu-link app-sidebar-link app-sidebar-link--top"
                 [routerLink]="route"
-                [class.active]="isActiveRoute(node)"
-                [class.rounded-md]="sidebarCollapsed()"
-                [class.justify-center]="sidebarCollapsed()"
+                [class.app-sidebar-link--active]="isActiveRoute(node)"
+                [class.app-sidebar-link--collapsed]="sidebarCollapsed()"
                 [attr.title]="sidebarCollapsed() ? nodeTitle(node) : null"
               >
+                <span class="app-sidebar-mark">{{ navigationInitial(node) }}</span>
                 @if (!sidebarCollapsed()) {
-                  <span class="kt-menu-bullet">
-                    <span
-                      class="size-1.5 rounded-full"
-                      [class.bg-primary]="isActiveRoute(node)"
-                      [class.bg-muted]="!isActiveRoute(node)"
-                    ></span>
-                  </span>
-                }
-                @if (sidebarCollapsed()) {
-                  <span class="text-sm font-semibold leading-none">{{ navigationInitial(node) }}</span>
-                } @else {
                   <span class="kt-menu-title">{{ nodeTitle(node) }}</span>
                 }
               </a>
             } @else {
-              <button class="kt-menu-link w-full opacity-60" type="button" disabled>
+              <button class="kt-menu-link app-sidebar-link app-sidebar-link--top w-full opacity-60" type="button" disabled>
                 <span class="kt-menu-bullet">
                   <span class="size-1.5 rounded-full bg-muted"></span>
                 </span>
@@ -220,7 +208,7 @@
             }
           </div>
         } @empty {
-          <div class="px-4 py-2 text-sm text-secondary-foreground">{{ i18n.t('sidebar.noResults') }}</div>
+          <div class="app-sidebar-empty px-4 py-2 text-sm">{{ i18n.t('sidebar.noResults') }}</div>
         }
       </nav>
     </div>

@@ -32,6 +32,21 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-048.11 - Sidebar visual alignment to TEMPLATE-08
+
+- Data: 2026-05-09
+- Branch: `task-048-11-sidebar-visual-alignment`
+- Task: TASK-048.11 - Sidebar visual alignment to TEMPLATE-08
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `app-sidebar` e shell/sidebar esistente, resa visuale rispetto a TEMPLATE-08, preservazione di routing, i18n, ricerca menu, collapse desktop e active state
+- Refinement visuali confermati: submenu tree piu leggibile, active state meno aggressivo e non aderente al bordo destro, densita piu compatta in chiave enterprise, marker alleggeriti, search box piu compatta e centrata verticalmente nella propria sezione, scrollbar dark integrata, rimozione overflow orizzontale e scroll verticale interno sidebar
+- Comandi eseguiti: `cd frontend && npm.cmd run build` -> OK; `cd frontend && npm.cmd test` -> OK
+- Esiti reali: build frontend OK; test frontend OK, 15 file di test passed, 83 test passed
+- Regressioni trovate: nessuna regressione automatica rilevata; aggiunto test sulla route attiva evidenziata
+- QA manuale browser eseguita/non eseguita: non eseguita in questa sessione CLI
+- Limiti/note: il toggle mobile dell'header non e stato esteso in questo task e resta fuori scope; la resa scroll/overflow e stata verificata solo tramite review statica e non con browser interattivo, quindi resta consigliata validazione manuale della sidebar su viewport desktop/mobile
+- Stato finale: PASS WITH NOTES
+
 ### TASK-048.8 - Login visual alignment review
 
 - Data: 2026-05-09

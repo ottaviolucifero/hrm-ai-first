@@ -1,7 +1,13 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 
 import { AppSidebarComponent } from './app-sidebar.component';
+
+@Component({
+  template: ''
+})
+class DummyRouteComponent {}
 
 describe('AppSidebarComponent', () => {
   beforeEach(async () => {
@@ -9,7 +15,12 @@ describe('AppSidebarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppSidebarComponent],
-      providers: [provideRouter([])]
+      providers: [
+        provideRouter([
+          { path: '', component: DummyRouteComponent },
+          { path: 'master-data', component: DummyRouteComponent }
+        ])
+      ]
     }).compileComponents();
   });
 
@@ -69,5 +80,19 @@ describe('AppSidebarComponent', () => {
     expect(homeLink?.textContent?.trim()).toBe('H');
     expect(peopleButton?.disabled).toBe(true);
     expect(peopleButton?.textContent?.trim()).toBe('P');
+  });
+
+  it('keeps the active route visually highlighted', async () => {
+    const fixture = TestBed.createComponent(AppSidebarComponent);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/master-data');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const masterDataLink = compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]');
+
+    expect(masterDataLink).toBeTruthy();
+    expect(masterDataLink?.classList.contains('app-sidebar-link--active')).toBe(true);
   });
 });
