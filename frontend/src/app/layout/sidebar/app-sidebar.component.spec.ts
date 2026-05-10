@@ -18,7 +18,13 @@ describe('AppSidebarComponent', () => {
       providers: [
         provideRouter([
           { path: '', component: DummyRouteComponent },
-          { path: 'master-data', component: DummyRouteComponent }
+          { path: 'master-data', component: DummyRouteComponent },
+          {
+            path: 'admin',
+            children: [
+              { path: 'permissions', component: DummyRouteComponent }
+            ]
+          }
         ])
       ]
     }).compileComponents();
@@ -38,6 +44,7 @@ describe('AppSidebarComponent', () => {
     expect(compiled.textContent).toContain('Persone');
     expect(compiled.textContent).toContain('Dati di base');
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]')).toBeTruthy();
+    expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/permissions"]')).toBeTruthy();
   });
 
   it('filters the navigation tree', () => {

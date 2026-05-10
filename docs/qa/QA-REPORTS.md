@@ -192,6 +192,96 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-053.2 - Frontend role permission matrix UI foundation (QA regression pass 2)
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.2 - Frontend role permission matrix UI foundation
+- Modello consigliato nel prompt operativo: GPT-5.3 Codex
+- Area verificata: scope frontend `/admin/permissions`, integrazione AppShell/sidebar/header, i18n `it/fr/en`, componente shared `app-checkbox`, filtro permessi Master Data, stati UI, routing/menu, regressioni frontend.
+- File controllati:
+  - `frontend/src/app/features/role-permissions/role-permission-matrix.component.ts`
+  - `frontend/src/app/features/role-permissions/role-permission-matrix.component.html`
+  - `frontend/src/app/features/role-permissions/role-permission-matrix.service.ts`
+  - `frontend/src/app/features/role-permissions/role-permission-matrix.component.spec.ts`
+  - `frontend/src/app/features/role-permissions/role-permission-matrix.service.spec.ts`
+  - `frontend/src/app/app.routes.ts`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.ts`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.spec.ts`
+  - `frontend/src/app/layout/header/app-header.component.ts`
+  - `frontend/src/app/layout/header/app-header.component.spec.ts`
+  - `frontend/src/app/shared/components/checkbox/app-checkbox.component.ts`
+  - `frontend/src/app/shared/components/checkbox/app-checkbox.component.html`
+  - `frontend/src/app/shared/components/checkbox/app-checkbox.component.scss`
+  - `frontend/src/app/shared/components/checkbox/app-checkbox.component.spec.ts`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+- Verifiche eseguite:
+  - scope rispettato: nessun CRUD ruoli, nessuna gestione utenti, nessun enforcement completo frontend/backend aggiunto;
+  - route/menu coerenti: nuova route protetta `/admin/permissions`, voce sidebar `Governance > Sicurezza > Permessi`, title header coerente su route permessi;
+  - riuso shell confermato: nessuna duplicazione `AppShell`, header o sidebar;
+  - shared components: nessuna duplicazione inutile; estensione minima di `app-checkbox` con retrocompatibilita coperta da test unitari (`ReactiveForms` + nuovo scenario compact/aria);
+  - filtro catalogo permessi confermato nel componente: solo `TENANT.MASTER_DATA.(READ|CREATE|UPDATE|DELETE)` e solo tenant del ruolo selezionato; esclusi placeholder e `MANAGE`;
+  - i18n verificato: chiavi `rolePermissions.*` presenti in `it`, `fr`, `en`; nessun nuovo testo UI hardcoded nel template della feature;
+  - loading/error/empty state verificati nel template e nei test (`foundationLoad`, `roleLoad`, empty list, empty matrix, loading list/matrix);
+  - nessuna nuova libreria UI introdotta (nessuna modifica a `frontend/package.json` o `frontend/package-lock.json`);
+  - compatibilita Manrope: componente eredita il font globale (`font-family: inherit`) senza override globali;
+  - responsive base: layout con stacking sotto breakpoint e tabella in wrapper con `overflow-x: auto`.
+- Classificazione problemi:
+  - BLOCKER: nessuno
+  - MAJOR: nessuno
+  - MINOR: nessuno
+  - NOTE:
+    - review manuale browser interattiva non eseguita in questa sessione CLI;
+    - con `PLATFORM_SUPER_ADMIN` la validazione manuale completa puo risultare parziale senza tenant corrente valido (limite noto non bloccante).
+- Comandi QA eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend OK
+  - test frontend OK, 20 file di test passed, 107 test passed
+- Stato finale: PASS WITH NOTES
+
+### TASK-053.2 - Frontend role permission matrix UI foundation
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.2 - Frontend role permission matrix UI foundation
+- Agente/Modello usato: GPT-5.5
+- Area verificata: nuova route `/admin/permissions`, feature Angular role permission matrix, riuso shell/sidebar/header, i18n `it/fr/en`, `app-checkbox`, integrazione con `/api/admin/roles` e catalogo `/api/master-data/governance-security/permissions`, aggiornamenti `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/qa/QA-REPORTS.md`
+- File modificati:
+  - `frontend/src/app/features/role-permissions/*`
+  - `frontend/src/app/app.routes.ts`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.ts`
+  - `frontend/src/app/layout/header/app-header.component.ts`
+  - `frontend/src/app/shared/components/checkbox/*`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `docs/qa/QA-REPORTS.md`
+- Attivita eseguite:
+  - verificata la presenza reale e la compatibilita delle API backend `/api/admin/roles`, `/api/admin/roles/{roleId}`, `/api/admin/roles/{roleId}/permissions` e `PUT /api/admin/roles/{roleId}/permissions`;
+  - implementata schermata frontend tenant-aware per lista ruoli, selezione ruolo, matrice permessi per modulo e azioni `Ripristina` / `Salva modifiche`;
+  - riallineati menu, naming e page title su `Governance > Sicurezza > Permessi` con route frontend `/admin/permissions`;
+  - riusato il catalogo permessi esistente via `/api/master-data/governance-security/permissions`, con raccolta multipagina lato frontend;
+  - filtrata la matrice per mostrare solo permessi Master Data realmente presenti nel catalogo tenant (`TENANT.MASTER_DATA.READ|CREATE|UPDATE|DELETE`), escludendo moduli placeholder/futuri e `MANAGE`;
+  - mantenuta estensione minima e retrocompatibile di `app-checkbox` per uso compatto nella matrice;
+  - non implementati CRUD ruoli, gestione utenti, enforcement frontend completo o modifiche backend/API.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend OK
+  - test frontend OK, 20 file di test passed, 107 test passed
+- QA manuale browser eseguita/non eseguita:
+  - non eseguita in questa sessione CLI
+- Limiti/note:
+  - il catalogo completo dei permessi viene ancora letto dall endpoint Master Data governance/security, non da un endpoint dedicato alla matrice;
+  - il pulsante `+` del mockup non e stato implementato perche il CRUD ruoli custom tenant e stato esplicitamente rinviato al nuovo TASK-053.3;
+  - la validazione manuale completa richiede un utente tenant-aware con `tenantId` valido, ad esempio `TENANT_ADMIN`; con `PLATFORM_SUPER_ADMIN` la schermata puo non essere completamente esercitabile se non esiste un tenant corrente selezionato;
+  - aggiunto task tecnico dedicato TASK-056 per la finalizzazione/isolation della foundation import ZIP, separato da TASK-053.2.
+- Stato finale: PASS
+
 ### TASK-048.16 - Global typography foundation
 
 - Data: 2026-05-10

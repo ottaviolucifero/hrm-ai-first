@@ -20,6 +20,10 @@
   gap: 0.625rem;
 }
 
+.app-checkbox--compact {
+  gap: 0;
+}
+
 .app-checkbox-input {
   opacity: 0;
   position: absolute;
@@ -91,4 +95,16 @@
   font-size: 0.75rem;
   margin: 0;
   padding-left: 1.8125rem;
+}
+
+.app-checkbox-label-visually-hidden {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }

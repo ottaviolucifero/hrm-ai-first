@@ -1320,11 +1320,12 @@ Stato: Approvata
 
 Decisione:
 
-TASK-053 resta un epic/contenitore per la foundation amministrativa tenant-aware e viene eseguito tramite tre subtask interni:
+TASK-053 resta un epic/contenitore per la foundation amministrativa tenant-aware e viene eseguito tramite quattro subtask interni:
 
 - TASK-053.1 backend role administration API foundation;
 - TASK-053.2 frontend role permission matrix UI foundation;
-- TASK-053.3 tenant user administration UI/API foundation.
+- TASK-053.3 tenant custom role CRUD foundation;
+- TASK-053.4 tenant user administration UI/API foundation.
 
 TASK-054 resta il task principale dedicato alla visibility frontend basata sui permessi. TASK-055 resta il task principale dedicato all'enforcement backend reale.
 
@@ -1335,12 +1336,12 @@ Separare contratti backend ruoli/permessi, UI matrice permessi e amministrazione
 Alternative escluse:
 
 - trattare TASK-053 come unico task full-stack indivisibile;
-- promuovere TASK-053.1, TASK-053.2 e TASK-053.3 a milestone principali indipendenti;
+- promuovere TASK-053.1, TASK-053.2, TASK-053.3 e TASK-053.4 a milestone principali indipendenti;
 - introdurre visibility frontend completa o enforcement backend reale dentro TASK-053.
 
 Impatto:
 
-TASKS.md e ROADMAP.md devono mostrare TASK-053 come contenitore e TASK-053.1 come prossimo step operativo. Le implementazioni future devono mantenere fuori da TASK-053 enforcement backend completo, visibility frontend completa e permessi granulari per singola entita Master Data.
+TASKS.md e ROADMAP.md devono mostrare TASK-053 come contenitore; il prossimo step operativo va aggiornato progressivamente sul primo subtask non completato. Le implementazioni future devono mantenere fuori da TASK-053 enforcement backend completo, visibility frontend completa e permessi granulari per singola entita Master Data.
 
 ---
 
@@ -1348,6 +1349,7 @@ TASKS.md e ROADMAP.md devono mostrare TASK-053 come contenitore e TASK-053.1 com
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.28 | 2026-05-10 | Raffinata DEC-033: aggiunto TASK-053.3 dedicato al CRUD ruoli custom tenant, rinumerato TASK-053.4 per la tenant user administration e riallineato il principio di aggiornare il prossimo subtask operativo non completato. |
 | 1.27 | 2026-05-10 | Aggiunta DEC-033 per fissare lo split operativo di TASK-053 in subtask interni 053.1/053.2/053.3 e mantenere TASK-054 frontend visibility e TASK-055 backend enforcement come task principali successivi. |
 | 1.26 | 2026-05-10 | Aggiunta DEC-032 per stabilizzare il formato permission code `SCOPE.RESOURCE.ACTION`, scope/resource/action iniziali, seed system permission e divieto di granularita per singola entita Master Data in TASK-052. |
 | 1.25 | 2026-05-10 | Aggiunta DEC-031 per approvare la skill repository-local minima `spring-backend-developer` come supporto operativo backend governato; aggiornati impatto su `backend/AGENTS.md`, prompt governance e `skills-lock.json`. |

@@ -1,0 +1,179 @@
+<section class="kt-container-fixed py-4 role-permission-page" aria-labelledby="role-permission-title">
+  @if (hasPageError()) {
+    <section class="kt-card role-permission-state-card" aria-live="polite">
+      <div class="role-permission-state-copy">
+        <h1 id="role-permission-title" class="role-permission-state-title">{{ i18n.t('rolePermissions.title') }}</h1>
+        <p class="role-permission-state-message">{{ i18n.t('rolePermissions.errors.foundationLoad') }}</p>
+      </div>
+      <app-button
+        variant="outline"
+        size="sm"
+        [label]="i18n.t('rolePermissions.actions.retry')"
+        (pressed)="retryLoad()" />
+    </section>
+  } @else {
+    <div class="role-permission-layout">
+      <header class="kt-card role-permission-hero">
+        <div class="role-permission-hero-copy">
+          <div class="role-permission-hero-icon" aria-hidden="true">
+            <i class="ki-filled ki-check-circle"></i>
+          </div>
+          <div class="role-permission-hero-text">
+            <h1 id="role-permission-title" class="role-permission-title">
+              {{ i18n.t('rolePermissions.title') }}: {{ selectedRole()?.name ?? i18n.t('rolePermissions.titleFallback') }}
+            </h1>
+            <p class="role-permission-subtitle">{{ i18n.t('rolePermissions.subtitle') }}</p>
+          </div>
+        </div>
+
+        <div class="role-permission-actions" role="group" [attr.aria-label]="i18n.t('rolePermissions.actions.toolbar')">
+          <app-button
+            variant="outline"
+            size="sm"
+            [label]="i18n.t('rolePermissions.actions.reset')"
+            [disabled]="!canReset()"
+            (pressed)="resetChanges()" />
+          <app-button
+            variant="primary"
+            size="sm"
+            [label]="i18n.t('rolePermissions.actions.save')"
+            [loadingLabel]="i18n.t('rolePermissions.actions.saving')"
+            [loading]="saving()"
+            [disabled]="!canSave()"
+            (pressed)="saveChanges()" />
+        </div>
+      </header>
+
+      <div class="role-permission-content">
+        <section class="kt-card role-permission-role-card" aria-labelledby="role-permission-role-list-title">
+          <div class="role-permission-card-header">
+            <div>
+              <h2 id="role-permission-role-list-title" class="role-permission-card-title">{{ i18n.t('rolePermissions.list.title') }}</h2>
+              <p class="role-permission-card-description">{{ i18n.t('rolePermissions.list.subtitle') }}</p>
+            </div>
+          </div>
+
+          @if (loading()) {
+            <div class="role-permission-panel-state" aria-live="polite">
+              {{ i18n.t('rolePermissions.list.loading') }}
+            </div>
+          } @else if (isRoleListEmpty()) {
+            <div class="role-permission-panel-state" aria-live="polite">
+              {{ i18n.t('rolePermissions.list.empty') }}
+            </div>
+          } @else {
+            <div class="role-permission-role-list" role="list">
+              @for (role of roles(); track role.id) {
+                <button
+                  class="role-permission-role-item"
+                  [class.role-permission-role-item-active]="role.id === selectedRoleId()"
+                  type="button"
+                  role="listitem"
+                  [attr.aria-pressed]="role.id === selectedRoleId()"
+                  (click)="selectRole(role.id)"
+                >
+                  <span class="role-permission-role-marker" aria-hidden="true">
+                    {{ role.name.slice(0, 1).toLocaleUpperCase() }}
+                  </span>
+                  <span class="role-permission-role-copy">
+                    <span class="role-permission-role-name">{{ role.name }}</span>
+                    <span class="role-permission-role-code">{{ role.code }}</span>
+                    <span class="role-permission-role-badges">
+                      <span class="role-permission-badge">{{ i18n.t(roleBadgeKey(role)) }}</span>
+                      <span class="role-permission-badge role-permission-badge-muted">{{ i18n.t(roleStatusKey(role)) }}</span>
+                    </span>
+                  </span>
+                </button>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="kt-card role-permission-matrix-card" aria-labelledby="role-permission-matrix-title">
+          <div class="role-permission-card-header role-permission-matrix-header">
+            <div>
+              <h2 id="role-permission-matrix-title" class="role-permission-card-title">
+                {{ selectedRole()?.name ?? i18n.t('rolePermissions.noRoleSelected') }}
+              </h2>
+              <p class="role-permission-card-description">
+                @if (selectedRole(); as role) {
+                  {{ role.code }}
+                } @else {
+                  {{ i18n.t('rolePermissions.selectionHint') }}
+                }
+              </p>
+            </div>
+          </div>
+
+          @if (loadingSelection()) {
+            <div class="role-permission-panel-state" aria-live="polite">
+              {{ i18n.t('rolePermissions.matrix.loading') }}
+            </div>
+          } @else if (hasSelectionError()) {
+            <div class="role-permission-panel-state role-permission-panel-state-error" aria-live="polite">
+              {{ i18n.t('rolePermissions.errors.roleLoad') }}
+            </div>
+          } @else if (!selectedRole()) {
+            <div class="role-permission-panel-state" aria-live="polite">
+              {{ i18n.t('rolePermissions.selectionHint') }}
+            </div>
+          } @else if (matrixRows().length === 0) {
+            <div class="role-permission-panel-state" aria-live="polite">
+              {{ i18n.t('rolePermissions.matrix.empty') }}
+            </div>
+          } @else {
+            <div class="role-permission-table-wrapper">
+              <table class="role-permission-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ i18n.t('rolePermissions.matrix.module') }}</th>
+                    @for (action of visibleActions; track action) {
+                      <th scope="col" class="role-permission-table-action-column">
+                        {{ i18n.t(actionLabelKey(action)) }}
+                      </th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of matrixRows(); track row.key) {
+                    <tr>
+                      <td>
+                        <div class="role-permission-module-cell">
+                          <span class="role-permission-module-marker" aria-hidden="true">
+                            {{ i18n.t(row.moduleKey).slice(0, 1).toLocaleUpperCase() }}
+                          </span>
+                          <div class="role-permission-module-copy">
+                            <span class="role-permission-module-name">{{ i18n.t(row.moduleKey) }}</span>
+                            @if (row.scopeKey; as scopeKey) {
+                              <span class="role-permission-module-scope">{{ i18n.t(scopeKey) }}</span>
+                            }
+                          </div>
+                        </div>
+                      </td>
+                      @for (action of visibleActions; track action) {
+                        <td class="role-permission-table-action-cell">
+                          @if (permissionForAction(row, action); as permission) {
+                            <app-checkbox
+                              [checked]="isPermissionChecked(permission)"
+                              [disabled]="isPermissionDisabled(permission)"
+                              [label]="checkboxAriaLabel(row, action)"
+                              [ariaLabel]="checkboxAriaLabel(row, action)"
+                              [hideLabelVisually]="true"
+                              [compact]="true"
+                              (checkedChange)="togglePermission(permission.id, $event)" />
+                          } @else {
+                            <span class="role-permission-table-unavailable" [attr.aria-label]="i18n.t('rolePermissions.matrix.unavailable')">-</span>
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      </div>
+    </div>
+  }
+</section>

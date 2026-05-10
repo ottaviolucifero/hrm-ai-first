@@ -25,6 +25,10 @@ export class AppHeaderComponent {
   private resolveCurrentPageTitleKey(url: string): I18nKey {
     const normalizedPath = this.normalizePath(url);
 
+    if (normalizedPath.startsWith('/admin/permissions')) {
+      return 'nav.permissions';
+    }
+
     if (normalizedPath.startsWith('/master-data')) {
       return 'nav.masterData';
     }

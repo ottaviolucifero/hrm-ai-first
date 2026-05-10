@@ -1,5 +1,5 @@
 <div class="app-checkbox-field">
-  <label class="app-checkbox" [for]="inputId">
+  <label class="app-checkbox" [class.app-checkbox--compact]="compact" [for]="inputId">
     <input
       #checkboxInput
       [id]="inputId"
@@ -7,17 +7,24 @@
       type="checkbox"
       [disabled]="disabledState"
       [required]="required"
+      [attr.aria-label]="resolvedAriaLabel"
       [attr.aria-describedby]="helpTextToRender ? helpId : null"
       (change)="onCheckboxInput($event)"
       (blur)="onCheckboxBlur()"
     />
     <span class="app-checkbox-indicator" aria-hidden="true"></span>
-    <span class="app-checkbox-label" [id]="labelledById">
-      {{ label }}
-      @if (labelRequired) {
-        <span aria-hidden="true">*</span>
-      }
-    </span>
+    @if (hasLabel) {
+      <span
+        class="app-checkbox-label"
+        [class.app-checkbox-label-visually-hidden]="hideLabelVisually"
+        [id]="labelledById"
+      >
+        {{ label }}
+        @if (labelRequired) {
+          <span aria-hidden="true">*</span>
+        }
+      </span>
+    }
   </label>
 
   @if (helpTextToRender) {

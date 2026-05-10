@@ -75,16 +75,9 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
         titleKey: 'nav.governanceSecurity',
         children: [
           {
-            id: 'governance-security-users',
-            titleKey: 'nav.users'
-          },
-          {
-            id: 'governance-security-roles',
-            titleKey: 'nav.roles'
-          },
-          {
             id: 'governance-security-permissions',
-            titleKey: 'nav.permissions'
+            titleKey: 'nav.permissions',
+            route: '/admin/permissions'
           }
         ]
       }
@@ -441,7 +434,7 @@ export class AppSidebarComponent {
 
   protected readonly searchTerm = signal('');
   protected readonly sidebarCollapsed = signal(false);
-  protected readonly expandedNodeIds = signal<ReadonlySet<string>>(new Set(['people', 'hr-operations', 'governance']));
+  protected readonly expandedNodeIds = signal<ReadonlySet<string>>(new Set(['people', 'hr-operations', 'governance', 'governance-security']));
   protected readonly visibleNavigationTree = computed(() => {
     const query = this.normalize(this.searchTerm());
     if (!query) {

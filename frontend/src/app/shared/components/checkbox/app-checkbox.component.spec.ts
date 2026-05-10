@@ -102,4 +102,21 @@ describe('AppCheckboxComponent', () => {
 
     expect(host.lastChecked).toBe(true);
   });
+
+  it('supports compact hidden-label usage without affecting accessibility', () => {
+    const checkboxComponent = fixture.debugElement.children[0].children[0].componentInstance as AppCheckboxComponent;
+    checkboxComponent.label = 'Permesso Lettura Dipendenti';
+    checkboxComponent.ariaLabel = 'Permesso Lettura Dipendenti';
+    checkboxComponent.hideLabelVisually = true;
+    checkboxComponent.compact = true;
+    fixture.detectChanges();
+
+    const label = fixture.nativeElement.querySelector('.app-checkbox-label') as HTMLElement;
+    const wrapper = fixture.nativeElement.querySelector('.app-checkbox') as HTMLElement;
+    const input = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+
+    expect(wrapper.classList.contains('app-checkbox--compact')).toBe(true);
+    expect(label.classList.contains('app-checkbox-label-visually-hidden')).toBe(true);
+    expect(input.getAttribute('aria-label')).toBe('Permesso Lettura Dipendenti');
+  });
 });

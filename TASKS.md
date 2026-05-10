@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.06
+Versione: 2.08
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -3398,9 +3398,11 @@ Backlog tecnico minimale post-TASK-051:
 
 1. TASK-052: definire e seedare la foundation dei permessi `SCOPE.RESOURCE.ACTION`, includendo CRUD per Global Master Data e Tenant Master Data, senza enforcement runtime.
 2. TASK-053.1: introdurre foundation backend/API per ruoli e assegnazioni ruolo-permesso, con protezione ruoli/permessi seed e validazioni tenant-aware.
-3. TASK-053.3: introdurre foundation amministrativa tenant per utenti e assegnazioni ruolo utente, distinguendo vista platform e vista tenant.
-4. TASK-054: esporre verso frontend un permission/role summary del current user per sola visibility UX, senza considerarlo fonte autoritativa di sicurezza.
-5. TASK-055: applicare enforcement backend reale sulle API usando la foundation dei permessi, default deny cross-tenant e controlli server-side.
+3. TASK-053.2: introdurre la foundation frontend per la matrice permessi ruolo, riusando API esistenti e senza enforcement frontend completo.
+4. TASK-053.3: introdurre CRUD amministrativo dedicato ai ruoli custom tenant, con protezione esplicita dei ruoli `system_role`.
+5. TASK-053.4: introdurre foundation amministrativa tenant per utenti e assegnazioni ruolo utente, distinguendo vista platform e vista tenant.
+6. TASK-054: esporre verso frontend un permission/role summary del current user per sola visibility UX, senza considerarlo fonte autoritativa di sicurezza.
+7. TASK-055: applicare enforcement backend reale sulle API usando la foundation dei permessi, default deny cross-tenant e controlli server-side.
 
 Validazione:
 
@@ -3468,7 +3470,7 @@ Obiettivo:
 Nota importante:
 
 - TASK-053 resta il task principale/contenitore.
-- TASK-053.1, TASK-053.2 e TASK-053.3 sono subtask figli interni del TASK-053, non task autonomi allo stesso livello dei task principali TASK-052, TASK-054 e TASK-055.
+- TASK-053.1, TASK-053.2, TASK-053.3 e TASK-053.4 sono subtask figli interni del TASK-053, non task autonomi allo stesso livello dei task principali TASK-052, TASK-054 e TASK-055.
 
 #### TASK-053.1 - Backend role administration API foundation
 
@@ -3509,7 +3511,7 @@ Validazione:
 
 #### TASK-053.2 - Frontend role permission matrix UI foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend foundation
 
@@ -3529,7 +3531,57 @@ Scope:
 - nessun enforcement frontend completo;
 - nessuna gestione utenti in questo subtask.
 
-#### TASK-053.3 - Tenant user administration UI/API foundation
+Implementazione:
+
+- aggiunta nuova route frontend protetta `/admin/permissions` dentro `AppShellComponent`, senza ricreare shell, header o sidebar;
+- aggiunta schermata Angular dedicata con header azioni, lista ruoli tenant a sinistra e matrice permessi a destra, ispirata al mockup ma adattata ai pattern HRflow esistenti;
+- riusati `app-button`, `app-checkbox`, `NotificationService`, shell/header/sidebar attuali e styling locale coerente con `master-data`/design system;
+- verificata compatibilita reale delle API backend gia presenti sotto `/api/admin/roles` e delle relative response;
+- introdotto service frontend locale per:
+  - lista ruoli tenant-aware da `/api/admin/roles`;
+  - dettaglio ruolo da `/api/admin/roles/{roleId}`;
+  - permessi assegnati da `/api/admin/roles/{roleId}/permissions`;
+  - update replace assegnazioni da `/api/admin/roles/{roleId}/permissions`;
+  - catalogo permessi da `/api/master-data/governance-security/permissions` con raccolta multipagina;
+- costruita matrice frontend dai codici permesso `SCOPE.RESOURCE.ACTION`, mappando le colonne UI a `READ`, `CREATE`, `UPDATE`, `DELETE` e lasciando `MANAGE` fuori matrice;
+- filtrata la matrice per mostrare solo permessi Master Data realmente presenti nel catalogo tenant (`TENANT.MASTER_DATA.READ|CREATE|UPDATE|DELETE`), senza moduli placeholder o sezioni mock;
+- filtrato il catalogo permessi sul `tenantId` del ruolo selezionato, senza introdurre nuova tenant resolution;
+- esteso `app-checkbox` in modo minimale e retrocompatibile con supporto `checked`, `ariaLabel`, label visivamente nascosta e variante compatta per uso matriciale;
+- aggiornati sidebar, menu `Governance > Sicurezza > Permessi` e header title per la nuova route permessi;
+- non implementati creazione, modifica o cancellazione ruoli; il pulsante `+` del mockup e stato lasciato fuori UI in questo task;
+- nessuna modifica backend/API/security/JWT o enforcement RBAC.
+
+Validazione:
+
+- `cd frontend && npm.cmd run build` -> OK;
+- `cd frontend && npm.cmd test` -> OK;
+- la validazione manuale completa richiede un utente tenant-aware con `tenantId` valido (es. `TENANT_ADMIN`); con `PLATFORM_SUPER_ADMIN` la schermata puo non essere completamente esercitabile in assenza di tenant corrente selezionato;
+- nessuna validazione browser manuale eseguita in questa sessione CLI.
+
+#### TASK-053.3 - Tenant custom role CRUD foundation
+
+Stato: TODO
+
+Tipo: Frontend + backend foundation
+
+Scope:
+
+- creazione ruolo custom tenant;
+- modifica nome e descrizione ruolo;
+- attivazione/disattivazione ruolo;
+- eliminazione consentita solo per ruoli custom non di sistema;
+- protezione dei ruoli `system_role`;
+- contratti API e UI dedicati al lifecycle dei ruoli tenant custom;
+- eventuale duplicazione ruolo demandata a follow-up opzionale se non entra in questo task.
+
+Fuori scope:
+
+- enforcement backend completo;
+- gestione utenti tenant;
+- visibility frontend completa basata su permessi;
+- duplicazione ruolo obbligatoria nel primo rilascio.
+
+#### TASK-053.4 - Tenant user administration UI/API foundation
 
 Stato: TODO
 
@@ -3595,11 +3647,34 @@ Nota di sicurezza:
 
 - il backend resta il punto di enforcement reale; il frontend non sostituisce mai i controlli API.
 
-### TASK-056 - Implementare UI Employee management enterprise
+### TASK-056 - Finalize ZIP import foundation and test isolation
 
 Stato: TODO
 
-### TASK-057 - Implementare Security Admin UI
+Tipo: Backend technical debt
+
+Obiettivo:
+
+- migliorare e finalizzare la foundation di import ZIP/CAP gia esistente, riducendo side effect e impatto improprio sulla suite di test backend.
+
+Scope:
+
+- analizzare perche alcuni test o bootstrap attivano insert/select massivi su `global_zip_codes`;
+- isolare meglio i side effect non pertinenti nelle suite tecniche;
+- mantenere invariato il comportamento runtime applicativo salvo correzioni mirate e autorizzate;
+- migliorare osservabilita, gating o test ergonomics dell import ZIP foundation.
+
+Fuori scope:
+
+- modifica del perimetro funzionale di TASK-053.2;
+- redesign del modello ZIP globale;
+- introduzione di logiche permessi utenti/ruoli.
+
+### TASK-057 - Implementare UI Employee management enterprise
+
+Stato: TODO
+
+### TASK-058 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -3611,47 +3686,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-058 - Implementare UI Device governance
+### TASK-059 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-059 - Implementare UI PayrollDocument
+### TASK-060 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-060 - Implementare UI LeaveRequest
+### TASK-061 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-061 - Implementare UI HolidayCalendar
+### TASK-062 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-062 - Implementare Audit UI / compliance explorer
+### TASK-063 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-063 - Implementare UI disciplinary governance
+### TASK-064 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-064 - Implementare Platform Operator / Super Admin governance
+### TASK-065 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-065 - Implementare Cross-tenant admin UI
+### TASK-066 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-066 - Configurare logging, monitoring e observability enterprise
+### TASK-067 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-067 - Test integrato MVP enterprise completo
+### TASK-068 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -3661,8 +3736,10 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.08 | 2026-05-10 | TASK-053.2 riallineato dopo review: route frontend rinominata in `/admin/permissions`, menu `Governance > Sicurezza > Permessi`, matrice filtrata ai soli permessi Master Data reali presenti, test/frontend QA aggiornati e nota esplicita sulla validazione manuale tenant-aware. |
+| 2.07 | 2026-05-10 | TASK-053.2 completato: aggiunta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware, con riuso API backend gia presenti `/api/admin/roles`, route/shell/sidebar coerenti, estensione minima retrocompatibile di `app-checkbox`, build/test frontend verdi e backlog raffinato con nuovo TASK-053.3 per CRUD ruoli custom tenant, TASK-053.4 per user administration e TASK-056 per il debito tecnico import ZIP. |
 | 2.06 | 2026-05-10 | TASK-053.1 completato: aggiunta API backend `/api/admin/roles` per lista/dettaglio ruoli, lettura permessi assegnati e replace transazionale delle assegnazioni ruolo-permesso con DTO espliciti, validazione tenant role/permission, test mirati verdi e fix cast UUID in Flyway V18 per PostgreSQL; nessuna UI, security/JWT/enforcement o import CAP modificati. |
-| 2.05 | 2026-05-10 | TASK-053 riorganizzato come epic/contenitore con subtask interni TASK-053.1 backend role administration API foundation, TASK-053.2 frontend role permission matrix UI foundation e TASK-053.3 tenant user administration UI/API foundation; chiariti fuori scope verso TASK-054 frontend visibility e TASK-055 backend enforcement, senza modifiche codice. |
+| 2.05 | 2026-05-10 | TASK-053 riorganizzato come epic/contenitore con subtask interni TASK-053.1 backend role administration API foundation, TASK-053.2 frontend role permission matrix UI foundation, TASK-053.3 tenant custom role CRUD foundation e TASK-053.4 tenant user administration UI/API foundation; chiariti fuori scope verso TASK-054 frontend visibility e TASK-055 backend enforcement, senza modifiche codice. |
 | 2.04 | 2026-05-10 | TASK-052 completato: introdotti enum/helper backend per codici permission `SCOPE.RESOURCE.ACTION`, migration Flyway V18 con matrice iniziale PLATFORM/TENANT per resource/action approvate, seed system_permission e test backend mirati validati senza enforcement runtime o granularita per singola entita Master Data. |
 | 2.03 | 2026-05-10 | TASK-051 completato come analisi dominio User/Role/Permission: verificati migration, entity, repository, API/DTO governance-security, auth/JWT e test esistenti; documentata gap analysis rispetto a TASK-049 e backlog tecnico minimale verso TASK-052..TASK-055 senza modifiche runtime. |
 | 2.02 | 2026-05-10 | TASK-050 completato come governance backend agent integration: approvata skill repository-local minima `spring-backend-developer`, aggiornati `skills-lock.json`, `backend/AGENTS.md`, prompt governance e report QA, senza modifiche backend/frontend applicative. |

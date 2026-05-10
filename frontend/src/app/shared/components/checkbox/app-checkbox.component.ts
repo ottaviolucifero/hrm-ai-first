@@ -25,16 +25,22 @@ import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/f
 })
 export class AppCheckboxComponent implements ControlValueAccessor, AfterViewInit {
   private static nextId = 0;
+  private checkedState = false;
 
   @Input() label = '';
   @Input() labelRequired = false;
   @Input() helpText = '';
   @Input() required = false;
   @Input() id = '';
+  @Input() set checked(value: boolean) {
+    this.writeValue(value);
+  }
+  @Input() ariaLabel = '';
+  @Input() hideLabelVisually = false;
+  @Input() compact = false;
   @Input() disabled = false;
   @Output() checkedChange = new EventEmitter<boolean>();
 
-  protected checked = false;
   @ViewChild('checkboxInput', { static: true }) private checkboxInput?: ElementRef<HTMLInputElement>;
   protected touched = false;
 
@@ -67,13 +73,27 @@ export class AppCheckboxComponent implements ControlValueAccessor, AfterViewInit
     return `${this.inputId}-label`;
   }
 
+  protected get hasLabel(): boolean {
+    return this.label.trim().length > 0 || this.labelRequired;
+  }
+
+  protected get resolvedAriaLabel(): string | null {
+    const normalizedAriaLabel = this.ariaLabel.trim();
+    if (normalizedAriaLabel) {
+      return normalizedAriaLabel;
+    }
+
+    const normalizedLabel = this.label.trim();
+    return normalizedLabel || null;
+  }
+
   ngAfterViewInit(): void {
-    this.applyCheckedStateToInput(this.checked);
+    this.applyCheckedStateToInput(this.checkedState);
   }
 
   protected onCheckboxInput(event: Event): void {
     const nextValue = (event.target as HTMLInputElement).checked;
-    this.checked = nextValue;
+    this.checkedState = nextValue;
     this.applyCheckedStateToInput(nextValue);
     this.onChange(nextValue);
     this.checkedChange.emit(nextValue);
@@ -87,8 +107,8 @@ export class AppCheckboxComponent implements ControlValueAccessor, AfterViewInit
   }
 
   writeValue(value: boolean): void {
-    this.checked = !!value;
-    this.applyCheckedStateToInput(this.checked);
+    this.checkedState = !!value;
+    this.applyCheckedStateToInput(this.checkedState);
   }
 
   registerOnChange(fn: (value: boolean) => void): void {
