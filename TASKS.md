@@ -3401,10 +3401,15 @@ Backlog tecnico minimale post-TASK-051:
 2. TASK-053.1: introdurre foundation backend/API per ruoli e assegnazioni ruolo-permesso, con protezione ruoli/permessi seed e validazioni tenant-aware.
 3. TASK-053.2: introdurre la foundation frontend per la matrice permessi ruolo, riusando API esistenti e senza enforcement frontend completo.
 4. TASK-053.3: introdurre CRUD amministrativo dedicato ai ruoli custom tenant, con protezione esplicita dei ruoli `system_role`.
-5. TASK-053.4: introdurre foundation amministrativa tenant per utenti e assegnazioni ruolo utente, distinguendo vista platform e vista tenant.
-6. TASK-054: introdurre in frontend permission summary e modello centralizzato di visibility UX, senza considerarlo fonte autoritativa di sicurezza.
-7. TASK-055: applicare enforcement backend reale sulle API usando la foundation dei permessi, default deny e mapping endpoint/permesso/azione.
-8. TASK-055.1: completare tenant/caller authorization sugli endpoint admin critici, inclusi `/api/admin/roles`.
+5. TASK-053.4: introdurre foundation amministrativa tenant read/list/detail utenti, distinguendo vista platform e vista tenant.
+6. TASK-053.5: introdurre foundation assegnazione/rimozione ruoli utente tenant.
+7. TASK-053.6: introdurre foundation amministrazione password utente tenant.
+8. TASK-053.7: introdurre foundation create/edit account utente tenant.
+9. TASK-053.8: introdurre foundation lifecycle utente tenant (active/locked/access revocation).
+10. TASK-053.9: analizzare e chiarire foundation link `UserAccount` <-> `Employee` per account non collegati.
+11. TASK-054: introdurre in frontend permission summary e modello centralizzato di visibility UX, senza considerarlo fonte autoritativa di sicurezza.
+12. TASK-055: applicare enforcement backend reale sulle API usando la foundation dei permessi, default deny e mapping endpoint/permesso/azione.
+13. TASK-055.1: completare tenant/caller authorization sugli endpoint admin critici, inclusi `/api/admin/roles`.
 
 Validazione:
 
@@ -3472,7 +3477,8 @@ Obiettivo:
 Nota importante:
 
 - TASK-053 resta il task principale/contenitore.
-- TASK-053.1, TASK-053.2, TASK-053.3 e TASK-053.4 sono subtask figli interni del TASK-053, non task autonomi allo stesso livello dei task principali TASK-052, TASK-054 e TASK-055.
+- TASK-053.1, TASK-053.2, TASK-053.3, TASK-053.4, TASK-053.5, TASK-053.6, TASK-053.7 e TASK-053.8 sono subtask figli interni del TASK-053, non task autonomi allo stesso livello dei task principali TASK-052, TASK-054 e TASK-055.
+- TASK-053.9 e un task candidate/opzionale da valutare in base ai risultati della foundation utenti tenant.
 
 #### TASK-053.1 - Backend role administration API foundation
 
@@ -3592,7 +3598,7 @@ Nota di allineamento review permessi:
 - l'enforcement RBAC runtime completo resta fuori scope di TASK-053.3;
 - l'enforcement backend reale e demandato a TASK-055 e TASK-055.1.
 
-#### TASK-053.4 - Tenant user administration UI/API foundation
+#### TASK-053.4 - Tenant user administration read/list/detail foundation
 
 Stato: TODO
 
@@ -3600,24 +3606,140 @@ Tipo: Frontend + backend foundation
 
 Scope:
 
-- elenco utenti tenant;
-- dettaglio utente base;
-- visualizzazione ruoli assegnati;
-- base per assegnazione ruoli utente;
+- API lista utenti tenant;
+- API dettaglio utente base;
+- visualizzazione ruoli assegnati read-only;
+- visualizzazione accessi tenant read-only;
 - distinzione vista platform e vista tenant;
-- nessuna gestione avanzata permessi;
-- nessun enforcement backend completo.
+- UI lista utenti;
+- UI dettaglio utente;
+- nome/cognome solo come dati derivati da Employee quando `employee_id` e valorizzato;
+- fallback su email quando l account non e collegato a Employee.
 
 Fuori scope:
 
-- enforcement backend completo, demandato a TASK-055;
-- visibility frontend completa basata su permessi, demandata a TASK-054;
-- policy autorizzative granulari per singola entita;
-- policy granulari per singola entita Master Data;
-- gestione permessi per singola entity tipo `TENANT.MASTER_DATA.WORK_MODE.CREATE`;
+- assegnazione/rimozione ruoli utente;
+- gestione password;
+- create/edit utente;
+- lifecycle attivo/bloccato;
+- enforcement backend completo;
+- visibility frontend completa basata su permessi;
+- policy autorizzative granulari;
+- gestione permessi per singola entita;
+- nuove migration per aggiungere nome/cognome a UserAccount;
 - redesign globale;
 - nuove librerie UI;
 - duplicazione di componenti tabellari o layout.
+
+Note tecniche:
+
+- `UserAccount` rappresenta l identita applicativa.
+- `Employee` rappresenta l anagrafica personale/HR.
+- La lista utenti puo mostrare nome/cognome solo se disponibili tramite relazione Employee.
+- `accessRole` di `UserTenantAccess` non deve essere presentato come ruolo RBAC.
+
+#### TASK-053.5 - Tenant user role assignment foundation
+
+Stato: TODO
+
+Tipo: Frontend + backend foundation
+
+Scope:
+
+- lista ruoli disponibili per tenant;
+- assegnazione ruolo a utente;
+- rimozione ruolo da utente;
+- validazioni base anti-duplicato;
+- UI minimale per gestione ruoli utente.
+
+Fuori scope:
+
+- gestione permessi granulari;
+- enforcement backend completo;
+- visibility frontend completa basata su permessi;
+- redesign globale.
+
+#### TASK-053.6 - Tenant user password administration foundation
+
+Stato: TODO
+
+Tipo: Frontend + backend foundation
+
+Scope:
+
+- reset password da admin;
+- eventuale password temporanea, se coerente con il modello esistente;
+- validazione con password policy esistente;
+- visualizzazione dati security utili dove gia presenti.
+
+Fuori scope:
+
+- recupero password self-service;
+- flusso email automatico se non gia previsto;
+- MFA runtime completo;
+- campo `must_change_password`, salvo migration dedicata futura.
+
+#### TASK-053.7 - Tenant user create/edit foundation
+
+Stato: TODO
+
+Tipo: Frontend + backend foundation
+
+Scope:
+
+- creazione UserAccount;
+- modifica dati base account;
+- gestione tenant/accesso primario;
+- eventuale password iniziale;
+- collegamento Employee solo se coerente con il dominio esistente.
+
+Fuori scope:
+
+- profilo HR avanzato;
+- duplicazione dati anagrafici Employee dentro UserAccount;
+- gestione permessi granulari;
+- enforcement completo.
+
+#### TASK-053.8 - Tenant user lifecycle foundation
+
+Stato: TODO
+
+Tipo: Frontend + backend foundation
+
+Scope:
+
+- attiva/disattiva utente;
+- blocca/sblocca utente;
+- eventuale revoca accesso tenant;
+- audit minimo solo se coerente con pattern esistenti.
+
+Fuori scope:
+
+- cancellazione fisica;
+- policy granulari;
+- enforcement completo.
+
+#### TASK-053.9 - UserAccount Employee link foundation
+
+Stato: TODO
+
+Tipo: Backend + frontend foundation / analysis
+
+Scope:
+
+- chiarire UX/API del collegamento UserAccount <-> Employee;
+- gestire casi di account non collegati a Employee;
+- valutare se nome/cognome debbano restare solo su Employee o se serva una modellazione separata per account non-employee.
+
+Fuori scope:
+
+- migration automatica senza decisione esplicita;
+- duplicazione non motivata di dati anagrafici;
+- profilo HR avanzato.
+
+Nota:
+
+- TASK-053.9 resta opzionale/da valutare in base all evoluzione della foundation utenti tenant.
 
 ### TASK-054 - Frontend permission summary and visibility UX foundation
 
@@ -3784,6 +3906,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.10 | 2026-05-10 | TASK-053.4 splittato in backlog utenti tenant: ridefinito TASK-053.4 come read/list/detail foundation (ruoli/accessi read-only, nome/cognome derivati da Employee con fallback email), aggiunti TASK-053.5 role assignment, TASK-053.6 password administration, TASK-053.7 create/edit, TASK-053.8 lifecycle e TASK-053.9 opzionale per UserAccount-Employee link, senza modifiche codice applicativo. |
 | 2.09 | 2026-05-10 | Backlog allineato pre-commit TASK-053.3: aggiunta regola governance CRUD/permessi nei process notes, chiarito limite/follow-up di TASK-053.3 (foundation CRUD + protezione `system_role`), ridefiniti TASK-054 e TASK-055 e aggiunto TASK-055.1 per tenant/caller authorization su endpoint admin `/api/admin/roles`, senza modifiche codice applicativo. |
 | 2.08 | 2026-05-10 | TASK-053.2 riallineato dopo review: route frontend rinominata in `/admin/permissions`, menu `Governance > Sicurezza > Permessi`, matrice filtrata ai soli permessi Master Data reali presenti, test/frontend QA aggiornati e nota esplicita sulla validazione manuale tenant-aware. |
 | 2.07 | 2026-05-10 | TASK-053.2 completato: aggiunta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware, con riuso API backend gia presenti `/api/admin/roles`, route/shell/sidebar coerenti, estensione minima retrocompatibile di `app-checkbox`, build/test frontend verdi e backlog raffinato con nuovo TASK-053.3 per CRUD ruoli custom tenant, TASK-053.4 per user administration e TASK-056 per il debito tecnico import ZIP. |

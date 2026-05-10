@@ -223,7 +223,12 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 Prossimo passo:
 
 - TASK-053.3 Tenant custom role CRUD foundation, terzo subtask interno di TASK-053 Tenant user and role administration foundation
-- TASK-053.4 Tenant user administration UI/API foundation, quarto subtask interno di TASK-053 Tenant user and role administration foundation
+- TASK-053.4 Tenant user administration read/list/detail foundation, limitato a lista/dettaglio utenti, ruoli assegnati read-only, accessi tenant read-only e distinzione platform/tenant
+- TASK-053.5 Tenant user role assignment foundation
+- TASK-053.6 Tenant user password administration foundation
+- TASK-053.7 Tenant user create/edit foundation
+- TASK-053.8 Tenant user lifecycle foundation
+- TASK-053.9 UserAccount Employee link foundation (opzionale/da valutare)
 - TASK-054 Frontend permission summary and visibility UX foundation
 - TASK-055 Backend RBAC enforcement foundation
 - TASK-055.1 Tenant/caller authorization hardening for admin role endpoints
@@ -240,7 +245,12 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
   - TASK-053.1: backend role administration API foundation completata;
   - TASK-053.2: frontend role permission matrix UI foundation completata;
   - TASK-053.3: tenant custom role CRUD foundation;
-  - TASK-053.4: tenant user administration UI/API foundation;
+  - TASK-053.4: tenant user administration read/list/detail foundation;
+  - TASK-053.5: tenant user role assignment foundation;
+  - TASK-053.6: tenant user password administration foundation;
+  - TASK-053.7: tenant user create/edit foundation;
+  - TASK-053.8: tenant user lifecycle foundation;
+  - TASK-053.9: UserAccount Employee link foundation (opzionale/da valutare);
 - TASK-054: permission summary frontend e visibility UX foundation (solo UX, non sicurezza reale);
 - TASK-055: enforcement RBAC reale lato backend con default deny e mapping endpoint/permesso/azione;
 - TASK-055.1: hardening tenant/caller authorization sugli endpoint admin `/api/admin/roles`.
@@ -300,7 +310,7 @@ Nota roadmap TASK-046:
 - TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
 - TASK-047 introduce la cancellazione fisica sicura dei Master Data come azione distinta da `Disattiva`, consentita solo per record non referenziati.
 - TASK-047 e scomposto in tre subtask incrementali: 047.1 backend foundation, 047.2 frontend action, 047.3 QA and hardening.
-- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-056), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data. TASK-053 resta un contenitore cross-stack e i suoi subtask TASK-053.1, TASK-053.2, TASK-053.3 e TASK-053.4 non sono milestone principali indipendenti.
+- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-056), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data. TASK-053 resta un contenitore cross-stack e i suoi subtask TASK-053.1..TASK-053.8 non sono milestone principali indipendenti; TASK-053.9 resta follow-up opzionale.
 - Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
 
 ---
@@ -379,6 +389,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.14 | 2026-05-10 | Backlog TASK-053.4 splittato su user administration tenant: TASK-053.4 ridefinito come read/list/detail foundation (ruoli e accessi read-only, nome/cognome derivati da Employee con fallback email), introdotti TASK-053.5/053.6/053.7/053.8 e aggiunto TASK-053.9 opzionale per UserAccount-Employee link foundation; roadmap/prossimi passi riallineati senza modifiche codice applicativo. |
 | 2.13 | 2026-05-10 | Backlog RBAC follow-up riallineato pre-commit TASK-053.3: confermato limite foundation di TASK-053.3, aggiornati target di TASK-054 (permission summary + visibility UX) e TASK-055 (enforcement backend con default deny e mapping endpoint/permesso/azione), aggiunto TASK-055.1 per hardening tenant/caller sugli endpoint admin `/api/admin/roles`, senza rinumerare i task principali. |
 | 2.12 | 2026-05-10 | TASK-053.2 riallineato dopo review: route frontend rinominata in `/admin/permissions`, voce menu `Governance > Sicurezza > Permessi`, matrice limitata ai soli permessi Master Data reali e nota QA esplicita sulla necessita di un utente tenant-aware per la validazione manuale completa. |
 | 2.11 | 2026-05-10 | TASK-053.2 completato: introdotta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware con route/shell/sidebar coerenti, riuso API backend gia presenti `/api/admin/roles`, build/test frontend verdi; prossimo passo aggiornato a TASK-053.3 e backlog raffinato con nuovo TASK-056 dedicato al debito tecnico import ZIP. |

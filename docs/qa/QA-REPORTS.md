@@ -6,6 +6,30 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Documentation QA reports
 
+### TASK-053.4 - Tenant user administration backlog split
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.4 backlog split - Tenant user administration
+- Tipo verifica: aggiornamento documentale/backlog
+- Modello consigliato nel prompt operativo: GPT-5.4
+- Area verificata: `AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/qa/QA-REPORTS.md`
+- Attivita eseguite:
+  - sostituito il vecchio TASK-053.4 con `Tenant user administration read/list/detail foundation`;
+  - aggiunti TASK-053.5, TASK-053.6, TASK-053.7, TASK-053.8 e TASK-053.9 (opzionale/da valutare);
+  - riallineata la sezione roadmap del blocco TASK-053 con i nuovi subtask e con il perimetro read-only del TASK-053.4;
+  - aggiornate le cronologie versione in `TASKS.md` e `ROADMAP.md`.
+- Test automatici eseguiti: non eseguiti; task solo documentale/backlog.
+- Modifiche codice: nessuna modifica backend/frontend applicativa, nessuna API, nessuna migration.
+- Controlli richiesti:
+  - `git diff --check`
+  - `git status --short --branch`
+- Regressioni trovate: nessuna regressione documentale nota in questa fase.
+- Limiti/note:
+  - `firstName`/`lastName` restano campi derivati da `Employee` e non sono stati introdotti nuovi campi in `UserAccount`;
+  - `TASK-053.9` resta opzionale e dipende dai risultati dei task utenti tenant.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053 - Reframe into internal subtasks
 
 - Data: 2026-05-10
