@@ -3,7 +3,7 @@
 ## Progetto HRM AI-first
 
 Versione: 2.00
-Ultimo aggiornamento: 2026-05-09
+Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
 ---
@@ -3186,7 +3186,7 @@ Acceptance criteria:
 - `app-select` is not implemented in this phase by design. Decision kept in design system and QA report to limit regressions.
 ### TASK-048.16 - Global typography foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Design system / frontend foundation
 
@@ -3210,6 +3210,15 @@ Acceptance criteria:
 - build frontend OK;
 - test frontend eseguiti se presenti/applicabili;
 - validazione manuale UI base eseguita o dichiarata non eseguita.
+
+Completamento:
+
+- Introdotto `frontend/src/typography.scss` come layer finale della tipografia globale frontend.
+- `frontend/angular.json` aggiornato per caricare `src/typography.scss` come ultimo file nell'array `styles`, senza spostare `src/styles.scss`.
+- Manrope definito come font applicativo globale tramite token CSS e fallback sicuri, senza introdurre CDN o font remoti.
+- Keenicons lasciati invariati; nessun override ai font iconografici.
+- `docs/design/DESIGN-SYSTEM.md`, `ROADMAP.md` e `docs/qa/QA-REPORTS.md` aggiornati con la foundation tipografica.
+- Verifica reale eseguita con `cd frontend && npm.cmd run build` -> OK e `cd frontend && npm.cmd test` -> OK (`17` file di test, `96` test passed).
 
 ### TASK-049 - Platform Super Admin and tenant-aware permissions model
 

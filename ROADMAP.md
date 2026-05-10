@@ -3,7 +3,7 @@
 ## Progetto HRM AI-first
 
 Versione: 2.00
-Ultimo aggiornamento: 2026-05-09
+Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
 ---
@@ -109,10 +109,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-048.13 Header/topbar visual alignment to TEMPLATE-09
 - TASK-048.14 Spreadsheet-style bulk editor planning
 - TASK-048.15 Shared form controls and form patterns foundation
+- TASK-048.16 Global typography foundation
 
 ### Prossimo passo
 
-- TASK-048.16 Global typography foundation
+- TASK-049 Platform Super Admin and tenant-aware permissions model
 
 ---
 
@@ -257,7 +258,7 @@ Nota roadmap TASK-048:
 - TEMPLATE-02 resta pattern avanzato futuro; TASK-048.14 ne completa la pianificazione documentale, ma l'implementazione resta demandata a task tecnici dedicati successivi.
 - TASK-048.8 e completato come login visual alignment review: consolidato l'allineamento visuale login rispetto al template validato con seconda iterazione piu profonda su layout/card/brand/language selector/CTA e final refinement su password link/footer legale, senza modifiche funzionali.
 - TASK-048.15 completato con foundation progressiva dei form controls condivisi: inventario operativo, regole base in `docs/design/DESIGN-SYSTEM.md`, nuovo controllo `app-input` integrato nel `master-data-form`; `app-select` valutato e rinviato a task dedicato.
-- TASK-048.16 e dedicato alla foundation tipografica globale: analisi font attuale/Metronic, confronto con mockup validati, decisione su font globale (Inter/Manrope o alternativa), preferenza per asset locali e centralizzazione gerarchie tipografiche.
+- TASK-048.16 completato con foundation tipografica globale minima: nuovo layer finale `src/typography.scss`, Manrope definito come font applicativo globale con fallback locali, `styles.scss` lasciato invariato come layer di override applicativi e nessun font remoto introdotto.
 - Nessuna modifica Angular o backend è prevista in TASK-048.3.
 - `frontend/AGENTS.md` rimane fonte applicativa vigente per le regole frontend; `docs/design/DESIGN-SYSTEM.md` dettaglia lo standard UI quando approvato e aggiornato dai task TASK-048.x.
 Nota roadmap TASK-045:
@@ -361,6 +362,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.03 | 2026-05-10 | TASK-048.16 completato: introdotto `src/typography.scss` come layer finale della tipografia globale frontend, Manrope definito via token CSS con fallback locali, nessun font remoto introdotto e build/test frontend verificati. |
 | 2.02 | 2026-05-10 | TASK-048.15 phase 2 completato: introdotto app-input come secondo controllo shared, integrato nel master-data-form (campi non booleani), build/test frontend verificati, app-select rinviato per evitare scope creep. |
 | 2.01 | 2026-05-10 | TASK-048.15 completato come foundation iniziale dei form controls condivisi con inventario controlli, regole form base in `docs/design/DESIGN-SYSTEM.md`, primo shared control `app-checkbox` integrato in `master-data-form` e aggiornamento task/QA. |
 | 2.00 | 2026-05-09 | TASK-048.14 completato come planning documentale del bulk editor spreadsheet: definito perimetro bounded, raccomandato componente futuro dedicato separato dal `DataTableComponent` read-only e prossimo passo aggiornato a TASK-048.15, senza modifiche Angular/backend. |
