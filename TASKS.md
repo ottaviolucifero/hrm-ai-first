@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.03
+Versione: 2.04
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -3411,7 +3411,7 @@ Validazione:
 
 ### TASK-052 - Permission model foundation by scope/resource/action
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Foundation authorization model
 
@@ -3438,6 +3438,22 @@ Note:
 - il frontend usa il modello per visibilita UX (menu/pagine/azioni);
 - il backend usa il modello per enforcement reale delle API;
 - modello iniziale per modulo/risorsa, senza granularita immediata per singola entita Master Data (es. `TENANT.MASTER_DATA.WORK_MODE.CREATE`).
+
+Implementazione:
+
+- aggiunti enum backend `PermissionScope`, `PermissionResource`, `PermissionAction`;
+- aggiunto helper `PermissionCode` per costruire e validare il formato `SCOPE.RESOURCE.ACTION`;
+- aggiunta migration Flyway `V18__seed_permission_model_scope_resource_action.sql`;
+- riallineati i 5 seed legacy (`EMPLOYEE_READ`, `EMPLOYEE_WRITE`, `DOCUMENT_READ`, `DOCUMENT_WRITE`, `SETTINGS_MANAGE`) verso codici stabili tenant-scoped;
+- seedata la matrice iniziale `PLATFORM` / `TENANT` x resource iniziali x action iniziali, per 100 permessi totali sul foundation tenant;
+- tutti i permessi seed restano `system_permission=true`;
+- nessuna assegnazione automatica `RolePermission`, nessun cambio JWT/login e nessun enforcement runtime introdotto.
+
+Validazione:
+
+- `cd backend && .\mvnw.cmd "-Dtest=PermissionCodeTests,HrmBackendApplicationTests" test` -> BUILD SUCCESS, 55 test eseguiti, 0 failure, 0 error, 0 skipped;
+- confermato che `TENANT.MASTER_DATA.WORK_MODE.CREATE` non e un codice valido nel modello iniziale;
+- confermato che il task non introduce granularita permission per singola entita Master Data.
 
 ### TASK-053 - Tenant user and role administration foundation
 
@@ -3566,6 +3582,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.04 | 2026-05-10 | TASK-052 completato: introdotti enum/helper backend per codici permission `SCOPE.RESOURCE.ACTION`, migration Flyway V18 con matrice iniziale PLATFORM/TENANT per resource/action approvate, seed system_permission e test backend mirati validati senza enforcement runtime o granularita per singola entita Master Data. |
 | 2.03 | 2026-05-10 | TASK-051 completato come analisi dominio User/Role/Permission: verificati migration, entity, repository, API/DTO governance-security, auth/JWT e test esistenti; documentata gap analysis rispetto a TASK-049 e backlog tecnico minimale verso TASK-052..TASK-055 senza modifiche runtime. |
 | 2.02 | 2026-05-10 | TASK-050 completato come governance backend agent integration: approvata skill repository-local minima `spring-backend-developer`, aggiornati `skills-lock.json`, `backend/AGENTS.md`, prompt governance e report QA, senza modifiche backend/frontend applicative. |
 | 2.01 | 2026-05-10 | Inserito nuovo TASK-050 "Configure Spring AI skill and backend agent integration" come task documentale/TODO per skill Spring/backend; rinumerato il blocco corrente Super Admin / permessi a TASK-051..TASK-055 e slittati di +1 i task successivi del backlog attivo, senza modifiche applicative. |

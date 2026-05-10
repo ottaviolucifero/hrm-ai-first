@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.25
+Versione: 1.26
 Ultimo aggiornamento: 2026-05-10
 Stato: Attivo
 
@@ -1254,10 +1254,70 @@ La skill non autorizza nuove architetture parallele, nuove librerie/framework no
 
 ---
 
+### DEC-032 - Stable permission code format by scope resource and action
+
+Data: 2026-05-10
+Stato: Approvata
+
+Decisione:
+
+I permessi tecnici della piattaforma usano il formato stabile `SCOPE.RESOURCE.ACTION`.
+
+Gli scope iniziali ammessi sono:
+
+- `PLATFORM`;
+- `TENANT`.
+
+Le resource iniziali ammesse sono:
+
+- `TENANT`;
+- `USER`;
+- `ROLE`;
+- `PERMISSION`;
+- `MASTER_DATA`;
+- `EMPLOYEE`;
+- `CONTRACT`;
+- `DEVICE`;
+- `PAYROLL_DOCUMENT`;
+- `LEAVE_REQUEST`.
+
+Le action iniziali ammesse sono:
+
+- `READ`;
+- `CREATE`;
+- `UPDATE`;
+- `DELETE`;
+- `MANAGE`.
+
+Il modello iniziale resta a livello modulo/risorsa. Non introduce codici per singola entita Master Data, quindi un codice come `TENANT.MASTER_DATA.WORK_MODE.CREATE` resta fuori modello.
+
+I permessi seed di foundation sono marcati `system_permission=true` e non devono essere cancellabili tramite amministrazione ordinaria quando i task successivi introdurranno API/policy amministrative complete.
+
+Motivazione:
+
+- rendere leggibile e stabile il vocabolario autorizzativo;
+- fornire una base comune a visibility frontend e enforcement backend futuro;
+- evitare granularita prematura sui singoli Master Data;
+- mantenere separati vocabolario e enforcement runtime.
+
+Alternative escluse:
+
+- mantenere codici legacy come `EMPLOYEE_READ` o `SETTINGS_MANAGE`;
+- introdurre permessi per singola entita Master Data nel task foundation;
+- derivare sicurezza reale dalla sola visibility frontend;
+- introdurre enforcement completo in TASK-052.
+
+Impatto:
+
+`TASK-052` introduce il vocabolario backend e il seed dati. `TASK-053` dovra proteggere ruoli/permessi seed e contratti amministrativi. `TASK-054` e `TASK-055` useranno questi codici rispettivamente per visibility frontend e enforcement backend reale.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.26 | 2026-05-10 | Aggiunta DEC-032 per stabilizzare il formato permission code `SCOPE.RESOURCE.ACTION`, scope/resource/action iniziali, seed system permission e divieto di granularita per singola entita Master Data in TASK-052. |
 | 1.25 | 2026-05-10 | Aggiunta DEC-031 per approvare la skill repository-local minima `spring-backend-developer` come supporto operativo backend governato; aggiornati impatto su `backend/AGENTS.md`, prompt governance e `skills-lock.json`. |
 | 1.24 | 2026-05-10 | Estesa DEC-029 per chiarire che lato backend/Spring non esiste ancora una skill repository-local approvata e che TASK-050 ne prepara l'eventuale integrazione futura; riallineati anche i riferimenti numerici del blocco TASK-051..TASK-055 in DEC-030. |
 | 1.23 | 2026-05-10 | Aggiunta DEC-030 per formalizzare il modello autorizzativo tenant-aware con `PLATFORM_SUPER_ADMIN` globale, `TENANT_ADMIN` tenant-scoped, ruoli seed/custom, CRUD Global/Tenant Master Data, default deny cross-tenant, backend authoritative e frontend visibility solo UX. |

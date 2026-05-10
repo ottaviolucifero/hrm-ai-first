@@ -18,6 +18,7 @@ import com.odsoftware.hrm.entity.master.AuditActionType;
 import com.odsoftware.hrm.entity.master.ContractType;
 import com.odsoftware.hrm.entity.master.Country;
 import com.odsoftware.hrm.entity.master.LeaveRequestType;
+import com.odsoftware.hrm.entity.master.Permission;
 import com.odsoftware.hrm.entity.payroll.PayrollDocument;
 import com.odsoftware.hrm.entity.payroll.PayrollDocumentStatus;
 import com.odsoftware.hrm.entity.master.Region;
@@ -61,6 +62,10 @@ import com.odsoftware.hrm.repository.master.SmtpEncryptionTypeRepository;
 import com.odsoftware.hrm.repository.master.TimeZoneRepository;
 import com.odsoftware.hrm.repository.master.UserTypeRepository;
 import com.odsoftware.hrm.repository.master.WorkModeRepository;
+import com.odsoftware.hrm.security.permission.PermissionAction;
+import com.odsoftware.hrm.security.permission.PermissionCode;
+import com.odsoftware.hrm.security.permission.PermissionResource;
+import com.odsoftware.hrm.security.permission.PermissionScope;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -261,9 +266,25 @@ class HrmBackendApplicationTests {
 		assertThat(disciplinaryActionTypeRepository.count()).isEqualTo(3);
 		assertThat(smtpEncryptionTypeRepository.count()).isEqualTo(3);
 		assertThat(roleRepository.count()).isEqualTo(3);
-		assertThat(permissionRepository.count()).isEqualTo(5);
+		assertThat(permissionRepository.count()).isEqualTo(100);
 		assertThat(companyProfileTypeRepository.count()).isEqualTo(2);
 		assertThat(officeLocationTypeRepository.count()).isEqualTo(3);
+	}
+
+	@Test
+	void flywayMigrationSeedsPermissionCodeMatrixByScopeResourceAction() {
+		assertThat(permissionRepository.findAll())
+				.extracting(Permission::getCode)
+				.contains(
+						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.TENANT, PermissionAction.MANAGE),
+						PermissionCode.of(PermissionScope.TENANT, PermissionResource.USER, PermissionAction.READ),
+						PermissionCode.of(PermissionScope.TENANT, PermissionResource.MASTER_DATA, PermissionAction.MANAGE),
+						PermissionCode.of(PermissionScope.TENANT, PermissionResource.PAYROLL_DOCUMENT, PermissionAction.READ))
+				.allMatch(PermissionCode::isValid)
+				.noneMatch(code -> code.startsWith("TENANT.MASTER_DATA.") && code.split("\\.").length > 3);
+
+		assertThat(permissionRepository.findAll())
+				.allMatch(permission -> Boolean.TRUE.equals(permission.getSystemPermission()));
 	}
 
 	@Test
