@@ -56,6 +56,36 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
   - nessuna modifica backend/frontend, migration, API o runtime security.
 - Stato finale: PASS WITH NOTES
 
+### TASK-051 - User, Role and Permission domain review
+
+- Data: 2026-05-10
+- Branch: `task-051-user-role-permission-domain-review`
+- Task: TASK-051 - User, Role and Permission domain review
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `AGENTS.md`, `backend/AGENTS.md`, `.agents/skills/spring-backend-developer/SKILL.md`, `ARCHITECTURE.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/qa/QA-REPORTS.md`, migration Flyway RBAC/identity/security, entity/repository/service/controller/DTO auth e governance-security.
+- Attivita eseguite:
+  - ricostruzione stato attuale di `UserAccount`, `UserType`, `Role`, `Permission`, `UserRole`, `RolePermission`, `UserTenantAccess` e `Tenant`;
+  - verifica seed iniziali e vincoli DB in V3, V4, V7, V8 e V15;
+  - verifica API/DTO esistenti per `/api/master-data/governance-security` e `/api/auth`;
+  - confronto con TASK-049/DEC-030 su `PLATFORM_SUPER_ADMIN`, `TENANT_ADMIN`, ruoli seed/custom, permessi CRUD, cross-tenant e backend-authoritative security;
+  - documentazione gap analysis e backlog tecnico minimale in `TASKS.md` e riallineamento roadmap.
+- Test automatici eseguiti:
+  - suite completa `cd backend && .\mvnw.cmd test` avviata ma non completata in modo utile per TASK-051 perche entra anche nei test/import CAP italiani con logging SQL molto verboso;
+  - tentativo mirato iniziale fallito per sandbox/network Maven su risoluzione parent POM, poi rieseguito con autorizzazione;
+  - `cd backend && .\mvnw.cmd "-Dtest=AuthControllerTests,MasterDataGovernanceSecurityControllerTests,HrmBackendApplicationTests" test`: BUILD SUCCESS, 74 test eseguiti, 0 failure, 0 error, 0 skipped.
+- Controlli richiesti:
+  - `git status --short --branch`
+  - review file/struttura backend e documentazione governance
+  - `git diff --check`
+  - `git diff --stat`
+- Regressioni trovate: nessuna regressione funzionale nei test mirati auth/security/domain eseguiti.
+- Limiti/note:
+  - non e stato implementato enforcement RBAC runtime;
+  - non sono state create API amministrative, migration o modifiche security;
+  - la suite backend completa resta rumorosa/lenta per i test CAP italiani e non e stata usata come gate finale del task documentale;
+  - rilevato debito tecnico: logging SQL/test ZIP italiani rendono la suite completa poco ergonomica per review documentali mirate.
+- Stato finale: PASS WITH NOTES
+
 ## Backend QA reports
 
 ### TASK-047.1 - Master Data physical delete backend foundation

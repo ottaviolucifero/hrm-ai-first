@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.02
+Versione: 2.03
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -3346,7 +3346,7 @@ Validazione:
 
 ### TASK-051 - User, Role and Permission domain review
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Analisi dominio backend/API
 
@@ -3366,6 +3366,48 @@ Fuori scope:
 
 - implementazione UI completa;
 - enforcement permessi runtime.
+
+Risultato analisi:
+
+- `UserType` e un master data globale e contiene gia i seed `PLATFORM_SUPER_ADMIN`, `PLATFORM_OPERATOR`, `TENANT_ADMIN` ed `EMPLOYEE`.
+- `Role` e `Permission` sono master data tenant-scoped, con `tenant_id`, `code`, `name`, `active`, timestamp e flag di sistema (`system_role`, `system_permission`).
+- I bridge `UserRole`, `RolePermission` e `UserTenantAccess` esistono a livello JPA/Flyway e sono tenant-aware per persistenza e vincoli principali.
+- `UserTenantAccess` e volutamente semplice: collega utente e tenant con `access_role` stringa e flag `active`, ma non e ancora collegato a `Role` e non modella policy cross-tenant avanzate.
+- `Role` e `Permission` sono esposti dalle API `/api/master-data/governance-security`; `UserAccount`, `UserRole`, `RolePermission` e `UserTenantAccess` non hanno ancora API amministrative dedicate.
+- Il JWT/login corrente espone `userId`, `tenantId` e `userType`; Spring Security deriva solo authority tecnica `USER_TYPE_<userType>`.
+- Non risultano ancora claim o response `/me` con ruoli, permessi, tenant access o permission summary.
+
+Gap analysis:
+
+| Area | Stato attuale | Gap | Impatto | Priorita | Task suggerito |
+|---|---|---|---|---|---|
+| Platform user type | `PLATFORM_SUPER_ADMIN` esiste come `UserType` globale seed. | Non esiste ancora un flusso amministrativo per gestire utenti platform o elevazioni. | Il confine platform e documentato ma non operabile in sicurezza. | Alta | TASK-053 |
+| Tenant admin | `TENANT_ADMIN` esiste sia come `UserType` globale sia come `Role` tenant seed. | La distinzione strategica di TASK-049 non e ancora riflessa da API/policy amministrative esplicite. | Rischio ambiguita tra tipo utente globale e ruolo operativo tenant. | Alta | TASK-053 |
+| Ruoli seed | `Role.systemRole` e seed tenant `TENANT_ADMIN`, `HR_MANAGER`, `SUPERVISOR` sono presenti. | Le API consentono ancora di impostare o modificare il flag `systemRole` da request e di disattivare ruoli seed. | I ruoli base non sono ancora protetti come richiesto da TASK-049/DEC-030. | Alta | TASK-053 |
+| Ruoli custom | Il modello tenant-scoped consente ruoli per tenant. | Non c'e ancora API/policy dedicata per distinguere ciclo vita seed vs custom. | La futura UI amministrativa non ha contratti sicuri per ruoli custom. | Alta | TASK-053 |
+| Permessi CRUD | `Permission` esiste con seed coarse (`EMPLOYEE_READ`, `EMPLOYEE_WRITE`, `DOCUMENT_READ`, `DOCUMENT_WRITE`, `SETTINGS_MANAGE`). | Manca naming `SCOPE.RESOURCE.ACTION` e mancano permessi CRUD granulari per Global/Tenant Master Data. | Blocca una base coerente per frontend visibility e backend enforcement. | Alta | TASK-052 |
+| Global vs Tenant Master Data | Le API Master Data sono gia separate in global, HR/business e governance/security. | I permessi non distinguono ancora risorse Global Master Data e Tenant Master Data. | Non e possibile autorizzare in modo coerente azioni platform vs tenant. | Alta | TASK-052 |
+| RolePermission | Bridge tenant-scoped e vincolo unico presenti. | Mancano service/API e validazioni applicative su coerenza tenant tra role, permission e bridge. | Assegnazione permessi non amministrabile in modo controllato. | Alta | TASK-053 |
+| UserRole | Bridge tenant-scoped e vincolo unico presenti. | Mancano service/API e validazioni applicative tra user, tenant access e role tenant. | Assegnazione ruoli non amministrabile in modo controllato. | Alta | TASK-053 |
+| UserTenantAccess | Bridge user-tenant presente con `accessRole` e `active`. | Non filtra sempre per `active`, non collega ruoli e non modella policy cross-tenant/platform. | Base sufficiente per foundation, ma da estendere prima di tenant switching/enforcement. | Media/Alta | TASK-053 / TASK-055 |
+| Auth/JWT | Login JWT operativo con `userId`, `tenantId`, `userType`. | Mancano ruoli, permessi, tenant access, primary tenant e permission summary in token o `/me`. | Frontend visibility e backend enforcement non hanno ancora dati autorizzativi completi. | Media/Alta | TASK-054 / TASK-055 |
+| API/DTO | CRUD Role/Permission disponibile come governance-security master data. | Nessuna API amministrativa per UserAccount/bridge; flag di sistema scrivibili dai DTO correnti. | La futura amministrazione utenti/ruoli richiede contratti piu stretti. | Alta | TASK-053 |
+| Test | Test auth, persistence bridge e governance-security API presenti. | Mancano test per protezione seed, naming permessi, coerenza tenant cross-bridge e permission exposure. | Rischio regressioni quando iniziano TASK-052..TASK-055. | Media | TASK-052 / TASK-053 |
+
+Backlog tecnico minimale post-TASK-051:
+
+1. TASK-052: definire e seedare la foundation dei permessi `SCOPE.RESOURCE.ACTION`, includendo CRUD per Global Master Data e Tenant Master Data, senza enforcement runtime.
+2. TASK-053: introdurre foundation amministrativa tenant per utenti, ruoli, assegnazioni ruolo e assegnazioni permesso, con protezione ruoli/permessi seed e validazioni tenant-aware.
+3. TASK-053: chiarire a livello API/DTO quali campi di sistema non sono scrivibili dal client (`systemRole`, `systemPermission`) e quali operazioni sono ammesse su ruoli custom.
+4. TASK-054: esporre verso frontend un permission/role summary del current user per sola visibility UX, senza considerarlo fonte autoritativa di sicurezza.
+5. TASK-055: applicare enforcement backend reale sulle API usando la foundation dei permessi, default deny cross-tenant e controlli server-side.
+
+Validazione:
+
+- suite backend completa avviata ma non usata come criterio finale per TASK-051 perche entra anche nei test/import CAP italiani con logging SQL molto verboso;
+- test mirati eseguiti: `cd backend && .\mvnw.cmd "-Dtest=AuthControllerTests,MasterDataGovernanceSecurityControllerTests,HrmBackendApplicationTests" test`;
+- esito test mirati: BUILD SUCCESS, 74 test eseguiti, 0 failure, 0 error, 0 skipped;
+- nessun codice runtime, migration, API o security configuration modificato.
 
 ### TASK-052 - Permission model foundation by scope/resource/action
 
@@ -3524,6 +3566,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.03 | 2026-05-10 | TASK-051 completato come analisi dominio User/Role/Permission: verificati migration, entity, repository, API/DTO governance-security, auth/JWT e test esistenti; documentata gap analysis rispetto a TASK-049 e backlog tecnico minimale verso TASK-052..TASK-055 senza modifiche runtime. |
 | 2.02 | 2026-05-10 | TASK-050 completato come governance backend agent integration: approvata skill repository-local minima `spring-backend-developer`, aggiornati `skills-lock.json`, `backend/AGENTS.md`, prompt governance e report QA, senza modifiche backend/frontend applicative. |
 | 2.01 | 2026-05-10 | Inserito nuovo TASK-050 "Configure Spring AI skill and backend agent integration" come task documentale/TODO per skill Spring/backend; rinumerato il blocco corrente Super Admin / permessi a TASK-051..TASK-055 e slittati di +1 i task successivi del backlog attivo, senza modifiche applicative. |
 | 2.00 | 2026-05-09 | TASK-048.14 completato come pianificazione documentale del bulk editor stile spreadsheet: definiti use case iniziali, esclusioni del primo rilascio, vincoli i18n/accessibilita/responsive/performance, relazione con `DataTableComponent` e raccomandazione di componente futuro dedicato senza modifiche Angular/backend. |
