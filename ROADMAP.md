@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.08
+Versione: 2.09
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -116,7 +116,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-053 Tenant user and role administration foundation
+- TASK-053.1 Backend role administration API foundation, primo subtask interno di TASK-053 Tenant user and role administration foundation
 
 ---
 
@@ -218,7 +218,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-053 Tenant user and role administration foundation
+- TASK-053.1 Backend role administration API foundation, primo subtask interno di TASK-053 Tenant user and role administration foundation
 - TASK-054 Apply permissions to frontend navigation and actions
 - TASK-055 Apply permissions to backend API authorization
 
@@ -229,7 +229,10 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 - TASK-050: configurazione governance + integrazione skill Spring/backend approvata, completata come skill repository-local minima e complemento a `backend/AGENTS.md`;
 - TASK-051: review dominio esistente e gap analysis completata;
 - TASK-052: foundation modello permessi (`SCOPE.RESOURCE.ACTION`) completata;
-- TASK-053: foundation utenti/ruoli tenant;
+- TASK-053: epic/contenitore per foundation utenti, ruoli e permessi tenant-aware, da completare tramite subtask interni;
+  - TASK-053.1: backend role administration API foundation;
+  - TASK-053.2: frontend role permission matrix UI foundation;
+  - TASK-053.3: tenant user administration UI/API foundation;
 - TASK-054: applicazione permessi lato frontend per UX/visibilita;
 - TASK-055: enforcement reale lato backend sulle API.
 
@@ -287,7 +290,7 @@ Nota roadmap TASK-046:
 - TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
 - TASK-047 introduce la cancellazione fisica sicura dei Master Data come azione distinta da `Disattiva`, consentita solo per record non referenziati.
 - TASK-047 e scomposto in tre subtask incrementali: 047.1 backend foundation, 047.2 frontend action, 047.3 QA and hardening.
-- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-055), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data.
+- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-055), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data. TASK-053 resta un contenitore cross-stack e i suoi subtask TASK-053.1, TASK-053.2 e TASK-053.3 non sono milestone principali indipendenti.
 - Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
 
 ---
@@ -366,6 +369,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.09 | 2026-05-10 | TASK-053 riorganizzato come epic/contenitore con subtask interni 053.1 backend role administration API, 053.2 frontend role permission matrix UI e 053.3 tenant user administration; prossimo passo operativo aggiornato a TASK-053.1 senza promuovere i subtask a milestone principali e mantenendo TASK-054/TASK-055 come task principali successivi. |
 | 2.08 | 2026-05-10 | TASK-052 completato: introdotta foundation permessi `SCOPE.RESOURCE.ACTION` con enum/helper backend, migration Flyway V18 e 100 permessi seed `system_permission=true`; prossimo passo aggiornato a TASK-053. |
 | 2.07 | 2026-05-10 | TASK-051 completato come domain review User/Role/Permission: confermati `UserType` globale, `Role`/`Permission` tenant-scoped, bridge RBAC esistenti, lacune API/DTO/auth/JWT e backlog minimo verso TASK-052..TASK-055; prossimo passo spostato a TASK-052. |
 | 2.06 | 2026-05-10 | TASK-050 completato come integrazione governance backend agent: approvata e versionata la skill repository-local minima `spring-backend-developer`, aggiornato `skills-lock.json`, riallineati `backend/AGENTS.md` e prompt governance, prossimo passo spostato a TASK-051. |

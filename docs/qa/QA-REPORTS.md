@@ -6,6 +6,32 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Documentation QA reports
 
+### TASK-053 - Reframe into internal subtasks
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053 - Tenant user and role administration foundation
+- Tipo verifica: reframe documentale/backlog
+- Modello consigliato nel prompt operativo: GPT-5.4
+- Area verificata: `AGENTS.md`, `ARCHITECTURE.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/qa/QA-REPORTS.md`, `docs/design/DESIGN-SYSTEM.md`
+- Attivita eseguite:
+  - riorganizzato TASK-053 come epic/contenitore cross-stack;
+  - introdotti subtask interni TASK-053.1, TASK-053.2 e TASK-053.3 senza promuoverli a task principali;
+  - aggiornato ROADMAP.md indicando TASK-053.1 come prossimo step operativo;
+  - mantenuti TASK-054 e TASK-055 come task principali successivi rispettivamente per frontend visibility e backend enforcement;
+  - registrata decisione breve DEC-033 sullo split operativo.
+- Test automatici eseguiti: non eseguiti; reframe solo documentale/backlog.
+- Modifiche codice: nessuna modifica backend/frontend applicativa, nessuna API, nessun componente UI, nessuna migration.
+- Controlli richiesti:
+  - `git diff --check`
+  - `git status --short --branch`
+- Regressioni trovate: nessuna regressione documentale nota in questa fase.
+- Limiti/note:
+  - il mockup frontend resta input per TASK-053.2 e non e stato implementato;
+  - enforcement backend completo resta demandato a TASK-055;
+  - visibility frontend completa resta demandata a TASK-054.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-049 - Platform Super Admin and tenant-aware permissions model
 
 - Data: 2026-05-10
