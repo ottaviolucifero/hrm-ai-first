@@ -23,6 +23,7 @@ describe('AppHeaderComponent', () => {
           {
             path: 'admin',
             children: [
+              { path: 'roles', component: DummyRouteComponent },
               { path: 'permissions', component: DummyRouteComponent }
             ]
           }
@@ -60,5 +61,15 @@ describe('AppHeaderComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Permessi');
+  });
+
+  it('shows the roles title for the role administration route', async () => {
+    const fixture = TestBed.createComponent(AppHeaderComponent);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/admin/roles');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Ruoli');
   });
 });

@@ -8,6 +8,7 @@ public record RoleAdministrationRoleDetailResponse(
 		RoleAdministrationTenantResponse tenant,
 		String code,
 		String name,
+		String description,
 		Boolean systemRole,
 		Boolean active,
 		OffsetDateTime createdAt,

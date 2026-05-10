@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.12
+Versione: 2.13
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -119,6 +119,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 ### Prossimo passo
 
 - TASK-053.3 Tenant custom role CRUD foundation, terzo subtask interno di TASK-053 Tenant user and role administration foundation
+- Follow-up gia pianificati: TASK-054 frontend visibility UX foundation, TASK-055 backend RBAC enforcement foundation, TASK-055.1 tenant/caller authorization hardening su `/api/admin/roles`
 
 ---
 
@@ -221,11 +222,11 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-053.2 Frontend role permission matrix UI foundation, secondo subtask interno di TASK-053 Tenant user and role administration foundation
 - TASK-053.3 Tenant custom role CRUD foundation, terzo subtask interno di TASK-053 Tenant user and role administration foundation
 - TASK-053.4 Tenant user administration UI/API foundation, quarto subtask interno di TASK-053 Tenant user and role administration foundation
-- TASK-054 Apply permissions to frontend navigation and actions
-- TASK-055 Apply permissions to backend API authorization
+- TASK-054 Frontend permission summary and visibility UX foundation
+- TASK-055 Backend RBAC enforcement foundation
+- TASK-055.1 Tenant/caller authorization hardening for admin role endpoints
 - TASK-056 Finalize ZIP import foundation and test isolation
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
@@ -240,8 +241,9 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
   - TASK-053.2: frontend role permission matrix UI foundation completata;
   - TASK-053.3: tenant custom role CRUD foundation;
   - TASK-053.4: tenant user administration UI/API foundation;
-- TASK-054: applicazione permessi lato frontend per UX/visibilita;
-- TASK-055: enforcement reale lato backend sulle API.
+- TASK-054: permission summary frontend e visibility UX foundation (solo UX, non sicurezza reale);
+- TASK-055: enforcement RBAC reale lato backend con default deny e mapping endpoint/permesso/azione;
+- TASK-055.1: hardening tenant/caller authorization sugli endpoint admin `/api/admin/roles`.
 - TASK-056: debito tecnico dedicato alla finalizzazione della foundation import ZIP e all isolamento dei side effect in test.
 
 Nota roadmap TASK-048:
@@ -377,6 +379,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.13 | 2026-05-10 | Backlog RBAC follow-up riallineato pre-commit TASK-053.3: confermato limite foundation di TASK-053.3, aggiornati target di TASK-054 (permission summary + visibility UX) e TASK-055 (enforcement backend con default deny e mapping endpoint/permesso/azione), aggiunto TASK-055.1 per hardening tenant/caller sugli endpoint admin `/api/admin/roles`, senza rinumerare i task principali. |
 | 2.12 | 2026-05-10 | TASK-053.2 riallineato dopo review: route frontend rinominata in `/admin/permissions`, voce menu `Governance > Sicurezza > Permessi`, matrice limitata ai soli permessi Master Data reali e nota QA esplicita sulla necessita di un utente tenant-aware per la validazione manuale completa. |
 | 2.11 | 2026-05-10 | TASK-053.2 completato: introdotta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware con route/shell/sidebar coerenti, riuso API backend gia presenti `/api/admin/roles`, build/test frontend verdi; prossimo passo aggiornato a TASK-053.3 e backlog raffinato con nuovo TASK-056 dedicato al debito tecnico import ZIP. |
 | 2.10 | 2026-05-10 | TASK-053.1 completato: introdotta API backend `/api/admin/roles` per lista/dettaglio ruoli, lettura permessi assegnati e replace transazionale delle assegnazioni ruolo-permesso; prossimo passo aggiornato a TASK-053.2, suite mirata backend verde e suite completa interrotta per output massivo preesistente su `global_zip_codes`. |

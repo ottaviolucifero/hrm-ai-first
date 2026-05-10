@@ -1,0 +1,148 @@
+.role-admin-page {
+  display: block;
+}
+
+.role-admin-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.role-admin-page-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.role-admin-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.role-admin-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.role-admin-subtitle,
+.role-admin-list-meta,
+.role-admin-note,
+.role-admin-confirm-message {
+  color: var(--color-text-muted, #64748b);
+}
+
+.role-admin-list-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.role-admin-list-toolbar {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.role-admin-list-heading {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.role-admin-list-meta-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.role-admin-record-count {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+}
+
+.role-admin-table-search {
+  display: grid;
+  gap: 0.35rem;
+  min-width: min(100%, 18rem);
+}
+
+.role-admin-search-label {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.role-admin-search-input {
+  min-height: 2.375rem;
+}
+
+.role-admin-note {
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  padding: 0.75rem 0.875rem;
+}
+
+.role-admin-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.role-admin-modal-overlay {
+  align-items: center;
+  background: rgb(15 23 42 / 44%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 1100;
+}
+
+.role-admin-modal {
+  max-height: calc(100vh - 2rem);
+  max-width: 44rem;
+  overflow: auto;
+  width: min(100%, 44rem);
+}
+
+.role-admin-confirm-modal {
+  max-width: 30rem;
+}
+
+.role-admin-confirm-panel,
+.role-admin-confirm-body {
+  display: grid;
+  gap: 1rem;
+}
+
+.role-admin-confirm-target {
+  color: var(--color-text-default, #0f172a);
+  font-weight: 600;
+}
+
+.role-admin-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 960px) {
+  .role-admin-page-header,
+  .role-admin-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .role-admin-table-search {
+    min-width: 0;
+  }
+}

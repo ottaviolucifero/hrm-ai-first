@@ -68,7 +68,7 @@ describe('DataTableComponent', () => {
     expect(headers).toEqual(['Nome', 'Aggiornato']);
     expect(cells).toHaveLength(2);
     expect(cells[0].textContent?.trim()).toBe('Italy');
-    expect(cells[1].textContent?.trim()).toBe('');
+    expect(cells[1].textContent?.trim()).toBe('—');
   });
 
   it('renders the empty state', () => {
@@ -214,5 +214,30 @@ describe('DataTableComponent', () => {
         row: expect.objectContaining({ id: 'department-1' })
       })
     );
+  });
+
+  it('supports row-specific action visibility', () => {
+    component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
+    component.rows = [
+      { id: 'role-system', name: 'System role', systemRole: true },
+      { id: 'role-custom', name: 'Custom role', systemRole: false }
+    ];
+    component.rowActions = [
+      { id: 'view', labelKey: 'masterData.actions.view' },
+      {
+        id: 'edit',
+        labelKey: 'masterData.actions.edit',
+        visible: (row) => row['systemRole'] !== true
+      }
+    ] satisfies readonly DataTableAction<DataTableRow>[];
+
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const firstRowButtons = rows[0].querySelectorAll('.data-table-action');
+    const secondRowButtons = rows[1].querySelectorAll('.data-table-action');
+
+    expect(firstRowButtons).toHaveLength(1);
+    expect(secondRowButtons).toHaveLength(2);
   });
 });

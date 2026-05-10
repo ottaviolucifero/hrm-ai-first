@@ -9,6 +9,10 @@ describe('HomeComponent', () => {
     }).compileComponents();
   });
 
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
   it('should render the authenticated home placeholder', () => {
     const fixture = TestBed.createComponent(HomeComponent);
     fixture.detectChanges();

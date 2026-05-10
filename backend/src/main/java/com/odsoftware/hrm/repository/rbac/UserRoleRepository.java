@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserRoleRepository extends JpaRepository<UserRole, UUID> {
 
 	List<UserRole> findByTenant_IdAndUserAccount_Id(UUID tenantId, UUID userAccountId);
+
+	boolean existsByTenant_IdAndRole_Id(UUID tenantId, UUID roleId);
 }

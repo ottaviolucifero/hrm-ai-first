@@ -25,6 +25,7 @@ export class DataTableComponent {
   protected readonly i18n = inject(I18nService);
   protected readonly skeletonRows = Array.from({ length: 6 });
   private readonly rowActionIconMap: Record<string, readonly string[]> = {
+    activate: ['ki-filled', 'ki-check-circle'],
     view: ['ki-filled', 'ki-eye'],
     details: ['ki-filled', 'ki-eye'],
     read: ['ki-filled', 'ki-eye'],
@@ -56,8 +57,8 @@ export class DataTableComponent {
     return this.columns.filter((column) => column.visible !== false);
   }
 
-  protected visibleRowActions(): readonly DataTableAction[] {
-    return this.rowActions.filter((action) => action.visible !== false);
+  protected visibleRowActions(row?: DataTableRow): readonly DataTableAction[] {
+    return this.rowActions.filter((action) => this.isRowActionVisible(action, row));
   }
 
   protected trackColumn(_index: number, column: DataTableColumn): string {
@@ -80,7 +81,7 @@ export class DataTableComponent {
     }
 
     if (value === null || value === undefined || value === '') {
-      return '';
+      return '—';
     }
 
     const type = this.columnType(column);
@@ -224,6 +225,14 @@ export class DataTableComponent {
 
   protected isRowActionDisabled(action: DataTableAction, row: DataTableRow): boolean {
     return typeof action.disabled === 'function' ? action.disabled(row) : action.disabled === true;
+  }
+
+  protected isRowActionVisible(action: DataTableAction, row?: DataTableRow): boolean {
+    if (typeof action.visible === 'function') {
+      return row ? action.visible(row) : true;
+    }
+
+    return action.visible !== false;
   }
 
   protected emitRowAction(action: DataTableAction, row: DataTableRow): void {

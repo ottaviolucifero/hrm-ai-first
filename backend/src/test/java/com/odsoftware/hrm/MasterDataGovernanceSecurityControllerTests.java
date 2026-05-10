@@ -1,5 +1,6 @@
 package com.odsoftware.hrm;
 
+import com.odsoftware.hrm.entity.master.Role;
 import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.master.UserTypeRepository;
 import java.util.LinkedHashMap;
@@ -50,7 +51,6 @@ class MasterDataGovernanceSecurityControllerTests {
 	@WithMockUser
 	void masterDataGovernanceSecurityCrudFlowSupportsAllResources() throws Exception {
 		UUID userTypeId = null;
-		UUID roleId = null;
 
 		List<ResourceCase> resources = List.of(
 				new ResourceCase("/api/master-data/governance-security/user-types", globalRequest("task032_user_type", " Task 032 User Type "), globalRequest("TASK032_USER_TYPE", "Task 032 User Type Updated")),
@@ -58,7 +58,6 @@ class MasterDataGovernanceSecurityControllerTests {
 				new ResourceCase("/api/master-data/governance-security/audit-action-types", severityRequest("task032_audit", " Task 032 Audit ", "medium"), severityRequest("TASK032_AUDIT", "Task 032 Audit Updated", "high")),
 				new ResourceCase("/api/master-data/governance-security/disciplinary-action-types", severityRequest("task032_disciplinary", " Task 032 Disciplinary ", "low"), severityRequest("TASK032_DISCIPLINARY", "Task 032 Disciplinary Updated", "medium")),
 				new ResourceCase("/api/master-data/governance-security/smtp-encryption-types", globalRequest("task032_smtp", " Task 032 SMTP "), globalRequest("TASK032_SMTP", "Task 032 SMTP Updated")),
-				new ResourceCase("/api/master-data/governance-security/roles", roleRequest("task032_role", " Task 032 Role ", true), roleRequest("TASK032_ROLE", "Task 032 Role Updated", false)),
 				new ResourceCase("/api/master-data/governance-security/permissions", permissionRequest("task032_permission", " Task 032 Permission ", true), permissionRequest("TASK032_PERMISSION", "Task 032 Permission Updated", false)),
 				new ResourceCase("/api/master-data/governance-security/company-profile-types", tenantRequest("task032_company_profile", " Task 032 Company Profile "), tenantRequest("TASK032_COMPANY_PROFILE", "Task 032 Company Profile Updated")),
 				new ResourceCase("/api/master-data/governance-security/office-location-types", tenantRequest("task032_office_location", " Task 032 Office Location "), tenantRequest("TASK032_OFFICE_LOCATION", "Task 032 Office Location Updated")));
@@ -75,9 +74,6 @@ class MasterDataGovernanceSecurityControllerTests {
 			if (resource.path().endsWith("/user-types")) {
 				userTypeId = id;
 			}
-			if (resource.path().endsWith("/roles")) {
-				roleId = id;
-			}
 
 			mockMvc.perform(get(resource.path()))
 					.andExpect(status().isOk())
@@ -93,15 +89,14 @@ class MasterDataGovernanceSecurityControllerTests {
 		}
 
 		assertThat(userTypeRepository.findById(userTypeId).orElseThrow().getActive()).isFalse();
-		assertThat(roleRepository.findById(roleId).orElseThrow().getActive()).isFalse();
 	}
 
 	@Test
 	@WithMockUser
 	void masterDataGovernanceSecurityListEndpointsSupportPaginationAndSearch() throws Exception {
-		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK043_ROLE_A", "Task 043 Role A", false));
-		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK043_ROLE_B", "Task 043 Role B", false));
-		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK043_ROLE_C", "Task 043 Role C", false));
+		saveRole("TASK043_ROLE_A", "Task 043 Role A");
+		saveRole("TASK043_ROLE_B", "Task 043 Role B");
+		saveRole("TASK043_ROLE_C", "Task 043 Role C");
 
 		mockMvc.perform(get("/api/master-data/governance-security/roles"))
 				.andExpect(status().isOk())
@@ -126,8 +121,9 @@ class MasterDataGovernanceSecurityControllerTests {
 	@Test
 	@WithMockUser
 	void masterDataGovernanceSecurityListsNewestRecordsFirstByDefault() throws Exception {
-		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK0465_ROLE_A", "Task 0465 Role A", false));
-		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK0465_ROLE_B", "Task 0465 Role B", false));
+		saveRole("TASK0465_ROLE_A", "Task 0465 Role A");
+		Thread.sleep(20L);
+		saveRole("TASK0465_ROLE_B", "Task 0465 Role B");
 
 		mockMvc.perform(get("/api/master-data/governance-security/roles?search=TASK0465_ROLE"))
 				.andExpect(status().isOk())
@@ -169,24 +165,25 @@ class MasterDataGovernanceSecurityControllerTests {
 
 	@Test
 	@WithMockUser
-	void masterDataGovernanceSecurityApiReturnsConflictForTenantCodeDuplicates() throws Exception {
-		createMaster("/api/master-data/governance-security/roles", roleRequest("TASK032_DUPLICATE_ROLE", "Task 032 Duplicate Role", false));
-
-		mockMvc.perform(postJson("/api/master-data/governance-security/roles", roleRequest(" task032_duplicate_role ", "Task 032 Duplicate Role 2", false)))
-				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.status").value(409))
-				.andExpect(jsonPath("$.message").value("Role code already exists for tenant: TASK032_DUPLICATE_ROLE"));
+	void masterDataGovernanceSecurityRejectsRoleCreateBypass() throws Exception {
+		mockMvc.perform(postJson("/api/master-data/governance-security/roles", roleRequest("TASK0533_MASTERDATA_ROLE", "Task 053.3 Master Data Role", false)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.message").value("Role lifecycle writes are managed under /api/admin/roles"));
 	}
 
 	@Test
 	@WithMockUser
-	void masterDataGovernanceSecurityApiReturnsNotFoundForMissingTenant() throws Exception {
-		UUID missingTenantId = UUID.fromString("00000000-0000-0000-0000-000000000098");
+	void masterDataGovernanceSecurityRejectsRoleUpdateAndDeleteBypass() throws Exception {
+		Role role = saveRole("TASK0533_MASTERDATA_UPDATE_ROLE", "Task 053.3 Master Data Update Role");
 
-		mockMvc.perform(postJson("/api/master-data/governance-security/roles", roleRequest(missingTenantId, "TASK032_MISSING_TENANT", "Task 032 Missing Tenant", false)))
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.status").value(404))
-				.andExpect(jsonPath("$.message").value("Tenant not found: " + missingTenantId));
+		mockMvc.perform(putJson("/api/master-data/governance-security/roles/" + role.getId(), roleRequest("TASK0533_MASTERDATA_UPDATE_ROLE", "Task 053.3 Updated", false)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Role lifecycle writes are managed under /api/admin/roles"));
+
+		mockMvc.perform(delete("/api/master-data/governance-security/roles/{id}", role.getId()).with(csrf()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Role lifecycle writes are managed under /api/admin/roles"));
 	}
 
 	@Test
@@ -252,8 +249,20 @@ class MasterDataGovernanceSecurityControllerTests {
 	private Map<String, Object> roleRequest(UUID tenantId, String code, String name, Boolean systemRole) {
 		Map<String, Object> request = tenantRequest(code, name);
 		request.put("tenantId", tenantId);
+		request.put("description", "Role description");
 		request.put("systemRole", systemRole);
 		return request;
+	}
+
+	private Role saveRole(String code, String name) {
+		Role role = new Role();
+		role.setTenantId(FOUNDATION_TENANT_ID);
+		role.setCode(code);
+		role.setName(name);
+		role.setDescription(name + " description");
+		role.setSystemRole(false);
+		role.setActive(true);
+		return roleRepository.saveAndFlush(role);
 	}
 
 	private Map<String, Object> permissionRequest(String code, String name, Boolean systemPermission) {

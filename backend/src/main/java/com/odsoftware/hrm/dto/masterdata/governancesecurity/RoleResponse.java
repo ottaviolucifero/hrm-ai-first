@@ -8,6 +8,7 @@ public record RoleResponse(
 		UUID tenantId,
 		String code,
 		String name,
+		String description,
 		Boolean systemRole,
 		Boolean active,
 		OffsetDateTime createdAt,

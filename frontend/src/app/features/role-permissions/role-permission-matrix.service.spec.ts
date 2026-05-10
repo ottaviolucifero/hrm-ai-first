@@ -22,6 +22,7 @@ describe('RolePermissionMatrixService', () => {
 
   afterEach(() => {
     httpTestingController.verify();
+    TestBed.resetTestingModule();
   });
 
   it('requests role list with tenant filter and pagination', () => {

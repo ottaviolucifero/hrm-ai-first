@@ -102,6 +102,11 @@
                   {{ i18n.t('rolePermissions.selectionHint') }}
                 }
               </p>
+              @if (selectedRoleReadOnly()) {
+                <p class="role-permission-card-description">
+                  {{ i18n.t('rolePermissions.systemRoleReadonly') }}
+                </p>
+              }
             </div>
           </div>
 
