@@ -195,7 +195,15 @@ Pattern base da applicare in modo incrementale:
 - stato disabled sempre visibile e coerente con la severity visiva;
 - focus visibile sui controlli interattivi;
 - checkbox non deve usare styling browser-default, deve usare componente condiviso con stato checked/unchecked/disabled;
-- ogni nuovo shared control deve nascere da caso reale e riusabilitÃ  comprovata, non da inventario astratto.
+- ogni nuovo shared control deve nascere da caso reale e riusabilità comprovata, non da inventario astratto;
+- `app-input` e `app-checkbox` sono controlli shared generici e riusabili cross-feature, quindi appartengono a `frontend/src/app/shared/components/`;
+- campi o wrapper con UX/logica specialistica, ad esempio `app-email-field` e `app-password-field` della login, non definiscono da soli uno standard shared generico e possono restare in `frontend/src/app/shared/form-fields/` o nella feature di appartenenza;
+- `app-password-field` resta separato finché mantiene comportamento specifico, ad esempio toggle visibilità password; `app-email-field` potrà essere razionalizzato in futuro come wrapper/adattatore di `app-input`, ma non rientra in questa phase 2.
+
+- Phase 2 aggiornamenti:
+  - introdotto `app-input` come primo controllo shared aggiuntivo nel `master-data-form`;
+  - `app-input` supporta label, required, placeholder, help text, error text, id/accessibilità e type (`text`/`email`/`number`);
+  - `app-select` è stato valutato in questa fase e rimandato a un task dedicato per non allargare il perimetro oltre il safe point del modal.
 
 ---
 
@@ -623,3 +631,4 @@ Futuri task consigliati prima di una implementazione reale:
 - task di implementazione MVP feature-local su una sola entita semplice tenant-scoped;
 - task separato di QA/regression/accessibilita/performance sul bulk editor;
 - eventuale task backend solo se i contratti CRUD esistenti risultassero insufficienti a gestire save massivo in modo accettabile.
+

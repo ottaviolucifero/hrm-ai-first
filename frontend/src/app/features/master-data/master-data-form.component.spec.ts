@@ -79,6 +79,23 @@ describe('MasterDataFormComponent', () => {
     expect(checkbox.disabled).toBe(false);
   });
 
+  it('renders shared input control for text field', () => {
+    component.mode = 'create';
+    component.resourceTitleKey = 'masterData.entities.departments';
+    component.fields = [{ key: 'code', labelKey: 'masterData.columns.code', required: true }];
+    component.value = { code: 'HR' };
+
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('.app-input-control') as HTMLInputElement;
+    const label = fixture.nativeElement.querySelector('.app-input-label') as HTMLElement;
+
+    expect(input).toBeTruthy();
+    expect(label.textContent).toContain('Codice');
+    expect(label.textContent).toContain('*');
+    expect(input.value).toBe('HR');
+  });
+
   it('keeps fields readonly in view mode', () => {
     component.mode = 'view';
     component.resourceTitleKey = 'masterData.entities.departments';
@@ -87,8 +104,8 @@ describe('MasterDataFormComponent', () => {
 
     fixture.detectChanges();
 
-    const input = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
-    expect(input.readOnly).toBe(true);
+    const input = fixture.nativeElement.querySelector('.app-input-control') as HTMLInputElement;
+    expect(input.disabled).toBe(true);
   });
 
   it('keeps close action only in the header and operational actions in the footer', () => {

@@ -3174,6 +3174,16 @@ Acceptance criteria:
 - test frontend OK;
 - TASKS.md e ROADMAP.md aggiornati.
 
+### Stato phase 2
+
+- Created `app-input` in `frontend/src/app/shared/components/input/` as a second safe shared form control.
+- Integrated `app-input` in Master Data CRUD modal for non-boolean fields only, with read-only/create/edit behavior unchanged.
+- `app-select` was evaluated as phase-2 candidate and deferred to a dedicated task to avoid scope creep and unsafe option/value abstraction.
+- Updated shared form control rules in `docs/design/DESIGN-SYSTEM.md` for the phase-2 foundation.
+
+### Nota
+
+- `app-select` is not implemented in this phase by design. Decision kept in design system and QA report to limit regressions.
 ### TASK-048.16 - Global typography foundation
 
 Stato: TODO
@@ -3506,3 +3516,4 @@ Stato: TODO
 | 1.2 | 2026-05-01 | Aggiornato stato dopo TASK-005 e aggiunto TASK-006 per integrazione Metronic Angular. |
 | 1.1 | 2026-05-01 | Aggiornato stato task dopo completamento TASK-001, TASK-002, TASK-003 e TASK-004. |
 | 1.0 | 2026-05-01 | Prima versione task operativi MVP. |
+
