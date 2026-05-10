@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.06
+Versione: 2.07
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -111,10 +111,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-048.15 Shared form controls and form patterns foundation
 - TASK-048.16 Global typography foundation
 - TASK-050 Configure Spring AI skill and backend agent integration
+- TASK-051 User, Role and Permission domain review
 
 ### Prossimo passo
 
-- TASK-051 User, Role and Permission domain review
+- TASK-052 Permission model foundation by scope/resource/action
 
 ---
 
@@ -188,6 +189,7 @@ Completato:
 - TASK-048.15 completed: shared form controls foundation started with control inventory and first shared control `app-checkbox` integrated in Master Data CRUD modal; design/accessibility/i18n patterns formalized in `docs/design/DESIGN-SYSTEM.md`.
 - TASK-049 completed: Platform Super Admin and tenant-aware permissions strategy documented, with `PLATFORM_SUPER_ADMIN` global boundary, `TENANT_ADMIN` tenant boundary, protected seed roles, tenant custom roles, CRUD permission separation for Global/Tenant Master Data, default-deny cross-tenant rules and backend-authoritative security model.
 - TASK-050 completed: repository-local backend governance skill `spring-backend-developer` approved and versioned with `skills-lock.json`, `backend/AGENTS.md` alignment and prompt-governance documentation, without backend/frontend code changes.
+- TASK-051 completed: User/Role/Permission domain review documented current `UserType`, `UserAccount`, `Role`, `Permission`, `UserRole`, `RolePermission`, `UserTenantAccess`, governance-security API and JWT/auth state, with gap analysis toward TASK-049.
 
 Nota:
 
@@ -198,7 +200,7 @@ Employee persistence foundation is available with documented core fields; Employ
 Contract persistence foundation is available with start/end dates and active lifecycle flag; contract APIs, HR workflows and payroll integration remain deferred.
 Backlog execution is now backend-first: core technical foundations and API readiness precede operational UI tasks.
 UserAccount persistence foundation is available; login runtime, JWT, OTP/MFA execution and API remain deferred.
-RBAC bridge persistence foundation is available; TASK-049 strategy is documented, while runtime authorization, Spring Security RBAC, tenant switching, impersonation, service layer, API and UI remain deferred.
+RBAC bridge persistence foundation is available; TASK-049 strategy and TASK-051 domain gap analysis are documented, while runtime authorization, Spring Security RBAC, tenant switching, impersonation, administrative service layer, API and UI remain deferred.
 Device persistence foundation is available; assignment workflow, service layer, API and UI remain deferred.
 PayrollDocument persistence foundation is available; physical upload/download, API REST, DTO, service layer, frontend/UI, notifications and publication workflow remain deferred.
 LeaveRequest persistence foundation is available; approval workflow, API REST, DTO, service layer, leave balance calculation, attachments, frontend/UI and notifications remain deferred.
@@ -214,7 +216,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-051 User, Role and Permission domain review
 - TASK-052 Permission model foundation by scope/resource/action
 - TASK-053 Tenant user and role administration foundation
 - TASK-054 Apply permissions to frontend navigation and actions
@@ -225,7 +226,7 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 - TASK-048: iniziativa generale HRflow design system/template UI basata sul catalogo Stitch validato, con Master Data come caso pilota prima del blocco permessi;
 - TASK-049: strategia e modello Super Admin / tenant-aware permissions completati;
 - TASK-050: configurazione governance + integrazione skill Spring/backend approvata, completata come skill repository-local minima e complemento a `backend/AGENTS.md`;
-- TASK-051: review dominio esistente e gap analysis;
+- TASK-051: review dominio esistente e gap analysis completata;
 - TASK-052: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
 - TASK-053: foundation utenti/ruoli tenant;
 - TASK-054: applicazione permessi lato frontend per UX/visibilita;
@@ -364,6 +365,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.07 | 2026-05-10 | TASK-051 completato come domain review User/Role/Permission: confermati `UserType` globale, `Role`/`Permission` tenant-scoped, bridge RBAC esistenti, lacune API/DTO/auth/JWT e backlog minimo verso TASK-052..TASK-055; prossimo passo spostato a TASK-052. |
 | 2.06 | 2026-05-10 | TASK-050 completato come integrazione governance backend agent: approvata e versionata la skill repository-local minima `spring-backend-developer`, aggiornato `skills-lock.json`, riallineati `backend/AGENTS.md` e prompt governance, prossimo passo spostato a TASK-051. |
 | 2.05 | 2026-05-10 | Inserito TASK-050 come task documentale/TODO per configurazione della skill Spring/backend approvata; prossimo passo aggiornato a TASK-050, sequenza Super Admin / permessi rinumerata a TASK-050..TASK-055 e range futuri riallineati fino a TASK-067. |
 | 2.04 | 2026-05-10 | TASK-049 completato come passaggio strategico/documentale: modello `PLATFORM_SUPER_ADMIN` vs `TENANT_ADMIN`, ruoli seed/custom tenant-specific, CRUD Global/Tenant Master Data, default deny cross-tenant, backend authoritative e frontend visibility solo UX; prossimo passo aggiornato a TASK-050. |
