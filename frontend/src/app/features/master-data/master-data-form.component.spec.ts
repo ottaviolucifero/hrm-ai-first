@@ -65,6 +65,20 @@ describe('MasterDataFormComponent', () => {
     );
   });
 
+  it('renders shared checkbox control for boolean field', () => {
+    component.mode = 'create';
+    component.resourceTitleKey = 'masterData.entities.departments';
+    component.fields = [{ key: 'active', labelKey: 'masterData.columns.active', type: 'boolean' }];
+    component.value = { active: true };
+
+    fixture.detectChanges();
+
+    const checkbox = fixture.nativeElement.querySelector('app-checkbox input[type="checkbox"]') as HTMLInputElement;
+    expect(checkbox).toBeTruthy();
+    expect(checkbox.checked).toBe(true);
+    expect(checkbox.disabled).toBe(false);
+  });
+
   it('keeps fields readonly in view mode', () => {
     component.mode = 'view';
     component.resourceTitleKey = 'masterData.entities.departments';

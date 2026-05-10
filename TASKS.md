@@ -3133,7 +3133,7 @@ Completato:
 
 ### TASK-048.15 - Shared form controls and form patterns foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Design system / frontend foundation
 

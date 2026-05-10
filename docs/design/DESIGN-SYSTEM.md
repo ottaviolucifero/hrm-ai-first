@@ -168,6 +168,35 @@ Regole:
 - evitare `Annulla` e `Chiudi` insieme nella bottom action bar quando sono equivalenti;
 - testi, label, placeholder, tooltip e messaggi sempre via i18n.
 
+### 9.1. Foundation form controls (TASK-048.15)
+
+Inventario pratico dei controlli disponibili nel frontend attuale:
+
+- presenti oggi:
+  - text input nativi in form con classe `kt-input` (es. `master-data-form`);
+  - checkbox nel form `master-data-form` (prima custom locale, ora shared `app-checkbox` + supporto `formControlName`);
+  - select nativi nei filtri/lista e nel selettore lingua login;
+  - search input nativo tipo `search` nel filtro Master Data;
+  - pulsanti condivisi `app-button` per azioni principali;
+  - campi shared specialistici `app-email-field` e `app-password-field` in login.
+- non presenti come shared component:
+  - textarea shared;
+  - radio shared;
+  - switch/toggle shared;
+  - date input/date picker dedicated;
+  - number input shared;
+  - search wrapper shared;
+  - pattern globale error/help shared.
+
+Pattern base da applicare in modo incrementale:
+
+- label, stato e messaggio devono essere logicamente associati e localizzati via i18n;
+- errori e hint devono rimanere vicini al controllo, non globali;
+- stato disabled sempre visibile e coerente con la severity visiva;
+- focus visibile sui controlli interattivi;
+- checkbox non deve usare styling browser-default, deve usare componente condiviso con stato checked/unchecked/disabled;
+- ogni nuovo shared control deve nascere da caso reale e riusabilità comprovata, non da inventario astratto.
+
 ---
 
 ## 10. Modali e pop-up

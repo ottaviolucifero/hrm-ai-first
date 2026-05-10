@@ -4,6 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
+import { AppCheckboxComponent } from '../../shared/components/checkbox/app-checkbox.component';
 import { MasterDataFormField, MasterDataFormMode, MasterDataFormFieldType, MasterDataRow } from './master-data.models';
 
 export interface MasterDataFormSubmitEvent {
@@ -13,7 +14,7 @@ export interface MasterDataFormSubmitEvent {
 
 @Component({
   selector: 'app-master-data-form',
-  imports: [AppButtonComponent, ReactiveFormsModule],
+  imports: [AppButtonComponent, ReactiveFormsModule, AppCheckboxComponent],
   templateUrl: './master-data-form.component.html',
   styleUrl: './master-data-form.component.scss'
 })
