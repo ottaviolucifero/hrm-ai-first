@@ -75,6 +75,11 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
         titleKey: 'nav.governanceSecurity',
         children: [
           {
+            id: 'governance-security-roles',
+            titleKey: 'nav.roles',
+            route: '/admin/roles'
+          },
+          {
             id: 'governance-security-permissions',
             titleKey: 'nav.permissions',
             route: '/admin/permissions'
@@ -266,7 +271,7 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
         padding-block: 0.34rem;
         padding-left: 0.66rem;
         padding-right: 1.02rem;
-        width: auto;
+        width: 100%;
       }
 
       :host .app-sidebar-link--deep {
@@ -275,7 +280,7 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
         padding-block: 0.32rem;
         padding-left: 0.58rem;
         padding-right: 0.92rem;
-        width: auto;
+        width: 100%;
       }
 
       :host .app-sidebar-link--collapsed {
@@ -288,19 +293,11 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
         background: linear-gradient(135deg, #1953e6 0%, #0f47cf 100%);
         box-shadow: 0 3px 8px rgb(0 85 255 / 10%);
         color: #ffffff;
-        margin-inline: 0 0.12rem;
       }
 
       :host .app-sidebar-link--branch-active {
         background: rgb(29 93 255 / 12%);
         color: #f6f9ff;
-        margin-inline: 0 0.12rem;
-      }
-
-      :host .app-sidebar-link--nested.app-sidebar-link--active,
-      :host .app-sidebar-link--nested.app-sidebar-link--branch-active,
-      :host .app-sidebar-link--deep.app-sidebar-link--active {
-        margin-right: 0.2rem;
       }
 
       :host .app-sidebar-mark {
@@ -331,14 +328,14 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
         width: 1.8rem;
       }
 
-      :host .app-sidebar-link .kt-menu-title {
+      :host .app-sidebar-link .app-sidebar-title {
         color: inherit;
         flex: 1;
         line-height: 1.2rem;
         min-width: 0;
       }
 
-      :host .app-sidebar-link .kt-menu-arrow {
+      :host .app-sidebar-link .app-sidebar-arrow {
         color: rgb(226 234 255 / 88%);
         font-size: 1rem;
         flex: 0 0 auto;
@@ -346,7 +343,7 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
         padding-inline: 0.3rem 0.05rem;
       }
 
-      :host .app-sidebar-link .kt-menu-bullet {
+      :host .app-sidebar-link .app-sidebar-bullet {
         align-items: center;
         display: inline-flex;
         flex: 0 0 auto;
@@ -354,11 +351,10 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
         width: 0.72rem;
       }
 
-      :host .app-sidebar-link .kt-menu-bullet > span {
+      :host .app-sidebar-link .app-sidebar-bullet > span {
         box-shadow: 0 0 0 2px rgb(255 255 255 / 5%);
       }
 
-      :host .kt-menu-accordion,
       :host .app-sidebar-subtree {
         border-left: 1px solid rgb(255 255 255 / 11%);
         display: flex;
@@ -370,19 +366,19 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
         position: relative;
       }
 
-      :host .app-sidebar-link--nested .kt-menu-bullet > span,
-      :host .app-sidebar-link--deep .kt-menu-bullet > span {
+      :host .app-sidebar-link--nested .app-sidebar-bullet > span,
+      :host .app-sidebar-link--deep .app-sidebar-bullet > span {
         background: rgb(174 195 255 / 90%);
       }
 
-      :host .app-sidebar-link--nested.app-sidebar-link--active .kt-menu-bullet > span,
-      :host .app-sidebar-link--deep.app-sidebar-link--active .kt-menu-bullet > span,
-      :host .app-sidebar-link--nested.app-sidebar-link--branch-active .kt-menu-bullet > span {
+      :host .app-sidebar-link--nested.app-sidebar-link--active .app-sidebar-bullet > span,
+      :host .app-sidebar-link--deep.app-sidebar-link--active .app-sidebar-bullet > span,
+      :host .app-sidebar-link--nested.app-sidebar-link--branch-active .app-sidebar-bullet > span {
         background: #ffffff;
       }
 
-      :host .app-sidebar-link--nested .kt-menu-title,
-      :host .app-sidebar-link--deep .kt-menu-title {
+      :host .app-sidebar-link--nested .app-sidebar-title,
+      :host .app-sidebar-link--deep .app-sidebar-title {
         font-size: 0.85rem;
       }
 

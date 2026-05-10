@@ -1,5 +1,6 @@
 package com.odsoftware.hrm.dto.roleadministration;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record RoleAdministrationRoleListItemResponse(
@@ -7,6 +8,8 @@ public record RoleAdministrationRoleListItemResponse(
 		UUID tenantId,
 		String code,
 		String name,
+		String description,
 		Boolean systemRole,
-		Boolean active) {
+		Boolean active,
+		OffsetDateTime updatedAt) {
 }

@@ -24,8 +24,56 @@ describe('RolePermissionMatrixComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Configurazione permessi');
     expect(fixture.nativeElement.textContent).toContain('Amministratore');
     expect(fixture.nativeElement.textContent).toContain('Ruoli tenant');
-    expect(fixture.nativeElement.textContent).toContain('Master data');
-    expect(fixture.nativeElement.textContent).not.toContain('Dipendenti');
+    expect(fixture.nativeElement.textContent).toContain('Personalizzato');
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Ruoli']);
+  });
+
+  it('keeps system roles read-only in the permission matrix', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      findRoles: vi.fn(() => of({
+        content: [{
+          id: 'role-system',
+          tenantId: 'tenant-1',
+          code: 'TENANT_ADMIN',
+          name: 'Amministratore',
+          systemRole: true,
+          active: true
+        }],
+        page: 0,
+        size: 100,
+        totalElements: 1,
+        totalPages: 1,
+        first: true,
+        last: true
+      })),
+      findRole: vi.fn(() => of({
+        id: 'role-system',
+        tenant: {
+          id: 'tenant-1',
+          code: 'TENANT_1',
+          name: 'Tenant 1'
+        },
+        code: 'TENANT_ADMIN',
+        name: 'Amministratore',
+        systemRole: true,
+        active: true,
+        createdAt: '2026-05-10T09:00:00Z',
+        updatedAt: '2026-05-10T09:00:00Z'
+      }))
+    });
+
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+
+    const saveButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Salva modifiche')) as HTMLButtonElement;
+    const checkbox = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+
+    expect(fixture.nativeElement.textContent).toContain('I ruoli di sistema sono protetti');
+    expect(saveButton.disabled).toBe(true);
+    expect(checkbox.disabled).toBe(true);
   });
 
   it('tracks unsaved changes and restores the initial snapshot', async () => {
@@ -42,6 +90,8 @@ describe('RolePermissionMatrixComponent', () => {
     const inputs = fixture.nativeElement.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
     expect(component.canReset()).toBe(false);
     expect(component.canSave()).toBe(false);
+    expect(inputs.length).toBe(4);
+    expect(Array.from(inputs).every((input) => input.disabled === false)).toBe(true);
 
     inputs[1].click();
     fixture.detectChanges();
@@ -99,16 +149,28 @@ describe('RolePermissionMatrixComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Impossibile caricare ruoli e catalogo permessi.');
   });
 
-  it('shows an empty state when no tenant master data permissions are available', async () => {
+  it('shows only master data and role modules even when other tenant resources exist', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService());
+    fixture.detectChanges();
+
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Ruoli']);
+    expect(fixture.nativeElement.textContent).not.toContain('Dipendenti');
+    expect(fixture.nativeElement.textContent).not.toContain('Permessi');
+    expect(fixture.nativeElement.textContent).not.toContain('Utenti');
+  });
+
+  it('shows an empty state when no allowed role-permission modules are available', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const service = createService({
       findPermissionCatalog: vi.fn(() => of([
         {
-          id: 'permission-role-read',
+          id: 'permission-user-read',
           tenantId: 'tenant-1',
-          code: 'TENANT.ROLE.READ',
-          name: 'Role read',
+          code: 'TENANT.USER.READ',
+          name: 'User read',
           systemPermission: true,
           active: true
         }
@@ -118,7 +180,7 @@ describe('RolePermissionMatrixComponent', () => {
     const fixture = await createFixture(service);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Nessun permesso Master Data disponibile per questo ruolo.');
+    expect(fixture.nativeElement.textContent).toContain('Nessun permesso disponibile per questo ruolo.');
   });
 });
 
@@ -153,7 +215,7 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
     tenantId: 'tenant-1',
     code: 'TENANT_ADMIN',
     name: 'Amministratore',
-    systemRole: true,
+    systemRole: false,
     active: true
   };
 
@@ -187,7 +249,7 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
       },
       code: 'TENANT_ADMIN',
       name: 'Amministratore',
-      systemRole: true,
+      systemRole: false,
       active: true,
       createdAt: '2026-05-10T09:00:00Z',
       updatedAt: '2026-05-10T09:00:00Z'
@@ -218,6 +280,22 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
         name: 'Role read',
         systemPermission: true,
         active: true
+      },
+      {
+        id: 'permission-role-update',
+        tenantId: 'tenant-1',
+        code: 'TENANT.ROLE.UPDATE',
+        name: 'Role update',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-user-read',
+        tenantId: 'tenant-1',
+        code: 'TENANT.USER.READ',
+        name: 'User read',
+        systemPermission: true,
+        active: true
       }
     ])),
     updateAssignedPermissions: vi.fn((_roleId: string, permissionIds: readonly string[]) => of({
@@ -234,4 +312,9 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
     })),
     ...overrides
   } as RolePermissionMatrixService;
+}
+
+function moduleNames(container: HTMLElement): string[] {
+  return Array.from(container.querySelectorAll('.role-permission-module-name'))
+    .map((element) => element.textContent?.trim() ?? '');
 }

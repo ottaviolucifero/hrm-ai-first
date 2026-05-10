@@ -192,6 +192,85 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-053.3 - Sidebar hierarchy stability and role actions layout
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.3 - Tenant custom role CRUD foundation
+- Tipo verifica: bugfix frontend localizzato su sidebar/navigation e `DataTableComponent` shared
+- Ambito QA:
+  - stabilita gerarchia `Governance > Sicurezza > Ruoli|Permessi`;
+  - layout colonna azioni nella tabella Ruoli;
+  - conferma riuso componenti shared del CRUD Ruoli;
+  - regressioni frontend minime su routing/sidebar/DataTable.
+- File analizzati:
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.ts`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.html`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.spec.ts`
+  - `frontend/src/app/app.routes.ts`
+  - `frontend/src/app/features/role-administration/role-administration.component.ts`
+  - `frontend/src/app/features/role-administration/role-administration.component.html`
+  - `frontend/src/app/features/role-administration/role-administration.component.scss`
+  - `frontend/src/app/shared/components/data-table/data-table.component.ts`
+  - `frontend/src/app/shared/components/data-table/data-table.component.html`
+  - `frontend/src/app/shared/components/data-table/data-table.component.scss`
+  - `frontend/src/app/shared/components/data-table/data-table.component.spec.ts`
+  - `frontend/src/app/features/master-data/master-data-form.component.ts`
+  - `frontend/src/app/shared/components/button/app-button.component.ts`
+  - `frontend/src/app/shared/components/input/app-input.component.ts`
+  - `frontend/src/app/shared/components/checkbox/app-checkbox.component.ts`
+- Bug rilevati:
+  - sidebar: dopo la navigazione i wrapper `kt-menu-item` ricevevano classi di stato `active/here/show` insieme alle classi custom del componente; il tema base applicava styling addizionale ai wrapper attivi, alterando l'indentazione percepita di `Ruoli` e `Permessi`;
+  - layout azioni: la `DataTableComponent` shared usava `flex-wrap: wrap` sulle row actions, quindi in una colonna stretta le icone andavano a capo e si impilavano verticalmente.
+- Fix applicato:
+  - rimossi dal template sidebar i binding di stato `active/here/show` sui wrapper `kt-menu-item`, lasciando la gestione visuale alle classi custom dei link e all'espansione calcolata dal componente;
+  - resa stabile l'indentazione dei link nested/deep con margine costante, non solo nello stato attivo;
+  - aggiornato il test sidebar per verificare che `Ruoli` e `Permessi` restino sibling sotto `Sicurezza` dopo la navigazione;
+  - resa la toolbar azioni della `DataTableComponent` shared `inline-flex`, `nowrap`, con gap coerente e cella azioni a larghezza minima, cosi le icone restano orizzontali anche nella pagina Ruoli;
+  - nessun markup custom dedicato alla pagina Ruoli introdotto.
+- Verifica riuso componenti shared:
+  - confermato riuso di `DataTableComponent` per la tabella ruoli;
+  - confermato riuso di `MasterDataFormComponent` per il form/modale ruoli;
+  - confermato uso di `app-button`, `app-input`, `app-checkbox` tramite la foundation gia adottata per Master Data;
+  - nessun componente parallelo creato per Ruoli.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend OK;
+  - test frontend OK, 22 file di test passed, 118 test passed.
+- QA manuale browser:
+  - non eseguita in questa sessione CLI.
+- Limiti/noti:
+  - la stabilita visuale del sidebar e verificata via code review e test Angular, non con browser interattivo in questa sessione;
+  - il fix azioni e generico sulla `DataTableComponent` shared ed e stato validato solo tramite suite frontend corrente; resta consigliata una rapida verifica visiva su una pagina Master Data.
+- Stato finale: PASS WITH NOTES
+
+### TASK-053.3 - Sicurezza / Ruoli menu access fix
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.3 - Tenant custom role CRUD foundation
+- Tipo verifica: fix minimo frontend su accesso sidebar/navigation alla pagina `/admin/roles`
+- Area verificata: `app-sidebar`, routing `/admin/roles`, spec Angular correlate a sidebar/role administration/master data
+- Attivita eseguite:
+  - verificata la configurazione esistente della sidebar per `Governance > Sicurezza > Ruoli`;
+  - confermato il collegamento della voce menu verso `/admin/roles` senza introdurre una nuova area UI;
+  - corretti solo punti minimi emersi dai test frontend sul wiring della pagina ruoli e sulle spec Angular correlate;
+  - mantenuto fuori scope ogni visibility frontend basata su permessi.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend OK
+  - test frontend OK, 22 file di test passed, 117 test passed
+- QA manuale browser eseguita/non eseguita:
+  - non eseguita in questa sessione CLI
+- Limiti/note:
+  - la verifica manuale visiva della sidebar e del click su `Sicurezza > Ruoli` resta raccomandata in browser;
+  - nessun test backend eseguito, coerente con scope frontend-only del fix.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053.2 - Frontend role permission matrix UI foundation (QA regression pass 2)
 
 - Data: 2026-05-10
@@ -444,6 +523,115 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: build e test verdi, 24 test passed, scope read-only rispettato, nessuna modifica backend/auth/dipendenze rilevata
 
 ## Full-stack / integration QA reports
+
+### TASK-053.3 - API contract, UI polish and Security menu structure
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.3 - Tenant custom role CRUD foundation
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: backend `/api/admin/roles`, write-path legacy `/api/master-data/governance-security/roles`, frontend `/admin/roles`, sidebar `Governance > Sicurezza > Ruoli|Permessi`, i18n `it/fr/en`, shared `DataTableComponent`
+- Bug rilevato:
+  - durante QA manuale precedente la creazione ruolo restituiva `POST /api/admin/roles -> 405 Method Not Allowed`
+- Causa individuata:
+  - nel sorgente attuale backend e frontend risultano gia allineati su `/api/admin/roles`;
+  - `RoleAdministrationController` espone realmente `@PostMapping` su `/api/admin/roles`;
+  - il `405` non era dovuto a un mismatch di path nel repository ma a un backend runtime non allineato al codice corrente / istanza stale durante il test manuale precedente.
+- Fix applicati:
+  - rafforzata la copertura backend OpenAPI per verificare esplicitamente `GET` e `POST` su `/api/admin/roles` e `GET`/`PUT` su `/api/admin/roles/{roleId}`;
+  - confermato e mantenuto il blocco dei bypass write legacy su `/api/master-data/governance-security/roles`;
+  - corretta la pagina Angular ruoli per passare la signal `columns()` al `DataTableComponent`;
+  - rifinite le traduzioni `it/fr/en` per `Sicurezza`, `Ruoli`, `Permessi`, `Sistema`, `Rôles`, `Sécurité`, `Mis à jour`, `Données de base`, `Nouveau rôle`;
+  - accorciato il messaggio informativo sui ruoli `systemRole`;
+  - uniformato il placeholder celle vuote a `—`;
+  - stabilizzato un test backend preesistente e nondeterministico sull'ordinamento default dei ruoli in Master Data governance/security.
+- Sidebar/menu:
+  - verificata la struttura corretta nel sorgente: `Governance > Sicurezza > Ruoli` e `Governance > Sicurezza > Permessi` come voci paritetiche;
+  - nessuna nuova area UI introdotta.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - backend test OK, `BUILD SUCCESS`, 128 test passed, 0 failure, 0 error;
+  - frontend build OK;
+  - frontend test OK, 22 file di test passed, 117 test passed.
+- Note backend:
+  - durante la suite completa restano presenti log/warning molto verbosi su `global_zip_codes` e warning Mockito/JDK; non hanno causato `BUILD FAILURE`.
+- QA manuale browser:
+  - non eseguita in questa sessione CLI;
+  - non erano disponibili nel thread corrente credenziali QA riusabili per una verifica autenticata end-to-end;
+  - resta raccomandata una verifica manuale su sidebar, apertura `/admin/roles`, create/update/activate/deactivate/delete ruolo custom e read-only della matrice permessi su `systemRole`.
+- Stato finale: PASS WITH NOTES
+
+### TASK-053.3 - QA CRUD ruoli e verifica sidebar Sicurezza
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.3 - Tenant custom role CRUD foundation
+- Agente/Modello usato: GPT-5.3 Codex
+- Ambito QA:
+  - contratto API backend/frontend per CRUD ruoli tenant custom;
+  - protezione `system_role`;
+  - route `/admin/roles` e `/admin/permissions`;
+  - sidebar `Governance > Sicurezza > Ruoli|Permessi`;
+  - riuso pattern shared `DataTableComponent`, `MasterDataFormComponent`, `app-button`, `app-input`, `app-checkbox`;
+  - regressioni evidenti su TASK-053.2 matrice ruolo/permessi.
+- File analizzati:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/RoleAdministrationController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/RoleAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataGovernanceSecurityService.java`
+  - `backend/src/test/java/com/odsoftware/hrm/RoleAdministrationControllerTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataGovernanceSecurityControllerTests.java`
+  - `frontend/src/app/features/role-administration/role-administration.service.ts`
+  - `frontend/src/app/features/role-administration/role-administration.component.ts`
+  - `frontend/src/app/features/role-permissions/role-permission-matrix.component.ts`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.ts`
+  - `frontend/src/app/app.routes.ts`
+  - `frontend/src/app/shared/components/data-table/data-table.component.ts`
+  - `frontend/src/app/features/master-data/master-data-form.component.ts`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+- Verifiche tecniche eseguite:
+  - confermato `@PostMapping` su `/api/admin/roles` e allineamento del service Angular sullo stesso path;
+  - verificati endpoint lista, dettaglio, create, update, activate, deactivate, delete e role-permissions;
+  - verificati test backend per duplicate code, tenant mancante, delete con assegnazioni utente e blocco `system_role`;
+  - verificato che i write path legacy `/api/master-data/governance-security/roles` siano chiusi con errore esplicito;
+  - verificato che la pagina Ruoli riusi shared table/form/button/input/checkbox e che le azioni su `systemRole=true` siano nascoste lato UI;
+  - verificato che la matrice permessi sia read-only per `systemRole=true`;
+  - verificata la sidebar con `Ruoli` e `Permessi` come voci paritetiche sotto `Sicurezza`, non annidate tra loro;
+  - verificato placeholder coerente per celle vuote e presenza i18n `it/fr/en`.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - backend test OK, `BUILD SUCCESS`, 128 test eseguiti, 0 failure, 0 error, 0 skipped;
+  - frontend build OK;
+  - frontend test OK, 22 file di test passed, 117 test passed.
+- Esito CRUD ruoli:
+  - PASS su base code review + test automatici;
+  - create/update/activate/deactivate/delete custom risultano coperti e allineati al contratto `/api/admin/roles`;
+  - nessuna evidenza di mismatch `POST /api/admin/roles` vs backend.
+- Esito protezione `system_role`:
+  - PASS;
+  - backend blocca update/activate/deactivate/delete/update permissions con messaggio chiaro `System roles cannot be modified through tenant role administration`;
+  - frontend nasconde le azioni non consentite e la matrice permessi resta in sola lettura.
+- Esito sidebar Ruoli/Permessi:
+  - PASS;
+  - struttura verificata nel codice: `Governance > Sicurezza > Ruoli` e `Governance > Sicurezza > Permessi` allo stesso livello;
+  - nessuna evidenza che `Permessi` sia figlio di `Ruoli`.
+- Conferma fix 405:
+  - dal codice e dai test risulta confermato il contratto corretto `POST /api/admin/roles`;
+  - nessuna evidenza di `405 Method Not Allowed` nello stato corrente del repository.
+- Bug trovati:
+  - nessun bug bloccante trovato in questo pass QA.
+- Regressioni:
+  - nessuna regressione automatica rilevata su TASK-053.2/TASK-053.3.
+- Limiti noti:
+  - QA manuale browser autenticata non eseguita in questa sessione CLI;
+  - non erano disponibili nel thread corrente credenziali QA utilizzabili e non era presente un browser interattivo per validare end-to-end create/edit/delete dal vivo;
+  - la suite backend continua a produrre log/warning molto verbosi su `global_zip_codes` e warning Mockito/JDK, senza causare failure.
+- Stato finale: PASS WITH NOTES
 
 ### TASK-043 - Master Data API/UI pagination and generic filters
 

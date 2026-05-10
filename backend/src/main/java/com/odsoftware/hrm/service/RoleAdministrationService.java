@@ -2,9 +2,11 @@ package com.odsoftware.hrm.service;
 
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.dto.roleadministration.RoleAdministrationPermissionResponse;
+import com.odsoftware.hrm.dto.roleadministration.RoleAdministrationRoleCreateRequest;
 import com.odsoftware.hrm.dto.roleadministration.RoleAdministrationRoleDetailResponse;
 import com.odsoftware.hrm.dto.roleadministration.RoleAdministrationRoleListItemResponse;
 import com.odsoftware.hrm.dto.roleadministration.RoleAdministrationTenantResponse;
+import com.odsoftware.hrm.dto.roleadministration.RoleAdministrationRoleUpdateRequest;
 import com.odsoftware.hrm.dto.roleadministration.RolePermissionAssignmentResponse;
 import com.odsoftware.hrm.dto.roleadministration.RolePermissionAssignmentUpdateRequest;
 import com.odsoftware.hrm.entity.core.Tenant;
@@ -12,15 +14,18 @@ import com.odsoftware.hrm.entity.master.Permission;
 import com.odsoftware.hrm.entity.master.Role;
 import com.odsoftware.hrm.entity.rbac.RolePermission;
 import com.odsoftware.hrm.exception.InvalidRequestException;
+import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
 import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.repository.master.PermissionRepository;
 import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.rbac.RolePermissionRepository;
+import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
 import jakarta.persistence.criteria.Predicate;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -37,16 +42,19 @@ public class RoleAdministrationService {
 	private final RoleRepository roleRepository;
 	private final PermissionRepository permissionRepository;
 	private final RolePermissionRepository rolePermissionRepository;
+	private final UserRoleRepository userRoleRepository;
 	private final TenantRepository tenantRepository;
 
 	public RoleAdministrationService(
 			RoleRepository roleRepository,
 			PermissionRepository permissionRepository,
 			RolePermissionRepository rolePermissionRepository,
+			UserRoleRepository userRoleRepository,
 			TenantRepository tenantRepository) {
 		this.roleRepository = roleRepository;
 		this.permissionRepository = permissionRepository;
 		this.rolePermissionRepository = rolePermissionRepository;
+		this.userRoleRepository = userRoleRepository;
 		this.tenantRepository = tenantRepository;
 	}
 
@@ -67,6 +75,42 @@ public class RoleAdministrationService {
 		return toRoleDetailResponse(role, tenant);
 	}
 
+	@Transactional
+	public RoleAdministrationRoleDetailResponse createRole(RoleAdministrationRoleCreateRequest request) {
+		Tenant tenant = findTenant(request.tenantId());
+		String code = cleanUpper(request.code());
+		if (roleRepository.existsByTenantIdAndCode(tenant.getId(), code)) {
+			throw new ResourceConflictException("Role code already exists for tenant: " + code);
+		}
+
+		Role role = new Role();
+		role.setTenantId(tenant.getId());
+		role.setCode(code);
+		role.setName(clean(request.name()));
+		role.setDescription(clean(request.description()));
+		role.setSystemRole(false);
+		role.setActive(activeOrDefault(request.active()));
+		return toRoleDetailResponse(roleRepository.save(role), tenant);
+	}
+
+	@Transactional
+	public RoleAdministrationRoleDetailResponse updateRole(UUID roleId, RoleAdministrationRoleUpdateRequest request) {
+		Role role = findMutableCustomRole(roleId);
+		role.setName(clean(request.name()));
+		role.setDescription(clean(request.description()));
+		return toRoleDetailResponse(roleRepository.save(role), findTenant(role.getTenantId()));
+	}
+
+	@Transactional
+	public RoleAdministrationRoleDetailResponse activateRole(UUID roleId) {
+		return updateRoleActive(roleId, true);
+	}
+
+	@Transactional
+	public RoleAdministrationRoleDetailResponse deactivateRole(UUID roleId) {
+		return updateRoleActive(roleId, false);
+	}
+
 	public RolePermissionAssignmentResponse findAssignedPermissions(UUID roleId) {
 		Role role = findRole(roleId);
 		return toAssignmentResponse(role, findAssignedRolePermissions(role));
@@ -74,7 +118,7 @@ public class RoleAdministrationService {
 
 	@Transactional
 	public RolePermissionAssignmentResponse updateAssignedPermissions(UUID roleId, RolePermissionAssignmentUpdateRequest request) {
-		Role role = findRole(roleId);
+		Role role = findMutableCustomRole(roleId);
 		Tenant tenant = findTenant(role.getTenantId());
 		List<UUID> requestedPermissionIds = new LinkedHashSet<>(request.permissionIds()).stream().toList();
 		List<Permission> permissions = findPermissions(requestedPermissionIds);
@@ -92,8 +136,22 @@ public class RoleAdministrationService {
 		return toAssignmentResponse(role, newAssignments);
 	}
 
+	@Transactional
+	public void deleteRole(UUID roleId) {
+		Role role = findMutableCustomRole(roleId);
+		if (userRoleRepository.existsByTenant_IdAndRole_Id(role.getTenantId(), role.getId())) {
+			throw new ResourceConflictException("Role cannot be deleted because it is assigned to one or more users");
+		}
+
+		List<RolePermission> existingAssignments = rolePermissionRepository.findByTenant_IdAndRole_Id(role.getTenantId(), role.getId());
+		rolePermissionRepository.deleteAll(existingAssignments);
+		rolePermissionRepository.flush();
+		roleRepository.delete(role);
+		roleRepository.flush();
+	}
+
 	private Specification<Role> roleSpecification(UUID tenantId, String search) {
-		Specification<Role> searchSpecification = MasterDataQuerySupport.searchSpecification(search, "code", "name");
+		Specification<Role> searchSpecification = MasterDataQuerySupport.searchSpecification(search, "code", "name", "description");
 		if (tenantId == null) {
 			return searchSpecification;
 		}
@@ -112,6 +170,14 @@ public class RoleAdministrationService {
 	private Role findRole(UUID roleId) {
 		return roleRepository.findById(roleId)
 				.orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleId));
+	}
+
+	private Role findMutableCustomRole(UUID roleId) {
+		Role role = findRole(roleId);
+		if (Boolean.TRUE.equals(role.getSystemRole())) {
+			throw new InvalidRequestException("System roles cannot be modified through tenant role administration");
+		}
+		return role;
 	}
 
 	private Tenant findTenant(UUID tenantId) {
@@ -149,6 +215,12 @@ public class RoleAdministrationService {
 		return rolePermissionRepository.findByTenant_IdAndRole_IdOrderByPermission_CodeAsc(role.getTenantId(), role.getId());
 	}
 
+	private RoleAdministrationRoleDetailResponse updateRoleActive(UUID roleId, boolean active) {
+		Role role = findMutableCustomRole(roleId);
+		role.setActive(active);
+		return toRoleDetailResponse(roleRepository.save(role), findTenant(role.getTenantId()));
+	}
+
 	private RolePermission newRolePermission(Tenant tenant, Role role, Permission permission) {
 		RolePermission rolePermission = new RolePermission();
 		rolePermission.setTenant(tenant);
@@ -172,8 +244,10 @@ public class RoleAdministrationService {
 				role.getTenantId(),
 				role.getCode(),
 				role.getName(),
+				role.getDescription(),
 				role.getSystemRole(),
-				role.getActive());
+				role.getActive(),
+				role.getUpdatedAt());
 	}
 
 	private RoleAdministrationRoleDetailResponse toRoleDetailResponse(Role role, Tenant tenant) {
@@ -182,6 +256,7 @@ public class RoleAdministrationService {
 				new RoleAdministrationTenantResponse(tenant.getId(), tenant.getCode(), tenant.getName()),
 				role.getCode(),
 				role.getName(),
+				role.getDescription(),
 				role.getSystemRole(),
 				role.getActive(),
 				role.getCreatedAt(),
@@ -196,5 +271,22 @@ public class RoleAdministrationService {
 				permission.getName(),
 				permission.getSystemPermission(),
 				permission.getActive());
+	}
+
+	private Boolean activeOrDefault(Boolean active) {
+		return active == null ? Boolean.TRUE : active;
+	}
+
+	private String cleanUpper(String value) {
+		String cleaned = clean(value);
+		return cleaned == null ? null : cleaned.toUpperCase(Locale.ROOT);
+	}
+
+	private String clean(String value) {
+		if (value == null) {
+			return null;
+		}
+		String cleaned = value.trim();
+		return cleaned.isEmpty() ? null : cleaned;
 	}
 }

@@ -29,6 +29,10 @@ export class AppHeaderComponent {
       return 'nav.permissions';
     }
 
+    if (normalizedPath.startsWith('/admin/roles')) {
+      return 'nav.roles';
+    }
+
     if (normalizedPath.startsWith('/master-data')) {
       return 'nav.masterData';
     }

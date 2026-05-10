@@ -18,7 +18,7 @@ export type DataTableRow = Record<string, unknown>;
 export interface DataTableAction<T extends DataTableRow = DataTableRow> {
   readonly id: string;
   readonly labelKey: I18nKey;
-  readonly visible?: boolean;
+  readonly visible?: boolean | ((row: T) => boolean);
   readonly tone?: 'default' | 'danger';
   readonly disabled?: boolean | ((row: T) => boolean);
 }

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.08
+Versione: 2.09
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -40,6 +40,7 @@ Ogni task deve essere piccolo, chiaro, verificabile e coerente con:
 - I vecchi file di analisi iniziale, Excel e Word non devono essere usati come fonte vincolante o come scope automatico dei task.
 - Se un campo, vincolo o comportamento non è esplicitamente presente nel task corrente di `TASKS.md`, non deve essere implementato automaticamente.
 - Ogni task deve essere implementato solo in base allo scope scritto nel task stesso, `ARCHITECTURE.md` e `DECISIONS.md`.
+- Quando un task introduce un nuovo CRUD, una nuova area amministrativa o azioni applicative su una nuova entita/modulo, il task deve prevedere: verifica/aggiunta permessi o authorities del modulo, eventuale seed/migration `Permission`, esposizione nella matrice Ruolo/Permessi, mapping standard `READ/CREATE/UPDATE/DELETE` e test dove applicabile; se non incluso, deve essere dichiarato come fuori scope o follow-up esplicito.
 
 ---
 
@@ -3401,8 +3402,9 @@ Backlog tecnico minimale post-TASK-051:
 3. TASK-053.2: introdurre la foundation frontend per la matrice permessi ruolo, riusando API esistenti e senza enforcement frontend completo.
 4. TASK-053.3: introdurre CRUD amministrativo dedicato ai ruoli custom tenant, con protezione esplicita dei ruoli `system_role`.
 5. TASK-053.4: introdurre foundation amministrativa tenant per utenti e assegnazioni ruolo utente, distinguendo vista platform e vista tenant.
-6. TASK-054: esporre verso frontend un permission/role summary del current user per sola visibility UX, senza considerarlo fonte autoritativa di sicurezza.
-7. TASK-055: applicare enforcement backend reale sulle API usando la foundation dei permessi, default deny cross-tenant e controlli server-side.
+6. TASK-054: introdurre in frontend permission summary e modello centralizzato di visibility UX, senza considerarlo fonte autoritativa di sicurezza.
+7. TASK-055: applicare enforcement backend reale sulle API usando la foundation dei permessi, default deny e mapping endpoint/permesso/azione.
+8. TASK-055.1: completare tenant/caller authorization sugli endpoint admin critici, inclusi `/api/admin/roles`.
 
 Validazione:
 
@@ -3459,7 +3461,7 @@ Validazione:
 
 ### TASK-053 - Tenant user and role administration foundation
 
-Stato: TODO
+Stato: IN_PROGRESS
 
 Tipo: Epic / Cross-stack foundation
 
@@ -3560,7 +3562,7 @@ Validazione:
 
 #### TASK-053.3 - Tenant custom role CRUD foundation
 
-Stato: TODO
+Stato: IN_PROGRESS
 
 Tipo: Frontend + backend foundation
 
@@ -3580,6 +3582,15 @@ Fuori scope:
 - gestione utenti tenant;
 - visibility frontend completa basata su permessi;
 - duplicazione ruolo obbligatoria nel primo rilascio.
+
+Nota di allineamento review permessi:
+
+- la foundation CRUD ruoli custom tenant resta confinata a TASK-053.3;
+- la protezione `system_role` su update/delete/activate/deactivate/update permissions e presente;
+- la matrice Ruolo/Permessi consente assegnazioni permessi in modalita foundation;
+- i controlli frontend su menu/route/bottoni restano UX e non sicurezza reale;
+- l'enforcement RBAC runtime completo resta fuori scope di TASK-053.3;
+- l'enforcement backend reale e demandato a TASK-055 e TASK-055.1.
 
 #### TASK-053.4 - Tenant user administration UI/API foundation
 
@@ -3608,7 +3619,7 @@ Fuori scope:
 - nuove librerie UI;
 - duplicazione di componenti tabellari o layout.
 
-### TASK-054 - Apply permissions to frontend navigation and actions
+### TASK-054 - Frontend permission summary and visibility UX foundation
 
 Stato: TODO
 
@@ -3616,17 +3627,25 @@ Tipo: Frontend authorization UX
 
 Obiettivo:
 
-- Applicare i permessi lato frontend per menu, pagine e azioni.
+- Introdurre una foundation frontend centralizzata per permission summary e visibility UX.
 
 Scope:
 
-- nascondere/disabilitare voci menu non autorizzate;
-- controllare visibilita/accesso pagine in base ai permessi disponibili;
-- nascondere/disabilitare pulsanti CRUD;
-- usare permessi disponibili dall'utente autenticato;
-- mantenere chiaro che il frontend e solo UX, non sicurezza reale.
+- recupero/sintesi permessi utente lato frontend;
+- modello centralizzato per visibility UX;
+- nascondere/disabilitare menu, route e bottoni in base ai permessi disponibili;
+- nessuna sicurezza reale lato frontend;
+- nessuna modifica enforcement backend;
+- preparazione al TASK-055.
 
-### TASK-055 - Apply permissions to backend API authorization
+Fuori scope:
+
+- enforcement backend;
+- default deny server-side;
+- gestione completa utenti tenant se non gia prevista;
+- modifica catalogo permissions non necessaria.
+
+### TASK-055 - Backend RBAC enforcement foundation
 
 Stato: TODO
 
@@ -3634,18 +3653,47 @@ Tipo: Backend authorization enforcement
 
 Obiettivo:
 
-- Applicare i permessi lato backend alle API.
+- Applicare enforcement RBAC reale lato backend sulle API protette.
 
 Scope:
 
-- protezione endpoint;
-- controllo permessi per azioni CRUD;
-- rifiuto richieste non autorizzate anche se inviate manualmente;
-- nessuna fiducia nel solo frontend.
+- enforcement reale lato backend;
+- default deny sugli endpoint protetti;
+- mapping endpoint/azione verso `Permission` code;
+- controllo permessi del caller;
+- controllo tenant/caller authorization;
+- test negativi per utente autenticato senza permessi;
+- test cross-tenant;
+- protezione endpoint admin, inclusi `/api/admin/roles`.
 
 Nota di sicurezza:
 
 - il backend resta il punto di enforcement reale; il frontend non sostituisce mai i controlli API.
+
+Fuori scope:
+
+- redesign frontend;
+- nuove UI;
+- nuove entita non necessarie;
+- refactoring ampio non giustificato.
+
+#### TASK-055.1 - Tenant/caller authorization hardening for admin role endpoints
+
+Stato: TODO
+
+Tipo: Backend authorization hardening
+
+Scope:
+
+- completare controlli tenant/caller sugli endpoint `/api/admin/roles`;
+- impedire accessi admin cross-tenant non autorizzati anche con payload/query manipolati;
+- introdurre test negativi dedicati sui casi tenant mismatch e caller senza permessi.
+
+Fuori scope:
+
+- redesign contratti UI;
+- nuove feature amministrative non richieste da enforcement;
+- refactor esteso fuori dal perimetro authorization.
 
 ### TASK-056 - Finalize ZIP import foundation and test isolation
 
@@ -3736,6 +3784,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.09 | 2026-05-10 | Backlog allineato pre-commit TASK-053.3: aggiunta regola governance CRUD/permessi nei process notes, chiarito limite/follow-up di TASK-053.3 (foundation CRUD + protezione `system_role`), ridefiniti TASK-054 e TASK-055 e aggiunto TASK-055.1 per tenant/caller authorization su endpoint admin `/api/admin/roles`, senza modifiche codice applicativo. |
 | 2.08 | 2026-05-10 | TASK-053.2 riallineato dopo review: route frontend rinominata in `/admin/permissions`, menu `Governance > Sicurezza > Permessi`, matrice filtrata ai soli permessi Master Data reali presenti, test/frontend QA aggiornati e nota esplicita sulla validazione manuale tenant-aware. |
 | 2.07 | 2026-05-10 | TASK-053.2 completato: aggiunta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware, con riuso API backend gia presenti `/api/admin/roles`, route/shell/sidebar coerenti, estensione minima retrocompatibile di `app-checkbox`, build/test frontend verdi e backlog raffinato con nuovo TASK-053.3 per CRUD ruoli custom tenant, TASK-053.4 per user administration e TASK-056 per il debito tecnico import ZIP. |
 | 2.06 | 2026-05-10 | TASK-053.1 completato: aggiunta API backend `/api/admin/roles` per lista/dettaglio ruoli, lettura permessi assegnati e replace transazionale delle assegnazioni ruolo-permesso con DTO espliciti, validazione tenant role/permission, test mirati verdi e fix cast UUID in Flyway V18 per PostgreSQL; nessuna UI, security/JWT/enforcement o import CAP modificati. |

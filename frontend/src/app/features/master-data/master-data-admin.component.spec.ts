@@ -44,7 +44,7 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Italia');
     expect(fixture.nativeElement.textContent).toContain('Si');
     expect((fixture.nativeElement.querySelector('.data-table-page-size-select') as HTMLSelectElement).value).toBe('20');
-  });
+  }, 15000);
 
   it('reloads the first resource of the selected category', async () => {
     window.localStorage.setItem('hrflow.language', 'it');

@@ -103,10 +103,10 @@
                 }
               </td>
             }
-              @if (visibleRowActions().length > 0) {
+              @if (visibleRowActions(row).length > 0) {
                 <td class="data-table-actions-cell">
                   <div class="data-table-actions">
-                    @for (action of visibleRowActions(); track trackRowAction($index, action)) {
+                    @for (action of visibleRowActions(row); track trackRowAction($index, action)) {
                       <app-button
                         variant="ghost"
                         size="sm"

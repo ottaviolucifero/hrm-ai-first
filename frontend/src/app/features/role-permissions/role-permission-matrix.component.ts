@@ -23,7 +23,8 @@ import { RolePermissionMatrixService } from './role-permission-matrix.service';
 
 const ROLE_PAGE_SIZE = 100;
 const PERMISSION_PAGE_SIZE = 100;
-const RESOURCE_ORDER: readonly RolePermissionResourceCode[] = ['MASTER_DATA'];
+const RESOURCE_ORDER: readonly RolePermissionResourceCode[] = ['MASTER_DATA', 'ROLE'];
+const VISIBLE_RESOURCES = new Set<RolePermissionResourceCode>(RESOURCE_ORDER);
 
 const MODULE_LABELS: Record<RolePermissionResourceCode, I18nKey> = {
   TENANT: 'rolePermissions.modules.tenant',
@@ -85,6 +86,9 @@ export class RolePermissionMatrixComponent implements OnDestroy {
   protected readonly selectedRoleListItem = computed(
     () => this.roles().find((role) => role.id === this.selectedRoleId()) ?? null
   );
+  protected readonly selectedRoleReadOnly = computed(
+    () => this.selectedRole()?.systemRole === true
+  );
   protected readonly visibleActions = ROLE_PERMISSION_VISIBLE_ACTIONS;
   protected readonly hasUnsavedChanges = computed(
     () => !this.samePermissionSet(this.initialPermissionIds(), this.selectedPermissionIds())
@@ -137,7 +141,7 @@ export class RolePermissionMatrixComponent implements OnDestroy {
 
   protected saveChanges(): void {
     const roleId = this.selectedRoleId();
-    if (!roleId || this.saving() || !this.hasUnsavedChanges()) {
+    if (!roleId || this.selectedRoleReadOnly() || this.saving() || !this.hasUnsavedChanges()) {
       return;
     }
 
@@ -166,11 +170,11 @@ export class RolePermissionMatrixComponent implements OnDestroy {
   }
 
   protected canReset(): boolean {
-    return Boolean(this.selectedRoleId()) && !this.saving() && this.hasUnsavedChanges();
+    return Boolean(this.selectedRoleId()) && !this.selectedRoleReadOnly() && !this.saving() && this.hasUnsavedChanges();
   }
 
   protected canSave(): boolean {
-    return Boolean(this.selectedRoleId()) && !this.saving() && !this.loadingSelection() && this.hasUnsavedChanges();
+    return Boolean(this.selectedRoleId()) && !this.selectedRoleReadOnly() && !this.saving() && !this.loadingSelection() && this.hasUnsavedChanges();
   }
 
   protected roleBadgeKey(role: Pick<RolePermissionMatrixRoleListItem, 'systemRole'>): I18nKey {
@@ -190,7 +194,7 @@ export class RolePermissionMatrixComponent implements OnDestroy {
   }
 
   protected isPermissionDisabled(permission: RolePermissionMatrixPermission | null): boolean {
-    return permission === null || permission.active !== true || this.loadingSelection() || this.saving();
+    return permission === null || permission.active !== true || this.loadingSelection() || this.saving() || this.selectedRoleReadOnly();
   }
 
   protected checkboxAriaLabel(row: RolePermissionMatrixRow, action: RolePermissionVisibleAction): string {
@@ -290,7 +294,7 @@ export class RolePermissionMatrixComponent implements OnDestroy {
         (entry): entry is { permission: RolePermissionMatrixPermission; parsedCode: ParsedRolePermissionCode } =>
           entry.parsedCode !== null &&
           entry.parsedCode.scope === 'TENANT' &&
-          entry.parsedCode.resource === 'MASTER_DATA' &&
+          VISIBLE_RESOURCES.has(entry.parsedCode.resource) &&
           this.isVisibleAction(entry.parsedCode.action)
       );
 

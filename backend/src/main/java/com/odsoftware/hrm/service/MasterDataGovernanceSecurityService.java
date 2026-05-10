@@ -23,6 +23,7 @@ import com.odsoftware.hrm.entity.master.Permission;
 import com.odsoftware.hrm.entity.master.Role;
 import com.odsoftware.hrm.entity.master.SmtpEncryptionType;
 import com.odsoftware.hrm.entity.master.UserType;
+import com.odsoftware.hrm.exception.InvalidRequestException;
 import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
 import com.odsoftware.hrm.repository.core.TenantRepository;
@@ -302,7 +303,7 @@ public class MasterDataGovernanceSecurityService {
 				page,
 				size,
 				search,
-				MasterDataQuerySupport.searchSpecification(search, "code", "name"),
+				MasterDataQuerySupport.searchSpecification(search, "code", "name", "description"),
 				this::toRoleResponse);
 	}
 
@@ -312,33 +313,17 @@ public class MasterDataGovernanceSecurityService {
 
 	@Transactional
 	public RoleResponse createRole(RoleRequest request) {
-		validateTenant(request.tenantId());
-		String code = cleanUpper(request.code());
-		if (roleRepository.existsByTenantIdAndCode(request.tenantId(), code)) {
-			throw new ResourceConflictException("Role code already exists for tenant: " + code);
-		}
-		Role role = new Role();
-		applyRole(role, request, code);
-		return toRoleResponse(roleRepository.save(role));
+		throw new InvalidRequestException("Role lifecycle writes are managed under /api/admin/roles");
 	}
 
 	@Transactional
 	public RoleResponse updateRole(UUID id, RoleRequest request) {
-		Role role = findRole(id);
-		validateTenant(request.tenantId());
-		String code = cleanUpper(request.code());
-		if (roleRepository.existsByTenantIdAndCodeAndIdNot(request.tenantId(), code, id)) {
-			throw new ResourceConflictException("Role code already exists for tenant: " + code);
-		}
-		applyRole(role, request, code);
-		return toRoleResponse(roleRepository.save(role));
+		throw new InvalidRequestException("Role lifecycle writes are managed under /api/admin/roles");
 	}
 
 	@Transactional
 	public void disableRole(UUID id) {
-		Role role = findRole(id);
-		role.setActive(false);
-		roleRepository.save(role);
+		throw new InvalidRequestException("Role lifecycle writes are managed under /api/admin/roles");
 	}
 
 	public MasterDataPageResponse<PermissionResponse> findPermissions(Integer page, Integer size, String search) {
@@ -570,6 +555,7 @@ public class MasterDataGovernanceSecurityService {
 		role.setTenantId(request.tenantId());
 		role.setCode(code);
 		role.setName(clean(request.name()));
+		role.setDescription(clean(request.description()));
 		role.setSystemRole(falseOrValue(request.systemRole()));
 		role.setActive(activeOrDefault(request.active()));
 	}
@@ -622,6 +608,7 @@ public class MasterDataGovernanceSecurityService {
 				role.getTenantId(),
 				role.getCode(),
 				role.getName(),
+				role.getDescription(),
 				role.getSystemRole(),
 				role.getActive(),
 				role.getCreatedAt(),
