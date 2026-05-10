@@ -33,7 +33,8 @@
               "src/styles.scss",
               "public/assets/css/core.bundle.css",
               "public/assets/vendors/keenicons/styles.bundle.css",
-              "public/assets/css/styles.css"
+              "public/assets/css/styles.css",
+              "src/typography.scss"
             ],
             "scripts": [
               "public/assets/js/core.bundle.js"

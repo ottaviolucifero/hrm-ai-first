@@ -32,6 +32,33 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-048.16 - Global typography foundation
+
+- Data: 2026-05-10
+- Branch: `task-048-16-global-typography-foundation`
+- Task: TASK-048.16 - Global typography foundation
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `frontend/angular.json`, `frontend/src/typography.scss`, `frontend/src/styles.scss`, `docs/design/DESIGN-SYSTEM.md`, `TASKS.md`, `ROADMAP.md`
+- Attività eseguite:
+  - analisi della catena attuale degli stili globali Angular/Metronic e identificazione di `public/assets/css/styles.css` come layer tipografico dominante;
+  - introduzione di `src/typography.scss` come layer finale, senza spostare `src/styles.scss`;
+  - definizione di Manrope come font applicativo globale tramite token CSS e fallback sicuri, senza font remoti;
+  - esclusione esplicita dei font iconografici Keenicons dalla normalizzazione tipografica.
+- Test eseguiti:
+  - `cd frontend && npm.cmd run build` -> OK
+  - `cd frontend && npm.cmd test` -> OK
+- Esiti reali:
+  - build frontend OK
+  - test frontend OK, 17 file di test passed, 96 test passed
+- QA manuale browser:
+  - non eseguita in questa sessione CLI; consigliata verifica visiva su `/login`, shell autenticata, sidebar, header e `/master-data`
+- Regressioni trovate:
+  - nessuna regressione automatica rilevata
+- Limiti/note:
+  - in questa fase non è stato introdotto self-hosting dei file font Manrope; la foundation prepara solo lo stack applicativo e il punto finale di override;
+  - alcuni plugin vendor, ad esempio `pickr`, mantengono stack tipografici locali hardcoded e non sono stati modificati per evitare scope creep.
+- Stato finale: PASS
+
 ### TASK-048.15 - Shared form controls and form patterns foundation (phase 2)
 
 - Data: 2026-05-10

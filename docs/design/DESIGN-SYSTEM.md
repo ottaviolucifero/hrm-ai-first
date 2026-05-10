@@ -1,7 +1,7 @@
 # HRM AI-first Design System
 
 Versione: 0.9
-Ultimo aggiornamento: 2026-05-09
+Ultimo aggiornamento: 2026-05-10
 Stato: Draft preparatorio
 
 ---
@@ -56,6 +56,16 @@ Fuori scope:
 - Metronic e riferimento visuale approvato, non codice da copiare.
 
 ---
+
+### 3.1 Typography foundation (TASK-048.16)
+
+Regole approvate:
+
+- Manrope e il font applicativo globale di HRflow, con fallback locali/sicuri di tipo sans-serif;
+- `frontend/src/typography.scss` e il layer finale della tipografia globale frontend e deve essere caricato per ultimo nella pipeline `styles` di Angular;
+- `frontend/src/styles.scss` resta dedicato agli override applicativi globali e non diventa la fonte primaria della typography foundation;
+- i font iconografici Keenicons restano esclusi dalla normalizzazione tipografica e non devono essere sovrascritti dal layer applicativo;
+- in questa fase non vengono introdotti CDN o Google Fonts: la foundation prepara lo stack `font-family`, mentre l'eventuale self-hosting dei file font resta uno step successivo dedicato.
 
 ## 4. Layout pagina
 
