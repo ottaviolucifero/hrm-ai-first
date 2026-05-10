@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.05
+Versione: 2.06
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -110,10 +110,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-048.14 Spreadsheet-style bulk editor planning
 - TASK-048.15 Shared form controls and form patterns foundation
 - TASK-048.16 Global typography foundation
+- TASK-050 Configure Spring AI skill and backend agent integration
 
 ### Prossimo passo
 
-- TASK-050 Configure Spring AI skill and backend agent integration
+- TASK-051 User, Role and Permission domain review
 
 ---
 
@@ -186,6 +187,7 @@ Completato:
 - TASK-048.14 completed: spreadsheet-style bulk editor documented as future pattern with bounded use cases, reuse rules, accessibility/i18n/performance constraints and recommendation for a dedicated component separate from the current read-only `DataTableComponent`; no Angular/backend changes.
 - TASK-048.15 completed: shared form controls foundation started with control inventory and first shared control `app-checkbox` integrated in Master Data CRUD modal; design/accessibility/i18n patterns formalized in `docs/design/DESIGN-SYSTEM.md`.
 - TASK-049 completed: Platform Super Admin and tenant-aware permissions strategy documented, with `PLATFORM_SUPER_ADMIN` global boundary, `TENANT_ADMIN` tenant boundary, protected seed roles, tenant custom roles, CRUD permission separation for Global/Tenant Master Data, default-deny cross-tenant rules and backend-authoritative security model.
+- TASK-050 completed: repository-local backend governance skill `spring-backend-developer` approved and versioned with `skills-lock.json`, `backend/AGENTS.md` alignment and prompt-governance documentation, without backend/frontend code changes.
 
 Nota:
 
@@ -212,7 +214,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-050 Configure Spring AI skill and backend agent integration
 - TASK-051 User, Role and Permission domain review
 - TASK-052 Permission model foundation by scope/resource/action
 - TASK-053 Tenant user and role administration foundation
@@ -223,7 +224,7 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
 - TASK-048: iniziativa generale HRflow design system/template UI basata sul catalogo Stitch validato, con Master Data come caso pilota prima del blocco permessi;
 - TASK-049: strategia e modello Super Admin / tenant-aware permissions completati;
-- TASK-050: configurazione governance + integrazione skill Spring/backend approvata per supportare i task backend/security successivi;
+- TASK-050: configurazione governance + integrazione skill Spring/backend approvata, completata come skill repository-local minima e complemento a `backend/AGENTS.md`;
 - TASK-051: review dominio esistente e gap analysis;
 - TASK-052: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
 - TASK-053: foundation utenti/ruoli tenant;
@@ -363,6 +364,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.06 | 2026-05-10 | TASK-050 completato come integrazione governance backend agent: approvata e versionata la skill repository-local minima `spring-backend-developer`, aggiornato `skills-lock.json`, riallineati `backend/AGENTS.md` e prompt governance, prossimo passo spostato a TASK-051. |
 | 2.05 | 2026-05-10 | Inserito TASK-050 come task documentale/TODO per configurazione della skill Spring/backend approvata; prossimo passo aggiornato a TASK-050, sequenza Super Admin / permessi rinumerata a TASK-050..TASK-055 e range futuri riallineati fino a TASK-067. |
 | 2.04 | 2026-05-10 | TASK-049 completato come passaggio strategico/documentale: modello `PLATFORM_SUPER_ADMIN` vs `TENANT_ADMIN`, ruoli seed/custom tenant-specific, CRUD Global/Tenant Master Data, default deny cross-tenant, backend authoritative e frontend visibility solo UX; prossimo passo aggiornato a TASK-050. |
 | 2.03 | 2026-05-10 | TASK-048.16 completato: introdotto `src/typography.scss` come layer finale della tipografia globale frontend, Manrope definito via token CSS con fallback locali, nessun font remoto introdotto e build/test frontend verificati. |

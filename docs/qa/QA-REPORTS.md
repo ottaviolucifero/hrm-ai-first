@@ -33,25 +33,26 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 ### TASK-050 - Configure Spring AI skill and backend agent integration
 
 - Data: 2026-05-10
-- Branch: `task-049-platform-super-admin-tenant-permissions`
+- Branch: `task-050-spring-backend-skill-governance`
 - Task: TASK-050 - Configure Spring AI skill and backend agent integration
 - Agente/Modello usato: GPT-5.5 Thinking
-- Area verificata: `AGENTS.md`, `backend/AGENTS.md`, `ARCHITECTURE.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/qa/QA-REPORTS.md`, `.agents/skills`, `skills-lock.json`
+- Area verificata: `AGENTS.md`, `backend/AGENTS.md`, `ARCHITECTURE.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/ai-prompts/codex-prompt-governance.md`, `docs/qa/QA-REPORTS.md`, `.agents/skills`, `skills-lock.json`
 - Attivita eseguite:
   - verifica della governance skill gia approvata e dello stato repository-local corrente (`angular-developer` come unica skill lockata);
-  - inserimento del nuovo TASK-050 come task documentale/TODO per skill Spring/backend approvata;
-  - rinumerazione del blocco corrente Super Admin / permessi da TASK-051 a TASK-055 e slittamento di +1 dei task successivi attivi;
-  - riallineamento dei riferimenti attivi in backlog, roadmap, architettura e decisioni.
-- Test automatici eseguiti: non eseguiti; task solo documentale e nessun codice applicativo modificato.
+  - conferma che non esisteva una skill Spring/backend gia disponibile o approvata nel repository;
+  - creazione di una skill repository-local minima `spring-backend-developer` come supporto di governance, subordinata a `backend/AGENTS.md`;
+  - aggiornamento di `skills-lock.json`, `backend/AGENTS.md`, `docs/ai-prompts/codex-prompt-governance.md`, `TASKS.md`, `ROADMAP.md` e `DECISIONS.md`;
+  - verifica finale del diff per confermare assenza di modifiche backend/frontend applicative.
+- Test automatici eseguiti: non eseguiti; task solo documentale/governance e nessun codice applicativo modificato.
 - Controlli richiesti:
-  - verifica coerenza numerazione TASK-050..TASK-055;
-  - verifica assenza di riferimenti attivi obsoleti al vecchio TASK-050;
+  - verifica struttura skill sotto `.agents/skills`;
+  - verifica lock/hash in `skills-lock.json`;
+  - `git diff --check`
   - `git diff`
   - `git status --short --branch`
 - Regressioni trovate: nessuna regressione documentale nota in questa fase.
 - Limiti/note:
-  - nessuna skill Spring/backend repository-local e stata ancora approvata o versionata;
-  - `skills-lock.json` resta coerentemente limitato alla skill Angular gia approvata;
+  - la skill introdotta e minimale e di governance, non una skill tecnica esterna/importata;
   - nessuna modifica backend/frontend, migration, API o runtime security.
 - Stato finale: PASS WITH NOTES
 

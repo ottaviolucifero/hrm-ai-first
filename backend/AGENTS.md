@@ -8,6 +8,20 @@ These rules extend the root `AGENTS.md` and must be followed by AI agents workin
 
 ---
 
+## 0. Spring Backend AI Skill Reference
+
+When available, AI agents may use the repository-local `spring-backend-developer` skill as an operational aid for Spring Boot 4, Java 21, Spring Security, JWT/security foundation, User/Role/Permission domain review, permission model foundation, backend authorization enforcement, JPA/Flyway, service layer, DTO/controller boundaries and backend tests.
+
+The skill is advisory and does not replace `AGENTS.md`, this `backend/AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` or implemented backend code.
+
+Prompt and skills governance is documented in `docs/ai-prompts/codex-prompt-governance.md`.
+
+When present, prefer the repository-local skill under `.agents/skills/spring-backend-developer` and treat `skills-lock.json` as the lock reference for approved backend skill usage in this project.
+
+The skill does not authorize new architectures, new libraries/frameworks, out-of-scope migrations, unrequested APIs, RBAC enforcement outside the owning task or unrequested security refactors.
+
+---
+
 ## Backend Stack
 
 - Use Spring Boot 4.

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.01
+Versione: 2.02
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -3294,7 +3294,7 @@ Validazione:
 
 ### TASK-050 - Configure Spring AI skill and backend agent integration
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Governance / Backend agent integration
 
@@ -3325,6 +3325,24 @@ Fuori scope:
 - enforcement RBAC;
 - refactor security;
 - UI.
+
+Completato:
+
+- verificata la presenza delle sole skill repository-local esistenti, confermando `angular-developer` come unica skill gia lockata prima di questo task;
+- confermata assenza di una skill Spring/backend gia disponibile o approvata nel repository;
+- approvata e versionata una skill minima repository-local `spring-backend-developer` sotto `.agents/skills/spring-backend-developer`;
+- aggiornato `skills-lock.json` con lock dedicato della nuova skill repository-local;
+- collegato l'uso della skill a `backend/AGENTS.md` e `docs/ai-prompts/codex-prompt-governance.md`;
+- chiarito che la skill si applica a Spring Boot 4, Java 21, Spring Security, JWT/security foundation, User/Role/Permission domain review, permission model foundation, backend authorization enforcement, JPA/Flyway, service layer, DTO/controller e backend tests;
+- chiarito che la skill non autorizza nuove architetture parallele, nuove librerie/framework non approvati, migration fuori scope, API non richieste, RBAC enforcement fuori task o refactor security non richiesto;
+- mantenuto invariato il codice backend applicativo.
+
+Validazione:
+
+- task documentale/governance completato senza modifiche applicative backend/frontend;
+- nessuna migration creata;
+- nessuna API creata;
+- controlli eseguiti: verifica struttura skill, lock file, `git diff`, `git diff --check` e `git status --short --branch`.
 
 ### TASK-051 - User, Role and Permission domain review
 
@@ -3506,6 +3524,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.02 | 2026-05-10 | TASK-050 completato come governance backend agent integration: approvata skill repository-local minima `spring-backend-developer`, aggiornati `skills-lock.json`, `backend/AGENTS.md`, prompt governance e report QA, senza modifiche backend/frontend applicative. |
 | 2.01 | 2026-05-10 | Inserito nuovo TASK-050 "Configure Spring AI skill and backend agent integration" come task documentale/TODO per skill Spring/backend; rinumerato il blocco corrente Super Admin / permessi a TASK-051..TASK-055 e slittati di +1 i task successivi del backlog attivo, senza modifiche applicative. |
 | 2.00 | 2026-05-09 | TASK-048.14 completato come pianificazione documentale del bulk editor stile spreadsheet: definiti use case iniziali, esclusioni del primo rilascio, vincoli i18n/accessibilita/responsive/performance, relazione con `DataTableComponent` e raccomandazione di componente futuro dedicato senza modifiche Angular/backend. |
 | 1.98 | 2026-05-09 | TASK-048.12 completato: rifinita la CRUD modal/form Master Data con `Chiudi` rimosso dal footer, action bar allineata a destra, spacing piu coerenti e checkbox `Attivo` stilizzata localmente; build/test frontend OK, nessuna modifica backend/API. |
