@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.24
-Ultimo aggiornamento: 2026-05-09
+Versione: 1.25
+Ultimo aggiornamento: 2026-05-10
 Stato: Attivo
 
 ---
@@ -1202,10 +1202,63 @@ Impatto:
 
 ---
 
+### DEC-031 - Repository-local Spring backend governance skill approval
+
+Data: 2026-05-10
+Stato: Approvata
+
+Decisione:
+
+Si approva una skill repository-local minima `spring-backend-developer` sotto `.agents/skills/spring-backend-developer` come supporto operativo per i task backend del progetto HRM AI-first.
+
+La skill e intenzionalmente minimale e di governance: non introduce un catalogo tecnico esterno come fonte primaria, non sostituisce la documentazione del repository e non ridefinisce l'architettura backend.
+
+La skill approvata si applica a:
+
+- Spring Boot 4;
+- Java 21;
+- Spring Security;
+- JWT/security foundation;
+- User/Role/Permission domain review;
+- permission model foundation;
+- backend authorization enforcement;
+- JPA/Flyway;
+- service layer;
+- DTO/controller;
+- backend tests.
+
+Il lock della skill deve essere tracciato in `skills-lock.json`.
+
+Motivazione:
+
+- standardizzare il lavoro degli agenti sui prossimi task backend/security;
+- mantenere una guida riusabile ma subordinata alla governance repository;
+- evitare uso implicito di skill Spring/backend generiche o non approvate;
+- chiarire il perimetro operativo prima dei task TASK-051..TASK-055.
+
+Alternative escluse:
+
+- trattare skill esterne o non versionate come riferimento backend primario;
+- introdurre una skill Spring/backend ampia o vendor-driven senza approvazione documentata;
+- lasciare i task backend/security successivi senza una guida operativa comune repository-local.
+
+Impatto:
+
+`backend/AGENTS.md` puo riferire la skill come supporto operativo approvato.
+
+`docs/ai-prompts/codex-prompt-governance.md` puo documentarne l'uso nei prompt/task backend.
+
+`skills-lock.json` non traccia piu solo Angular, ma anche la skill backend approvata.
+
+La skill non autorizza nuove architetture parallele, nuove librerie/framework non approvati, migration fuori scope, API non richieste, RBAC enforcement fuori task o refactor security non richiesto.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.25 | 2026-05-10 | Aggiunta DEC-031 per approvare la skill repository-local minima `spring-backend-developer` come supporto operativo backend governato; aggiornati impatto su `backend/AGENTS.md`, prompt governance e `skills-lock.json`. |
 | 1.24 | 2026-05-10 | Estesa DEC-029 per chiarire che lato backend/Spring non esiste ancora una skill repository-local approvata e che TASK-050 ne prepara l'eventuale integrazione futura; riallineati anche i riferimenti numerici del blocco TASK-051..TASK-055 in DEC-030. |
 | 1.23 | 2026-05-10 | Aggiunta DEC-030 per formalizzare il modello autorizzativo tenant-aware con `PLATFORM_SUPER_ADMIN` globale, `TENANT_ADMIN` tenant-scoped, ruoli seed/custom, CRUD Global/Tenant Master Data, default deny cross-tenant, backend authoritative e frontend visibility solo UX. |
 | 1.22 | 2026-05-09 | Aggiunta DEC-029: policy durevole per versionamento repository-local delle AI skills approvate; al momento approvata solo `angular-developer` con `.agents/skills` e `skills-lock.json`, `angular-new-app` esclusa e nuove skill ammesse solo con decisione/task dedicati. |

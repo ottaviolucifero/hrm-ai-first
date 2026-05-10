@@ -70,6 +70,48 @@ La skill Angular e sempre subordinata a:
 
 In caso di conflitto, prevale la governance del repository.
 
+## Spring backend AI skills
+
+Per task backend Spring, gli agenti devono considerare la skill repository-local `spring-backend-developer` quando disponibile.
+
+Quando la skill e presente nel repository, usare prioritariamente la versione locale sotto `.agents/skills/spring-backend-developer` per garantire allineamento operativo tra agenti sullo stesso branch/repo.
+
+La skill `spring-backend-developer` va usata come supporto operativo per:
+
+- Spring Boot 4;
+- Java 21;
+- Spring Security;
+- JWT/security foundation;
+- User/Role/Permission domain review;
+- permission model foundation;
+- backend authorization enforcement;
+- JPA/Flyway;
+- service layer;
+- DTO/controller boundaries;
+- backend tests.
+
+Il file `skills-lock.json` traccia anche questa skill approvata versionata nel repository. Gli agenti devono considerarlo come riferimento operativo del lock repository-local.
+
+La skill non autorizza:
+
+- nuove architetture parallele;
+- nuove librerie o framework non approvati;
+- migration fuori scope;
+- API non richieste;
+- RBAC enforcement fuori task;
+- refactor security non richiesto.
+
+La skill Spring/backend e sempre subordinata a:
+
+- istruzioni umane;
+- `AGENTS.md`;
+- `backend/AGENTS.md`;
+- `TASKS.md`;
+- `ROADMAP.md`;
+- `DECISIONS.md`;
+- `ARCHITECTURE.md`;
+- codice backend gia implementato.
+
 ## Plan mode
 
 Usare Plan mode, o comunque una fase di piano esplicito, per task frontend Angular che coinvolgono:
