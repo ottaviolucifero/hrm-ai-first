@@ -1,0 +1,28 @@
+<div class="app-checkbox-field">
+  <label class="app-checkbox" [for]="inputId">
+    <input
+      #checkboxInput
+      [id]="inputId"
+      class="app-checkbox-input"
+      type="checkbox"
+      [disabled]="disabledState"
+      [required]="required"
+      [attr.aria-describedby]="helpTextToRender ? helpId : null"
+      (change)="onCheckboxInput($event)"
+      (blur)="onCheckboxBlur()"
+    />
+    <span class="app-checkbox-indicator" aria-hidden="true"></span>
+    <span class="app-checkbox-label" [id]="labelledById">
+      {{ label }}
+      @if (labelRequired) {
+        <span aria-hidden="true">*</span>
+      }
+    </span>
+  </label>
+
+  @if (helpTextToRender) {
+    <p class="app-checkbox-help" [id]="helpId">
+      {{ helpTextToRender }}
+    </p>
+  }
+</div>

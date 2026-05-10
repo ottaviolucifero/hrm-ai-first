@@ -182,6 +182,7 @@ Completato:
 - TASK-048.8 completed: login visual alignment review applied with TEMPLATE-06, refining hierarchy/layout/states on `/login` with card, brand, language selector, CTA, responsive behavior, forgot-password visual link and legal footer; i18n consistent and no backend/API changes.
 - TASK-048.13 completed: header/topbar visual alignment refined to TEMPLATE-09 scope, adding contextual page title, centered content balance and lighter avatar/user menu; sidebar unchanged and no backend/API modifications.
 - TASK-048.14 completed: spreadsheet-style bulk editor documented as future pattern with bounded use cases, reuse rules, accessibility/i18n/performance constraints and recommendation for a dedicated component separate from the current read-only `DataTableComponent`; no Angular/backend changes.
+- TASK-048.15 completed: shared form controls foundation started with control inventory and first shared control `app-checkbox` integrated in Master Data CRUD modal; design/accessibility/i18n patterns formalized in `docs/design/DESIGN-SYSTEM.md`.
 
 Nota:
 
@@ -206,9 +207,8 @@ Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can 
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
 Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 pagination/generic filters plus TASK-045 shared table refactoring are completed before proceeding to the reusable Master Data CRUD standard foundation.
 
-Da fare:
+Prossimo passo:
 
-- TASK-048.15 Shared form controls and form patterns foundation
 - TASK-048.16 Global typography foundation
 - TASK-049 Platform Super Admin and tenant-aware permissions model
 - TASK-050 User, Role and Permission domain review
@@ -360,6 +360,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.01 | 2026-05-10 | TASK-048.15 completato come foundation iniziale dei form controls condivisi con inventario controlli, regole form base in `docs/design/DESIGN-SYSTEM.md`, primo shared control `app-checkbox` integrato in `master-data-form` e aggiornamento task/QA. |
 | 2.00 | 2026-05-09 | TASK-048.14 completato come planning documentale del bulk editor spreadsheet: definito perimetro bounded, raccomandato componente futuro dedicato separato dal `DataTableComponent` read-only e prossimo passo aggiornato a TASK-048.15, senza modifiche Angular/backend. |
 | 1.99 | 2026-05-09 | TASK-048.13 completato: header/topbar visual refinement a TEMPLATE-09 con titolo pagina corrente, area centrale bilanciata e menu utente più sobrio; sidebar non modificata; prossimo passo aggiornato a TASK-048.14. |
 | 1.98 | 2026-05-09 | TASK-048.12 completato in roadmap: raffinata la CRUD modal/form Master Data su TEMPLATE-04 con `Chiudi` rimosso dal footer, action bar allineata a destra, checkbox locale migliorata e build/test frontend OK; prossimo passo aggiornato a TASK-048.13. |
