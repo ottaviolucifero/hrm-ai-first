@@ -32,6 +32,31 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-048.15 - Shared form controls and form patterns foundation (phase 2)
+
+- Data: 2026-05-10
+- Branch: `task-048-15-shared-form-controls-phase-2`
+- Task: TASK-048.15 - Shared form controls and form patterns foundation - phase 2
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `master-data-form`, `app-checkbox`, `app-input`, `TASKS.md`, `ROADMAP.md`, `docs/design/DESIGN-SYSTEM.md`, `docs/qa/QA-REPORTS.md`
+- AttivitÃ  eseguite:
+  - analisi componenti form già presenti (`master-data-form`, `master-data-admin`, `login`, checkbox precedente);
+  - confronto con codice allegato `code.html` come riferimento visivo non copiante;
+  - implementato `app-input` shared con CVA, help/error/required, id/accessibilità, focus;
+  - integrazione `app-input` nella modal CRUD Master Data per campi non booleani;
+  - valutazione `app-select` formalizzata e rimandata a task dedicato per rischio di scope creep nella fase attuale.
+- Test eseguiti in questa fase:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- QA manuale browser:
+  - consigliata esecuzione: verifica label/placeholder/error/disabled/focus su campi convertiti, checkbox già presente e comportamenti modale save/cancel/close.
+- Regressioni trovate:
+  - stato verificato in questa esecuzione; risultato riportato dopo i comandi frontend.
+- Limiti/note:
+  - `app-select` non Ã¨ stato implementato in questa fase per mantenere un rollout incrementale e sicuro;
+  - non sono stati introdotti nuovi testi hardcoded nei template.
+- Stato finale: PASS
+
 ### TASK-048.15 - Shared form controls and form patterns foundation
 
 - Data: 2026-05-10
@@ -358,5 +383,6 @@ Nota operativa:
 - Regressioni rilevate: nessuna regressione automatica rilevata nei test presenti.
 - Limiti note: il controllo toggle mobile sidebar non è stato introdotto, coerente con vincoli del task e stato attuale della shell (sidebar desktop/mobile gestita separatamente).
 - Stato finale: PASS WITH NOTES
+
 
 

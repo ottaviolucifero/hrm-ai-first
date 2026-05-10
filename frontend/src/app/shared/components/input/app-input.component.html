@@ -1,0 +1,30 @@
+<div class="app-input-field">
+  <label class="app-input-label" [for]="inputId">
+    {{ label }}
+    @if (labelRequired) {
+      <span aria-hidden="true">*</span>
+    }
+  </label>
+
+  <input
+    #inputElement
+    [id]="inputId"
+    class="app-input-control"
+    [type]="type"
+    [disabled]="disabledState"
+    [required]="required"
+    [attr.placeholder]="placeholder"
+    [attr.aria-describedby]="describedByAttribute"
+    [attr.aria-invalid]="hasError"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+  />
+
+  @if (helpTextToRender) {
+    <p class="app-input-help" [id]="helpId">{{ helpTextToRender }}</p>
+  }
+
+  @if (errorTextToRender) {
+    <p class="app-input-error" [id]="errorId">{{ errorTextToRender }}</p>
+  }
+</div>

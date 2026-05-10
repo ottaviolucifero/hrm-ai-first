@@ -20,7 +20,7 @@
   <form class="kt-card-content master-data-form-body" [formGroup]="form" (ngSubmit)="submit()">
     <div class="master-data-form-fields">
       @for (field of normalizedFields; track field.key) {
-        @if (fieldType(field) === 'boolean') {
+      @if (fieldType(field) === 'boolean') {
           <div class="master-data-form-field master-data-form-field--checkbox">
             <app-checkbox
               [label]="i18n.t(field.labelKey)"
@@ -30,26 +30,18 @@
               [formControlName]="field.key" />
           </div>
         } @else {
-          <label class="master-data-form-field">
-            <span class="master-data-form-label">
-              {{ i18n.t(field.labelKey) }}
-              @if (field.required) {
-                <span aria-hidden="true">*</span>
-              }
-            </span>
-
-            <input
-              class="kt-input master-data-form-input"
-              type="text"
-              [formControlName]="field.key"
-              [readonly]="isFieldReadOnly(field)" />
-          </label>
+          <div class="master-data-form-field">
+            <app-input
+              [label]="i18n.t(field.labelKey)"
+              [labelRequired]="!!field.required"
+              [required]="!!field.required"
+              [type]="field.type === 'number' ? 'number' : 'text'"
+              [disabled]="isFieldReadOnly(field)"
+              [errorText]="hasRequiredError(field) ? i18n.t('masterData.form.required') : ''"
+              [formControlName]="field.key" />
+          </div>
         }
-
-        @if (hasRequiredError(field)) {
-          <span class="master-data-form-error">{{ i18n.t('masterData.form.required') }}</span>
-        }
-          }
+      }
     </div>
 
     @if (mode !== 'view') {

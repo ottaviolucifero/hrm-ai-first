@@ -15,7 +15,7 @@ export type MasterDataRowAction = DataTableAction<MasterDataRow>;
 export type MasterDataRowActionEvent = DataTableRowActionEvent<MasterDataRow>;
 export type MasterDataFormMode = 'create' | 'edit' | 'view';
 export type MasterDataDeleteMode = 'deactivate' | 'physical';
-export type MasterDataFormFieldType = 'text' | 'boolean';
+export type MasterDataFormFieldType = 'text' | 'number' | 'email' | 'boolean';
 
 export interface MasterDataFormField {
   readonly key: string;
