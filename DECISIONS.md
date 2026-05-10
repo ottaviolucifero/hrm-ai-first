@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.22
+Versione: 1.24
 Ultimo aggiornamento: 2026-05-09
 Stato: Attivo
 
@@ -1098,6 +1098,8 @@ Le AI skills approvate per il progetto possono essere versionate nel repository 
 
 Per lo stato corrente e approvata solo la skill Angular `angular-developer`, da integrare anche in forma repository-local sotto `.agents/skills/angular-developer` con lock in `skills-lock.json`.
 
+Sul lato backend/Spring non esiste ancora una skill repository-local approvata. Ogni futura skill Spring/backend dovra esplicitare fonte, perimetro operativo, relazione con `backend/AGENTS.md` e lock dedicato prima dell'integrazione nel repository.
+
 La skill `angular-new-app` e esplicitamente esclusa dal progetto `hrm-ai-first` perche il frontend Angular esiste gia e il lavoro deve evolvere la codebase corrente.
 
 Nuove skill future possono essere aggiunte solo tramite decisione dedicata in `DECISIONS.md` e task dedicato in `TASKS.md`/`ROADMAP.md`.
@@ -1120,9 +1122,83 @@ Impatto:
 
 `TASK-048.9` include governance piu integrazione repository-local della skill approvata (`.agents/` + `skills-lock.json`).
 
+`TASK-050` prepara la valutazione e l'eventuale integrazione di una skill Spring/backend approvata; finche non viene approvata esplicitamente, `skills-lock.json` continua a tracciare solo la skill Angular corrente.
+
 `docs/ai-prompts/codex-prompt-governance.md` deve chiarire uso della skill locale quando presente e subordinazione alle fonti di governance.
 
 `AGENTS.md` e `frontend/AGENTS.md` restano le fonti operative principali; le skill sono complementari e non sostitutive.
+
+---
+
+### DEC-030 - Tenant-aware authorization model with global Platform Super Admin and tenant-scoped RBAC
+
+Data: 2026-05-10
+Stato: Approvata
+
+Decisione:
+
+La piattaforma HRM adotta un modello autorizzativo tenant-aware con separazione esplicita tra:
+
+- `PLATFORM_SUPER_ADMIN` come tipo utente globale di piattaforma;
+- `TENANT_ADMIN` come ruolo operativo limitato al tenant;
+- ruoli base seed tenant-scoped e protetti;
+- ruoli custom tenant-specific;
+- permessi CRUD tecnici separati per Global Master Data e Tenant Master Data;
+- regole cross-tenant default deny.
+
+`PLATFORM_SUPER_ADMIN` non e un normale ruolo tenant e non deve essere modellato come ruolo custom. Puo amministrare configurazioni globali e tenant solo secondo policy backend esplicite, con audit cross-tenant quando accede o opera su tenant diversi.
+
+`TENANT_ADMIN` opera solo nel tenant autorizzato. Puo gestire utenti, ruoli e configurazioni del proprio tenant, ma non puo accedere ad altri tenant, modificare Master Data globali o elevare utenti a privilegi piattaforma senza permessi globali espliciti definiti dalla piattaforma.
+
+I ruoli seed con `system_role=true` e i permessi seed con `system_permission=true` sono asset di bootstrap/governance. Non devono essere cancellabili tramite normale amministrazione tenant e possono essere modificati solo entro limiti governati.
+
+I ruoli custom creati dal tenant sono validi solo nel tenant di appartenenza, non sono visibili cross-tenant e non possono concedere privilegi piattaforma o cross-tenant.
+
+I permessi devono evolvere verso il formato `SCOPE.RESOURCE.ACTION`, coerente con TASK-052. Le azioni CRUD minime da distinguere sono `READ` / `LIST`, `CREATE`, `UPDATE` e `DELETE`.
+
+Regole Global Master Data:
+
+- gestione completa riservata alla piattaforma;
+- `PLATFORM_SUPER_ADMIN` autorizzabile secondo policy esplicita;
+- `TENANT_ADMIN` read-only per default quando il dato globale serve a configurazioni tenant;
+- create/update/delete tenant su dati globali negati per default.
+
+Regole Tenant Master Data:
+
+- scope limitato al tenant;
+- create/update/delete autorizzati solo con tenant coerente e permessi espliciti;
+- cancellazione fisica bloccata per record referenziati secondo DEC-028;
+- nessun payload frontend puo aggirare il tenant autorizzato.
+
+Regole cross-tenant:
+
+- default deny;
+- accesso ammesso solo per `PLATFORM_SUPER_ADMIN` o policy/permessi piattaforma espliciti;
+- ogni accesso cross-tenant deve essere auditabile;
+- ruoli custom tenant-specific non possono produrre escalation cross-tenant.
+
+Il backend e la fonte autorevole dell'autorizzazione. Il frontend puo mostrare, nascondere o disabilitare menu, route, bottoni e azioni in base ai permessi, ma questo e solo supporto UX e non sostituisce enforcement backend.
+
+Motivazione:
+
+- evitare ambiguita tra privilegi di piattaforma e privilegi tenant;
+- prevenire escalation tramite ruoli custom tenant;
+- rendere chiaro il confine tra visibility frontend e sicurezza reale;
+- preparare TASK-051, TASK-052, TASK-053, TASK-054 e TASK-055 con una direzione stabile;
+- preservare coerenza con DEC-016, DEC-020, DEC-027 e DEC-028.
+
+Alternative escluse:
+
+- modellare `PLATFORM_SUPER_ADMIN` come ruolo tenant custom;
+- rendere `TENANT_ADMIN` implicitamente cross-tenant;
+- affidare la sicurezza a pulsanti nascosti nel frontend;
+- usare permessi generici `WRITE` senza distinguere create/update/delete;
+- permettere a ruoli custom tenant di modificare Master Data globali o concedere privilegi piattaforma;
+- introdurre enforcement runtime completo dentro TASK-049.
+
+Impatto:
+
+`ARCHITECTURE.md` documenta il modello strategico. TASK-049 resta documentale e non modifica codice, migration o runtime security. TASK-050 prepara la governance della skill Spring/backend per i prossimi task backend/security; TASK-051 dovra verificare il dominio esistente e i gap tecnici; TASK-052 dovra definire la foundation dei codici permesso; TASK-054 e TASK-055 applicheranno rispettivamente visibility frontend ed enforcement backend.
 
 ---
 
@@ -1130,6 +1206,8 @@ Impatto:
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.24 | 2026-05-10 | Estesa DEC-029 per chiarire che lato backend/Spring non esiste ancora una skill repository-local approvata e che TASK-050 ne prepara l'eventuale integrazione futura; riallineati anche i riferimenti numerici del blocco TASK-051..TASK-055 in DEC-030. |
+| 1.23 | 2026-05-10 | Aggiunta DEC-030 per formalizzare il modello autorizzativo tenant-aware con `PLATFORM_SUPER_ADMIN` globale, `TENANT_ADMIN` tenant-scoped, ruoli seed/custom, CRUD Global/Tenant Master Data, default deny cross-tenant, backend authoritative e frontend visibility solo UX. |
 | 1.22 | 2026-05-09 | Aggiunta DEC-029: policy durevole per versionamento repository-local delle AI skills approvate; al momento approvata solo `angular-developer` con `.agents/skills` e `skills-lock.json`, `angular-new-app` esclusa e nuove skill ammesse solo con decisione/task dedicati. |
 | 1.21 | 2026-05-07 | Aggiunta DEC-028 per definire la doppia policy Master Data: `Disattiva` come soft-delete `active=false` e `Elimina` come delete fisico solo per record non referenziati, con blocco coerente dei record collegati e messaggi UI distinti. |
 | 1.20 | 2026-05-04 | Aggiunta DEC-027 per definire backend login/JWT foundation: email globale case-insensitive come identificativo login, JWT stateless con Spring Security OAuth2 Resource Server / Jose e claim principali `sub`, `userId`, `tenantId`, `userType`. |

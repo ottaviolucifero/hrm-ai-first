@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.00
+Versione: 2.01
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -3222,7 +3222,7 @@ Completamento:
 
 ### TASK-049 - Platform Super Admin and tenant-aware permissions model
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Governance / RBAC strategy
 
@@ -3247,7 +3247,86 @@ Fuori scope:
 - implementazione CRUD backend reale;
 - UI completa di amministrazione utenti/ruoli.
 
-### TASK-050 - User, Role and Permission domain review
+Analisi modello esistente:
+
+- `UserType` e master globale e contiene il tipo utente piattaforma/tenant, incluso `PLATFORM_SUPER_ADMIN`.
+- `Role` e `Permission` sono master tenant-scoped con `tenant_id`, unique constraint `(tenant_id, code)` e flag `system_role` / `system_permission`.
+- `UserTenantAccess` modella accessi espliciti utente-tenant, ma non sostituisce il controllo permessi runtime.
+- `UserRole` e `RolePermission` sono bridge tenant-scoped gia presenti per collegare utenti, ruoli e permessi.
+- `UserAccount` resta il boundary identity/security, con `tenant`, `primaryTenant`, `userType`, autenticazione email-first e strong authentication readiness.
+- La security runtime corrente autentica JWT e produce solo authority tecnica `USER_TYPE_<userType>`; RBAC runtime completo, tenant switching e impersonation restano deferred.
+
+Modello strategico approvato per i task successivi:
+
+- `PLATFORM_SUPER_ADMIN` e un tipo utente globale di piattaforma, non un ruolo custom tenant e non un normale utente tenant.
+- `TENANT_ADMIN` e un ruolo operativo tenant-scoped, valido solo dentro i tenant autorizzati.
+- I ruoli base seed con `system_role=true` sono protetti da delete accidentale e usati per bootstrap/standardizzazione.
+- I ruoli custom creati dal tenant restano visibili e validi solo nel tenant di appartenenza.
+- I permessi CRUD devono distinguere almeno `READ` / `LIST`, `CREATE`, `UPDATE` e `DELETE`.
+- I Global Master Data sono gestiti dalla piattaforma; il tenant admin puo leggerli quando necessario ma non modificarli per default.
+- I Tenant Master Data sono gestiti nello scope tenant, con protezione backend su tenant, permessi e riferimenti.
+- Le regole cross-tenant sono default deny; accesso cross-tenant solo per platform policy esplicita e auditabile.
+- Il backend resta authoritative per autorizzazione e isolamento tenant; frontend visibility e solo supporto UX.
+- Il naming futuro dei permessi deve convergere verso `SCOPE.RESOURCE.ACTION`, in continuita con TASK-052.
+
+Decisioni documentate:
+
+- Aggiunta DEC-030 in `DECISIONS.md` per formalizzare il modello autorizzativo tenant-aware.
+- Aggiornata `ARCHITECTURE.md` con il modello strategico e i confini tra platform, tenant admin, ruoli custom e permessi CRUD.
+
+Gap aperti demandati al backlog:
+
+- TASK-050 deve valutare e configurare una skill Spring/backend approvata come supporto complementare ai prossimi task backend/security.
+- TASK-051 deve verificare gap tecnici e coerenza entity/API/seed rispetto al modello.
+- TASK-052 deve definire la foundation dei codici permesso per scope/resource/action.
+- TASK-053 deve introdurre amministrazione tenant utenti/ruoli senza anticipare enforcement completo.
+- TASK-054 deve applicare i permessi alla visibilita frontend.
+- TASK-055 deve applicare enforcement reale lato backend.
+- Restano fuori scope tenant switching runtime, impersonation runtime e MFA operativa.
+
+Validazione:
+
+- Task solo documentale.
+- Nessun codice backend/frontend modificato.
+- Nessuna migration creata.
+- Nessun test automatico richiesto o necessario.
+- Controlli richiesti: diff e coerenza markdown documentale.
+
+### TASK-050 - Configure Spring AI skill and backend agent integration
+
+Stato: TODO
+
+Tipo: Governance / Backend agent integration
+
+Obiettivo:
+
+- Versionare e documentare una skill Spring/backend approvata per standardizzare il lavoro degli agenti sui prossimi task backend/security senza sostituire la governance del repository.
+
+Contesto:
+
+- al momento il repository versiona solo la skill Angular `angular-developer` sotto `.agents/skills/angular-developer` e `skills-lock.json`;
+- nessuna skill Spring/backend repository-local risulta ancora approvata o lockata;
+- i prossimi task backend/security richiedono convenzioni coerenti su Spring Boot 4, Spring Security, JPA/Flyway, service layer, DTO/controller e test backend.
+
+Scope:
+
+- valutare e integrare skill Spring/backend approvata;
+- versionarla in `.agents/skills/...` se disponibile e approvata;
+- aggiornare `skills-lock.json` se necessario;
+- documentare quando usarla nei task backend;
+- documentare l'uso per User/Role/Permission domain review, permission model foundation, backend authorization enforcement, Spring Security, Spring Boot 4, JPA/Flyway, service layer, DTO/controller e test backend;
+- chiarire che e supporto complementare a `AGENTS.md`, `backend/AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` e non sostituisce la governance del repository.
+
+Fuori scope:
+
+- codice backend applicativo;
+- migration;
+- API;
+- enforcement RBAC;
+- refactor security;
+- UI.
+
+### TASK-051 - User, Role and Permission domain review
 
 Stato: TODO
 
@@ -3270,7 +3349,7 @@ Fuori scope:
 - implementazione UI completa;
 - enforcement permessi runtime.
 
-### TASK-051 - Permission model foundation by scope/resource/action
+### TASK-052 - Permission model foundation by scope/resource/action
 
 Stato: TODO
 
@@ -3300,7 +3379,7 @@ Note:
 - il backend usa il modello per enforcement reale delle API;
 - modello iniziale per modulo/risorsa, senza granularita immediata per singola entita Master Data (es. `TENANT.MASTER_DATA.WORK_MODE.CREATE`).
 
-### TASK-052 - Tenant user and role administration foundation
+### TASK-053 - Tenant user and role administration foundation
 
 Stato: TODO
 
@@ -3320,9 +3399,9 @@ Scope:
 Fuori scope:
 
 - policy autorizzative granulari per singola entita;
-- enforcement backend completo (demandato a TASK-054).
+- enforcement backend completo (demandato a TASK-055).
 
-### TASK-053 - Apply permissions to frontend navigation and actions
+### TASK-054 - Apply permissions to frontend navigation and actions
 
 Stato: TODO
 
@@ -3340,7 +3419,7 @@ Scope:
 - usare permessi disponibili dall'utente autenticato;
 - mantenere chiaro che il frontend e solo UX, non sicurezza reale.
 
-### TASK-054 - Apply permissions to backend API authorization
+### TASK-055 - Apply permissions to backend API authorization
 
 Stato: TODO
 
@@ -3361,11 +3440,11 @@ Nota di sicurezza:
 
 - il backend resta il punto di enforcement reale; il frontend non sostituisce mai i controlli API.
 
-### TASK-055 - Implementare UI Employee management enterprise
+### TASK-056 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-056 - Implementare Security Admin UI
+### TASK-057 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -3377,47 +3456,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-057 - Implementare UI Device governance
+### TASK-058 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-058 - Implementare UI PayrollDocument
+### TASK-059 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-059 - Implementare UI LeaveRequest
+### TASK-060 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-060 - Implementare UI HolidayCalendar
+### TASK-061 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-061 - Implementare Audit UI / compliance explorer
+### TASK-062 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-062 - Implementare UI disciplinary governance
+### TASK-063 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-063 - Implementare Platform Operator / Super Admin governance
+### TASK-064 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-064 - Implementare Cross-tenant admin UI
+### TASK-065 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-065 - Configurare logging, monitoring e observability enterprise
+### TASK-066 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-066 - Test integrato MVP enterprise completo
+### TASK-067 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -3427,6 +3506,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.01 | 2026-05-10 | Inserito nuovo TASK-050 "Configure Spring AI skill and backend agent integration" come task documentale/TODO per skill Spring/backend; rinumerato il blocco corrente Super Admin / permessi a TASK-051..TASK-055 e slittati di +1 i task successivi del backlog attivo, senza modifiche applicative. |
 | 2.00 | 2026-05-09 | TASK-048.14 completato come pianificazione documentale del bulk editor stile spreadsheet: definiti use case iniziali, esclusioni del primo rilascio, vincoli i18n/accessibilita/responsive/performance, relazione con `DataTableComponent` e raccomandazione di componente futuro dedicato senza modifiche Angular/backend. |
 | 1.98 | 2026-05-09 | TASK-048.12 completato: rifinita la CRUD modal/form Master Data con `Chiudi` rimosso dal footer, action bar allineata a destra, spacing piu coerenti e checkbox `Attivo` stilizzata localmente; build/test frontend OK, nessuna modifica backend/API. |
 | 1.97 | 2026-05-09 | Backlog TASK-048 aggiornato dopo TASK-048.11: inseriti TASK-048.12 "CRUD modal and form visual refinement" e TASK-048.13 "Header/topbar visual alignment to TEMPLATE-09"; bulk editor, form controls e typography slittati a TASK-048.14, TASK-048.15 e TASK-048.16 senza modifiche applicative. |
@@ -3435,6 +3515,7 @@ Stato: TODO
 | 1.94 | 2026-05-09 | TASK-048.11 rifinito ulteriormente: submenu, contrasti, densita, active state e scrollbar della sidebar sono stati resi piu puliti e leggibili mantenendo invariati routing/i18n/ricerca/collapse; build/test frontend rieseguiti con esito OK. |
 | 1.93 | 2026-05-09 | TASK-048.11 completato: sidebar esistente riallineata visivamente a TEMPLATE-08 con patch mirata su componente Angular esistente, active/branch-active piu chiari, ricerca su superficie dark, nessuna modifica backend/API/header e build/test frontend OK. |
 | 1.92 | 2026-05-09 | TASK-048.10 completato come shell navigation visual review documentale: TEMPLATE-08 e TEMPLATE-09 valutati senza modifiche Angular/backend/API; inserito TASK-048.11 "Sidebar visual alignment to TEMPLATE-08" come task dedicato futuro e rinumerati i successivi TASK-048.x fino a TASK-048.14. |
+| 1.92 | 2026-05-10 | TASK-049 completato come strategia documentale Super Admin/RBAC tenant-aware: formalizzati `PLATFORM_SUPER_ADMIN`, `TENANT_ADMIN`, ruoli seed/custom, CRUD Global/Tenant Master Data, default deny cross-tenant, backend authoritative e frontend visibility solo UX; aggiunta DEC-030 e nessuna modifica codice/runtime. |
 | 1.91 | 2026-05-09 | TASK-048.9 esteso da sola governance a governance + integrazione repository-local skill Angular approvata: inclusi `.agents/skills/angular-developer` e `skills-lock.json`, esclusa `angular-new-app`, allineati scope/acceptance e riferimenti documentali senza modifiche applicative/backend/API. |
 | 1.90 | 2026-05-09 | Inserito TASK-048.9 "Configure Angular AI skills and project agent integration" per documentare l'uso della skill Angular `angular-developer` come supporto complementare alla governance repository; esclusa `angular-new-app`, documentati Plan mode e IDE context, rinumerati i successivi TASK-048.x fino a TASK-048.13, senza modifiche applicative/backend/API. |
 | 1.89 | 2026-05-09 | TASK-048.8 final refinement: aggiunti link visuale password dimenticata e footer legale i18n alla login, rimosso marker decorativo dal selettore lingua, senza routing/logica recovery/backend. |
