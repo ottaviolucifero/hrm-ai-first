@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.05
+Versione: 2.06
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -3472,7 +3472,7 @@ Nota importante:
 
 #### TASK-053.1 - Backend role administration API foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend foundation
 
@@ -3488,6 +3488,24 @@ Scope:
 - nessun enforcement backend completo;
 - nessuna gestione avanzata permessi per singola entita;
 - nessuna UI.
+
+Implementazione:
+
+- aggiunta API backend foundation sotto `/api/admin/roles`;
+- aggiunti DTO espliciti per lista ruolo, dettaglio ruolo, tenant reference, permission assegnati e update assegnazioni;
+- aggiunto service layer `RoleAdministrationService` con letture `@Transactional(readOnly = true)` e update assegnazioni `@Transactional`;
+- implementata semantica replace per assegnazioni `RolePermission`;
+- validata esistenza di `Role`, `Permission` e `Tenant`;
+- validata coerenza tenant tra ruolo e permessi;
+- deduplicati i permission id in input prima della persistenza;
+- corretto V18 `V18__seed_permission_model_scope_resource_action.sql` con cast UUID espliciti per compatibilita PostgreSQL;
+- nessuna modifica a security globale, JWT, tenant resolution, UI o import CAP/ZIP.
+
+Validazione:
+
+- `cd backend && .\mvnw.cmd -Dtest=RoleAdministrationControllerTests test` -> BUILD SUCCESS, 10 test eseguiti, 0 failure, 0 error, 0 skipped;
+- `cd backend && .\mvnw.cmd test` avviato ma interrotto su richiesta per output/attivita massiva preesistente su `global_zip_codes`; da analizzare in task tecnico dedicato;
+- nessuna modifica fatta a import CAP/ZIP.
 
 #### TASK-053.2 - Frontend role permission matrix UI foundation
 
@@ -3643,6 +3661,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.06 | 2026-05-10 | TASK-053.1 completato: aggiunta API backend `/api/admin/roles` per lista/dettaglio ruoli, lettura permessi assegnati e replace transazionale delle assegnazioni ruolo-permesso con DTO espliciti, validazione tenant role/permission, test mirati verdi e fix cast UUID in Flyway V18 per PostgreSQL; nessuna UI, security/JWT/enforcement o import CAP modificati. |
 | 2.05 | 2026-05-10 | TASK-053 riorganizzato come epic/contenitore con subtask interni TASK-053.1 backend role administration API foundation, TASK-053.2 frontend role permission matrix UI foundation e TASK-053.3 tenant user administration UI/API foundation; chiariti fuori scope verso TASK-054 frontend visibility e TASK-055 backend enforcement, senza modifiche codice. |
 | 2.04 | 2026-05-10 | TASK-052 completato: introdotti enum/helper backend per codici permission `SCOPE.RESOURCE.ACTION`, migration Flyway V18 con matrice iniziale PLATFORM/TENANT per resource/action approvate, seed system_permission e test backend mirati validati senza enforcement runtime o granularita per singola entita Master Data. |
 | 2.03 | 2026-05-10 | TASK-051 completato come analisi dominio User/Role/Permission: verificati migration, entity, repository, API/DTO governance-security, auth/JWT e test esistenti; documentata gap analysis rispetto a TASK-049 e backlog tecnico minimale verso TASK-052..TASK-055 senza modifiche runtime. |

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.09
+Versione: 2.10
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -113,10 +113,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-050 Configure Spring AI skill and backend agent integration
 - TASK-051 User, Role and Permission domain review
 - TASK-052 Permission model foundation by scope/resource/action
+- TASK-053.1 Backend role administration API foundation
 
 ### Prossimo passo
 
-- TASK-053.1 Backend role administration API foundation, primo subtask interno di TASK-053 Tenant user and role administration foundation
+- TASK-053.2 Frontend role permission matrix UI foundation, secondo subtask interno di TASK-053 Tenant user and role administration foundation
 
 ---
 
@@ -192,6 +193,7 @@ Completato:
 - TASK-050 completed: repository-local backend governance skill `spring-backend-developer` approved and versioned with `skills-lock.json`, `backend/AGENTS.md` alignment and prompt-governance documentation, without backend/frontend code changes.
 - TASK-051 completed: User/Role/Permission domain review documented current `UserType`, `UserAccount`, `Role`, `Permission`, `UserRole`, `RolePermission`, `UserTenantAccess`, governance-security API and JWT/auth state, with gap analysis toward TASK-049.
 - TASK-052 completed: permission model foundation added with backend enum/helper vocabulary for `SCOPE.RESOURCE.ACTION`, Flyway V18 seed matrix for approved platform/tenant resources/actions and `system_permission=true` seed permissions, without runtime enforcement or single Master Data entity granularity.
+- TASK-053.1 completed: backend role administration API foundation available under `/api/admin/roles`, with role list/detail, assigned permission read, transactional replace of role-permission assignments, DTO boundaries, tenant consistency validation and targeted backend tests validated.
 
 Nota:
 
@@ -218,7 +220,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-053.1 Backend role administration API foundation, primo subtask interno di TASK-053 Tenant user and role administration foundation
+- TASK-053.2 Frontend role permission matrix UI foundation, secondo subtask interno di TASK-053 Tenant user and role administration foundation
 - TASK-054 Apply permissions to frontend navigation and actions
 - TASK-055 Apply permissions to backend API authorization
 
@@ -230,7 +232,7 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 - TASK-051: review dominio esistente e gap analysis completata;
 - TASK-052: foundation modello permessi (`SCOPE.RESOURCE.ACTION`) completata;
 - TASK-053: epic/contenitore per foundation utenti, ruoli e permessi tenant-aware, da completare tramite subtask interni;
-  - TASK-053.1: backend role administration API foundation;
+  - TASK-053.1: backend role administration API foundation completata;
   - TASK-053.2: frontend role permission matrix UI foundation;
   - TASK-053.3: tenant user administration UI/API foundation;
 - TASK-054: applicazione permessi lato frontend per UX/visibilita;
@@ -369,6 +371,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.10 | 2026-05-10 | TASK-053.1 completato: introdotta API backend `/api/admin/roles` per lista/dettaglio ruoli, lettura permessi assegnati e replace transazionale delle assegnazioni ruolo-permesso; prossimo passo aggiornato a TASK-053.2, suite mirata backend verde e suite completa interrotta per output massivo preesistente su `global_zip_codes`. |
 | 2.09 | 2026-05-10 | TASK-053 riorganizzato come epic/contenitore con subtask interni 053.1 backend role administration API, 053.2 frontend role permission matrix UI e 053.3 tenant user administration; prossimo passo operativo aggiornato a TASK-053.1 senza promuovere i subtask a milestone principali e mantenendo TASK-054/TASK-055 come task principali successivi. |
 | 2.08 | 2026-05-10 | TASK-052 completato: introdotta foundation permessi `SCOPE.RESOURCE.ACTION` con enum/helper backend, migration Flyway V18 e 100 permessi seed `system_permission=true`; prossimo passo aggiornato a TASK-053. |
 | 2.07 | 2026-05-10 | TASK-051 completato come domain review User/Role/Permission: confermati `UserType` globale, `Role`/`Permission` tenant-scoped, bridge RBAC esistenti, lacune API/DTO/auth/JWT e backlog minimo verso TASK-052..TASK-055; prossimo passo spostato a TASK-052. |

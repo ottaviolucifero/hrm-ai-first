@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface RolePermissionRepository extends JpaRepository<RolePermission, UUID> {
 
 	List<RolePermission> findByTenant_IdAndRole_Id(UUID tenantId, UUID roleId);
+
+	List<RolePermission> findByTenant_IdAndRole_IdOrderByPermission_CodeAsc(UUID tenantId, UUID roleId);
 }
