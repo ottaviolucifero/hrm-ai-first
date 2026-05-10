@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.07
+Versione: 2.08
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -112,10 +112,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-048.16 Global typography foundation
 - TASK-050 Configure Spring AI skill and backend agent integration
 - TASK-051 User, Role and Permission domain review
+- TASK-052 Permission model foundation by scope/resource/action
 
 ### Prossimo passo
 
-- TASK-052 Permission model foundation by scope/resource/action
+- TASK-053 Tenant user and role administration foundation
 
 ---
 
@@ -190,6 +191,7 @@ Completato:
 - TASK-049 completed: Platform Super Admin and tenant-aware permissions strategy documented, with `PLATFORM_SUPER_ADMIN` global boundary, `TENANT_ADMIN` tenant boundary, protected seed roles, tenant custom roles, CRUD permission separation for Global/Tenant Master Data, default-deny cross-tenant rules and backend-authoritative security model.
 - TASK-050 completed: repository-local backend governance skill `spring-backend-developer` approved and versioned with `skills-lock.json`, `backend/AGENTS.md` alignment and prompt-governance documentation, without backend/frontend code changes.
 - TASK-051 completed: User/Role/Permission domain review documented current `UserType`, `UserAccount`, `Role`, `Permission`, `UserRole`, `RolePermission`, `UserTenantAccess`, governance-security API and JWT/auth state, with gap analysis toward TASK-049.
+- TASK-052 completed: permission model foundation added with backend enum/helper vocabulary for `SCOPE.RESOURCE.ACTION`, Flyway V18 seed matrix for approved platform/tenant resources/actions and `system_permission=true` seed permissions, without runtime enforcement or single Master Data entity granularity.
 
 Nota:
 
@@ -216,7 +218,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-052 Permission model foundation by scope/resource/action
 - TASK-053 Tenant user and role administration foundation
 - TASK-054 Apply permissions to frontend navigation and actions
 - TASK-055 Apply permissions to backend API authorization
@@ -227,7 +228,7 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 - TASK-049: strategia e modello Super Admin / tenant-aware permissions completati;
 - TASK-050: configurazione governance + integrazione skill Spring/backend approvata, completata come skill repository-local minima e complemento a `backend/AGENTS.md`;
 - TASK-051: review dominio esistente e gap analysis completata;
-- TASK-052: foundation modello permessi (`SCOPE.RESOURCE.ACTION`);
+- TASK-052: foundation modello permessi (`SCOPE.RESOURCE.ACTION`) completata;
 - TASK-053: foundation utenti/ruoli tenant;
 - TASK-054: applicazione permessi lato frontend per UX/visibilita;
 - TASK-055: enforcement reale lato backend sulle API.
@@ -365,6 +366,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.08 | 2026-05-10 | TASK-052 completato: introdotta foundation permessi `SCOPE.RESOURCE.ACTION` con enum/helper backend, migration Flyway V18 e 100 permessi seed `system_permission=true`; prossimo passo aggiornato a TASK-053. |
 | 2.07 | 2026-05-10 | TASK-051 completato come domain review User/Role/Permission: confermati `UserType` globale, `Role`/`Permission` tenant-scoped, bridge RBAC esistenti, lacune API/DTO/auth/JWT e backlog minimo verso TASK-052..TASK-055; prossimo passo spostato a TASK-052. |
 | 2.06 | 2026-05-10 | TASK-050 completato come integrazione governance backend agent: approvata e versionata la skill repository-local minima `spring-backend-developer`, aggiornato `skills-lock.json`, riallineati `backend/AGENTS.md` e prompt governance, prossimo passo spostato a TASK-051. |
 | 2.05 | 2026-05-10 | Inserito TASK-050 come task documentale/TODO per configurazione della skill Spring/backend approvata; prossimo passo aggiornato a TASK-050, sequenza Super Admin / permessi rinumerata a TASK-050..TASK-055 e range futuri riallineati fino a TASK-067. |

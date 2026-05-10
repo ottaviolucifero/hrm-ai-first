@@ -88,6 +88,35 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-052 - Permission model foundation by scope/resource/action
+
+- Data: 2026-05-10
+- Branch: `task-052-permission-model-foundation`
+- Task: TASK-052 - Permission model foundation by scope/resource/action
+- Agente/Modello usato: GPT-5.5 Thinking
+- File analizzati:
+  - `AGENTS.md`, `backend/AGENTS.md`, `.agents/skills/spring-backend-developer/SKILL.md`
+  - `ARCHITECTURE.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/qa/QA-REPORTS.md`
+  - `Permission`, `Role`, `RolePermission`, `UserRole`, `UserTenantAccess`, `UserType`, repository/DTO/service governance-security
+  - migration Flyway `V3`, `V4`, `V8`, vendor `V15`/`V17`
+- Attivita eseguite:
+  - verificato che `Permission` e tenant-scoped con `tenant_id`, `code`, `name`, `system_permission`, `active` e unique `(tenant_id, code)`;
+  - confermata assenza di `description` nel modello attuale e nessun bisogno di schema/DTO aggiuntivi per TASK-052;
+  - aggiunti enum/helper backend per il vocabolario `SCOPE.RESOURCE.ACTION`;
+  - aggiunta migration Flyway V18 per riallineare i 5 seed legacy e seedare 100 permessi foundation `system_permission=true`;
+  - aggiunti test su formato permission code, seed Flyway e assenza di granularita per singola entita Master Data.
+- Test eseguiti:
+  - primo tentativo mirato fallito per sandbox/network Maven su risoluzione parent POM;
+  - riesecuzione autorizzata `cd backend && .\mvnw.cmd "-Dtest=PermissionCodeTests,HrmBackendApplicationTests" test` -> BUILD SUCCESS, 55 test eseguiti, 0 failure, 0 error, 0 skipped.
+- Esito: PASS
+- Limiti noti:
+  - non e stato introdotto enforcement runtime con `@PreAuthorize` o policy service;
+  - non sono stati modificati login, JWT o authority runtime;
+  - non sono state create API amministrative utenti/ruoli/permessi nuove;
+  - i permessi seed non sono assegnati automaticamente ai ruoli per evitare cambi runtime fuori scope;
+  - la protezione applicativa di `system_permission` nelle API amministrative resta demandata a TASK-053.
+- Conferma Master Data: il task non introduce granularita permission per singola entita Master Data; `TENANT.MASTER_DATA.WORK_MODE.CREATE` e validato come fuori modello iniziale.
+
 ### TASK-047.1 - Master Data physical delete backend foundation
 
 - Data: 2026-05-08
