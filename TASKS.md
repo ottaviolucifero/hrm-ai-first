@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.04
+Versione: 2.05
 Ultimo aggiornamento: 2026-05-10
 Stato: In avanzamento
 
@@ -3279,7 +3279,7 @@ Gap aperti demandati al backlog:
 - TASK-050 deve valutare e configurare una skill Spring/backend approvata come supporto complementare ai prossimi task backend/security.
 - TASK-051 deve verificare gap tecnici e coerenza entity/API/seed rispetto al modello.
 - TASK-052 deve definire la foundation dei codici permesso per scope/resource/action.
-- TASK-053 deve introdurre amministrazione tenant utenti/ruoli senza anticipare enforcement completo.
+- TASK-053 deve introdurre amministrazione tenant utenti/ruoli tramite subtask interni senza anticipare enforcement completo.
 - TASK-054 deve applicare i permessi alla visibilita frontend.
 - TASK-055 deve applicare enforcement reale lato backend.
 - Restano fuori scope tenant switching runtime, impersonation runtime e MFA operativa.
@@ -3397,8 +3397,8 @@ Gap analysis:
 Backlog tecnico minimale post-TASK-051:
 
 1. TASK-052: definire e seedare la foundation dei permessi `SCOPE.RESOURCE.ACTION`, includendo CRUD per Global Master Data e Tenant Master Data, senza enforcement runtime.
-2. TASK-053: introdurre foundation amministrativa tenant per utenti, ruoli, assegnazioni ruolo e assegnazioni permesso, con protezione ruoli/permessi seed e validazioni tenant-aware.
-3. TASK-053: chiarire a livello API/DTO quali campi di sistema non sono scrivibili dal client (`systemRole`, `systemPermission`) e quali operazioni sono ammesse su ruoli custom.
+2. TASK-053.1: introdurre foundation backend/API per ruoli e assegnazioni ruolo-permesso, con protezione ruoli/permessi seed e validazioni tenant-aware.
+3. TASK-053.3: introdurre foundation amministrativa tenant per utenti e assegnazioni ruolo utente, distinguendo vista platform e vista tenant.
 4. TASK-054: esporre verso frontend un permission/role summary del current user per sola visibility UX, senza considerarlo fonte autoritativa di sicurezza.
 5. TASK-055: applicare enforcement backend reale sulle API usando la foundation dei permessi, default deny cross-tenant e controlli server-side.
 
@@ -3459,23 +3459,84 @@ Validazione:
 
 Stato: TODO
 
-Tipo: Frontend + backend foundation
+Tipo: Epic / Cross-stack foundation
 
 Obiettivo:
 
-- Preparare la base di gestione utenti e ruoli per tenant.
+- Preparare progressivamente la base di gestione ruoli, permessi e utenti tenant-aware, senza introdurre enforcement backend completo e senza gestione permessi granulari per singola entita.
+
+Nota importante:
+
+- TASK-053 resta il task principale/contenitore.
+- TASK-053.1, TASK-053.2 e TASK-053.3 sono subtask figli interni del TASK-053, non task autonomi allo stesso livello dei task principali TASK-052, TASK-054 e TASK-055.
+
+#### TASK-053.1 - Backend role administration API foundation
+
+Stato: TODO
+
+Tipo: Backend foundation
 
 Scope:
 
-- UI foundation per elenco utenti/ruoli;
-- assegnazione ruoli;
+- API lettura ruoli;
+- API dettaglio ruolo;
+- API lettura permessi assegnati a un ruolo;
+- API update foundation delle assegnazioni ruolo-permesso;
+- DTO espliciti;
+- service layer transazionale;
+- riuso entity/repository esistenti `Role`, `Permission`, `RolePermission`, `Tenant`;
+- nessun enforcement backend completo;
+- nessuna gestione avanzata permessi per singola entita;
+- nessuna UI.
+
+#### TASK-053.2 - Frontend role permission matrix UI foundation
+
+Stato: TODO
+
+Tipo: Frontend foundation
+
+Scope:
+
+- implementare la schermata contenuto ispirata al mockup fornito;
+- lista ruoli laterale;
+- selezione ruolo;
+- matrice permessi per modulo;
+- azioni Ripristina e Salva Modifiche;
+- checkbox per Lettura, Scrittura, Modifica, Eliminazione;
+- integrazione dentro AppShell esistente;
+- non ricreare header, sidebar o layout globale;
+- rispettare design system HRflow;
+- rispettare Manrope come font globale gia configurato;
+- usare i18n `it`/`fr`/`en` per tutti i testi;
+- nessun enforcement frontend completo;
+- nessuna gestione utenti in questo subtask.
+
+#### TASK-053.3 - Tenant user administration UI/API foundation
+
+Stato: TODO
+
+Tipo: Frontend + backend foundation
+
+Scope:
+
+- elenco utenti tenant;
+- dettaglio utente base;
+- visualizzazione ruoli assegnati;
+- base per assegnazione ruoli utente;
 - distinzione vista platform e vista tenant;
-- nessuna gestione avanzata permessi per singola entita.
+- nessuna gestione avanzata permessi;
+- nessun enforcement backend completo.
 
 Fuori scope:
 
+- enforcement backend completo, demandato a TASK-055;
+- visibility frontend completa basata su permessi, demandata a TASK-054;
 - policy autorizzative granulari per singola entita;
-- enforcement backend completo (demandato a TASK-055).
+- policy granulari per singola entita Master Data;
+- gestione permessi per singola entity tipo `TENANT.MASTER_DATA.WORK_MODE.CREATE`;
+- redesign globale;
+- nuove librerie UI;
+- duplicazione di componenti tabellari o layout.
 
 ### TASK-054 - Apply permissions to frontend navigation and actions
 
@@ -3582,6 +3643,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.05 | 2026-05-10 | TASK-053 riorganizzato come epic/contenitore con subtask interni TASK-053.1 backend role administration API foundation, TASK-053.2 frontend role permission matrix UI foundation e TASK-053.3 tenant user administration UI/API foundation; chiariti fuori scope verso TASK-054 frontend visibility e TASK-055 backend enforcement, senza modifiche codice. |
 | 2.04 | 2026-05-10 | TASK-052 completato: introdotti enum/helper backend per codici permission `SCOPE.RESOURCE.ACTION`, migration Flyway V18 con matrice iniziale PLATFORM/TENANT per resource/action approvate, seed system_permission e test backend mirati validati senza enforcement runtime o granularita per singola entita Master Data. |
 | 2.03 | 2026-05-10 | TASK-051 completato come analisi dominio User/Role/Permission: verificati migration, entity, repository, API/DTO governance-security, auth/JWT e test esistenti; documentata gap analysis rispetto a TASK-049 e backlog tecnico minimale verso TASK-052..TASK-055 senza modifiche runtime. |
 | 2.02 | 2026-05-10 | TASK-050 completato come governance backend agent integration: approvata skill repository-local minima `spring-backend-developer`, aggiornati `skills-lock.json`, `backend/AGENTS.md`, prompt governance e report QA, senza modifiche backend/frontend applicative. |
