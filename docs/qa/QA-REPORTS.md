@@ -114,6 +114,29 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-053.1 - Backend role administration API foundation
+
+- Data: 2026-05-10
+- Branch: `task-053-1-backend-role-administration-api`
+- Task: TASK-053.1 - Backend role administration API foundation
+- Area verificata: API backend `/api/admin/roles`, DTO role administration, `RoleAdministrationService`, `RolePermissionRepository`, Flyway V18 permission seed.
+- Attivita eseguite:
+  - aggiunta API backend per lista ruoli, dettaglio ruolo, lettura permessi assegnati e update foundation delle assegnazioni ruolo-permesso;
+  - introdotti DTO espliciti senza esporre entity JPA;
+  - implementato service layer transazionale con semantica replace sulle assegnazioni `RolePermission`;
+  - validate esistenza `Role`/`Permission`/`Tenant`, deduplicazione permission id e coerenza tenant tra ruolo e permessi;
+  - corretto `V18__seed_permission_model_scope_resource_action.sql` con cast UUID espliciti per evitare errore PostgreSQL UUID/text allo startup;
+  - verificata assenza di modifiche a security globale, JWT, tenant resolution, UI e import CAP/ZIP.
+- Test eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=RoleAdministrationControllerTests test` -> PASS, BUILD SUCCESS, 10 test eseguiti, 0 failure, 0 error, 0 skipped;
+  - `cd backend && .\mvnw.cmd test` -> interrotta su richiesta perche produce insert/select massivi su `global_zip_codes`.
+- Esito: PASS WITH NOTES
+- Limiti noti:
+  - la suite completa resta non usata come gate finale in questo task per problema preesistente di output/attivita massiva su `global_zip_codes`, da analizzare in task tecnico dedicato;
+  - nessuna modifica fatta alla logica di import CAP/ZIP e nessun test esistente rimosso;
+  - non e stato introdotto enforcement RBAC completo, nessun cambio JWT/security e nessuna UI;
+  - le policy avanzate su ruoli/permessi di sistema restano fuori scope.
+
 ### TASK-052 - Permission model foundation by scope/resource/action
 
 - Data: 2026-05-10
