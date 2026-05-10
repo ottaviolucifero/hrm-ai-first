@@ -4,6 +4,57 @@ Registro ufficiale degli esiti QA.
 
 Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
+## Documentation QA reports
+
+### TASK-049 - Platform Super Admin and tenant-aware permissions model
+
+- Data: 2026-05-10
+- Branch: `task-049-platform-super-admin-tenant-permissions`
+- Task: TASK-049 - Platform Super Admin and tenant-aware permissions model
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `ARCHITECTURE.md`, `docs/qa/QA-REPORTS.md`
+- Attivita eseguite:
+  - analisi governance esistente su `UserType`, `Role`, `Permission`, `UserTenantAccess`, `UserRole`, `RolePermission`, `UserAccount` e JWT authority minima;
+  - formalizzazione confine tra `PLATFORM_SUPER_ADMIN`, `TENANT_ADMIN`, ruoli seed, ruoli custom tenant-specific e permessi CRUD;
+  - documentazione regole cross-tenant default deny e separazione backend authoritative / frontend visibility UX;
+  - aggiornamento backlog e roadmap verso TASK-051.
+- Test automatici eseguiti: non eseguiti; task solo documentale e nessun codice applicativo modificato.
+- Controlli richiesti:
+  - `git diff`
+  - `git status --short --branch`
+- Regressioni trovate: nessuna regressione documentale nota in questa fase.
+- Limiti/note:
+  - non e stato implementato RBAC runtime;
+  - non e stata implementata UI amministrazione utenti/ruoli;
+  - non sono state create migration;
+  - enforcement backend e visibility frontend restano demandati a TASK-054/TASK-055.
+- Stato finale: PASS WITH NOTES
+
+### TASK-050 - Configure Spring AI skill and backend agent integration
+
+- Data: 2026-05-10
+- Branch: `task-049-platform-super-admin-tenant-permissions`
+- Task: TASK-050 - Configure Spring AI skill and backend agent integration
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `AGENTS.md`, `backend/AGENTS.md`, `ARCHITECTURE.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/qa/QA-REPORTS.md`, `.agents/skills`, `skills-lock.json`
+- Attivita eseguite:
+  - verifica della governance skill gia approvata e dello stato repository-local corrente (`angular-developer` come unica skill lockata);
+  - inserimento del nuovo TASK-050 come task documentale/TODO per skill Spring/backend approvata;
+  - rinumerazione del blocco corrente Super Admin / permessi da TASK-051 a TASK-055 e slittamento di +1 dei task successivi attivi;
+  - riallineamento dei riferimenti attivi in backlog, roadmap, architettura e decisioni.
+- Test automatici eseguiti: non eseguiti; task solo documentale e nessun codice applicativo modificato.
+- Controlli richiesti:
+  - verifica coerenza numerazione TASK-050..TASK-055;
+  - verifica assenza di riferimenti attivi obsoleti al vecchio TASK-050;
+  - `git diff`
+  - `git status --short --branch`
+- Regressioni trovate: nessuna regressione documentale nota in questa fase.
+- Limiti/note:
+  - nessuna skill Spring/backend repository-local e stata ancora approvata o versionata;
+  - `skills-lock.json` resta coerentemente limitato alla skill Angular gia approvata;
+  - nessuna modifica backend/frontend, migration, API o runtime security.
+- Stato finale: PASS WITH NOTES
+
 ## Backend QA reports
 
 ### TASK-047.1 - Master Data physical delete backend foundation
