@@ -45,7 +45,7 @@ describe('UserAdministrationDetailComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Identità');
     expect(fixture.nativeElement.textContent).toContain('Gestione ruoli utente');
     expect(fixture.nativeElement.textContent).toContain('Reset password');
-    expect(fixture.nativeElement.textContent).toContain('Lifecycle account');
+    expect(fixture.nativeElement.textContent).toContain('Ciclo di vita account');
     expect(fixture.nativeElement.textContent).toContain('Disattiva utente');
     expect(fixture.nativeElement.textContent).toContain('Blocca utente');
     expect(fixture.nativeElement.textContent).toContain('Modifica');
@@ -58,6 +58,10 @@ describe('UserAdministrationDetailComponent', () => {
     expect(identitySection.textContent).not.toContain('Nome visualizzato');
     expect(identitySection.textContent).toContain('Amministratore tenant');
     expect(identitySection.textContent).not.toContain('TENANT_ADMIN');
+    expect(identitySection.textContent).toContain('Collegamento dipendente');
+    expect(identitySection.textContent).not.toContain('Stato collegamento dipendente');
+    expect(identitySection.textContent).toContain('Ada Lovelace');
+    expect(identitySection.textContent).not.toContain('EMP-001');
     expect(tenantSection.textContent).toContain('Tenant di appartenenza');
     expect(tenantSection.textContent).not.toContain('Tenant predefinito');
     expect(tenantSection.textContent).toContain('Azienda');
@@ -122,6 +126,29 @@ describe('UserAdministrationDetailComponent', () => {
 
     expect(title.textContent?.trim()).toBe('ada@example.com');
     expect(headerSubtitle).toBeNull();
+  });
+
+  it('shows an explicit unlinked employee state', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService({
+      findUserById: vi.fn(() => of({
+        ...createUser(),
+        displayName: 'tenant.admin@example.com',
+        firstName: null,
+        lastName: null,
+        employee: null,
+        employeeId: null,
+        employeeDisplayName: null,
+        hasEmployeeLink: false,
+        email: 'tenant.admin@example.com'
+      }))
+    }));
+    fixture.detectChanges();
+
+    const identitySection = fixture.nativeElement.querySelector('[aria-labelledby="user-detail-identity"]') as HTMLElement;
+    expect(identitySection.textContent).toContain('Nessun dipendente associato');
+    expect(identitySection.textContent).not.toContain('EMP-001');
   });
 
   it('shows the tenant selector when multiple tenant options are available', async () => {
@@ -547,6 +574,9 @@ function createUser() {
     displayName: 'Ada Lovelace',
     firstName: 'Ada',
     lastName: 'Lovelace',
+    employeeId: 'employee-1',
+    employeeDisplayName: 'Ada Lovelace',
+    hasEmployeeLink: true,
     email: 'ada@example.com',
     userType: { id: 'type-1', code: 'TENANT_ADMIN', name: 'Tenant admin' },
     tenant: { id: 'tenant-1', code: 'TENANT', name: 'Tenant' },

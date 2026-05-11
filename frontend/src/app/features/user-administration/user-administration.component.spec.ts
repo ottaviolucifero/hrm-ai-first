@@ -24,6 +24,8 @@ describe('UserAdministrationComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Nuovo utente');
     expect(fixture.nativeElement.textContent).toContain('Vista tenant');
     expect(fixture.nativeElement.textContent).toContain('Ada Lovelace');
+    expect(fixture.nativeElement.textContent).toContain('Collegamento dipendente');
+    expect(fixture.nativeElement.textContent).toContain('Nessun dipendente associato');
     expect(fixture.nativeElement.textContent).toContain('TENANT_ADMIN');
     expect(fixture.nativeElement.textContent).not.toContain('Riprova');
   }, 15000);
@@ -124,6 +126,9 @@ function createService(overrides: Partial<UserAdministrationService> = {}): User
       displayName: 'Ada Lovelace',
       firstName: 'Ada',
       lastName: 'Lovelace',
+      employeeId: 'employee-1',
+      employeeDisplayName: 'Ada Lovelace',
+      hasEmployeeLink: true,
       email: 'ada@example.com',
       userType: { id: 'type-1', code: 'TENANT_ADMIN', name: 'Tenant admin' },
       tenant: { id: 'tenant-1', code: 'TENANT', name: 'Tenant' },
@@ -154,6 +159,25 @@ function createService(overrides: Partial<UserAdministrationService> = {}): User
           updatedAt: '2026-05-10T09:00:00Z'
         }
       ],
+      createdAt: '2026-05-10T09:00:00Z',
+      updatedAt: '2026-05-10T10:00:00Z'
+    },
+    {
+      id: 'user-2',
+      displayName: 'tenant.admin@example.com',
+      firstName: null,
+      lastName: null,
+      employeeId: null,
+      employeeDisplayName: null,
+      hasEmployeeLink: false,
+      email: 'tenant.admin@example.com',
+      userType: { id: 'type-1', code: 'TENANT_ADMIN', name: 'Tenant admin' },
+      tenant: { id: 'tenant-1', code: 'TENANT', name: 'Tenant' },
+      companyProfile: null,
+      active: true,
+      locked: false,
+      roles: [],
+      tenantAccesses: [],
       createdAt: '2026-05-10T09:00:00Z',
       updatedAt: '2026-05-10T10:00:00Z'
     }

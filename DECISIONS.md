@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.27
-Ultimo aggiornamento: 2026-05-10
+Versione: 1.30
+Ultimo aggiornamento: 2026-05-11
 Stato: Attivo
 
 ---
@@ -1370,10 +1370,39 @@ Nessun cambio schema e nessuna nuova API. La UI create/edit utenti tenant mostra
 
 ---
 
+### DEC-035 - Optional UserAccount to Employee link boundary
+
+Data: 2026-05-11
+Stato: Approvata
+
+Decisione:
+
+`UserAccount` e `Employee` restano domini separati. `UserAccount` rappresenta identita applicativa, login email-first, stato account, ruoli e tenant access. `Employee` rappresenta l anagrafica HR.
+
+Il collegamento `UserAccount.employee` e opzionale. Gli account senza Employee collegato sono validi e devono usare fallback email e tipo account nelle API/UI amministrative. `firstName` e `lastName` restano derivati da Employee quando il link esiste e non vengono duplicati su `UserAccount`.
+
+Motivazione:
+
+La piattaforma deve supportare account amministrativi, tecnici o platform che non corrispondono a una anagrafica HR, evitando duplicazione dei dati personali e mantenendo chiaro il boundary tra identity/security e HR core.
+
+Alternative escluse:
+
+- rendere obbligatorio `employee_id` su `user_accounts`;
+- aggiungere automaticamente `firstName` e `lastName` a `UserAccount`;
+- creare migration o refactoring strutturali per collegare retroattivamente account ed Employee;
+- introdurre un profilo HR avanzato dentro il task di amministrazione utenti.
+
+Impatto:
+
+Le API amministrative utenti espongono lo stato del link in modo esplicito tramite `employeeId`, `employeeDisplayName` e `hasEmployeeLink`. La UI deve distinguere account collegati e non collegati senza assumere che ogni utente applicativo sia anche Employee. Eventuali workflow futuri per creare, cercare o collegare Employee richiederanno task dedicato e policy tenant-aware esplicite.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.30 | 2026-05-11 | Aggiunta DEC-035 per formalizzare il link opzionale `UserAccount.employee`, account validi senza Employee, fallback email/tipo account e divieto di duplicare dati anagrafici su `UserAccount`. |
 | 1.29 | 2026-05-11 | Aggiunta DEC-034 per chiarire che nei form amministrazione utenti tenant si mostra un solo campo `Tenant`; `primaryTenant` resta dettaglio backend e la distinzione tenant/default tenant e rinviata agli scenari platform o multi-tenant futuri. |
 | 1.28 | 2026-05-10 | Raffinata DEC-033: aggiunto TASK-053.3 dedicato al CRUD ruoli custom tenant, rinumerato TASK-053.4 per la tenant user administration e riallineato il principio di aggiornare il prossimo subtask operativo non completato. |
 | 1.27 | 2026-05-10 | Aggiunta DEC-033 per fissare lo split operativo di TASK-053 in subtask interni 053.1/053.2/053.3 e mantenere TASK-054 frontend visibility e TASK-055 backend enforcement come task principali successivi. |

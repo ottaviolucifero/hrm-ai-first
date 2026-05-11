@@ -356,6 +356,9 @@ public class UserAdministrationService {
 				displayName(user),
 				employee == null ? null : employee.getFirstName(),
 				employee == null ? null : employee.getLastName(),
+				employee == null ? null : employee.getId(),
+				employeeDisplayName(employee),
+				employee != null,
 				user.getEmail(),
 				toUserTypeResponse(user.getUserType()),
 				toTenantResponse(user.getTenant()),
@@ -383,6 +386,9 @@ public class UserAdministrationService {
 				toTenantResponse(user.getPrimaryTenant()),
 				toCompanyProfileResponse(user.getCompanyProfile()),
 				toEmployeeResponse(employee),
+				employee == null ? null : employee.getId(),
+				employeeDisplayName(employee),
+				employee != null,
 				toUserTypeResponse(user.getUserType()),
 				toAuthenticationMethodResponse(user.getAuthenticationMethod()),
 				user.getPreferredLanguage(),
@@ -588,8 +594,17 @@ public class UserAdministrationService {
 			return user.getEmail();
 		}
 
+		String employeeDisplayName = employeeDisplayName(employee);
+		return employeeDisplayName == null ? user.getEmail() : employeeDisplayName;
+	}
+
+	private String employeeDisplayName(Employee employee) {
+		if (employee == null) {
+			return null;
+		}
+
 		String displayName = (safe(employee.getFirstName()) + " " + safe(employee.getLastName())).trim();
-		return displayName.isEmpty() ? user.getEmail() : displayName;
+		return displayName.isEmpty() ? null : displayName;
 	}
 
 	private List<UserAdministrationRoleResponse> sortedRoles(List<UserAdministrationRoleResponse> roles) {

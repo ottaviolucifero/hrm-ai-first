@@ -361,7 +361,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
       { labelKey: 'userAdministration.columns.firstName', value: this.valueOrDash(user.firstName) },
       { labelKey: 'userAdministration.columns.lastName', value: this.valueOrDash(user.lastName) },
       { labelKey: 'userAdministration.columns.userType', value: this.userTypeValue(user.userType) },
-      { labelKey: 'userAdministration.detail.employee', value: user.employee ? `${user.employee.employeeCode} - ${user.employee.firstName} ${user.employee.lastName}` : this.i18n.t('userAdministration.values.none') }
+      { labelKey: 'userAdministration.columns.employeeLink', value: this.employeeLinkValue(user) }
     ];
   }
 
@@ -653,6 +653,16 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     }
 
     return primaryName || code || this.i18n.t('userAdministration.values.none');
+  }
+
+  private employeeLinkValue(user: UserAdministrationUserDetail): string {
+    if (!user.hasEmployeeLink || !user.employee) {
+      return this.i18n.t('userAdministration.values.noEmployeeAssociated');
+    }
+
+    const displayName = user.employeeDisplayName?.trim()
+      || `${user.employee.firstName} ${user.employee.lastName}`.trim();
+    return displayName || user.employee.employeeCode || this.i18n.t('userAdministration.values.employeeLinked');
   }
 
   private booleanValue(value: boolean): string {

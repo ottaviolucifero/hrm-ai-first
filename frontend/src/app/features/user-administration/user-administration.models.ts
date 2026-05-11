@@ -59,6 +59,9 @@ export interface UserAdministrationUserListItem extends DataTableRow {
   readonly displayName: string;
   readonly firstName: string | null;
   readonly lastName: string | null;
+  readonly employeeId: string | null;
+  readonly employeeDisplayName: string | null;
+  readonly hasEmployeeLink: boolean;
   readonly email: string;
   readonly userType: UserAdministrationReference;
   readonly tenant: UserAdministrationReference;

@@ -138,6 +138,42 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-053.9 - UserAccount Employee link foundation
+
+- Data: 2026-05-11
+- Branch: `task-053-9-useraccount-employee-link-foundation`
+- Task: TASK-053.9 - UserAccount Employee link foundation
+- Area verificata: relazione opzionale `UserAccount.employee`, DTO admin `/api/admin/users`, mapping `displayName`/Employee, UI lista/dettaglio utenti, i18n `it/fr/en`, documentazione governance.
+- Attivita eseguite:
+  - confermata relazione nullable gia esistente `user_accounts.employee_id`;
+  - estesi DTO admin utenti con `employeeId`, `employeeDisplayName` e `hasEmployeeLink`;
+  - mantenuto fallback email per account senza Employee collegato;
+  - aggiornata UI lista/dettaglio per distinguere account collegati e non collegati a Employee;
+  - rifiniti i testi frontend su collegamento dipendente e ciclo di vita account, eliminando la parola `Employee` dalla UI italiana visibile all utente;
+  - formalizzata DEC-035 sul boundary opzionale `UserAccount`/`Employee`;
+  - nessuna migration, nessun campo `firstName`/`lastName` aggiunto a `UserAccount`, nessun profilo HR avanzato.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=UserAdministrationControllerTests" test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd backend && .\mvnw.cmd test`
+  - `git diff --check`
+- Esiti reali:
+  - test backend mirato OK, `BUILD SUCCESS`, 28 test eseguiti, 0 failure, 0 error;
+  - primo `npm.cmd test` KO per assertion test aggiornata sulla label `Collegato`, fixato formatter lista;
+  - frontend test rerun OK, 27 file test passed, 172 test passed;
+  - frontend build finale OK;
+  - build frontend e test frontend rieseguiti dopo la rifinitura testi minima: OK, 27 file test passed, 172 test passed;
+  - suite backend completa OK da Surefire, 161 test eseguiti, 0 failure, 0 error;
+  - `git diff --check` inizialmente KO per trailing whitespace in `DECISIONS.md`, corretto prima della chiusura.
+- Regressioni trovate: nessuna dopo il fix frontend minimo.
+- Limiti/note:
+  - non esiste ancora un workflow UI/API per collegare o scollegare Employee da UserAccount;
+  - i comandi Maven continuano a mostrare warning noti Mockito/ByteBuddy e output SQL/ZIP molto verboso, senza failure;
+  - nessun commit eseguito.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053.6 - Tenant user password administration foundation
 
 - Data: 2026-05-11
