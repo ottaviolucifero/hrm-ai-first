@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { I18nKey } from '../../core/i18n/i18n.messages';
 import { LanguageCode } from '../../core/i18n/i18n.models';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { EmailFieldComponent } from '../../shared/form-fields/email-field.component';
@@ -21,6 +22,9 @@ import { NotificationService } from '../../shared/feedback/notification.service'
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
+  private static readonly accountInactiveCode = 'AUTH_ACCOUNT_INACTIVE';
+  private static readonly accountLockedCode = 'AUTH_ACCOUNT_LOCKED';
+
   private readonly authService = inject(AuthService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
@@ -65,11 +69,30 @@ export class LoginComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => void this.router.navigateByUrl('/'),
-        error: () =>
-          this.notificationService.error(this.i18n.t('login.errorInvalidCredentials'), {
+        error: (error) =>
+          this.notificationService.error(this.i18n.t(this.resolveErrorMessageKey(error)), {
             titleKey: 'alert.title.danger',
             dismissible: true
           })
       });
+  }
+
+  private resolveErrorMessageKey(error: unknown): I18nKey {
+    const code = this.readApiErrorCode(error);
+    if (code === LoginComponent.accountInactiveCode) {
+      return 'login.errorAccountInactive';
+    }
+    if (code === LoginComponent.accountLockedCode) {
+      return 'login.errorAccountLocked';
+    }
+    return 'login.errorInvalidCredentials';
+  }
+
+  private readApiErrorCode(error: unknown): string | null {
+    if (typeof error !== 'object' || error === null || !('error' in error)) {
+      return null;
+    }
+    const apiError = (error as { error?: { code?: unknown } }).error;
+    return typeof apiError?.code === 'string' ? apiError.code : null;
   }
 }

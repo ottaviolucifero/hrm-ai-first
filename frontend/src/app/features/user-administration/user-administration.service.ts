@@ -55,6 +55,22 @@ export class UserAdministrationService {
     return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}`, payload);
   }
 
+  activateUser(userId: string): Observable<UserAdministrationUserDetail> {
+    return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}/activate`, {});
+  }
+
+  deactivateUser(userId: string): Observable<UserAdministrationUserDetail> {
+    return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}/deactivate`, {});
+  }
+
+  lockUser(userId: string): Observable<UserAdministrationUserDetail> {
+    return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}/lock`, {});
+  }
+
+  unlockUser(userId: string): Observable<UserAdministrationUserDetail> {
+    return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}/unlock`, {});
+  }
+
   findAssignedRoles(userId: string, tenantId: string): Observable<readonly UserAdministrationRole[]> {
     const params = new HttpParams().set('tenantId', tenantId);
     return this.http.get<readonly UserAdministrationRole[]>(`/api/admin/users/${userId}/roles`, { params });

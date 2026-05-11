@@ -12,8 +12,9 @@ interface UserAdministrationDetailComponentTestHandle {
     setValue: (value: { newPassword: string; confirmPassword: string }) => void;
     getRawValue: () => { newPassword: string; confirmPassword: string };
   };
-  readonly user: () => { passwordChangedAt: string | null };
+  readonly user: () => { active: boolean; locked: boolean; passwordChangedAt: string | null };
   readonly passwordSaving: () => boolean;
+  readonly lifecycleSaving: () => boolean;
 }
 
 describe('UserAdministrationDetailComponent', () => {
@@ -44,6 +45,9 @@ describe('UserAdministrationDetailComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Identità');
     expect(fixture.nativeElement.textContent).toContain('Gestione ruoli utente');
     expect(fixture.nativeElement.textContent).toContain('Reset password');
+    expect(fixture.nativeElement.textContent).toContain('Lifecycle account');
+    expect(fixture.nativeElement.textContent).toContain('Disattiva utente');
+    expect(fixture.nativeElement.textContent).toContain('Blocca utente');
     expect(fixture.nativeElement.textContent).toContain('Modifica');
     expect(fixture.nativeElement.textContent).toContain('Creato');
     expect(fixture.nativeElement.textContent).toContain('Aggiornato');
@@ -279,6 +283,127 @@ describe('UserAdministrationDetailComponent', () => {
     );
   });
 
+  it('confirms and deactivates an active user', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    const component = fixture.componentInstance as unknown as {
+      triggerActiveAction: () => void;
+      confirmLifecycleAction: () => void;
+    };
+
+    component.triggerActiveAction();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Conferma disattivazione utente');
+    expect(fixture.nativeElement.textContent).toContain('Vuoi disattivare questo account utente?');
+
+    component.confirmLifecycleAction();
+    fixture.detectChanges();
+
+    expect(service.deactivateUser).toHaveBeenCalledWith('user-1');
+    expect(successSpy).toHaveBeenCalledWith(
+      'Utente disattivato correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+  });
+
+  it('activates an inactive user without confirmation', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      findUserById: vi.fn(() => of({
+        ...createUser(),
+        active: false
+      })),
+      activateUser: vi.fn(() => of({
+        ...createUser(),
+        active: true
+      }))
+    });
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    const component = fixture.componentInstance as unknown as UserAdministrationDetailComponentTestHandle & {
+      triggerActiveAction: () => void;
+    };
+
+    component.triggerActiveAction();
+    fixture.detectChanges();
+
+    expect(service.activateUser).toHaveBeenCalledWith('user-1');
+    expect(component.user().active).toBe(true);
+    expect(successSpy).toHaveBeenCalledWith(
+      'Utente attivato correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('Conferma disattivazione utente');
+  });
+
+  it('unlocks a locked user without confirmation', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      findUserById: vi.fn(() => of({
+        ...createUser(),
+        locked: true,
+        failedLoginAttempts: 4
+      })),
+      unlockUser: vi.fn(() => of({
+        ...createUser(),
+        locked: false,
+        failedLoginAttempts: 4
+      }))
+    });
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as UserAdministrationDetailComponentTestHandle & {
+      triggerLockAction: () => void;
+    };
+
+    component.triggerLockAction();
+    fixture.detectChanges();
+
+    expect(service.unlockUser).toHaveBeenCalledWith('user-1');
+    expect(component.user().locked).toBe(false);
+    expect(fixture.nativeElement.textContent).not.toContain('Conferma blocco utente');
+  });
+
+  it('shows lifecycle API error and restores loading state', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      deactivateUser: vi.fn(() => throwError(() => new HttpErrorResponse({
+        status: 400,
+        error: { message: 'User lifecycle update failed.' }
+      })))
+    });
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
+    const component = fixture.componentInstance as unknown as UserAdministrationDetailComponentTestHandle & {
+      triggerActiveAction: () => void;
+      confirmLifecycleAction: () => void;
+    };
+
+    component.triggerActiveAction();
+    fixture.detectChanges();
+    component.confirmLifecycleAction();
+    fixture.detectChanges();
+
+    expect(service.deactivateUser).toHaveBeenCalledWith('user-1');
+    expect(component.lifecycleSaving()).toBe(false);
+    expect(errorSpy).toHaveBeenCalledWith(
+      'User lifecycle update failed.',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
+  });
+
   it('blocks password reset when confirmation does not match', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -362,6 +487,14 @@ function createService(overrides: Partial<UserAdministrationService> = {}): User
   return {
     findUsers: vi.fn(),
     findUserById: vi.fn(() => of(user)),
+    activateUser: vi.fn(() => of({
+      ...user,
+      active: true
+    })),
+    deactivateUser: vi.fn(() => of({
+      ...user,
+      active: false
+    })),
     findAssignedRoles: vi.fn(() => of(user.roles)),
     findAvailableRoles: vi.fn(() => of([
       {
@@ -395,7 +528,15 @@ function createService(overrides: Partial<UserAdministrationService> = {}): User
       locked: false,
       failedLoginAttempts: 0
     })),
+    lockUser: vi.fn(() => of({
+      ...user,
+      locked: true
+    })),
     removeRole: vi.fn(() => of(void 0)),
+    unlockUser: vi.fn(() => of({
+      ...user,
+      locked: false
+    })),
     ...overrides
   } as UserAdministrationService;
 }

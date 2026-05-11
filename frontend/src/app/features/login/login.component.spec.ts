@@ -46,6 +46,40 @@ describe('LoginComponent', () => {
     expect(errorSpy).toHaveBeenCalledWith('Email o password non corretti.', expect.objectContaining({ titleKey: 'alert.title.danger' }));
   });
 
+  it('shows the inactive account message when the API returns AUTH_ACCOUNT_INACTIVE', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const authService = {
+      login: vi.fn(() => throwError(() => ({ status: 401, error: { code: 'AUTH_ACCOUNT_INACTIVE' } })))
+    };
+
+    const fixture = await createLoginFixture(authService);
+    fixture.detectChanges();
+
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
+    submitLoginForm(fixture, 'user@example.com', 'Secret1!');
+
+    expect(errorSpy).toHaveBeenCalledWith('Account disattivato', expect.objectContaining({ titleKey: 'alert.title.danger' }));
+  });
+
+  it('shows the locked account message when the API returns AUTH_ACCOUNT_LOCKED', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const authService = {
+      login: vi.fn(() => throwError(() => ({ status: 401, error: { code: 'AUTH_ACCOUNT_LOCKED' } })))
+    };
+
+    const fixture = await createLoginFixture(authService);
+    fixture.detectChanges();
+
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
+    submitLoginForm(fixture, 'user@example.com', 'Secret1!');
+
+    expect(errorSpy).toHaveBeenCalledWith('Account bloccato', expect.objectContaining({ titleKey: 'alert.title.danger' }));
+  });
+
   it('keeps the shared password field configured for login semantics', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -95,4 +129,30 @@ async function createLoginFixture(authService = { login: vi.fn() }) {
   }).compileComponents();
 
   return TestBed.createComponent(LoginComponent);
+}
+
+function submitLoginForm(
+  fixture: {
+    detectChanges(): void;
+    nativeElement: ParentNode;
+    componentInstance: unknown;
+  },
+  email: string,
+  password: string
+): void {
+  const component = fixture.componentInstance as {
+    loginForm: {
+      controls: {
+        email: { setValue(value: string): void };
+        password: { setValue(value: string): void };
+      };
+    };
+  };
+  component.loginForm.controls.email.setValue(email);
+  component.loginForm.controls.password.setValue(password);
+  fixture.detectChanges();
+
+  const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+  form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  fixture.detectChanges();
 }

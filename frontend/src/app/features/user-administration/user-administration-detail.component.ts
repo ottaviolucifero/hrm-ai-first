@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, forkJoin, finalize } from 'rxjs';
+import { Observable, Subscription, forkJoin, finalize } from 'rxjs';
 
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -28,6 +28,8 @@ interface SecurityStatusField extends ReadOnlyField {
   readonly variant: SecurityStatusVariant;
 }
 
+type UserLifecycleAction = 'activate' | 'deactivate' | 'lock' | 'unlock';
+
 @Component({
   selector: 'app-user-administration-detail',
   imports: [AppButtonComponent, PasswordFieldComponent, ReactiveFormsModule],
@@ -46,6 +48,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
   private roleLoadSubscription?: Subscription;
   private roleMutationSubscription?: Subscription;
   private passwordMutationSubscription?: Subscription;
+  private lifecycleMutationSubscription?: Subscription;
 
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
@@ -56,6 +59,8 @@ export class UserAdministrationDetailComponent implements OnDestroy {
   protected readonly roleSaving = signal(false);
   protected readonly roleError = signal(false);
   protected readonly passwordSaving = signal(false);
+  protected readonly lifecycleSaving = signal(false);
+  protected readonly pendingLifecycleAction = signal<UserLifecycleAction | null>(null);
   protected readonly assignedRoles = signal<readonly UserAdministrationRole[]>([]);
   protected readonly availableRoles = signal<readonly UserAdministrationRole[]>([]);
   protected readonly roleTenantOptions = computed(() => this.buildTenantOptions(this.user()));
@@ -71,6 +76,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     const tenantId = this.selectedTenantId();
     return Boolean(user && tenantId) && !this.passwordSaving();
   });
+  protected readonly hasPendingLifecycleAction = computed(() => this.pendingLifecycleAction() !== null);
 
   protected detailTitle(user: UserAdministrationUserDetail | null): string {
     const displayName = user?.displayName?.trim();
@@ -112,6 +118,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     this.roleLoadSubscription?.unsubscribe();
     this.roleMutationSubscription?.unsubscribe();
     this.passwordMutationSubscription?.unsubscribe();
+    this.lifecycleMutationSubscription?.unsubscribe();
   }
 
   protected goBack(): void {
@@ -232,6 +239,109 @@ export class UserAdministrationDetailComponent implements OnDestroy {
           });
         }
       });
+  }
+
+  protected triggerActiveAction(): void {
+    const user = this.user();
+    if (!user || this.lifecycleSaving()) {
+      return;
+    }
+
+    const action: UserLifecycleAction = user.active ? 'deactivate' : 'activate';
+    if (this.requiresLifecycleConfirmation(action)) {
+      this.pendingLifecycleAction.set(action);
+      return;
+    }
+
+    this.executeLifecycleAction(action);
+  }
+
+  protected triggerLockAction(): void {
+    const user = this.user();
+    if (!user || this.lifecycleSaving()) {
+      return;
+    }
+
+    const action: UserLifecycleAction = user.locked ? 'unlock' : 'lock';
+    if (this.requiresLifecycleConfirmation(action)) {
+      this.pendingLifecycleAction.set(action);
+      return;
+    }
+
+    this.executeLifecycleAction(action);
+  }
+
+  protected cancelLifecycleAction(): void {
+    this.pendingLifecycleAction.set(null);
+  }
+
+  protected confirmLifecycleAction(): void {
+    const action = this.pendingLifecycleAction();
+    if (!action) {
+      return;
+    }
+
+    this.executeLifecycleAction(action);
+  }
+
+  protected activeActionLabel(user: UserAdministrationUserDetail): string {
+    return this.i18n.t(user.active
+      ? 'userAdministration.lifecycle.actions.deactivate'
+      : 'userAdministration.lifecycle.actions.activate');
+  }
+
+  protected activeActionLoadingLabel(user: UserAdministrationUserDetail): string {
+    return this.i18n.t(user.active
+      ? 'userAdministration.lifecycle.actions.deactivating'
+      : 'userAdministration.lifecycle.actions.activating');
+  }
+
+  protected activeActionVariant(user: UserAdministrationUserDetail): 'primary' | 'destructive' {
+    return user.active ? 'destructive' : 'primary';
+  }
+
+  protected activeActionIcon(user: UserAdministrationUserDetail): string {
+    return user.active ? 'ki-filled ki-cross-circle' : 'ki-filled ki-check-circle';
+  }
+
+  protected lockActionLabel(user: UserAdministrationUserDetail): string {
+    return this.i18n.t(user.locked
+      ? 'userAdministration.lifecycle.actions.unlock'
+      : 'userAdministration.lifecycle.actions.lock');
+  }
+
+  protected lockActionLoadingLabel(user: UserAdministrationUserDetail): string {
+    return this.i18n.t(user.locked
+      ? 'userAdministration.lifecycle.actions.unlocking'
+      : 'userAdministration.lifecycle.actions.locking');
+  }
+
+  protected lockActionVariant(user: UserAdministrationUserDetail): 'primary' | 'destructive' {
+    return user.locked ? 'primary' : 'destructive';
+  }
+
+  protected lockActionIcon(user: UserAdministrationUserDetail): string {
+    return user.locked ? 'ki-filled ki-lock-2-open' : 'ki-filled ki-lock';
+  }
+
+  protected lifecycleConfirmTitle(): string {
+    const action = this.pendingLifecycleAction();
+    return action ? this.i18n.t(this.lifecycleKey(action, 'confirmTitle')) : '';
+  }
+
+  protected lifecycleConfirmMessage(): string {
+    const action = this.pendingLifecycleAction();
+    return action ? this.i18n.t(this.lifecycleKey(action, 'confirmMessage')) : '';
+  }
+
+  protected lifecycleConfirmActionLabel(): string {
+    const action = this.pendingLifecycleAction();
+    return action ? this.i18n.t(this.lifecycleKey(action, 'confirmAction')) : '';
+  }
+
+  protected lifecycleConfirmLoadingLabel(): string {
+    const action = this.pendingLifecycleAction();
+    return action ? this.i18n.t(this.lifecycleKey(action, 'processing')) : '';
   }
 
   protected hasPasswordConfirmationMismatch(): boolean {
@@ -374,6 +484,33 @@ export class UserAdministrationDetailComponent implements OnDestroy {
       });
   }
 
+  private executeLifecycleAction(action: UserLifecycleAction): void {
+    const user = this.user();
+    if (!user) {
+      return;
+    }
+
+    this.lifecycleSaving.set(true);
+    this.lifecycleMutationSubscription?.unsubscribe();
+    this.lifecycleMutationSubscription = this.lifecycleRequest(user.id, action)
+      .pipe(finalize(() => this.lifecycleSaving.set(false)))
+      .subscribe({
+        next: (updatedUser) => {
+          this.user.set(updatedUser);
+          this.pendingLifecycleAction.set(null);
+          this.notificationService.success(this.i18n.t(this.lifecycleKey(action, 'success')), {
+            titleKey: 'alert.title.success'
+          });
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveApiMessage(error, this.lifecycleKey(action, 'error')), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
   private defaultRoleTenantId(user: UserAdministrationUserDetail): string {
     const activeAccess = user.tenantAccesses.find((access) => access.active && access.tenantId === user.tenant.id)
       ?? user.tenantAccesses.find((access) => access.active);
@@ -418,6 +555,30 @@ export class UserAdministrationDetailComponent implements OnDestroy {
         failedLoginAttempts: response.failedLoginAttempts
       };
     });
+  }
+
+  private lifecycleRequest(userId: string, action: UserLifecycleAction): Observable<UserAdministrationUserDetail> {
+    switch (action) {
+      case 'activate':
+        return this.userAdministrationService.activateUser(userId);
+      case 'deactivate':
+        return this.userAdministrationService.deactivateUser(userId);
+      case 'lock':
+        return this.userAdministrationService.lockUser(userId);
+      case 'unlock':
+        return this.userAdministrationService.unlockUser(userId);
+    }
+  }
+
+  private requiresLifecycleConfirmation(action: UserLifecycleAction): boolean {
+    return action === 'deactivate' || action === 'lock';
+  }
+
+  private lifecycleKey(
+    action: UserLifecycleAction,
+    suffix: 'confirmAction' | 'confirmMessage' | 'confirmTitle' | 'error' | 'processing' | 'success'
+  ): I18nKey {
+    return `userAdministration.lifecycle.${action}.${suffix}` as I18nKey;
   }
 
   private resolveApiMessage(error: unknown, fallbackKey: I18nKey): string {

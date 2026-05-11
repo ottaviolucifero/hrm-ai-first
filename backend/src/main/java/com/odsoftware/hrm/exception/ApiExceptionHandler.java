@@ -19,57 +19,63 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler(AuthenticationFailedException.class)
 	public ResponseEntity<ApiErrorResponse> handleAuthenticationFailed(AuthenticationFailedException exception, HttpServletRequest request) {
-		return buildResponse(HttpStatus.UNAUTHORIZED, exception.getMessage(), request, null);
+		return buildResponse(HttpStatus.UNAUTHORIZED, exception.getMessage(), request, exception.getCode(), null);
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException exception, HttpServletRequest request) {
-		return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request, null);
+		return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request, null, null);
 	}
 
 	@ExceptionHandler(InvalidRequestException.class)
 	public ResponseEntity<ApiErrorResponse> handleInvalidRequest(InvalidRequestException exception, HttpServletRequest request) {
-		return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request, null);
+		return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request, null, null);
 	}
 
 	@ExceptionHandler(ResourceConflictException.class)
 	public ResponseEntity<ApiErrorResponse> handleConflict(ResourceConflictException exception, HttpServletRequest request) {
-		return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), request, null);
+		return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), request, null, null);
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletRequest request) {
 		Map<String, String> validationErrors = new LinkedHashMap<>();
 		exception.getBindingResult().getFieldErrors().forEach(error -> validationErrors.put(error.getField(), error.getDefaultMessage()));
-		return buildResponse(HttpStatus.BAD_REQUEST, "Validation failed", request, validationErrors);
+		return buildResponse(HttpStatus.BAD_REQUEST, "Validation failed", request, null, validationErrors);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<ApiErrorResponse> handleConstraintViolation(ConstraintViolationException exception, HttpServletRequest request) {
 		Map<String, String> validationErrors = new LinkedHashMap<>();
 		exception.getConstraintViolations().forEach(violation -> validationErrors.put(violation.getPropertyPath().toString(), violation.getMessage()));
-		return buildResponse(HttpStatus.BAD_REQUEST, "Constraint validation failed", request, validationErrors);
+		return buildResponse(HttpStatus.BAD_REQUEST, "Constraint validation failed", request, null, validationErrors);
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
 		Map<String, String> validationErrors = new LinkedHashMap<>();
 		validationErrors.put(exception.getName(), "Invalid value");
-		return buildResponse(HttpStatus.BAD_REQUEST, "Request parameter validation failed", request, validationErrors);
+		return buildResponse(HttpStatus.BAD_REQUEST, "Request parameter validation failed", request, null, validationErrors);
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException exception, HttpServletRequest request) {
-		return buildResponse(HttpStatus.CONFLICT, "Data integrity constraint violated", request, null);
+		return buildResponse(HttpStatus.CONFLICT, "Data integrity constraint violated", request, null, null);
 	}
 
-	private ResponseEntity<ApiErrorResponse> buildResponse(HttpStatus status, String message, HttpServletRequest request, Map<String, String> validationErrors) {
+	private ResponseEntity<ApiErrorResponse> buildResponse(
+			HttpStatus status,
+			String message,
+			HttpServletRequest request,
+			String code,
+			Map<String, String> validationErrors) {
 		ApiErrorResponse response = new ApiErrorResponse(
 				OffsetDateTime.now(),
 				status.value(),
 				status.getReasonPhrase(),
 				message,
 				request.getRequestURI(),
+				code,
 				validationErrors);
 		return ResponseEntity.status(status).body(response);
 	}

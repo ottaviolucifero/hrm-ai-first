@@ -203,6 +203,26 @@ public class UserAdministrationService {
 		return findUserById(savedUser.getId());
 	}
 
+	@Transactional
+	public UserAdministrationUserDetailResponse activateUser(UUID userId) {
+		return updateUserActive(userId, true);
+	}
+
+	@Transactional
+	public UserAdministrationUserDetailResponse deactivateUser(UUID userId) {
+		return updateUserActive(userId, false);
+	}
+
+	@Transactional
+	public UserAdministrationUserDetailResponse lockUser(UUID userId) {
+		return updateUserLocked(userId, true);
+	}
+
+	@Transactional
+	public UserAdministrationUserDetailResponse unlockUser(UUID userId) {
+		return updateUserLocked(userId, false);
+	}
+
 	public List<UserAdministrationRoleResponse> findAssignedRoles(UUID userId, UUID tenantId) {
 		UserAccount user = findUser(userId);
 		Tenant tenant = requireTenantAccess(user, tenantId);
@@ -457,6 +477,20 @@ public class UserAdministrationService {
 				.ifPresent(existingUser -> {
 					throw new ResourceConflictException("User email already exists: " + email);
 				});
+	}
+
+	private UserAdministrationUserDetailResponse updateUserActive(UUID userId, boolean active) {
+		UserAccount user = findUser(userId);
+		user.setActive(active);
+		UserAccount savedUser = userAccountRepository.saveAndFlush(user);
+		return findUserById(savedUser.getId());
+	}
+
+	private UserAdministrationUserDetailResponse updateUserLocked(UUID userId, boolean locked) {
+		UserAccount user = findUser(userId);
+		user.setLocked(locked);
+		UserAccount savedUser = userAccountRepository.saveAndFlush(user);
+		return findUserById(savedUser.getId());
 	}
 
 	private boolean isPlatformUserType(UserType userType) {

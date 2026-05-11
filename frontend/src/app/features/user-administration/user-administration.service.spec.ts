@@ -127,6 +127,32 @@ describe('UserAdministrationService', () => {
     updateRequest.flush({ id: 'user-2' });
   });
 
+  it('updates user lifecycle endpoints', () => {
+    service.activateUser('user-1').subscribe();
+    service.deactivateUser('user-1').subscribe();
+    service.lockUser('user-1').subscribe();
+    service.unlockUser('user-1').subscribe();
+
+    const activateRequest = httpTestingController.expectOne('/api/admin/users/user-1/activate');
+    const deactivateRequest = httpTestingController.expectOne('/api/admin/users/user-1/deactivate');
+    const lockRequest = httpTestingController.expectOne('/api/admin/users/user-1/lock');
+    const unlockRequest = httpTestingController.expectOne('/api/admin/users/user-1/unlock');
+
+    expect(activateRequest.request.method).toBe('PUT');
+    expect(activateRequest.request.body).toEqual({});
+    expect(deactivateRequest.request.method).toBe('PUT');
+    expect(deactivateRequest.request.body).toEqual({});
+    expect(lockRequest.request.method).toBe('PUT');
+    expect(lockRequest.request.body).toEqual({});
+    expect(unlockRequest.request.method).toBe('PUT');
+    expect(unlockRequest.request.body).toEqual({});
+
+    activateRequest.flush({ id: 'user-1' });
+    deactivateRequest.flush({ id: 'user-1' });
+    lockRequest.flush({ id: 'user-1' });
+    unlockRequest.flush({ id: 'user-1' });
+  });
+
   it('requests assigned user roles for a tenant', () => {
     service.findAssignedRoles('user-1', 'tenant-1').subscribe();
 
