@@ -18,21 +18,25 @@ import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.master.UserTypeRepository;
 import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
 import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -80,6 +84,9 @@ class UserAdministrationControllerTests {
 
 	@Autowired
 	private UserTenantAccessRepository userTenantAccessRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Test
 	@WithMockUser
@@ -270,6 +277,74 @@ class UserAdministrationControllerTests {
 	}
 
 	@Test
+	@WithMockUser
+	void userAdministrationResetsPasswordForAccountTenantWithoutAccessBridge() throws Exception {
+		UserAccount user = saveUser("task0536.reset.directtenant@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		user.setPasswordHash("legacy-hash");
+		user.setPasswordChangedAt(OffsetDateTime.parse("2026-05-10T08:00:00Z"));
+		user.setLocked(true);
+		user.setFailedLoginAttempts(3);
+		userAccountRepository.saveAndFlush(user);
+
+		String rawPassword = "TenantReset1!";
+		MvcResult result = mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(FOUNDATION_TENANT_ID, rawPassword)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.userId").value(user.getId().toString()))
+				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.passwordChangedAt").isNotEmpty())
+				.andExpect(jsonPath("$.locked").value(true))
+				.andExpect(jsonPath("$.failedLoginAttempts").value(3))
+				.andExpect(jsonPath("$.passwordHash").doesNotExist())
+				.andExpect(jsonPath("$.newPassword").doesNotExist())
+				.andReturn();
+
+		UserAccount reloadedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+		assertThat(reloadedUser.getPasswordHash()).isNotEqualTo("legacy-hash");
+		assertThat(reloadedUser.getPasswordHash()).isNotEqualTo(rawPassword);
+		assertThat(passwordEncoder.matches(rawPassword, reloadedUser.getPasswordHash())).isTrue();
+		assertThat(reloadedUser.getPasswordChangedAt()).isAfter(OffsetDateTime.parse("2026-05-10T08:00:00Z"));
+		assertThat(reloadedUser.getLocked()).isTrue();
+		assertThat(reloadedUser.getFailedLoginAttempts()).isEqualTo(3);
+		assertThat(result.getResponse().getContentAsString()).doesNotContain(rawPassword);
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationResetsPasswordWithActiveTenantAccess() throws Exception {
+		Tenant otherTenant = saveTenant("TASK0536_ACCESS_TENANT");
+		UserAccount user = saveUser("task0536.reset.access@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		saveUserTenantAccess(user, otherTenant, "TENANT_USER");
+
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(otherTenant.getId(), "TenantAccess1!")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tenantId").value(otherTenant.getId().toString()));
+
+		UserAccount reloadedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+		assertThat(passwordEncoder.matches("TenantAccess1!", reloadedUser.getPasswordHash())).isTrue();
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsPasswordResetWhenPasswordDoesNotSatisfyPolicy() throws Exception {
+		UserAccount user = saveUser("task0536.weak@example.com", EMPLOYEE_USER_TYPE_ID, null);
+
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(FOUNDATION_TENANT_ID, "weak")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Password does not satisfy the current password policy."));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsPasswordResetWithoutActiveTenantAccess() throws Exception {
+		UserAccount user = saveUser("task0536.noaccess@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		Tenant otherTenant = saveTenant("TASK0536_NO_ACCESS_TENANT");
+
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(otherTenant.getId(), "OtherTenant1!")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("User does not have active access to tenant: " + otherTenant.getId()));
+	}
+
+	@Test
 	void openApiIncludesUserAdministrationEndpoints() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())
@@ -283,7 +358,9 @@ class UserAdministrationControllerTests {
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles/{roleId}']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles/{roleId}'].delete").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/available-roles']").exists())
-				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/available-roles'].get").exists());
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/available-roles'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/password']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/password'].put").exists());
 	}
 
 	private Tenant saveTenant(String code) {
@@ -361,9 +438,13 @@ class UserAdministrationControllerTests {
 	}
 
 	private void saveUserTenantAccess(UserAccount userAccount, String accessRole) {
+		saveUserTenantAccess(userAccount, userAccount.getTenant(), accessRole);
+	}
+
+	private void saveUserTenantAccess(UserAccount userAccount, Tenant tenant, String accessRole) {
 		UserTenantAccess userTenantAccess = new UserTenantAccess();
 		userTenantAccess.setUserAccount(userAccount);
-		userTenantAccess.setTenant(userAccount.getTenant());
+		userTenantAccess.setTenant(tenant);
 		userTenantAccess.setAccessRole(accessRole);
 		userTenantAccess.setActive(true);
 		userTenantAccessRepository.saveAndFlush(userTenantAccess);
@@ -376,8 +457,21 @@ class UserAdministrationControllerTests {
 		return request;
 	}
 
+	private java.util.Map<String, Object> passwordResetRequest(UUID tenantId, String newPassword) {
+		java.util.Map<String, Object> request = new java.util.LinkedHashMap<>();
+		request.put("tenantId", tenantId);
+		request.put("newPassword", newPassword);
+		return request;
+	}
+
 	private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder postJson(String path, Object request) throws Exception {
 		return post(path)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request));
+	}
+
+	private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder putJson(String path, Object request) throws Exception {
+		return put(path)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request));
 	}

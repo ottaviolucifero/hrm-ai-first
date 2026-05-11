@@ -120,4 +120,19 @@ describe('UserAdministrationService', () => {
     expect(removeRequest.request.method).toBe('DELETE');
     removeRequest.flush(null);
   });
+
+  it('resets user password for a tenant', () => {
+    service.resetPassword('user-1', { tenantId: 'tenant-1', newPassword: 'TenantReset1!' }).subscribe();
+
+    const request = httpTestingController.expectOne('/api/admin/users/user-1/password');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({ tenantId: 'tenant-1', newPassword: 'TenantReset1!' });
+    request.flush({
+      userId: 'user-1',
+      tenantId: 'tenant-1',
+      passwordChangedAt: '2026-05-11T10:15:30Z',
+      locked: false,
+      failedLoginAttempts: 0
+    });
+  });
 });

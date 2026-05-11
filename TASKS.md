@@ -3700,7 +3700,7 @@ Validazione:
 
 #### TASK-053.6 - Tenant user password administration foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend + backend foundation
 
@@ -3945,6 +3945,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.13 | 2026-05-11 | TASK-053.6 completato: aggiunta foundation reset password amministrativo tenant-aware con API `PUT /api/admin/users/{userId}/password`, validazione `PasswordPolicy`, update `passwordHash`/`passwordChangedAt`, UI inline nel dettaglio utente, i18n `it/fr/en`, test backend/frontend completi verdi e nessuna introduzione di self-service, email automatiche, MFA runtime o `must_change_password`. |
 | 2.12 | 2026-05-11 | TASK-053.5 completato: aggiunta foundation assegnazione/rimozione ruoli utente tenant con API `/api/admin/users/{userId}/roles`, lista ruoli disponibili per tenant, validazioni tenant/accesso/duplicato, UI minimale nel dettaglio utente, i18n `it/fr/en` e test backend/frontend completi verdi. |
 | 2.11 | 2026-05-10 | TASK-053.4 completato: aggiunte API read-only `/api/admin/users` e `/api/admin/users/{userId}`, UI `/admin/users` e `/admin/users/:id`, ruoli/accessi tenant in sola lettura, display name derivato da Employee con fallback email, query bulk anti N+1, i18n `it/fr/en`, test backend/frontend e QA registrati; nessuna migration, gestione password, role assignment o lifecycle utente. |
 | 2.10 | 2026-05-10 | TASK-053.4 splittato in backlog utenti tenant: ridefinito TASK-053.4 come read/list/detail foundation (ruoli/accessi read-only, nome/cognome derivati da Employee con fallback email), aggiunti TASK-053.5 role assignment, TASK-053.6 password administration, TASK-053.7 create/edit, TASK-053.8 lifecycle e TASK-053.9 opzionale per UserAccount-Employee link, senza modifiche codice applicativo. |

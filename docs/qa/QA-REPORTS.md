@@ -138,6 +138,30 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-053.6 - Tenant user password administration foundation
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Area verificata: controller/service `/api/admin/users`, reset password tenant-aware, riuso validazione accesso tenant, `PasswordPolicy`, encoding password, OpenAPI.
+- Attivita eseguite:
+  - aggiunti DTO dedicati request/response per reset password amministrativo;
+  - introdotto endpoint `PUT /api/admin/users/{userId}/password` nel controller esistente;
+  - riusato il controllo tenant-aware gia centralizzato in `UserAdministrationService`;
+  - validata la nuova password con `PasswordPolicy`, aggiornati solo `passwordHash` e `passwordChangedAt`;
+  - verificato che la response non esponga mai password raw o hash.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=UserAdministrationControllerTests" test`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - test mirati controller OK, 17 test passed, 0 failure, 0 error;
+  - suite backend completa OK, 148 test passed, 0 failure, 0 error.
+- Regressioni trovate: nessuna nei test backend.
+- Limiti/note:
+  - il runtime stampa warning noti di Mockito/ByteBuddy dynamic agent su JDK 21, gia presenti nell’ambiente di test e non bloccanti;
+  - nessun unlock automatico o reset di `failedLoginAttempts`, coerente con scope approvato del task.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053.5 - Tenant user role assignment foundation
 
 - Data: 2026-05-11
@@ -266,6 +290,282 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: backend test OK (107 test, 0 failure, 0 errori, 0 skipped), fix applicato e validato, nessuna regressione bloccante.
 
 ## Frontend QA reports
+
+### TASK-053.6 - User detail header/title and mono-tenant selector patch
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Tipo verifica: patch frontend mirata su header dettaglio utente, tenant selector della gestione ruoli e titolo sezione nell'header globale.
+- Area verificata: `frontend/src/app/features/user-administration/user-administration-detail.component.*`, `frontend/src/app/layout/header/app-header.component.*`, rendering header dettaglio, gestione ruoli mono-tenant/multi-tenant, titolo header globale, build/test Angular.
+- Attivita eseguite:
+  - evitata la duplicazione dell'email nell'header del dettaglio utente: se `displayName` coincide con `email`, il sottotitolo email non viene renderizzato;
+  - mantenuta invariata la logica interna `selectedTenantId`, cambiando solo il rendering della card ruoli: select nascosta con un solo tenant, testo statico compatto; select mantenuta con piu tenant;
+  - corretto il resolver dell'header globale per mostrare `Utenti` su `/admin/users` e `/admin/users/:id`, senza alterare le altre pagine;
+  - confermato che non ci sono modifiche backend/API/DTO e nessun cambio di logica su reset password o gestione ruoli.
+- Comandi eseguiti:
+  - `cd frontend; npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend; npm.cmd test -- --include src/app/layout/header/app-header.component.spec.ts`
+  - `cd frontend; npm.cmd test`
+  - `cd frontend; npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 10 test passed;
+  - test mirati header component OK, 1 file test passed, 5 test passed;
+  - suite frontend completa OK, 26 file test passed, 148 test passed;
+  - build Angular OK, output generato in `frontend/dist/frontend`.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - validazione manuale browser non eseguita in questa sessione CLI;
+  - il titolo globale continua a dipendere dal path corrente e non introduce un sistema breadcrumb nuovo.
+- Stato finale: PASS
+
+### TASK-053.6 - User detail card-by-card UX refinement
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Tipo verifica: patch UX card-by-card della pagina dettaglio utente, usando il mockup HTML solo come riferimento visuale e di gerarchia.
+- Area verificata: `frontend/src/app/features/user-administration/user-administration-detail.component.*`, `frontend/src/app/core/i18n/i18n.messages.ts`, card header/identita/tenant/sicurezza/reset password/gestione ruoli, build/test Angular.
+- Attivita eseguite:
+  - header mantenuto compatto con H1 `displayName`, email come sottotitolo, descrizione breve senza accessi tenant e metadati audit secondari;
+  - card `Identita` e `Tenant e azienda` mantenute come contesto sinistro della griglia desktop, senza `Nome visualizzato`, accessi tenant, lingua o fuso orario;
+  - card `Sicurezza` riallineata al mockup con metodo autenticazione in alto, griglia compatta di stati, secondari OTP/strong auth meno prominenti e reset password come sottosezione separata;
+  - reset password mantenuto con due `app-password-field`, `autocomplete="new-password"`, validazione required/mismatch, saving state, notifiche e reset form invariati;
+  - `Gestione ruoli utente` mantenuta full width sotto le card principali, con tenant selector, ruoli assegnati, ruoli disponibili, azioni assegna/rimuovi e logica invariata;
+  - non introdotti Tailwind, Material Symbols, nuovi componenti shared o codice HTML/CSS copiato 1:1 dal mockup.
+- Conferme scope:
+  - mockup usato solo come riferimento visuale/gerarchico;
+  - nessun cambio backend/API/DTO;
+  - nessun cambio funzionale a reset password o gestione ruoli.
+- Comandi eseguiti:
+  - `cd frontend; npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend; npm.cmd test`
+  - `cd frontend; npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 8 test passed;
+  - suite frontend completa OK, 26 file test passed, 144 test passed;
+  - build Angular OK, output generato in `frontend/dist/frontend`.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - validazione manuale browser non eseguita in questa sessione CLI;
+  - le evidenze visuali di stato sono SCSS locali del componente e non introducono un nuovo pattern shared.
+- Stato finale: PASS
+
+### TASK-053.6 - User detail UX mockup alignment patch
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Tipo verifica: patch frontend mirata su layout/gerarchia UX del dettaglio utente usando mockup HTML solo come riferimento visuale.
+- Area verificata: `frontend/src/app/features/user-administration/user-administration-detail.component.*`, `frontend/src/app/core/i18n/i18n.messages.ts`, rendering header, layout due colonne desktop, reset password inline, gestione ruoli full width, build/test Angular.
+- Attivita eseguite:
+  - mostrata l'email utente come sottotitolo del dettaglio quando il record e caricato, mantenendo `displayName` come H1 senza ricalcolo frontend;
+  - aggiornata la microcopy `userAdministration.detail.subtitle` in `it/fr/en` rimuovendo riferimenti alla sezione accessi tenant;
+  - riallineato il layout desktop in due colonne: `Identita` e `Tenant e azienda` a sinistra, `Sicurezza` a destra, con `Gestione ruoli utente` sotto a tutta larghezza;
+  - mantenuti `Reset password` dentro `Sicurezza` con due `app-password-field` e `autocomplete="new-password"`;
+  - mantenuta completa la gestione ruoli esistente con tenant selector, ruoli assegnati, ruoli disponibili, assegnazione e rimozione;
+  - non introdotti Tailwind, Material Symbols, nuovi componenti shared o codice HTML/CSS copiato 1:1 dal mockup.
+- Conferme scope:
+  - mockup usato solo come riferimento layout/gerarchia;
+  - nessun cambio backend/API/DTO;
+  - nessun cambio funzionale a reset password o gestione ruoli.
+- Comandi eseguiti:
+  - `cd frontend; npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend; npm.cmd test`
+  - `cd frontend; npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 8 test passed;
+  - suite frontend completa OK, 26 file test passed, 144 test passed;
+  - build Angular OK, output generato in `frontend/dist/frontend`.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - validazione manuale browser non eseguita in questa sessione CLI;
+  - la pagina resta coerente con i componenti esistenti `app-button` e `app-password-field`, senza redesign generale.
+- Stato finale: PASS
+
+### TASK-053.6 - Hide preferred language and time zone on user detail
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Tipo verifica: patch minima frontend sulla sola visibilita dei campi `Lingua preferita` e `Fuso orario`
+- Area verificata: `frontend/src/app/features/user-administration/user-administration-detail.component.ts`, `frontend/src/app/features/user-administration/user-administration-detail.component.spec.ts`, `frontend/src/app/core/i18n/i18n.messages.ts`, rendering sezione `Sicurezza`, build/test Angular.
+- Attivita eseguite:
+  - rimossi dal rendering della sezione `Sicurezza` i campi `Lingua preferita` e `Fuso orario`;
+  - rimosso il mapper frontend della lingua, non piu necessario dopo la semplificazione UI;
+  - mantenuti invariati DTO, modelli frontend e contratto API/backend, lasciando i dati disponibili per utilizzi futuri.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend && npm.cmd test`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 7 test passed;
+  - suite frontend completa OK, 26 file test passed, 143 test passed;
+  - build Angular OK, output generato in `frontend/dist/frontend`.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - `preferredLanguage` e `timeZone` restano presenti nei DTO/API e nei modelli frontend, ma non sono piu mostrati nella UI corrente;
+  - nessuna modifica a reset password, gestione ruoli, backend o API.
+- Stato finale: PASS
+
+### TASK-053.6 - Hide tenant accesses section on user detail
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Tipo verifica: patch minima frontend locale alla sola sezione `Accessi tenant` del dettaglio utente
+- Area verificata: `frontend/src/app/features/user-administration/user-administration-detail.component.html`, `frontend/src/app/features/user-administration/user-administration-detail.component.spec.ts`, rendering pagina dettaglio utente, build/test Angular.
+- Attivita eseguite:
+  - rimossa dal template la sezione `Accessi tenant` / `Tenant abilitati` della pagina dettaglio utente;
+  - lasciati invariati DTO, modelli frontend e logica dati, mantenendo il dato disponibile lato API per future evoluzioni multi-tenant;
+  - aggiornati i test del detail component per verificare che la sezione non venga piu renderizzata.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend && npm.cmd test`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 7 test passed;
+  - suite frontend completa OK, 26 file test passed, 143 test passed;
+  - build Angular OK, output generato in `frontend/dist/frontend`.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - il dato `tenantAccesses` resta disponibile in DTO/API e nei modelli frontend, ma non viene piu mostrato nella UI principale del dettaglio utente;
+  - nessuna modifica a reset password, gestione ruoli, backend o permessi.
+- Stato finale: PASS
+
+### TASK-053.6 - User detail clarity and header actions patch
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Tipo verifica: patch minima frontend su chiarezza campi, gerarchia identita/tenant/security e visibilita azione retry
+- Area verificata: `frontend/src/app/features/user-administration/user-administration-detail.component.*`, `frontend/src/app/core/i18n/i18n.messages.ts`, rendering header actions, identity/tenant/security cards, build/test Angular.
+- Attivita eseguite:
+  - mantenuto `Torna alla lista` come `app-button` shared secondary e reso `Riprova` visibile solo nello stato errore;
+  - rimossa la riga `Nome visualizzato` dalla card `Identità`, lasciando l'H1 come unico punto primario del `displayName`;
+  - introdotti mapping frontend leggibili per `TENANT_ADMIN`, `PLATFORM_SUPER_ADMIN`, `PASSWORD_ONLY` e codici lingua `it/fr/en`;
+  - nascosto `Tenant predefinito` quando coincide con il tenant di appartenenza, senza cambiare DTO o API;
+  - mantenuti invariati reset password e gestione ruoli, inclusi form state, validazioni e chiamate API.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend && npm.cmd test`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 7 test passed;
+  - suite frontend completa OK, 26 file test passed, 143 test passed;
+  - build Angular OK, output generato in `frontend/dist/frontend`.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - i mapping leggibili frontend coprono i codici esplicitamente gestiti dalla patch; eventuali nuovi codici backend non mappati continuano a usare `name` o `code` come fallback;
+  - la sezione `Tenant abilitati` resta foundation e non espone ancora un testo descrittivo del tipo di accesso tenant-specific.
+- Stato finale: PASS
+
+### TASK-053.6 - User detail field readability patch
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Tipo verifica: patch minima frontend presentazionale su label e valori leggibili del dettaglio utente
+- Area verificata: `frontend/src/app/features/user-administration/user-administration-detail.component.*`, `frontend/src/app/core/i18n/i18n.messages.ts`, rendering valori user type / authentication method / language / tenant accesses, build/test Angular.
+- Attivita eseguite:
+  - corrette le label `Identità`, `Ultimo cambio password` e `Tenant abilitati`;
+  - resa piu leggibile la presentazione di `userType`, `authenticationMethod`, `preferredLanguage`, `timeZone`, tenant/company context e tenant accesses senza toccare API o logica backend;
+  - introdotto fallback piu naturale `Mai` per campi data security non valorizzati come `Ultimo accesso` ed `Email verificata`;
+  - lasciati invariati comportamento e wiring di reset password, gestione ruoli e navigazione.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend && npm.cmd test`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 7 test passed;
+  - suite frontend completa OK, 26 file test passed, 143 test passed;
+  - build Angular OK, output generato in `frontend/dist/frontend`.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - i valori descrittivi di `userType` e `authenticationMethod` dipendono dal `name` gia esposto dal backend; la patch non introduce una localizzazione completa dei master data backend;
+  - la sezione `Tenant abilitati` privilegia il nome tenant rispetto al codice e non espone ulteriori dettagli di `accessRole`, rimandati a eventuale refinement dedicato.
+- Stato finale: PASS
+
+### TASK-053.6 - User detail layout hierarchy patch
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Tipo verifica: patch minima frontend layout/reuse/gerarchia UI su pagina dettaglio utente
+- Area verificata: `frontend/src/app/features/user-administration/user-administration-detail.component.*`, `frontend/src/app/shared/form-fields/password-field.component.*`, runtime i18n frontend, build/test Angular.
+- Attivita eseguite:
+  - rimossa la card autonoma finale `Audit` e spostati `Creato` / `Aggiornato` come metadati compatti nell'header pagina;
+  - rimossa la card autonoma riepilogativa `Ruoli assegnati`, lasciando `Gestione ruoli utente` come unica sezione principale per ruoli assegnati/disponibili e azioni;
+  - spostato `Reset password` dentro la sezione `Sicurezza` senza cambiare validazioni, form state, loading, feedback o API;
+  - mantenuto il layout identity/tenant separato per restare su patch minima a basso rischio senza introdurre nuove label o cambiare troppo i test.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend && npm.cmd test`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 7 test passed;
+  - suite frontend completa OK, 26 file test passed, 143 test passed;
+  - build Angular OK, output generato in `frontend/dist/frontend`.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - nessuna modifica backend, nessuna API nuova o aggiornata, nessun cambio di comportamento su reset password o gestione ruoli;
+  - `Identita` e `Tenant e azienda` restano separate per evitare una patch piu invasiva del necessario;
+  - il `password-field` shared resta riusato senza introdurre nuovi shared component.
+- Stato finale: PASS
+
+### TASK-053.6 - Tenant user password administration foundation
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Area verificata: dettaglio utente `/admin/users/:id`, sezione inline reset password, `UserAdministrationService`, i18n `it/fr/en`, stato security gia esposto dal DTO utente.
+- Attivita eseguite:
+  - aggiunta sezione inline "Reset password" nel dettaglio utente esistente;
+  - introdotti due campi locali `newPassword` e `confirmPassword` con validazioni `required` e mismatch;
+  - riusati `app-button`, `NotificationService`, route/layout esistenti e nessun nuovo componente shared;
+  - aggiornato il dettaglio utente dopo reset riuscito riflettendo `passwordChangedAt`, `locked` e `failedLoginAttempts`;
+  - nessun redesign, nessun self-service, nessun flow email/MFA runtime o `must_change_password`.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration.service.spec.ts`
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - test mirati service OK, 1 file test passed, 7 test passed;
+  - test mirati detail component OK, 1 file test passed, 7 test passed;
+  - build frontend OK;
+  - suite frontend completa OK, 25 file test passed, 138 test passed.
+- Regressioni trovate: nessuna nei test frontend/build.
+- Limiti/note:
+  - QA manuale browser autenticata non eseguita in questa sessione CLI;
+  - la password policy resta validata in modo autorevole dal backend e la UI non replica le regole in modo completo lato client.
+- Stato finale: PASS WITH NOTES
+
+### TASK-053.6 - Reuse-first corrective patch on shared password field
+
+- Data: 2026-05-11
+- Branch: `task-053-6-tenant-user-password-admin`
+- Task: TASK-053.6 - Tenant user password administration foundation
+- Area verificata: `app-password-field` shared, login `/login`, dettaglio utente `/admin/users/:id`, riuso reset password admin, compatibilita test/build frontend.
+- Attivita eseguite:
+  - generalizzato `app-password-field` con `id`, `autocomplete` ed errore contestuale configurabile, rimuovendo l'assunzione login-specifica sull'input;
+  - sostituiti i due input password custom del dettaglio utente con due istanze di `app-password-field`;
+  - mantenute nel dettaglio utente solo le regole di contesto: `required`, mismatch, saving state e chiamata API reset password;
+  - rimosso HTML/CSS duplicato del reset password admin;
+  - aggiunti/aggiornati test su `password-field`, login e user detail per coprire il riuso shared.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend && npm.cmd test`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - test mirati detail component OK, 1 file test passed, 7 test passed;
+  - suite frontend completa OK, 26 file test passed, 143 test passed;
+  - build frontend OK.
+- Regressioni trovate:
+  - corretto il rilievo reuse-first della review globale: il reset password admin ora riusa il componente shared `app-password-field` e non mantiene piu input password duplicati nel feature template.
+- Limiti/note:
+  - il componente shared espone solo la superficie minima necessaria al riuso corrente; non sono stati introdotti refactor ulteriori fuori scope.
+- Stato finale: PASS
 
 ### TASK-053.5 - Tenant user role assignment foundation
 

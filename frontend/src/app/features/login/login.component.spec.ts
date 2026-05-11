@@ -46,6 +46,17 @@ describe('LoginComponent', () => {
     expect(errorSpy).toHaveBeenCalledWith('Email o password non corretti.', expect.objectContaining({ titleKey: 'alert.title.danger' }));
   });
 
+  it('keeps the shared password field configured for login semantics', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createLoginFixture();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('#loginPassword') as HTMLInputElement;
+    expect(input).not.toBeNull();
+    expect(input.getAttribute('autocomplete')).toBe('current-password');
+  });
+
   it('syncs the language selector with the current fr language', async () => {
     window.localStorage.setItem('hrflow.language', 'fr');
 

@@ -4,9 +4,24 @@
       <div class="user-detail-heading">
         <span class="user-detail-eyebrow">{{ i18n.t('nav.governanceSecurity') }}</span>
         <h1 id="user-detail-title" class="text-xl font-semibold text-mono">
-          {{ user()?.displayName ?? i18n.t('userAdministration.detail.title') }}
+          {{ detailTitle(user()) }}
         </h1>
-        <p class="user-detail-subtitle">{{ i18n.t('userAdministration.detail.subtitle') }}</p>
+        @if (user(); as currentUser) {
+          @if (shouldShowEmailSubtitle(currentUser)) {
+            <p class="user-detail-subtitle">{{ currentUser.email }}</p>
+          }
+          <p class="user-detail-description">{{ i18n.t('userAdministration.detail.subtitle') }}</p>
+          <dl class="user-detail-meta">
+            @for (field of auditFields(currentUser); track field.labelKey) {
+              <div class="user-detail-meta-item">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        } @else {
+          <p class="user-detail-subtitle">{{ i18n.t('userAdministration.detail.subtitle') }}</p>
+        }
       </div>
 
       <div class="user-detail-page-actions" role="group" [attr.aria-label]="i18n.t('userAdministration.detail.actions')">
@@ -16,13 +31,14 @@
           icon="ki-filled ki-arrow-left"
           [label]="i18n.t('userAdministration.actions.back')"
           (pressed)="goBack()" />
-        <app-button
-          variant="secondary"
-          size="sm"
-          icon="ki-filled ki-arrows-circle"
-          [label]="i18n.t('rolePermissions.actions.retry')"
-          [disabled]="loading()"
-          (pressed)="retry()" />
+        @if (hasError()) {
+          <app-button
+            variant="secondary"
+            size="sm"
+            icon="ki-filled ki-arrows-circle"
+            [label]="i18n.t('rolePermissions.actions.retry')"
+            (pressed)="retry()" />
+        }
       </div>
     </header>
 
@@ -36,54 +52,102 @@
       </section>
     } @else if (user(); as currentUser) {
       <div class="user-detail-grid">
-        <section class="kt-card user-detail-card" aria-labelledby="user-detail-identity">
-          <h2 id="user-detail-identity" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.identity') }}</h2>
-          <dl class="user-detail-fields">
-            @for (field of identityFields(currentUser); track field.labelKey) {
-              <div class="user-detail-field">
-                <dt>{{ i18n.t(field.labelKey) }}</dt>
-                <dd>{{ field.value }}</dd>
-              </div>
-            }
-          </dl>
-        </section>
-
-        <section class="kt-card user-detail-card" aria-labelledby="user-detail-tenant">
-          <h2 id="user-detail-tenant" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.tenant') }}</h2>
-          <dl class="user-detail-fields">
-            @for (field of tenantFields(currentUser); track field.labelKey) {
-              <div class="user-detail-field">
-                <dt>{{ i18n.t(field.labelKey) }}</dt>
-                <dd>{{ field.value }}</dd>
-              </div>
-            }
-          </dl>
-        </section>
-
-        <section class="kt-card user-detail-card user-detail-card-wide" aria-labelledby="user-detail-security">
-          <h2 id="user-detail-security" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.security') }}</h2>
-          <dl class="user-detail-fields user-detail-fields-grid">
-            @for (field of securityFields(currentUser); track field.labelKey) {
-              <div class="user-detail-field">
-                <dt>{{ i18n.t(field.labelKey) }}</dt>
-                <dd>{{ field.value }}</dd>
-              </div>
-            }
-          </dl>
-        </section>
-
-        <section class="kt-card user-detail-card" aria-labelledby="user-detail-roles">
-          <h2 id="user-detail-roles" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.roles') }}</h2>
-          @if (currentUser.roles.length > 0) {
-            <ul class="user-detail-chip-list">
-              @for (role of currentUser.roles; track role.id) {
-                <li class="user-detail-chip">{{ role.code }} - {{ role.name }}</li>
+        <div class="user-detail-primary-column">
+          <section class="kt-card user-detail-card" aria-labelledby="user-detail-identity">
+            <h2 id="user-detail-identity" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.identity') }}</h2>
+            <dl class="user-detail-fields">
+              @for (field of identityFields(currentUser); track field.labelKey) {
+                <div class="user-detail-field">
+                  <dt>{{ i18n.t(field.labelKey) }}</dt>
+                  <dd>{{ field.value }}</dd>
+                </div>
               }
-            </ul>
-          } @else {
-            <p class="user-detail-empty">{{ i18n.t('userAdministration.values.none') }}</p>
-          }
-        </section>
+            </dl>
+          </section>
+
+          <section class="kt-card user-detail-card" aria-labelledby="user-detail-tenant">
+            <h2 id="user-detail-tenant" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.tenant') }}</h2>
+            <dl class="user-detail-fields">
+              @for (field of tenantFields(currentUser); track field.labelKey) {
+                <div class="user-detail-field">
+                  <dt>{{ i18n.t(field.labelKey) }}</dt>
+                  <dd>{{ field.value }}</dd>
+                </div>
+              }
+            </dl>
+          </section>
+        </div>
+
+        <div class="user-detail-primary-column">
+          <section class="kt-card user-detail-card" aria-labelledby="user-detail-security">
+            <h2 id="user-detail-security" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.security') }}</h2>
+            <div class="security-card-body">
+              @let authenticationMethod = authenticationMethodField(currentUser);
+              <dl class="security-authentication">
+                <div class="user-detail-field user-detail-field-primary">
+                  <dt>{{ i18n.t(authenticationMethod.labelKey) }}</dt>
+                  <dd>{{ authenticationMethod.value }}</dd>
+                </div>
+              </dl>
+
+              <dl class="security-grid">
+                @for (field of securityStatusFields(currentUser); track field.labelKey) {
+                  <div
+                    class="security-status"
+                    [class.security-status--success]="field.variant === 'success'"
+                    [class.security-status--warning]="field.variant === 'warning'">
+                    <dt>{{ i18n.t(field.labelKey) }}</dt>
+                    <dd>{{ field.value }}</dd>
+                  </div>
+                }
+              </dl>
+
+              <dl class="security-secondary-grid">
+                @for (field of securitySecondaryFields(currentUser); track field.labelKey) {
+                  <div class="user-detail-field security-secondary-field">
+                    <dt>{{ i18n.t(field.labelKey) }}</dt>
+                    <dd>{{ field.value }}</dd>
+                  </div>
+                }
+              </dl>
+            </div>
+            <div class="password-reset-section">
+              <div class="password-reset-section-heading">
+                <h3 id="user-detail-password-management" class="user-detail-section-title">
+                  {{ i18n.t('userAdministration.password.title') }}
+                </h3>
+                <p class="user-detail-role-management-subtitle">{{ i18n.t('userAdministration.password.subtitle') }}</p>
+              </div>
+
+              <form class="user-detail-password-form" [formGroup]="passwordForm" (ngSubmit)="resetPassword()">
+                <app-password-field
+                  id="user-reset-new-password"
+                  [control]="passwordForm.controls.newPassword"
+                  [label]="i18n.t('userAdministration.password.newPassword')"
+                  autocomplete="new-password" />
+
+                <app-password-field
+                  id="user-reset-confirm-password"
+                  [control]="passwordForm.controls.confirmPassword"
+                  [label]="i18n.t('userAdministration.password.confirmPassword')"
+                  [errorText]="confirmPasswordErrorText()"
+                  autocomplete="new-password" />
+
+                <div class="user-detail-password-actions">
+                  <app-button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    icon="ki-filled ki-key"
+                    [label]="i18n.t('userAdministration.password.actions.reset')"
+                    [loadingLabel]="i18n.t('userAdministration.password.actions.resetting')"
+                    [loading]="passwordSaving()"
+                    [disabled]="!canResetPassword()" />
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>
 
         <section class="kt-card user-detail-card user-detail-card-wide" aria-labelledby="user-detail-role-management">
           <div class="user-detail-role-management-header">
@@ -92,18 +156,25 @@
               <p class="user-detail-role-management-subtitle">{{ i18n.t('userAdministration.roles.subtitle') }}</p>
             </div>
 
-            <label class="user-detail-role-tenant-select">
-              <span>{{ i18n.t('userAdministration.roles.tenantLabel') }}</span>
-              <select
-                class="kt-input"
-                [disabled]="roleLoading() || roleSaving()"
-                [value]="selectedTenantId() ?? ''"
-                (change)="selectRoleTenant($event)">
-                @for (access of roleTenantOptions(); track access.tenantId) {
-                  <option [value]="access.tenantId">{{ access.tenantCode }} - {{ access.tenantName }}</option>
-                }
-              </select>
-            </label>
+            @if (roleTenantOptions().length > 1) {
+              <label class="user-detail-role-tenant-select">
+                <span>{{ i18n.t('userAdministration.roles.tenantLabel') }}</span>
+                <select
+                  class="kt-input"
+                  [disabled]="roleLoading() || roleSaving()"
+                  [value]="selectedTenantId() ?? ''"
+                  (change)="selectRoleTenant($event)">
+                  @for (access of roleTenantOptions(); track access.tenantId) {
+                    <option [value]="access.tenantId">{{ access.tenantCode }} - {{ access.tenantName }}</option>
+                  }
+                </select>
+              </label>
+            } @else {
+              <div class="user-detail-role-tenant-static">
+                <span>{{ i18n.t('userAdministration.roles.tenantLabel') }}</span>
+                <p>{{ selectedRoleTenantLabel() }}</p>
+              </div>
+            }
           </div>
 
           @if (roleLoading()) {
@@ -174,30 +245,6 @@
           }
         </section>
 
-        <section class="kt-card user-detail-card" aria-labelledby="user-detail-accesses">
-          <h2 id="user-detail-accesses" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.tenantAccesses') }}</h2>
-          @if (currentUser.tenantAccesses.length > 0) {
-            <ul class="user-detail-chip-list">
-              @for (access of currentUser.tenantAccesses; track access.id) {
-                <li class="user-detail-chip">{{ access.tenantCode }} - {{ access.accessRole }}</li>
-              }
-            </ul>
-          } @else {
-            <p class="user-detail-empty">{{ i18n.t('userAdministration.values.none') }}</p>
-          }
-        </section>
-
-        <section class="kt-card user-detail-card" aria-labelledby="user-detail-audit">
-          <h2 id="user-detail-audit" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.audit') }}</h2>
-          <dl class="user-detail-fields">
-            @for (field of auditFields(currentUser); track field.labelKey) {
-              <div class="user-detail-field">
-                <dt>{{ i18n.t(field.labelKey) }}</dt>
-                <dd>{{ field.value }}</dd>
-              </div>
-            }
-          </dl>
-        </section>
       </div>
     }
   </div>

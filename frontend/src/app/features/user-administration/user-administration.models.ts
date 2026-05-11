@@ -93,6 +93,19 @@ export interface UserRoleAssignmentRequest {
   readonly roleId: string;
 }
 
+export interface UserPasswordResetRequest {
+  readonly tenantId: string;
+  readonly newPassword: string;
+}
+
+export interface UserPasswordResetResponse {
+  readonly userId: string;
+  readonly tenantId: string;
+  readonly passwordChangedAt: string;
+  readonly locked: boolean;
+  readonly failedLoginAttempts: number;
+}
+
 export interface UserAdministrationPage<T> {
   readonly content: readonly T[];
   readonly page: number;

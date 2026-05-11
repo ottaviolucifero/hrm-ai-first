@@ -8,6 +8,8 @@ import com.odsoftware.hrm.dto.useradministration.UserAdministrationRoleResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationTenantAccessResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserDetailResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserListItemResponse;
+import com.odsoftware.hrm.dto.useradministration.UserPasswordResetRequest;
+import com.odsoftware.hrm.dto.useradministration.UserPasswordResetResponse;
 import com.odsoftware.hrm.dto.useradministration.UserRoleAssignmentRequest;
 import com.odsoftware.hrm.entity.core.CompanyProfile;
 import com.odsoftware.hrm.entity.core.Tenant;
@@ -34,11 +36,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.odsoftware.hrm.security.PasswordPolicy;
 
 @Service
 @Transactional(readOnly = true)
@@ -49,18 +54,24 @@ public class UserAdministrationService {
 	private final TenantRepository tenantRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final UserTenantAccessRepository userTenantAccessRepository;
+	private final PasswordPolicy passwordPolicy;
+	private final PasswordEncoder passwordEncoder;
 
 	public UserAdministrationService(
 			UserAccountRepository userAccountRepository,
 			RoleRepository roleRepository,
 			TenantRepository tenantRepository,
 			UserRoleRepository userRoleRepository,
-			UserTenantAccessRepository userTenantAccessRepository) {
+			UserTenantAccessRepository userTenantAccessRepository,
+			PasswordPolicy passwordPolicy,
+			PasswordEncoder passwordEncoder) {
 		this.userAccountRepository = userAccountRepository;
 		this.roleRepository = roleRepository;
 		this.tenantRepository = tenantRepository;
 		this.userRoleRepository = userRoleRepository;
 		this.userTenantAccessRepository = userTenantAccessRepository;
+		this.passwordPolicy = passwordPolicy;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	public MasterDataPageResponse<UserAdministrationUserListItemResponse> findUsers(UUID tenantId, Integer page, Integer size, String search) {
@@ -132,6 +143,25 @@ public class UserAdministrationService {
 		userRoleRepository.saveAndFlush(userRole);
 
 		return findAssignedRoles(userId, tenant.getId());
+	}
+
+	@Transactional
+	public UserPasswordResetResponse resetPassword(UUID userId, UserPasswordResetRequest request) {
+		UserAccount user = findUser(userId);
+		Tenant tenant = requireTenantAccess(user, request.tenantId());
+		if (!passwordPolicy.isValid(request.newPassword())) {
+			throw new InvalidRequestException("Password does not satisfy the current password policy.");
+		}
+
+		user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+		user.setPasswordChangedAt(OffsetDateTime.now());
+		UserAccount savedUser = userAccountRepository.saveAndFlush(user);
+		return new UserPasswordResetResponse(
+				savedUser.getId(),
+				tenant.getId(),
+				savedUser.getPasswordChangedAt(),
+				savedUser.getLocked(),
+				savedUser.getFailedLoginAttempts());
 	}
 
 	@Transactional
