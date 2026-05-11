@@ -138,6 +138,31 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-053.4 - Tenant user administration read/list/detail foundation
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.4 - Tenant user administration read/list/detail foundation
+- Area verificata: API backend `/api/admin/users`, DTO user administration, `UserAdministrationService`, query repository anti N+1 per UserAccount/UserRole/UserTenantAccess.
+- Attivita eseguite:
+  - aggiunte API read-only lista/dettaglio utenti tenant;
+  - esposti ruoli assegnati e accessi tenant in sola lettura;
+  - mantenuto `accessRole` separato dai ruoli RBAC;
+  - `displayName` derivato da Employee quando presente, fallback email in assenza di `employee_id`;
+  - esclusi `passwordHash` e `otpSecret` dai DTO;
+  - usato fetch graph per relazioni singole e query bulk per ruoli/accessi tenant.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=UserAdministrationControllerTests test`
+- Esiti reali:
+  - primo tentativo bloccato da sandbox/network Maven su download parent POM;
+  - riesecuzione autorizzata OK, `BUILD SUCCESS`, 5 test eseguiti, 0 failure, 0 error, 0 skipped.
+- Regressioni trovate: nessuna nei test backend mirati.
+- Limiti/note:
+  - enforcement RBAC completo e tenant/caller hardening restano fuori scope;
+  - nessuna migration aggiunta;
+  - suite backend completa richiesta dal task da registrare dopo esecuzione finale.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053.1 - Backend role administration API foundation
 
 - Data: 2026-05-10
@@ -215,6 +240,28 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: backend test OK (107 test, 0 failure, 0 errori, 0 skipped), fix applicato e validato, nessuna regressione bloccante.
 
 ## Frontend QA reports
+
+### TASK-053.4 - Tenant user administration read/list/detail foundation
+
+- Data: 2026-05-10
+- Branch: `main`
+- Task: TASK-053.4 - Tenant user administration read/list/detail foundation
+- Area verificata: route `/admin/users`, dettaglio `/admin/users/:id`, sidebar `Governance > Sicurezza > Utenti`, i18n `it/fr/en`, riuso `DataTableComponent` e `app-button`.
+- Attivita eseguite:
+  - aggiunta UI lista utenti tenant read-only con filtro, paginazione e azione dettaglio;
+  - aggiunta UI dettaglio utente read-only con identita, tenant/company, security flags, ruoli assegnati e accessi tenant;
+  - integrata distinzione vista tenant/platform basata sul `userType` autenticato;
+  - aggiunte chiavi i18n `it/fr/en`;
+  - non creati nuovi componenti shared; dettaglio read-only implementato localmente per assenza di un read-only field/card shared.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration.service.spec.ts --include src/app/features/user-administration/user-administration.component.spec.ts --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+- Esiti reali:
+  - test mirati OK, 3 file passed, 9 test passed.
+- Regressioni trovate: nessuna nei test frontend mirati.
+- Limiti/note:
+  - QA manuale browser non ancora eseguita in questa sessione CLI;
+  - suite build/test frontend completa richiesta dal task da registrare dopo esecuzione finale.
+- Stato finale: PASS WITH NOTES
 
 ### TASK-053.3 - Sidebar hierarchy stability and role actions layout
 

@@ -6,6 +6,8 @@ import { LoginComponent } from './features/login/login.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
 import { RoleAdministrationComponent } from './features/role-administration/role-administration.component';
 import { RolePermissionMatrixComponent } from './features/role-permissions/role-permission-matrix.component';
+import { UserAdministrationComponent } from './features/user-administration/user-administration.component';
+import { UserAdministrationDetailComponent } from './features/user-administration/user-administration-detail.component';
 import { AppShellComponent } from './layout/shell/app-shell.component';
 
 export const routes: Routes = [
@@ -33,6 +35,14 @@ export const routes: Routes = [
           {
             path: 'roles',
             component: RoleAdministrationComponent
+          },
+          {
+            path: 'users',
+            component: UserAdministrationComponent
+          },
+          {
+            path: 'users/:id',
+            component: UserAdministrationDetailComponent
           },
           {
             path: 'permissions',

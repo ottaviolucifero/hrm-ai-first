@@ -1,0 +1,64 @@
+<section class="kt-container-fixed py-4 user-admin-page" aria-labelledby="user-admin-title">
+  <div class="user-admin-layout">
+    <header class="user-admin-page-header">
+      <div class="user-admin-heading">
+        <span class="user-admin-eyebrow">{{ i18n.t('nav.governanceSecurity') }}</span>
+        <h1 id="user-admin-title" class="text-xl font-semibold text-mono">{{ i18n.t('nav.users') }}</h1>
+        <p class="user-admin-subtitle">{{ i18n.t('userAdministration.subtitle') }}</p>
+      </div>
+
+      <div class="user-admin-page-actions" role="group" [attr.aria-label]="i18n.t('userAdministration.actions.toolbar')">
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrows-circle"
+          [label]="i18n.t('rolePermissions.actions.retry')"
+          [disabled]="loading()"
+          (pressed)="refresh()" />
+      </div>
+    </header>
+
+    <section class="kt-card user-admin-list-card" aria-labelledby="user-admin-list-title">
+      <div class="user-admin-list-toolbar">
+        <div class="user-admin-list-heading">
+          <h2 id="user-admin-list-title" class="user-admin-list-title">{{ i18n.t('userAdministration.list.title') }}</h2>
+          <div class="user-admin-list-meta-row">
+            <p class="user-admin-list-meta">{{ i18n.t('userAdministration.list.subtitle') }}</p>
+            <span class="user-admin-record-count">{{ pageData().totalElements }} {{ i18n.t('dataTable.pagination.results') }}</span>
+          </div>
+        </div>
+
+        <label class="user-admin-table-search">
+          <span class="user-admin-search-label">{{ i18n.t('roleAdministration.searchLabel') }}</span>
+          <input
+            class="kt-input user-admin-search-input"
+            type="search"
+            [disabled]="loading()"
+            [value]="searchInput()"
+            [placeholder]="i18n.t('userAdministration.searchPlaceholder')"
+            (input)="updateSearch($event)" />
+        </label>
+      </div>
+
+      <div class="user-admin-note" aria-live="polite">
+        {{ i18n.t(viewScopeKey()) }}
+      </div>
+
+      <app-data-table
+        [columns]="columns()"
+        [rows]="rows()"
+        [rowActions]="rowActions()"
+        [pageData]="pageData()"
+        [pageSizeOptions]="pageSizeOptions"
+        [loading]="loading()"
+        [hasError]="hasError()"
+        [errorMessageKey]="'userAdministration.errors.load'"
+        [emptyMessageKey]="tableEmptyMessageKey()"
+        (rowAction)="handleRowAction($event)"
+        (previousPage)="goToPreviousPage()"
+        (nextPage)="goToNextPage()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="updatePageSize($event)" />
+    </section>
+  </div>
+</section>

@@ -1,0 +1,108 @@
+.user-admin-page {
+  display: block;
+}
+
+.user-admin-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.user-admin-page-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.user-admin-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.user-admin-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.user-admin-subtitle,
+.user-admin-list-meta,
+.user-admin-note {
+  color: var(--color-text-muted, #64748b);
+}
+
+.user-admin-list-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.user-admin-list-toolbar {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.user-admin-list-heading {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.user-admin-list-meta-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.user-admin-record-count {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+}
+
+.user-admin-table-search {
+  display: grid;
+  gap: 0.35rem;
+  min-width: min(100%, 18rem);
+}
+
+.user-admin-search-label {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.user-admin-search-input {
+  min-height: 2.375rem;
+}
+
+.user-admin-note {
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  padding: 0.75rem 0.875rem;
+}
+
+.user-admin-page-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+@media (max-width: 960px) {
+  .user-admin-page-header,
+  .user-admin-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .user-admin-table-search {
+    min-width: 0;
+  }
+}

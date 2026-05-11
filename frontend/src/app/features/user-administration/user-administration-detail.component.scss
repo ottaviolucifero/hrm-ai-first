@@ -1,0 +1,134 @@
+.user-detail-page {
+  display: block;
+}
+
+.user-detail-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.user-detail-page-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.user-detail-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.user-detail-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.user-detail-subtitle,
+.user-detail-empty,
+.user-detail-state {
+  color: var(--color-text-muted, #64748b);
+}
+
+.user-detail-page-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.user-detail-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.user-detail-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.user-detail-card-wide {
+  grid-column: 1 / -1;
+}
+
+.user-detail-card-title {
+  color: var(--color-text-default, #0f172a);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.user-detail-fields {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.user-detail-fields-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.user-detail-field {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.user-detail-field dt {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.user-detail-field dd {
+  color: var(--color-text-default, #0f172a);
+  font-weight: 600;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.user-detail-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-detail-chip {
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 0.5rem;
+  color: var(--color-text-default, #0f172a);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.35rem 0.55rem;
+}
+
+.user-detail-state {
+  padding: 1.25rem;
+}
+
+.user-detail-state-error {
+  border-color: var(--color-destructive, #dc2626);
+  color: var(--color-destructive, #dc2626);
+}
+
+@media (max-width: 960px) {
+  .user-detail-page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .user-detail-grid,
+  .user-detail-fields-grid {
+    grid-template-columns: 1fr;
+  }
+}

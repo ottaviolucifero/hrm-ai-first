@@ -1,0 +1,115 @@
+<section class="kt-container-fixed py-4 user-detail-page" aria-labelledby="user-detail-title">
+  <div class="user-detail-layout">
+    <header class="user-detail-page-header">
+      <div class="user-detail-heading">
+        <span class="user-detail-eyebrow">{{ i18n.t('nav.governanceSecurity') }}</span>
+        <h1 id="user-detail-title" class="text-xl font-semibold text-mono">
+          {{ user()?.displayName ?? i18n.t('userAdministration.detail.title') }}
+        </h1>
+        <p class="user-detail-subtitle">{{ i18n.t('userAdministration.detail.subtitle') }}</p>
+      </div>
+
+      <div class="user-detail-page-actions" role="group" [attr.aria-label]="i18n.t('userAdministration.detail.actions')">
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrow-left"
+          [label]="i18n.t('userAdministration.actions.back')"
+          (pressed)="goBack()" />
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrows-circle"
+          [label]="i18n.t('rolePermissions.actions.retry')"
+          [disabled]="loading()"
+          (pressed)="retry()" />
+      </div>
+    </header>
+
+    @if (loading()) {
+      <section class="kt-card user-detail-state" role="status" aria-live="polite">
+        {{ i18n.t('userAdministration.detail.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card user-detail-state user-detail-state-error" role="alert">
+        {{ i18n.t('userAdministration.errors.detailLoad') }}
+      </section>
+    } @else if (user(); as currentUser) {
+      <div class="user-detail-grid">
+        <section class="kt-card user-detail-card" aria-labelledby="user-detail-identity">
+          <h2 id="user-detail-identity" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.identity') }}</h2>
+          <dl class="user-detail-fields">
+            @for (field of identityFields(currentUser); track field.labelKey) {
+              <div class="user-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="kt-card user-detail-card" aria-labelledby="user-detail-tenant">
+          <h2 id="user-detail-tenant" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.tenant') }}</h2>
+          <dl class="user-detail-fields">
+            @for (field of tenantFields(currentUser); track field.labelKey) {
+              <div class="user-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="kt-card user-detail-card user-detail-card-wide" aria-labelledby="user-detail-security">
+          <h2 id="user-detail-security" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.security') }}</h2>
+          <dl class="user-detail-fields user-detail-fields-grid">
+            @for (field of securityFields(currentUser); track field.labelKey) {
+              <div class="user-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="kt-card user-detail-card" aria-labelledby="user-detail-roles">
+          <h2 id="user-detail-roles" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.roles') }}</h2>
+          @if (currentUser.roles.length > 0) {
+            <ul class="user-detail-chip-list">
+              @for (role of currentUser.roles; track role.id) {
+                <li class="user-detail-chip">{{ role.code }} - {{ role.name }}</li>
+              }
+            </ul>
+          } @else {
+            <p class="user-detail-empty">{{ i18n.t('userAdministration.values.none') }}</p>
+          }
+        </section>
+
+        <section class="kt-card user-detail-card" aria-labelledby="user-detail-accesses">
+          <h2 id="user-detail-accesses" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.tenantAccesses') }}</h2>
+          @if (currentUser.tenantAccesses.length > 0) {
+            <ul class="user-detail-chip-list">
+              @for (access of currentUser.tenantAccesses; track access.id) {
+                <li class="user-detail-chip">{{ access.tenantCode }} - {{ access.accessRole }}</li>
+              }
+            </ul>
+          } @else {
+            <p class="user-detail-empty">{{ i18n.t('userAdministration.values.none') }}</p>
+          }
+        </section>
+
+        <section class="kt-card user-detail-card" aria-labelledby="user-detail-audit">
+          <h2 id="user-detail-audit" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.audit') }}</h2>
+          <dl class="user-detail-fields">
+            @for (field of auditFields(currentUser); track field.labelKey) {
+              <div class="user-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+      </div>
+    }
+  </div>
+</section>

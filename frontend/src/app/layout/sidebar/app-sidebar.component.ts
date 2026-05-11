@@ -80,6 +80,11 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
             route: '/admin/roles'
           },
           {
+            id: 'governance-security-users',
+            titleKey: 'nav.users',
+            route: '/admin/users'
+          },
+          {
             id: 'governance-security-permissions',
             titleKey: 'nav.permissions',
             route: '/admin/permissions'

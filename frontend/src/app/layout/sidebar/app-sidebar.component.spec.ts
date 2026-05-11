@@ -23,6 +23,7 @@ describe('AppSidebarComponent', () => {
             path: 'admin',
             children: [
               { path: 'roles', component: DummyRouteComponent },
+              { path: 'users', component: DummyRouteComponent },
               { path: 'permissions', component: DummyRouteComponent }
             ]
           }
@@ -47,6 +48,7 @@ describe('AppSidebarComponent', () => {
     expect(compiled.textContent).toContain('Dati di base');
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/roles"]')).toBeTruthy();
+    expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/users"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/permissions"]')).toBeTruthy();
   }, 15000);
 
@@ -106,7 +108,7 @@ describe('AppSidebarComponent', () => {
     expect(masterDataLink?.classList.contains('app-sidebar-link--active')).toBe(true);
   });
 
-  it('keeps roles and permissions as sibling links when roles is active', async () => {
+  it('keeps roles users and permissions as sibling links when roles is active', async () => {
     const router = TestBed.inject(Router);
 
     await router.navigateByUrl('/admin/roles');
@@ -115,24 +117,30 @@ describe('AppSidebarComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     const rolesLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/roles"]');
+    const usersLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/users"]');
     const permissionsLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/permissions"]');
     const securityButton = Array.from(compiled.querySelectorAll('button'))
       .find((button) => button.textContent?.includes('Sicurezza')) as HTMLButtonElement | undefined;
 
     expect(rolesLink).toBeTruthy();
+    expect(usersLink).toBeTruthy();
     expect(permissionsLink).toBeTruthy();
     expect(securityButton?.classList.contains('app-sidebar-link--branch-active')).toBe(true);
     expect(rolesLink?.classList.contains('app-sidebar-link--deep')).toBe(true);
     expect(permissionsLink?.classList.contains('app-sidebar-link--deep')).toBe(true);
     expect(rolesLink?.getAttribute('data-sidebar-level')).toBe('2');
+    expect(usersLink?.getAttribute('data-sidebar-level')).toBe('2');
     expect(permissionsLink?.getAttribute('data-sidebar-level')).toBe('2');
+    expect(rolesLink?.closest('.app-sidebar-subtree--level-2')).toBe(usersLink?.closest('.app-sidebar-subtree--level-2'));
     expect(rolesLink?.closest('.app-sidebar-subtree--level-2')).toBe(permissionsLink?.closest('.app-sidebar-subtree--level-2'));
+    expect(rolesLink?.parentElement?.parentElement).toBe(usersLink?.parentElement?.parentElement);
     expect(rolesLink?.parentElement?.parentElement).toBe(permissionsLink?.parentElement?.parentElement);
     expect(rolesLink?.classList.contains('app-sidebar-link--active')).toBe(true);
+    expect(usersLink?.classList.contains('app-sidebar-link--active')).toBe(false);
     expect(permissionsLink?.classList.contains('app-sidebar-link--active')).toBe(false);
   });
 
-  it('keeps roles and permissions as sibling links when permissions is active', async () => {
+  it('keeps roles users and permissions as sibling links when permissions is active', async () => {
     const router = TestBed.inject(Router);
 
     await router.navigateByUrl('/admin/permissions');
@@ -141,20 +149,26 @@ describe('AppSidebarComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     const rolesLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/roles"]');
+    const usersLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/users"]');
     const permissionsLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/permissions"]');
     const securityButton = Array.from(compiled.querySelectorAll('button'))
       .find((button) => button.textContent?.includes('Sicurezza')) as HTMLButtonElement | undefined;
 
     expect(rolesLink).toBeTruthy();
+    expect(usersLink).toBeTruthy();
     expect(permissionsLink).toBeTruthy();
     expect(securityButton?.classList.contains('app-sidebar-link--branch-active')).toBe(true);
     expect(rolesLink?.classList.contains('app-sidebar-link--deep')).toBe(true);
     expect(permissionsLink?.classList.contains('app-sidebar-link--deep')).toBe(true);
     expect(rolesLink?.getAttribute('data-sidebar-level')).toBe('2');
+    expect(usersLink?.getAttribute('data-sidebar-level')).toBe('2');
     expect(permissionsLink?.getAttribute('data-sidebar-level')).toBe('2');
+    expect(rolesLink?.closest('.app-sidebar-subtree--level-2')).toBe(usersLink?.closest('.app-sidebar-subtree--level-2'));
     expect(rolesLink?.closest('.app-sidebar-subtree--level-2')).toBe(permissionsLink?.closest('.app-sidebar-subtree--level-2'));
+    expect(rolesLink?.parentElement?.parentElement).toBe(usersLink?.parentElement?.parentElement);
     expect(rolesLink?.parentElement?.parentElement).toBe(permissionsLink?.parentElement?.parentElement);
     expect(rolesLink?.classList.contains('app-sidebar-link--active')).toBe(false);
+    expect(usersLink?.classList.contains('app-sidebar-link--active')).toBe(false);
     expect(permissionsLink?.classList.contains('app-sidebar-link--active')).toBe(true);
   });
 });

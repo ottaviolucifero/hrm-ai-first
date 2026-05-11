@@ -3600,7 +3600,7 @@ Nota di allineamento review permessi:
 
 #### TASK-053.4 - Tenant user administration read/list/detail foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend + backend foundation
 
@@ -3637,6 +3637,24 @@ Note tecniche:
 - `Employee` rappresenta l anagrafica personale/HR.
 - La lista utenti puo mostrare nome/cognome solo se disponibili tramite relazione Employee.
 - `accessRole` di `UserTenantAccess` non deve essere presentato come ruolo RBAC.
+
+Implementazione:
+
+- aggiunte API read-only `/api/admin/users` e `/api/admin/users/{userId}`;
+- aggiunti DTO espliciti per lista/dettaglio utenti, tenant/company/employee reference, ruoli assegnati e accessi tenant;
+- `displayName`, `firstName` e `lastName` sono derivati solo da `UserAccount.employee`; in assenza di Employee il display usa `email`;
+- esclusi dai DTO `passwordHash` e `otpSecret`;
+- aggiunto fetch graph su `UserAccount` per relazioni singole e query bulk per `UserRole`/`UserTenantAccess`, evitando N+1 su Employee, UserType, Tenant, CompanyProfile, ruoli e accessi;
+- aggiunta UI read-only `/admin/users` e dettaglio `/admin/users/:id`;
+- aggiunta voce sidebar `Governance > Sicurezza > Utenti`;
+- riusati `DataTableComponent`, `app-button`, shell/header/sidebar, i18n runtime e pattern lista amministrativa gia esistenti;
+- nessuna create/edit/delete utente, nessuna gestione password, nessuna assegnazione ruoli, nessun lifecycle active/locked, nessuna nuova migration e nessun enforcement RBAC completo.
+
+Validazione:
+
+- `cd backend && .\mvnw.cmd -Dtest=UserAdministrationControllerTests test` -> BUILD SUCCESS, 5 test eseguiti, 0 failure, 0 error, 0 skipped;
+- `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration.service.spec.ts --include src/app/features/user-administration/user-administration.component.spec.ts --include src/app/features/user-administration/user-administration-detail.component.spec.ts` -> OK, 3 file test, 9 test passed;
+- suite complete backend/frontend richieste registrate nel report QA del task.
 
 #### TASK-053.5 - Tenant user role assignment foundation
 
@@ -3906,6 +3924,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.11 | 2026-05-10 | TASK-053.4 completato: aggiunte API read-only `/api/admin/users` e `/api/admin/users/{userId}`, UI `/admin/users` e `/admin/users/:id`, ruoli/accessi tenant in sola lettura, display name derivato da Employee con fallback email, query bulk anti N+1, i18n `it/fr/en`, test backend/frontend e QA registrati; nessuna migration, gestione password, role assignment o lifecycle utente. |
 | 2.10 | 2026-05-10 | TASK-053.4 splittato in backlog utenti tenant: ridefinito TASK-053.4 come read/list/detail foundation (ruoli/accessi read-only, nome/cognome derivati da Employee con fallback email), aggiunti TASK-053.5 role assignment, TASK-053.6 password administration, TASK-053.7 create/edit, TASK-053.8 lifecycle e TASK-053.9 opzionale per UserAccount-Employee link, senza modifiche codice applicativo. |
 | 2.09 | 2026-05-10 | Backlog allineato pre-commit TASK-053.3: aggiunta regola governance CRUD/permessi nei process notes, chiarito limite/follow-up di TASK-053.3 (foundation CRUD + protezione `system_role`), ridefiniti TASK-054 e TASK-055 e aggiunto TASK-055.1 per tenant/caller authorization su endpoint admin `/api/admin/roles`, senza modifiche codice applicativo. |
 | 2.08 | 2026-05-10 | TASK-053.2 riallineato dopo review: route frontend rinominata in `/admin/permissions`, menu `Governance > Sicurezza > Permessi`, matrice filtrata ai soli permessi Master Data reali presenti, test/frontend QA aggiornati e nota esplicita sulla validazione manuale tenant-aware. |
