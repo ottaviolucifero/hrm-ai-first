@@ -5,8 +5,10 @@ import { Observable } from 'rxjs';
 import {
   UserAdministrationPage,
   UserAdministrationQuery,
+  UserAdministrationRole,
   UserAdministrationUserDetail,
-  UserAdministrationUserListItem
+  UserAdministrationUserListItem,
+  UserRoleAssignmentRequest
 } from './user-administration.models';
 
 @Injectable({ providedIn: 'root' })
@@ -34,5 +36,24 @@ export class UserAdministrationService {
 
   findUserById(userId: string): Observable<UserAdministrationUserDetail> {
     return this.http.get<UserAdministrationUserDetail>(`/api/admin/users/${userId}`);
+  }
+
+  findAssignedRoles(userId: string, tenantId: string): Observable<readonly UserAdministrationRole[]> {
+    const params = new HttpParams().set('tenantId', tenantId);
+    return this.http.get<readonly UserAdministrationRole[]>(`/api/admin/users/${userId}/roles`, { params });
+  }
+
+  findAvailableRoles(userId: string, tenantId: string): Observable<readonly UserAdministrationRole[]> {
+    const params = new HttpParams().set('tenantId', tenantId);
+    return this.http.get<readonly UserAdministrationRole[]>(`/api/admin/users/${userId}/available-roles`, { params });
+  }
+
+  assignRole(userId: string, payload: UserRoleAssignmentRequest): Observable<readonly UserAdministrationRole[]> {
+    return this.http.post<readonly UserAdministrationRole[]>(`/api/admin/users/${userId}/roles`, payload);
+  }
+
+  removeRole(userId: string, roleId: string, tenantId: string): Observable<void> {
+    const params = new HttpParams().set('tenantId', tenantId);
+    return this.http.delete<void>(`/api/admin/users/${userId}/roles/${roleId}`, { params });
   }
 }

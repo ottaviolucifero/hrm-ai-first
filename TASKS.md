@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.09
-Ultimo aggiornamento: 2026-05-10
+Versione: 2.12
+Ultimo aggiornamento: 2026-05-11
 Stato: In avanzamento
 
 ---
@@ -3658,7 +3658,7 @@ Validazione:
 
 #### TASK-053.5 - Tenant user role assignment foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend + backend foundation
 
@@ -3676,6 +3676,27 @@ Fuori scope:
 - enforcement backend completo;
 - visibility frontend completa basata su permessi;
 - redesign globale.
+
+Implementazione:
+
+- aggiunte API backend sotto `/api/admin/users` per leggere ruoli assegnati per tenant, leggere ruoli disponibili per tenant, assegnare un ruolo e rimuovere un ruolo;
+- aggiunto DTO esplicito `UserRoleAssignmentRequest`;
+- riusati `UserAccount`, `Role`, `UserRole`, `UserTenantAccess`, `Tenant` e i DTO `UserAdministrationRoleResponse`;
+- validati utente, tenant, ruolo, coerenza tenant del ruolo, accesso tenant attivo dell utente e anti-duplicato su assegnazione;
+- la lista ruoli disponibili restituisce ruoli attivi del tenant non ancora assegnati all utente;
+- estesa la UI dettaglio `/admin/users/:id` con gestione ruoli utente tenant-specific;
+- aggiunti selettore tenant da accessi attivi, lista ruoli assegnati, select ruoli disponibili, assegnazione/rimozione e feedback success/error tramite `NotificationService`;
+- aggiunte chiavi i18n `it`/`fr`/`en`;
+- nessuna nuova migration, nessuna modifica JWT/security globale, nessun enforcement RBAC completo e nessuna visibility frontend completa.
+
+Validazione:
+
+- `cd backend && .\mvnw.cmd "-Dtest=UserAdministrationControllerTests" test` -> BUILD SUCCESS, 11 test eseguiti, 0 failure, 0 error, 0 skipped;
+- `cd backend && .\mvnw.cmd test` -> BUILD SUCCESS, 142 test eseguiti, 0 failure, 0 error, 0 skipped;
+- `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration.service.spec.ts --include src/app/features/user-administration/user-administration-detail.component.spec.ts` -> OK, 2 file test, 9 test passed;
+- `cd frontend && npm.cmd run build` -> OK;
+- `cd frontend && npm.cmd test` -> OK, 25 file test passed, 133 test passed;
+- `git diff --check` -> OK, solo warning CRLF gia coerenti con ambiente Windows.
 
 #### TASK-053.6 - Tenant user password administration foundation
 
@@ -3924,6 +3945,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.12 | 2026-05-11 | TASK-053.5 completato: aggiunta foundation assegnazione/rimozione ruoli utente tenant con API `/api/admin/users/{userId}/roles`, lista ruoli disponibili per tenant, validazioni tenant/accesso/duplicato, UI minimale nel dettaglio utente, i18n `it/fr/en` e test backend/frontend completi verdi. |
 | 2.11 | 2026-05-10 | TASK-053.4 completato: aggiunte API read-only `/api/admin/users` e `/api/admin/users/{userId}`, UI `/admin/users` e `/admin/users/:id`, ruoli/accessi tenant in sola lettura, display name derivato da Employee con fallback email, query bulk anti N+1, i18n `it/fr/en`, test backend/frontend e QA registrati; nessuna migration, gestione password, role assignment o lifecycle utente. |
 | 2.10 | 2026-05-10 | TASK-053.4 splittato in backlog utenti tenant: ridefinito TASK-053.4 come read/list/detail foundation (ruoli/accessi read-only, nome/cognome derivati da Employee con fallback email), aggiunti TASK-053.5 role assignment, TASK-053.6 password administration, TASK-053.7 create/edit, TASK-053.8 lifecycle e TASK-053.9 opzionale per UserAccount-Employee link, senza modifiche codice applicativo. |
 | 2.09 | 2026-05-10 | Backlog allineato pre-commit TASK-053.3: aggiunta regola governance CRUD/permessi nei process notes, chiarito limite/follow-up di TASK-053.3 (foundation CRUD + protezione `system_role`), ridefiniti TASK-054 e TASK-055 e aggiunto TASK-055.1 per tenant/caller authorization su endpoint admin `/api/admin/roles`, senza modifiche codice applicativo. |

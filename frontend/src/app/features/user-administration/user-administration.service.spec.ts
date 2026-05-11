@@ -78,4 +78,46 @@ describe('UserAdministrationService', () => {
     expect(request.request.method).toBe('GET');
     request.flush({ id: 'user-1' });
   });
+
+  it('requests assigned user roles for a tenant', () => {
+    service.findAssignedRoles('user-1', 'tenant-1').subscribe();
+
+    const request = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/users/user-1/roles' &&
+      httpRequest.params.get('tenantId') === 'tenant-1'
+    );
+
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+  });
+
+  it('requests available user roles for a tenant', () => {
+    service.findAvailableRoles('user-1', 'tenant-1').subscribe();
+
+    const request = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/users/user-1/available-roles' &&
+      httpRequest.params.get('tenantId') === 'tenant-1'
+    );
+
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+  });
+
+  it('assigns and removes user roles', () => {
+    service.assignRole('user-1', { tenantId: 'tenant-1', roleId: 'role-1' }).subscribe();
+
+    const assignRequest = httpTestingController.expectOne('/api/admin/users/user-1/roles');
+    expect(assignRequest.request.method).toBe('POST');
+    expect(assignRequest.request.body).toEqual({ tenantId: 'tenant-1', roleId: 'role-1' });
+    assignRequest.flush([]);
+
+    service.removeRole('user-1', 'role-1', 'tenant-1').subscribe();
+
+    const removeRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/users/user-1/roles/role-1' &&
+      httpRequest.params.get('tenantId') === 'tenant-1'
+    );
+    expect(removeRequest.request.method).toBe('DELETE');
+    removeRequest.flush(null);
+  });
 });

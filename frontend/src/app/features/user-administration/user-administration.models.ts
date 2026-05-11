@@ -88,6 +88,11 @@ export interface UserAdministrationQuery {
   readonly search?: string;
 }
 
+export interface UserRoleAssignmentRequest {
+  readonly tenantId: string;
+  readonly roleId: string;
+}
+
 export interface UserAdministrationPage<T> {
   readonly content: readonly T[];
   readonly page: number;

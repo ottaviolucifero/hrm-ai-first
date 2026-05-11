@@ -85,6 +85,95 @@
           }
         </section>
 
+        <section class="kt-card user-detail-card user-detail-card-wide" aria-labelledby="user-detail-role-management">
+          <div class="user-detail-role-management-header">
+            <div>
+              <h2 id="user-detail-role-management" class="user-detail-card-title">{{ i18n.t('userAdministration.roles.title') }}</h2>
+              <p class="user-detail-role-management-subtitle">{{ i18n.t('userAdministration.roles.subtitle') }}</p>
+            </div>
+
+            <label class="user-detail-role-tenant-select">
+              <span>{{ i18n.t('userAdministration.roles.tenantLabel') }}</span>
+              <select
+                class="kt-input"
+                [disabled]="roleLoading() || roleSaving()"
+                [value]="selectedTenantId() ?? ''"
+                (change)="selectRoleTenant($event)">
+                @for (access of roleTenantOptions(); track access.tenantId) {
+                  <option [value]="access.tenantId">{{ access.tenantCode }} - {{ access.tenantName }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          @if (roleLoading()) {
+            <div class="user-detail-role-state" role="status" aria-live="polite">
+              {{ i18n.t('userAdministration.roles.loading') }}
+            </div>
+          } @else if (roleError()) {
+            <div class="user-detail-role-state user-detail-role-state-error" role="alert">
+              {{ i18n.t('userAdministration.roles.errors.load') }}
+            </div>
+          } @else {
+            <div class="user-detail-role-grid">
+              <div class="user-detail-role-panel">
+                <h3 class="user-detail-role-panel-title">{{ i18n.t('userAdministration.roles.assignedTitle') }}</h3>
+                @if (assignedRoles().length > 0) {
+                  <ul class="user-detail-role-list">
+                    @for (role of assignedRoles(); track role.id) {
+                      <li class="user-detail-role-item">
+                        <span>{{ role.code }} - {{ role.name }}</span>
+                        <app-button
+                          variant="ghost"
+                          size="sm"
+                          icon="ki-filled ki-cross-circle"
+                          [label]="i18n.t('userAdministration.roles.actions.remove')"
+                          [disabled]="roleSaving()"
+                          (pressed)="removeRole(role)" />
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="user-detail-empty">{{ i18n.t('userAdministration.roles.emptyAssigned') }}</p>
+                }
+              </div>
+
+              <div class="user-detail-role-panel">
+                <h3 class="user-detail-role-panel-title">{{ i18n.t('userAdministration.roles.availableTitle') }}</h3>
+                <div class="user-detail-role-assignment">
+                  <label class="user-detail-role-select">
+                    <span>{{ i18n.t('userAdministration.roles.roleLabel') }}</span>
+                    <select
+                      class="kt-input"
+                      [disabled]="roleSaving() || availableRoles().length === 0"
+                      [value]="selectedRoleId()"
+                      (change)="selectRoleForAssignment($event)">
+                      <option value="">{{ i18n.t('userAdministration.roles.selectPlaceholder') }}</option>
+                      @for (role of availableRoles(); track role.id) {
+                        <option [value]="role.id">{{ role.code }} - {{ role.name }}</option>
+                      }
+                    </select>
+                  </label>
+
+                  <app-button
+                    variant="primary"
+                    size="sm"
+                    icon="ki-filled ki-plus"
+                    [label]="i18n.t('userAdministration.roles.actions.assign')"
+                    [loadingLabel]="i18n.t('userAdministration.roles.actions.assigning')"
+                    [loading]="roleSaving()"
+                    [disabled]="!canAssignRole()"
+                    (pressed)="assignSelectedRole()" />
+                </div>
+
+                @if (availableRoles().length === 0) {
+                  <p class="user-detail-empty">{{ i18n.t('userAdministration.roles.emptyAvailable') }}</p>
+                }
+              </div>
+            </div>
+          }
+        </section>
+
         <section class="kt-card user-detail-card" aria-labelledby="user-detail-accesses">
           <h2 id="user-detail-accesses" class="user-detail-card-title">{{ i18n.t('userAdministration.detail.tenantAccesses') }}</h2>
           @if (currentUser.tenantAccesses.length > 0) {
