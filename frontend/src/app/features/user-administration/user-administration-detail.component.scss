@@ -30,7 +30,9 @@
 
 .user-detail-subtitle,
 .user-detail-empty,
-.user-detail-state {
+.user-detail-state,
+.user-detail-role-management-subtitle,
+.user-detail-role-state {
   color: var(--color-text-muted, #64748b);
 }
 
@@ -112,6 +114,104 @@
   padding: 0.35rem 0.55rem;
 }
 
+.user-detail-role-management-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.user-detail-role-management-subtitle {
+  margin-top: 0.3rem;
+}
+
+.user-detail-role-tenant-select,
+.user-detail-role-select {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.user-detail-role-tenant-select {
+  min-width: min(100%, 18rem);
+}
+
+.user-detail-role-select {
+  flex: 1 1 16rem;
+}
+
+.user-detail-role-tenant-select span,
+.user-detail-role-select span {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.user-detail-role-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.user-detail-role-panel {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 0.875rem;
+  padding: 1rem;
+}
+
+.user-detail-role-panel-title {
+  color: var(--color-text-default, #0f172a);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.user-detail-role-list {
+  display: grid;
+  gap: 0.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-detail-role-item {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.55rem 0.65rem;
+}
+
+.user-detail-role-item span {
+  color: var(--color-text-default, #0f172a);
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.user-detail-role-assignment {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.user-detail-role-state {
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 0.5rem;
+  padding: 0.875rem;
+}
+
+.user-detail-role-state-error {
+  border-color: var(--color-destructive, #dc2626);
+  color: var(--color-destructive, #dc2626);
+}
+
 .user-detail-state {
   padding: 1.25rem;
 }
@@ -128,7 +228,13 @@
   }
 
   .user-detail-grid,
-  .user-detail-fields-grid {
+  .user-detail-fields-grid,
+  .user-detail-role-grid {
     grid-template-columns: 1fr;
+  }
+
+  .user-detail-role-management-header {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

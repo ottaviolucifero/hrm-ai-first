@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.13
-Ultimo aggiornamento: 2026-05-10
+Versione: 2.16
+Ultimo aggiornamento: 2026-05-11
 Stato: In avanzamento
 
 ---
@@ -116,10 +116,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-053.1 Backend role administration API foundation
 - TASK-053.2 Frontend role permission matrix UI foundation
 - TASK-053.4 Tenant user administration read/list/detail foundation
+- TASK-053.5 Tenant user role assignment foundation
 
 ### Prossimo passo
 
-- TASK-053.5 Tenant user role assignment foundation
+- TASK-053.6 Tenant user password administration foundation
 - Follow-up gia pianificati: TASK-054 frontend visibility UX foundation, TASK-055 backend RBAC enforcement foundation, TASK-055.1 tenant/caller authorization hardening su `/api/admin/roles`
 
 ---
@@ -198,6 +199,7 @@ Completato:
 - TASK-052 completed: permission model foundation added with backend enum/helper vocabulary for `SCOPE.RESOURCE.ACTION`, Flyway V18 seed matrix for approved platform/tenant resources/actions and `system_permission=true` seed permissions, without runtime enforcement or single Master Data entity granularity.
 - TASK-053.1 completed: backend role administration API foundation available under `/api/admin/roles`, with role list/detail, assigned permission read, transactional replace of role-permission assignments, DTO boundaries, tenant consistency validation and targeted backend tests validated.
 - TASK-053.4 completed: tenant user administration read/list/detail foundation available under `/api/admin/users`, with frontend `/admin/users` and `/admin/users/:id`, derived Employee names with email fallback, assigned roles and tenant accesses read-only, i18n `it/fr/en` and backend/frontend tests validated.
+- TASK-053.5 completed: tenant user role assignment foundation available under `/api/admin/users/{userId}/roles`, with assigned-role read, available-role read, role assign/remove, tenant/access/duplicate validations, minimal UI in user detail, i18n `it/fr/en` and backend/frontend full tests validated.
 
 Nota:
 
@@ -224,7 +226,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-053.5 Tenant user role assignment foundation
 - TASK-053.6 Tenant user password administration foundation
 - TASK-053.7 Tenant user create/edit foundation
 - TASK-053.8 Tenant user lifecycle foundation
@@ -246,7 +247,7 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
   - TASK-053.2: frontend role permission matrix UI foundation completata;
   - TASK-053.3: tenant custom role CRUD foundation;
   - TASK-053.4: tenant user administration read/list/detail foundation completata;
-  - TASK-053.5: tenant user role assignment foundation;
+  - TASK-053.5: tenant user role assignment foundation completata;
   - TASK-053.6: tenant user password administration foundation;
   - TASK-053.7: tenant user create/edit foundation;
   - TASK-053.8: tenant user lifecycle foundation;
@@ -389,6 +390,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.16 | 2026-05-11 | TASK-053.5 completato: assegnazione/rimozione ruoli utente tenant con API dedicate, UI minimale nel dettaglio utente, validazioni tenant/accesso/duplicato, build/test backend/frontend verdi e prossimo passo aggiornato a TASK-053.6. |
 | 2.15 | 2026-05-10 | TASK-053.4 completato: foundation read/list/detail amministrazione utenti tenant con API `/api/admin/users`, UI `/admin/users`, dettaglio `/admin/users/:id`, ruoli/accessi tenant read-only, display name derivato da Employee con fallback email, test backend/frontend e prossimo passo riallineato a TASK-053.5. |
 | 2.14 | 2026-05-10 | Backlog TASK-053.4 splittato su user administration tenant: TASK-053.4 ridefinito come read/list/detail foundation (ruoli e accessi read-only, nome/cognome derivati da Employee con fallback email), introdotti TASK-053.5/053.6/053.7/053.8 e aggiunto TASK-053.9 opzionale per UserAccount-Employee link foundation; roadmap/prossimi passi riallineati senza modifiche codice applicativo. |
 | 2.13 | 2026-05-10 | Backlog RBAC follow-up riallineato pre-commit TASK-053.3: confermato limite foundation di TASK-053.3, aggiornati target di TASK-054 (permission summary + visibility UX) e TASK-055 (enforcement backend con default deny e mapping endpoint/permesso/azione), aggiunto TASK-055.1 per hardening tenant/caller sugli endpoint admin `/api/admin/roles`, senza rinumerare i task principali. |

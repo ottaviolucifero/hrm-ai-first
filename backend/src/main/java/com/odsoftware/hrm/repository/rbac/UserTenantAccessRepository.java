@@ -13,6 +13,8 @@ public interface UserTenantAccessRepository extends JpaRepository<UserTenantAcce
 
 	Optional<UserTenantAccess> findByUserAccount_IdAndTenant_Id(UUID userAccountId, UUID tenantId);
 
+	boolean existsByUserAccount_IdAndTenant_IdAndActiveTrue(UUID userAccountId, UUID tenantId);
+
 	@Query("""
 			select access
 			from UserTenantAccess access

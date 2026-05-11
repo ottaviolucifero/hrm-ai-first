@@ -138,6 +138,32 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-053.5 - Tenant user role assignment foundation
+
+- Data: 2026-05-11
+- Branch: `task-053-5-tenant-user-role-assignment`
+- Task: TASK-053.5 - Tenant user role assignment foundation
+- Area verificata: API backend `/api/admin/users/{userId}/roles`, lista ruoli disponibili, DTO request, `UserAdministrationService`, repository `UserRole`/`UserTenantAccess`/`Role`.
+- Attivita eseguite:
+  - aggiunta lettura ruoli assegnati per utente e tenant;
+  - aggiunta lettura ruoli tenant attivi disponibili per assegnazione, escludendo ruoli gia assegnati;
+  - aggiunta assegnazione ruolo utente tenant-specific;
+  - aggiunta rimozione ruolo utente tenant-specific;
+  - validate esistenza utente, tenant e ruolo, coerenza tenant del ruolo, accesso tenant attivo dell utente e anti-duplicato;
+  - nessuna migration, nessun cambio JWT/security globale, nessun enforcement RBAC completo.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=UserAdministrationControllerTests" test`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - test mirato OK, `BUILD SUCCESS`, 11 test eseguiti, 0 failure, 0 error, 0 skipped;
+  - suite backend completa OK, `BUILD SUCCESS`, 142 test eseguiti, 0 failure, 0 error, 0 skipped.
+- Regressioni trovate: nessuna nei test backend.
+- Limiti/note:
+  - caller authorization hardening resta demandato a TASK-055.1;
+  - enforcement backend completo resta demandato a TASK-055;
+  - il comando Maven continua a mostrare warning/rumore preesistenti su Mockito/JDK e output SQL/ZIP verbose, senza failure.
+- Stato finale: PASS
+
 ### TASK-053.4 - Tenant user administration read/list/detail foundation
 
 - Data: 2026-05-10
@@ -240,6 +266,32 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: backend test OK (107 test, 0 failure, 0 errori, 0 skipped), fix applicato e validato, nessuna regressione bloccante.
 
 ## Frontend QA reports
+
+### TASK-053.5 - Tenant user role assignment foundation
+
+- Data: 2026-05-11
+- Branch: `task-053-5-tenant-user-role-assignment`
+- Task: TASK-053.5 - Tenant user role assignment foundation
+- Area verificata: dettaglio utente `/admin/users/:id`, `UserAdministrationService`, gestione ruoli utente tenant-specific, i18n `it/fr/en`, feedback `NotificationService`.
+- Attivita eseguite:
+  - aggiunta sezione minimale "Gestione ruoli utente" nel dettaglio utente esistente;
+  - riusati `app-button`, shell/header/sidebar, i18n runtime e `NotificationService`;
+  - aggiunti selettore tenant da accessi attivi, lista ruoli assegnati, select ruoli disponibili, azione assegna e azione rimuovi;
+  - gestiti loading/error/success coerenti con pattern esistenti;
+  - nessun nuovo componente shared e nessun redesign globale.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration.service.spec.ts --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - test mirati OK, 2 file test passed, 9 test passed;
+  - build frontend OK;
+  - suite frontend completa OK, 25 file test passed, 133 test passed.
+- Regressioni trovate: nessuna nei test frontend/build.
+- Limiti/note:
+  - QA manuale browser autenticata non eseguita in questa sessione CLI;
+  - visibility frontend completa basata su permessi resta fuori scope e demandata a TASK-054.
+- Stato finale: PASS WITH NOTES
 
 ### TASK-053.4 - Tenant user administration read/list/detail foundation
 

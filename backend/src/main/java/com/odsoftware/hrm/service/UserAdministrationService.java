@@ -8,6 +8,7 @@ import com.odsoftware.hrm.dto.useradministration.UserAdministrationRoleResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationTenantAccessResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserDetailResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserListItemResponse;
+import com.odsoftware.hrm.dto.useradministration.UserRoleAssignmentRequest;
 import com.odsoftware.hrm.entity.core.CompanyProfile;
 import com.odsoftware.hrm.entity.core.Tenant;
 import com.odsoftware.hrm.entity.employee.Employee;
@@ -18,8 +19,12 @@ import com.odsoftware.hrm.entity.master.TimeZone;
 import com.odsoftware.hrm.entity.master.UserType;
 import com.odsoftware.hrm.entity.rbac.UserRole;
 import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
+import com.odsoftware.hrm.exception.InvalidRequestException;
+import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
+import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.repository.identity.UserAccountRepository;
+import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
 import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
 import jakarta.persistence.criteria.Predicate;
@@ -40,14 +45,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserAdministrationService {
 
 	private final UserAccountRepository userAccountRepository;
+	private final RoleRepository roleRepository;
+	private final TenantRepository tenantRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final UserTenantAccessRepository userTenantAccessRepository;
 
 	public UserAdministrationService(
 			UserAccountRepository userAccountRepository,
+			RoleRepository roleRepository,
+			TenantRepository tenantRepository,
 			UserRoleRepository userRoleRepository,
 			UserTenantAccessRepository userTenantAccessRepository) {
 		this.userAccountRepository = userAccountRepository;
+		this.roleRepository = roleRepository;
+		this.tenantRepository = tenantRepository;
 		this.userRoleRepository = userRoleRepository;
 		this.userTenantAccessRepository = userTenantAccessRepository;
 	}
@@ -79,6 +90,61 @@ public class UserAdministrationService {
 				.map(this::toTenantAccessResponse)
 				.toList();
 		return toDetailResponse(user, roles, tenantAccesses);
+	}
+
+	public List<UserAdministrationRoleResponse> findAssignedRoles(UUID userId, UUID tenantId) {
+		UserAccount user = findUser(userId);
+		Tenant tenant = requireTenantAccess(user, tenantId);
+
+		return userRoleRepository.findWithRoleAndTenantByUserAccountIdAndTenantId(userId, tenantId).stream()
+				.map(this::toRoleResponse)
+				.toList();
+	}
+
+	public List<UserAdministrationRoleResponse> findAvailableRoles(UUID userId, UUID tenantId) {
+		UserAccount user = findUser(userId);
+		Tenant tenant = requireTenantAccess(user, tenantId);
+
+		List<UUID> assignedRoleIds = userRoleRepository.findWithRoleAndTenantByUserAccountIdAndTenantId(userId, tenantId).stream()
+				.map(userRole -> userRole.getRole().getId())
+				.toList();
+		return roleRepository.findByTenantIdAndActiveTrueOrderByCodeAsc(tenantId).stream()
+				.filter(role -> !assignedRoleIds.contains(role.getId()))
+				.map(role -> toRoleResponse(role, tenant))
+				.toList();
+	}
+
+	@Transactional
+	public List<UserAdministrationRoleResponse> assignRole(UUID userId, UserRoleAssignmentRequest request) {
+		UserAccount user = findUser(userId);
+		Tenant tenant = requireTenantAccess(user, request.tenantId());
+		Role role = findRole(request.roleId());
+		validateRoleTenant(role, tenant);
+
+		if (userRoleRepository.existsByTenant_IdAndUserAccount_IdAndRole_Id(tenant.getId(), user.getId(), role.getId())) {
+			throw new ResourceConflictException("Role already assigned to user for tenant: " + role.getId());
+		}
+
+		UserRole userRole = new UserRole();
+		userRole.setTenant(tenant);
+		userRole.setUserAccount(user);
+		userRole.setRole(role);
+		userRoleRepository.saveAndFlush(userRole);
+
+		return findAssignedRoles(userId, tenant.getId());
+	}
+
+	@Transactional
+	public void removeRole(UUID userId, UUID roleId, UUID tenantId) {
+		UserAccount user = findUser(userId);
+		Tenant tenant = requireTenantAccess(user, tenantId);
+		Role role = findRole(roleId);
+		validateRoleTenant(role, tenant);
+
+		UserRole userRole = userRoleRepository.findByTenant_IdAndUserAccount_IdAndRole_Id(tenant.getId(), user.getId(), role.getId())
+				.orElseThrow(() -> new ResourceNotFoundException("User role assignment not found: " + roleId));
+		userRoleRepository.delete(userRole);
+		userRoleRepository.flush();
 	}
 
 	private Specification<UserAccount> userSpecification(UUID tenantId, String search) {
@@ -189,6 +255,10 @@ public class UserAdministrationService {
 	private UserAdministrationRoleResponse toRoleResponse(UserRole userRole) {
 		Role role = userRole.getRole();
 		Tenant tenant = userRole.getTenant();
+		return toRoleResponse(role, tenant);
+	}
+
+	private UserAdministrationRoleResponse toRoleResponse(Role role, Tenant tenant) {
 		return new UserAdministrationRoleResponse(
 				role.getId(),
 				tenant.getId(),
@@ -198,6 +268,44 @@ public class UserAdministrationService {
 				role.getName(),
 				role.getSystemRole(),
 				role.getActive());
+	}
+
+	private UserAccount findUser(UUID userId) {
+		return userAccountRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User account not found: " + userId));
+	}
+
+	private Tenant findTenant(UUID tenantId) {
+		return tenantRepository.findById(tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Tenant not found: " + tenantId));
+	}
+
+	private Role findRole(UUID roleId) {
+		return roleRepository.findById(roleId)
+				.orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleId));
+	}
+
+	private void validateRoleTenant(Role role, Tenant tenant) {
+		if (!tenant.getId().equals(role.getTenantId())) {
+			throw new InvalidRequestException("Role does not belong to tenant: " + role.getId());
+		}
+	}
+
+	private Tenant requireTenantAccess(UserAccount user, UUID tenantId) {
+		Tenant tenant = findTenant(tenantId);
+		if (hasTenantAccess(user, tenantId)) {
+			return tenant;
+		}
+
+		throw new InvalidRequestException("User does not have active access to tenant: " + tenantId);
+	}
+
+	private boolean hasTenantAccess(UserAccount user, UUID tenantId) {
+		if (user.getTenant() != null && tenantId.equals(user.getTenant().getId())) {
+			return true;
+		}
+
+		return userTenantAccessRepository.existsByUserAccount_IdAndTenant_IdAndActiveTrue(user.getId(), tenantId);
 	}
 
 	private UserAdministrationTenantAccessResponse toTenantAccessResponse(UserTenantAccess tenantAccess) {

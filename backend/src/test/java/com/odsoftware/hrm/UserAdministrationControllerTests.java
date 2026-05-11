@@ -23,11 +23,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,6 +50,9 @@ class UserAdministrationControllerTests {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	@Autowired
 	private TenantRepository tenantRepository;
@@ -150,13 +158,132 @@ class UserAdministrationControllerTests {
 	}
 
 	@Test
+	@WithMockUser
+	void userAdministrationListsAvailableRolesForTenantExcludingAssignedAndInactiveRoles() throws Exception {
+		UserAccount user = saveUser("task0535.available@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		saveUserTenantAccess(user, "TENANT_USER");
+		Role assignedRole = saveRole("TASK0535_AVAILABLE_ASSIGNED", "Task 053.5 Assigned Role");
+		Role availableRole = saveRole("TASK0535_AVAILABLE_ROLE", "Task 053.5 Available Role");
+		saveRole(FOUNDATION_TENANT_ID, "TASK0535_AVAILABLE_INACTIVE", "Task 053.5 Inactive Role", false);
+		saveUserRole(assignedRole, user);
+
+		mockMvc.perform(get("/api/admin/users/{userId}/available-roles", user.getId())
+						.param("tenantId", FOUNDATION_TENANT_ID.toString()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[?(@.id=='" + availableRole.getId() + "')].code").value("TASK0535_AVAILABLE_ROLE"))
+				.andExpect(jsonPath("$[?(@.id=='" + availableRole.getId() + "')].tenantId").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$[?(@.id=='" + assignedRole.getId() + "')]").isEmpty())
+				.andExpect(jsonPath("$[?(@.code=='TASK0535_AVAILABLE_INACTIVE')]").isEmpty());
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationReturnsEmptyAssignedRolesForAccountTenantWithoutAccessBridge() throws Exception {
+		UserAccount user = saveUser("task0535.emptyroles@example.com", EMPLOYEE_USER_TYPE_ID, null);
+
+		mockMvc.perform(get("/api/admin/users/{userId}/roles", user.getId())
+						.param("tenantId", FOUNDATION_TENANT_ID.toString()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(0));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationReturnsAvailableRolesForAccountTenantWithoutAccessBridge() throws Exception {
+		UserAccount user = saveUser("task0535.emptyavailable@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		Role availableRole = saveRole("TASK0535_EMPTY_AVAILABLE", "Task 053.5 Empty Available Role");
+
+		mockMvc.perform(get("/api/admin/users/{userId}/available-roles", user.getId())
+						.param("tenantId", FOUNDATION_TENANT_ID.toString()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[?(@.id=='" + availableRole.getId() + "')].code").value("TASK0535_EMPTY_AVAILABLE"))
+				.andExpect(jsonPath("$[?(@.id=='" + availableRole.getId() + "')].tenantId").value(FOUNDATION_TENANT_ID.toString()));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationAssignsTenantRoleToUser() throws Exception {
+		UserAccount user = saveUser("task0535.assign@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		saveUserTenantAccess(user, "TENANT_USER");
+		Role role = saveRole("TASK0535_ASSIGN_ROLE", "Task 053.5 Assign Role");
+
+		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, role.getId())))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.length()").value(1))
+				.andExpect(jsonPath("$[0].id").value(role.getId().toString()))
+				.andExpect(jsonPath("$[0].code").value("TASK0535_ASSIGN_ROLE"));
+
+		assertThat(userRoleRepository.existsByTenant_IdAndUserAccount_IdAndRole_Id(FOUNDATION_TENANT_ID, user.getId(), role.getId())).isTrue();
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsDuplicateRoleAssignment() throws Exception {
+		UserAccount user = saveUser("task0535.duplicate@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		saveUserTenantAccess(user, "TENANT_USER");
+		Role role = saveRole("TASK0535_DUPLICATE_ASSIGNMENT", "Task 053.5 Duplicate Assignment");
+		saveUserRole(role, user);
+
+		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, role.getId())))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").value("Role already assigned to user for tenant: " + role.getId()));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsRoleAssignmentWhenRoleBelongsToDifferentTenant() throws Exception {
+		UserAccount user = saveUser("task0535.otherrole@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		saveUserTenantAccess(user, "TENANT_USER");
+		Tenant otherTenant = saveTenant("TASK0535_ROLE_OTHER_TENANT");
+		Role otherTenantRole = saveRole(otherTenant.getId(), "TASK0535_OTHER_TENANT_ROLE", "Task 053.5 Other Tenant Role", true);
+
+		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, otherTenantRole.getId())))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Role does not belong to tenant: " + otherTenantRole.getId()));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsRoleAssignmentWithoutActiveTenantAccess() throws Exception {
+		UserAccount user = saveUser("task0535.noaccess@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		Tenant otherTenant = saveTenant("TASK0535_NO_ACCESS_TENANT");
+		Role role = saveRole(otherTenant.getId(), "TASK0535_NO_ACCESS_ROLE", "Task 053.5 No Access Role", true);
+
+		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(otherTenant.getId(), role.getId())))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("User does not have active access to tenant: " + otherTenant.getId()));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRemovesTenantRoleFromUser() throws Exception {
+		UserAccount user = saveUser("task0535.remove@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		saveUserTenantAccess(user, "TENANT_USER");
+		Role role = saveRole("TASK0535_REMOVE_ROLE", "Task 053.5 Remove Role");
+		saveUserRole(role, user);
+
+		mockMvc.perform(delete("/api/admin/users/{userId}/roles/{roleId}", user.getId(), role.getId())
+						.param("tenantId", FOUNDATION_TENANT_ID.toString()))
+				.andExpect(status().isNoContent());
+
+		assertThat(userRoleRepository.existsByTenant_IdAndUserAccount_IdAndRole_Id(FOUNDATION_TENANT_ID, user.getId(), role.getId())).isFalse();
+	}
+
+	@Test
 	void openApiIncludesUserAdministrationEndpoints() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.paths['/api/admin/users']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}']").exists())
-				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}'].get").exists());
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles'].post").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles/{roleId}']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles/{roleId}'].delete").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/available-roles']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/available-roles'].get").exists());
 	}
 
 	private Tenant saveTenant(String code) {
@@ -212,12 +339,16 @@ class UserAdministrationControllerTests {
 	}
 
 	private Role saveRole(String code, String name) {
+		return saveRole(FOUNDATION_TENANT_ID, code, name, true);
+	}
+
+	private Role saveRole(UUID tenantId, String code, String name, boolean active) {
 		Role role = new Role();
-		role.setTenantId(FOUNDATION_TENANT_ID);
+		role.setTenantId(tenantId);
 		role.setCode(code);
 		role.setName(name);
 		role.setSystemRole(false);
-		role.setActive(true);
+		role.setActive(active);
 		return roleRepository.saveAndFlush(role);
 	}
 
@@ -236,5 +367,18 @@ class UserAdministrationControllerTests {
 		userTenantAccess.setAccessRole(accessRole);
 		userTenantAccess.setActive(true);
 		userTenantAccessRepository.saveAndFlush(userTenantAccess);
+	}
+
+	private java.util.Map<String, Object> roleAssignmentRequest(UUID tenantId, UUID roleId) {
+		java.util.Map<String, Object> request = new java.util.LinkedHashMap<>();
+		request.put("tenantId", tenantId);
+		request.put("roleId", roleId);
+		return request;
+	}
+
+	private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder postJson(String path, Object request) throws Exception {
+		return post(path)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request));
 	}
 }
