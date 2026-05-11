@@ -291,6 +291,57 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-053.7 - User list DataTable alignment and sticky actions patch
+
+- Data: 2026-05-11
+- Branch: `task-053-7-tenant-user-create-edit-foundation`
+- Task: TASK-053.7 - Tenant user create/edit foundation
+- Tipo verifica: patch frontend minima su `DataTableComponent` shared e lista utenti.
+- Area verificata: `shared/components/data-table`, `features/user-administration`, regressioni base `features/master-data`, build/test Angular.
+- Attivita eseguite:
+  - riallineata la card lista utenti al pattern gia usato in Master Data, eliminando padding locale eccessivo senza toccare shell/sidebar/header globali;
+  - esteso il modello shared `DataTableColumn` con supporto opt-in `sticky?: 'left' | 'right'`;
+  - aggiunto input shared `actionsColumnSticky` per rendere sticky la colonna azioni senza duplicare il DataTable;
+  - applicata la colonna `Azioni` sticky right alla lista utenti;
+  - rimosso il pulsante `Riprova` visibile dall header della lista utenti;
+  - verificata retrocompatibilita: nessuna sticky column di default su Master Data o altre tabelle non configurate.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend OK;
+  - suite frontend OK, 27 file passed, 164 test passed.
+- Regressioni trovate: nessuna nei test frontend eseguiti.
+- Limiti/note:
+  - la sticky column e solo opt-in e viene usata in questa patch solo sulla lista utenti;
+  - nessuna modifica backend/API e nessuna nuova libreria introdotta.
+- Stato finale: PASS WITH NOTES
+
+### TASK-053.7 - Tenant UI simplification patch
+
+- Data: 2026-05-11
+- Branch: `task-053-7-tenant-user-create-edit-foundation`
+- Task: TASK-053.7 - Tenant user create/edit foundation
+- Tipo verifica: patch UX/documentale mirata su form create/edit utenti tenant.
+- Area verificata: `user-administration-form.component.*`, i18n `it/fr/en`, `DECISIONS.md`, build/test Angular.
+- Attivita eseguite:
+  - rimosso dal form create/edit il campo visibile `Tenant predefinito`;
+  - mantenuto un solo campo visibile `Tenant`, con `primaryTenant` ancora gestito dal backend senza nuove API;
+  - rinominata nel form la company profile in `Azienda / societa`;
+  - verificato che `Bloccato` resta informativo/read-only tramite checkbox disabilitata;
+  - aggiunta DEC-034 per fissare la regola dominio/UX su tenant membership e default tenant visibility.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend OK;
+  - suite frontend OK, 27 file passed, 159 test passed.
+- Regressioni trovate: nessuna nei test frontend.
+- Limiti/note:
+  - nessuna modifica backend, schema DB, API o DTO;
+  - scenari platform/multi-tenant restano demandati a task futuri dedicati.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053.6 - User detail header/title and mono-tenant selector patch
 
 - Data: 2026-05-11
@@ -946,6 +997,38 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: build e test verdi, 24 test passed, scope read-only rispettato, nessuna modifica backend/auth/dipendenze rilevata
 
 ## Full-stack / integration QA reports
+
+### TASK-053.7 - Tenant user create/edit foundation
+
+- Data: 2026-05-11
+- Branch: `task-053-7-tenant-user-create-edit-foundation`
+- Task: TASK-053.7 - Tenant user create/edit foundation
+- Area verificata: backend `/api/admin/users` form-options/create/update, DTO request/response, service tenant-aware, UI Angular lista/dettaglio/form create-edit, routing, i18n `it/fr/en`, test backend/frontend.
+- Attivita eseguite:
+  - aggiunti DTO backend per create/update e form-options, incluse company profile option con `tenantId`;
+  - introdotti endpoint `GET /api/admin/users/form-options`, `POST /api/admin/users`, `PUT /api/admin/users/{userId}`;
+  - implementata create con email normalizzata, controllo duplicati case-insensitive, `PASSWORD_ONLY`, password iniziale validata da `PasswordPolicy`, `primaryTenant` uguale al tenant iniziale, `active=true`, `locked=false` e `UserTenantAccess` automatico;
+  - implementato update limitato a email e company profile opzionale/azzerabile;
+  - aggiunte route `/admin/users/new` e `/admin/users/:id/edit`, CTA `Nuovo utente`/`Modifica`, form feature locale standalone con card e riuso di `app-button`, `app-input`, `app-checkbox`, `app-email-field` e `app-password-field`;
+  - mantenuti fuori dal form ruoli, reset password in modifica, lifecycle `active/locked`, employee link editabile, preferred language e timezone.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=UserAdministrationControllerTests" test`
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration.service.spec.ts --include src/app/features/user-administration/user-administration.component.spec.ts --include src/app/features/user-administration/user-administration-detail.component.spec.ts --include src/app/features/user-administration/user-administration-form.component.spec.ts`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - test backend mirato OK, 25 test passed, 0 failure, 0 error;
+  - test frontend mirati OK, 4 file passed, 32 test passed;
+  - suite backend completa OK, `BUILD SUCCESS`;
+  - build frontend OK;
+  - suite frontend completa OK, 27 file passed, 159 test passed.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - accessRole di `UserTenantAccess` resta un default foundation derivato da `userType.code`, non un ruolo RBAC applicativo;
+  - non sono state introdotte migration o enforcement RBAC completo;
+  - i test backend continuano a stampare warning noti Mockito/ByteBuddy su JDK 21 e log SQL molto verbosi, non bloccanti.
+- Stato finale: PASS WITH NOTES
 
 ### TASK-053.3 - API contract, UI polish and Security menu structure
 

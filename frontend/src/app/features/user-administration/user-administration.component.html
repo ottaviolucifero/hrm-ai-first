@@ -9,12 +9,12 @@
 
       <div class="user-admin-page-actions" role="group" [attr.aria-label]="i18n.t('userAdministration.actions.toolbar')">
         <app-button
-          variant="secondary"
+          variant="primary"
           size="sm"
-          icon="ki-filled ki-arrows-circle"
-          [label]="i18n.t('rolePermissions.actions.retry')"
+          icon="ki-filled ki-plus"
+          [label]="i18n.t('userAdministration.actions.create')"
           [disabled]="loading()"
-          (pressed)="refresh()" />
+          (pressed)="createUser()" />
       </div>
     </header>
 
@@ -48,6 +48,7 @@
         [columns]="columns()"
         [rows]="rows()"
         [rowActions]="rowActions()"
+        [actionsColumnSticky]="'right'"
         [pageData]="pageData()"
         [pageSizeOptions]="pageSizeOptions"
         [loading]="loading()"

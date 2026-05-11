@@ -1,9 +1,12 @@
 package com.odsoftware.hrm.controller;
 
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
+import com.odsoftware.hrm.dto.useradministration.UserAdministrationFormOptionsResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationRoleResponse;
+import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserCreateRequest;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserDetailResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserListItemResponse;
+import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserUpdateRequest;
 import com.odsoftware.hrm.dto.useradministration.UserPasswordResetRequest;
 import com.odsoftware.hrm.dto.useradministration.UserPasswordResetResponse;
 import com.odsoftware.hrm.dto.useradministration.UserRoleAssignmentRequest;
@@ -48,10 +51,31 @@ public class UserAdministrationController {
 		return userAdministrationService.findUsers(tenantId, page, size, search);
 	}
 
+	@GetMapping("/form-options")
+	@Operation(summary = "Get user administration form options")
+	public UserAdministrationFormOptionsResponse findFormOptions() {
+		return userAdministrationService.findFormOptions();
+	}
+
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(summary = "Create a user account for administration")
+	public UserAdministrationUserDetailResponse createUser(@Valid @RequestBody UserAdministrationUserCreateRequest request) {
+		return userAdministrationService.createUser(request);
+	}
+
 	@GetMapping("/{userId}")
 	@Operation(summary = "Get user administration detail")
 	public UserAdministrationUserDetailResponse findUserById(@PathVariable UUID userId) {
 		return userAdministrationService.findUserById(userId);
+	}
+
+	@PutMapping("/{userId}")
+	@Operation(summary = "Update editable user account administration fields")
+	public UserAdministrationUserDetailResponse updateUser(
+			@PathVariable UUID userId,
+			@Valid @RequestBody UserAdministrationUserUpdateRequest request) {
+		return userAdministrationService.updateUser(userId, request);
 	}
 
 	@GetMapping("/{userId}/roles")

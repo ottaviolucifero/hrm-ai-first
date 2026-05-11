@@ -8,6 +8,7 @@ import {
   DataTableAction,
   DataTableColumn,
   DataTableColumnAlign,
+  DataTableColumnSticky,
   DataTableColumnType,
   DataTablePage,
   DataTablePageLink,
@@ -41,6 +42,7 @@ export class DataTableComponent {
   @Input() rowActions: readonly DataTableAction[] = [];
   @Input() pageData: DataTablePage | null = null;
   @Input() pageSizeOptions: readonly number[] = [10, 20, 50];
+  @Input() actionsColumnSticky: DataTableColumnSticky | null = null;
   @Input() loading = false;
   @Input() hasError = false;
   @Input() loadingMessageKey: I18nKey = 'dataTable.loading';
@@ -225,6 +227,14 @@ export class DataTableComponent {
 
   protected isRowActionDisabled(action: DataTableAction, row: DataTableRow): boolean {
     return typeof action.disabled === 'function' ? action.disabled(row) : action.disabled === true;
+  }
+
+  protected isColumnSticky(column: DataTableColumn, direction: DataTableColumnSticky): boolean {
+    return column.sticky === direction;
+  }
+
+  protected isActionsColumnSticky(direction: DataTableColumnSticky): boolean {
+    return this.actionsColumnSticky === direction;
   }
 
   protected isRowActionVisible(action: DataTableAction, row?: DataTableRow): boolean {

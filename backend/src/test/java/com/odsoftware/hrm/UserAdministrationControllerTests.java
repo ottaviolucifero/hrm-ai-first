@@ -48,6 +48,7 @@ class UserAdministrationControllerTests {
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COMPANY_PROFILE_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
 	private static final UUID MISSING_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");
+	private static final UUID PLATFORM_SUPER_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
 	private static final UUID EMPLOYEE_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000004");
 	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
@@ -162,6 +163,148 @@ class UserAdministrationControllerTests {
 		mockMvc.perform(get("/api/admin/users/{userId}", MISSING_ID))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.message").value("User account not found: " + MISSING_ID));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationReturnsFormOptionsForCreateEdit() throws Exception {
+		mockMvc.perform(get("/api/admin/users/form-options"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tenants[?(@.id=='" + FOUNDATION_TENANT_ID + "')]").exists())
+				.andExpect(jsonPath("$.userTypes[?(@.code=='TENANT_ADMIN')]").exists())
+				.andExpect(jsonPath("$.userTypes[?(@.code=='EMPLOYEE')]").exists())
+				.andExpect(jsonPath("$.userTypes[?(@.code=='PLATFORM_SUPER_ADMIN')]").isEmpty())
+				.andExpect(jsonPath("$.authenticationMethod.code").value("PASSWORD_ONLY"))
+				.andExpect(jsonPath("$.companyProfiles[?(@.id=='" + FOUNDATION_COMPANY_PROFILE_ID + "')].tenantId").value(FOUNDATION_TENANT_ID.toString()));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationCreatesUserWithNormalizedEmailPasswordHashAndTenantAccess() throws Exception {
+		String rawPassword = "TenantCreate1!";
+
+		MvcResult result = mockMvc.perform(postJson("/api/admin/users", userCreateRequest(
+						"  TASK0537.Create@Example.COM  ",
+						TENANT_ADMIN_USER_TYPE_ID,
+						FOUNDATION_TENANT_ID,
+						FOUNDATION_COMPANY_PROFILE_ID,
+						rawPassword)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.email").value("task0537.create@example.com"))
+				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.primaryTenant.id").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.companyProfile.id").value(FOUNDATION_COMPANY_PROFILE_ID.toString()))
+				.andExpect(jsonPath("$.userType.code").value("TENANT_ADMIN"))
+				.andExpect(jsonPath("$.authenticationMethod.code").value("PASSWORD_ONLY"))
+				.andExpect(jsonPath("$.active").value(true))
+				.andExpect(jsonPath("$.locked").value(false))
+				.andExpect(jsonPath("$.passwordChangedAt").isNotEmpty())
+				.andExpect(jsonPath("$.tenantAccesses[0].tenantId").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.tenantAccesses[0].accessRole").value("TENANT_ADMIN"))
+				.andExpect(jsonPath("$.passwordHash").doesNotExist())
+				.andReturn();
+
+		UserAccount createdUser = userAccountRepository.findByEmailIgnoreCase("task0537.create@example.com").orElseThrow();
+		assertThat(passwordEncoder.matches(rawPassword, createdUser.getPasswordHash())).isTrue();
+		assertThat(createdUser.getPasswordHash()).isNotEqualTo(rawPassword);
+		assertThat(createdUser.getPrimaryTenant().getId()).isEqualTo(FOUNDATION_TENANT_ID);
+		assertThat(createdUser.getActive()).isTrue();
+		assertThat(createdUser.getLocked()).isFalse();
+		UserTenantAccess tenantAccess = userTenantAccessRepository.findByUserAccount_IdAndTenant_Id(createdUser.getId(), FOUNDATION_TENANT_ID).orElseThrow();
+		assertThat(tenantAccess.getAccessRole()).isEqualTo("TENANT_ADMIN");
+		assertThat(tenantAccess.getActive()).isTrue();
+		assertThat(result.getResponse().getContentAsString()).doesNotContain(rawPassword);
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsCreateWithDuplicateEmailCaseInsensitive() throws Exception {
+		saveUser("task0537.duplicate@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
+
+		mockMvc.perform(postJson("/api/admin/users", userCreateRequest(
+						"TASK0537.DUPLICATE@EXAMPLE.COM",
+						TENANT_ADMIN_USER_TYPE_ID,
+						FOUNDATION_TENANT_ID,
+						null,
+						"TenantCreate1!")))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").value("User email already exists: task0537.duplicate@example.com"));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsCreateWithCompanyProfileFromDifferentTenant() throws Exception {
+		Tenant otherTenant = saveTenant("TASK0537_COMPANY_OTHER_TENANT");
+		CompanyProfile otherCompanyProfile = saveCompanyProfile(otherTenant, "TASK0537_OTHER_COMPANY");
+
+		mockMvc.perform(postJson("/api/admin/users", userCreateRequest(
+						"task0537.company-mismatch@example.com",
+						TENANT_ADMIN_USER_TYPE_ID,
+						FOUNDATION_TENANT_ID,
+						otherCompanyProfile.getId(),
+						"TenantCreate1!")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Company profile does not belong to tenant: " + otherCompanyProfile.getId()));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsCreateWithPlatformUserType() throws Exception {
+		mockMvc.perform(postJson("/api/admin/users", userCreateRequest(
+						"task0537.platform-type@example.com",
+						PLATFORM_SUPER_ADMIN_USER_TYPE_ID,
+						FOUNDATION_TENANT_ID,
+						null,
+						"TenantCreate1!")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("User type is not allowed for tenant user creation: " + PLATFORM_SUPER_ADMIN_USER_TYPE_ID));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationRejectsCreateWhenInitialPasswordDoesNotSatisfyPolicy() throws Exception {
+		mockMvc.perform(postJson("/api/admin/users", userCreateRequest(
+						"task0537.weak-password@example.com",
+						TENANT_ADMIN_USER_TYPE_ID,
+						FOUNDATION_TENANT_ID,
+						null,
+						"weak")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Password does not satisfy the current password policy."));
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationUpdatesEmailAndCompanyProfileOnly() throws Exception {
+		UserAccount user = saveUser("task0537.update@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId(), userUpdateRequest(" TASK0537.Updated@Example.COM ", companyProfile.getId())))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.email").value("task0537.updated@example.com"))
+				.andExpect(jsonPath("$.companyProfile.id").value(companyProfile.getId().toString()))
+				.andExpect(jsonPath("$.userType.code").value("TENANT_ADMIN"))
+				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.authenticationMethod.code").value("PASSWORD_ONLY"));
+
+		UserAccount reloadedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+		assertThat(reloadedUser.getEmail()).isEqualTo("task0537.updated@example.com");
+		assertThat(reloadedUser.getCompanyProfile().getId()).isEqualTo(companyProfile.getId());
+		assertThat(reloadedUser.getUserType().getId()).isEqualTo(TENANT_ADMIN_USER_TYPE_ID);
+		assertThat(reloadedUser.getTenant().getId()).isEqualTo(FOUNDATION_TENANT_ID);
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationUpdatesCompanyProfileToNull() throws Exception {
+		UserAccount user = saveUser("task0537.clear-company@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
+
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId(), userUpdateRequest("task0537.clear-company@example.com", null)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.companyProfile").doesNotExist());
+
+		UserAccount reloadedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+		assertThat(reloadedUser.getCompanyProfile()).isNull();
 	}
 
 	@Test
@@ -350,8 +493,12 @@ class UserAdministrationControllerTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.paths['/api/admin/users']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users'].post").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/form-options']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/form-options'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}'].put").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles'].post").exists())
@@ -373,6 +520,21 @@ class UserAdministrationControllerTests {
 		tenant.setDefaultCurrency(foundationTenant.getDefaultCurrency());
 		tenant.setActive(true);
 		return tenantRepository.saveAndFlush(tenant);
+	}
+
+	private CompanyProfile saveCompanyProfile(Tenant tenant, String code) {
+		CompanyProfile baseCompanyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		CompanyProfile companyProfile = new CompanyProfile();
+		companyProfile.setTenant(tenant);
+		companyProfile.setCompanyProfileType(baseCompanyProfile.getCompanyProfileType());
+		companyProfile.setCode(code);
+		companyProfile.setLegalName(code + " Legal Entity");
+		companyProfile.setTradeName(code);
+		companyProfile.setCountry(baseCompanyProfile.getCountry());
+		companyProfile.setStreet("Task 053.7 Street");
+		companyProfile.setStreetNumber("1");
+		companyProfile.setActive(true);
+		return companyProfileRepository.saveAndFlush(companyProfile);
 	}
 
 	private Employee saveEmployee(String employeeCode, String firstName, String lastName) {
@@ -461,6 +623,23 @@ class UserAdministrationControllerTests {
 		java.util.Map<String, Object> request = new java.util.LinkedHashMap<>();
 		request.put("tenantId", tenantId);
 		request.put("newPassword", newPassword);
+		return request;
+	}
+
+	private java.util.Map<String, Object> userCreateRequest(String email, UUID userTypeId, UUID tenantId, UUID companyProfileId, String initialPassword) {
+		java.util.Map<String, Object> request = new java.util.LinkedHashMap<>();
+		request.put("email", email);
+		request.put("userTypeId", userTypeId);
+		request.put("tenantId", tenantId);
+		request.put("companyProfileId", companyProfileId);
+		request.put("initialPassword", initialPassword);
+		return request;
+	}
+
+	private java.util.Map<String, Object> userUpdateRequest(String email, UUID companyProfileId) {
+		java.util.Map<String, Object> request = new java.util.LinkedHashMap<>();
+		request.put("email", email);
+		request.put("companyProfileId", companyProfileId);
 		return request;
 	}
 

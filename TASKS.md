@@ -3720,7 +3720,7 @@ Fuori scope:
 
 #### TASK-053.7 - Tenant user create/edit foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend + backend foundation
 
@@ -3731,6 +3731,13 @@ Scope:
 - gestione tenant/accesso primario;
 - eventuale password iniziale;
 - collegamento Employee solo se coerente con il dominio esistente.
+
+Implementato:
+
+- API `GET /api/admin/users/form-options`, `POST /api/admin/users` e `PUT /api/admin/users/{userId}`;
+- create con email normalizzata, `userType`, tenant, company profile opzionale, `PASSWORD_ONLY`, password iniziale validata da `PasswordPolicy`, `primaryTenant` uguale al tenant iniziale, `active=true`, `locked=false` e `UserTenantAccess` automatico;
+- update limitato a email e company profile opzionale/azzerabile;
+- UI Angular `/admin/users/new` e `/admin/users/:id/edit`, CTA lista/dettaglio, form a card con componenti shared per button/input/email/password/checkbox, i18n `it/fr/en` e test frontend/backend.
 
 Fuori scope:
 
@@ -3945,6 +3952,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.14 | 2026-05-11 | TASK-053.7 completato: aggiunta foundation create/edit utenti tenant con API `/api/admin/users/form-options`, `POST /api/admin/users`, `PUT /api/admin/users/{userId}`, create con password iniziale e `UserTenantAccess` automatico, update limitato a email/company profile, UI Angular `/admin/users/new` e `/admin/users/:id/edit`, i18n `it/fr/en`, riuso componenti shared e test backend/frontend completi verdi. |
 | 2.13 | 2026-05-11 | TASK-053.6 completato: aggiunta foundation reset password amministrativo tenant-aware con API `PUT /api/admin/users/{userId}/password`, validazione `PasswordPolicy`, update `passwordHash`/`passwordChangedAt`, UI inline nel dettaglio utente, i18n `it/fr/en`, test backend/frontend completi verdi e nessuna introduzione di self-service, email automatiche, MFA runtime o `must_change_password`. |
 | 2.12 | 2026-05-11 | TASK-053.5 completato: aggiunta foundation assegnazione/rimozione ruoli utente tenant con API `/api/admin/users/{userId}/roles`, lista ruoli disponibili per tenant, validazioni tenant/accesso/duplicato, UI minimale nel dettaglio utente, i18n `it/fr/en` e test backend/frontend completi verdi. |
 | 2.11 | 2026-05-10 | TASK-053.4 completato: aggiunte API read-only `/api/admin/users` e `/api/admin/users/{userId}`, UI `/admin/users` e `/admin/users/:id`, ruoli/accessi tenant in sola lettura, display name derivato da Employee con fallback email, query bulk anti N+1, i18n `it/fr/en`, test backend/frontend e QA registrati; nessuna migration, gestione password, role assignment o lifecycle utente. |

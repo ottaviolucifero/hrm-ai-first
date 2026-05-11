@@ -21,9 +21,11 @@ describe('UserAdministrationComponent', () => {
 
     expect(service.findUsers).toHaveBeenCalledWith('tenant-1', expect.objectContaining({ page: 0, size: 20 }));
     expect(fixture.nativeElement.textContent).toContain('Utenti');
+    expect(fixture.nativeElement.textContent).toContain('Nuovo utente');
     expect(fixture.nativeElement.textContent).toContain('Vista tenant');
     expect(fixture.nativeElement.textContent).toContain('Ada Lovelace');
     expect(fixture.nativeElement.textContent).toContain('TENANT_ADMIN');
+    expect(fixture.nativeElement.textContent).not.toContain('Riprova');
   }, 15000);
 
   it('loads platform users without tenant filter', async () => {
@@ -54,6 +56,13 @@ describe('UserAdministrationComponent', () => {
     });
 
     expect(navigateSpy).toHaveBeenCalledWith(['/admin/users', 'user-1']);
+
+    component.handleRowAction({
+      action: { id: 'edit' },
+      row: { id: 'user-1' }
+    });
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/admin/users', 'user-1', 'edit']);
   });
 
   it('reports load errors through the shared table error state', async () => {
@@ -65,6 +74,20 @@ describe('UserAdministrationComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Impossibile caricare gli utenti tenant.');
+    expect(fixture.nativeElement.textContent).not.toContain('Riprova');
+  });
+
+  it('renders the actions column as sticky right in the user list', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService());
+    fixture.detectChanges();
+
+    const actionHeader = fixture.nativeElement.querySelector('thead .data-table-actions-header') as HTMLTableCellElement;
+    const actionCell = fixture.nativeElement.querySelector('tbody .data-table-actions-cell') as HTMLTableCellElement;
+
+    expect(actionHeader.classList.contains('data-table-sticky-right')).toBe(true);
+    expect(actionCell.classList.contains('data-table-sticky-right')).toBe(true);
   });
 });
 

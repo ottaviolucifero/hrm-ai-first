@@ -12,6 +12,7 @@ export type DataTableColumnType =
   | 'status';
 
 export type DataTableColumnAlign = 'left' | 'center' | 'right';
+export type DataTableColumnSticky = 'left' | 'right';
 
 export type DataTableRow = Record<string, unknown>;
 
@@ -36,6 +37,7 @@ export interface DataTableColumn<T extends DataTableRow = DataTableRow> {
   readonly width?: string;
   readonly minWidth?: string;
   readonly align?: DataTableColumnAlign;
+  readonly sticky?: DataTableColumnSticky;
   readonly formatter?: (value: unknown, row: T) => string;
 }
 

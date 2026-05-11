@@ -10,12 +10,20 @@
                 [ngStyle]="columnStyle(column)"
                 [class.data-table-cell-center]="columnAlignment(column) === 'center'"
                 [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+                [class.data-table-sticky-left]="isColumnSticky(column, 'left')"
+                [class.data-table-sticky-right]="isColumnSticky(column, 'right')"
               >
                 {{ i18n.t(column.labelKey) }}
               </th>
             }
             @if (visibleRowActions().length > 0) {
-              <th scope="col" class="data-table-actions-header">{{ i18n.t('dataTable.columns.actions') }}</th>
+              <th
+                scope="col"
+                class="data-table-actions-header"
+                [class.data-table-sticky-left]="isActionsColumnSticky('left')"
+                [class.data-table-sticky-right]="isActionsColumnSticky('right')">
+                {{ i18n.t('dataTable.columns.actions') }}
+              </th>
             }
           </tr>
         </thead>
@@ -26,12 +34,17 @@
                 <td
                   [ngStyle]="columnStyle(column)"
                   [class.data-table-cell-center]="columnAlignment(column) === 'center'"
-                  [class.data-table-cell-right]="columnAlignment(column) === 'right'">
+                  [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+                  [class.data-table-sticky-left]="isColumnSticky(column, 'left')"
+                  [class.data-table-sticky-right]="isColumnSticky(column, 'right')">
                   <span class="data-table-skeleton-line"></span>
                 </td>
               }
               @if (visibleRowActions().length > 0) {
-                <td class="data-table-actions-cell">
+                <td
+                  class="data-table-actions-cell"
+                  [class.data-table-sticky-left]="isActionsColumnSticky('left')"
+                  [class.data-table-sticky-right]="isActionsColumnSticky('right')">
                   <span class="data-table-skeleton-action"></span>
                 </td>
               }
@@ -73,12 +86,20 @@
                 [ngStyle]="columnStyle(column)"
                 [class.data-table-cell-center]="columnAlignment(column) === 'center'"
                 [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+                [class.data-table-sticky-left]="isColumnSticky(column, 'left')"
+                [class.data-table-sticky-right]="isColumnSticky(column, 'right')"
               >
                 {{ i18n.t(column.labelKey) }}
               </th>
             }
             @if (visibleRowActions().length > 0) {
-              <th scope="col" class="data-table-actions-header">{{ i18n.t('dataTable.columns.actions') }}</th>
+              <th
+                scope="col"
+                class="data-table-actions-header"
+                [class.data-table-sticky-left]="isActionsColumnSticky('left')"
+                [class.data-table-sticky-right]="isActionsColumnSticky('right')">
+                {{ i18n.t('dataTable.columns.actions') }}
+              </th>
             }
           </tr>
         </thead>
@@ -90,6 +111,8 @@
                 [ngStyle]="columnStyle(column)"
                 [class.data-table-cell-center]="columnAlignment(column) === 'center'"
                 [class.data-table-cell-right]="columnAlignment(column) === 'right'"
+                [class.data-table-sticky-left]="isColumnSticky(column, 'left')"
+                [class.data-table-sticky-right]="isColumnSticky(column, 'right')"
               >
                 @if (isBooleanColumn(column)) {
                   <span
@@ -104,7 +127,10 @@
               </td>
             }
               @if (visibleRowActions(row).length > 0) {
-                <td class="data-table-actions-cell">
+                <td
+                  class="data-table-actions-cell"
+                  [class.data-table-sticky-left]="isActionsColumnSticky('left')"
+                  [class.data-table-sticky-right]="isActionsColumnSticky('right')">
                   <div class="data-table-actions">
                     @for (action of visibleRowActions(row); track trackRowAction($index, action)) {
                       <app-button

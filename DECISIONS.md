@@ -1345,10 +1345,36 @@ TASKS.md e ROADMAP.md devono mostrare TASK-053 come contenitore; il prossimo ste
 
 ---
 
+### DEC-034 - Tenant membership and default tenant visibility in user administration
+
+Data: 2026-05-11
+Stato: Approvata
+
+Decisione:
+
+Per gli utenti tenant standard, il tenant di appartenenza coincide con il tenant predefinito e la UI non deve mostrare due campi distinti. La distinzione tra tenant assegnato e tenant predefinito e riservata a scenari platform o multi-tenant futuri, come `PLATFORM_SUPER_ADMIN`, `PLATFORM_OPERATOR` e altri eventuali utenti platform/multi-tenant. Nei form di amministrazione utenti tenant si mostra un solo campo `Tenant`; `primaryTenant` resta un dettaglio tecnico/backend valorizzato coerentemente dal servizio.
+
+Motivazione:
+
+Evitare confusione UX e mantenere il form utente orientato ai concetti realmente utili per tenant admin e utenti standard.
+
+Alternative escluse:
+
+- mostrare sempre `Tenant di appartenenza` e `Tenant predefinito` come due campi separati nei form utenti;
+- introdurre logica multi-tenant o tenant switching dentro TASK-053.7;
+- modificare schema dati o contratto API per nascondere `primaryTenant` lato backend.
+
+Impatto:
+
+Nessun cambio schema e nessuna nuova API. La UI create/edit utenti tenant mostra un solo campo `Tenant`; `primaryTenant` resta gestito dal backend e valorizzato uguale al tenant iniziale in create. Gli scenari platform/multi-tenant saranno trattati in task futuri dedicati.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.29 | 2026-05-11 | Aggiunta DEC-034 per chiarire che nei form amministrazione utenti tenant si mostra un solo campo `Tenant`; `primaryTenant` resta dettaglio backend e la distinzione tenant/default tenant e rinviata agli scenari platform o multi-tenant futuri. |
 | 1.28 | 2026-05-10 | Raffinata DEC-033: aggiunto TASK-053.3 dedicato al CRUD ruoli custom tenant, rinumerato TASK-053.4 per la tenant user administration e riallineato il principio di aggiornare il prossimo subtask operativo non completato. |
 | 1.27 | 2026-05-10 | Aggiunta DEC-033 per fissare lo split operativo di TASK-053 in subtask interni 053.1/053.2/053.3 e mantenere TASK-054 frontend visibility e TASK-055 backend enforcement come task principali successivi. |
 | 1.26 | 2026-05-10 | Aggiunta DEC-032 per stabilizzare il formato permission code `SCOPE.RESOURCE.ACTION`, scope/resource/action iniziali, seed system permission e divieto di granularita per singola entita Master Data in TASK-052. |

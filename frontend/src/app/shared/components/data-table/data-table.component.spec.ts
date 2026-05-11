@@ -100,6 +100,7 @@ describe('DataTableComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Impossibile caricare i dati.');
+    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(0);
   });
 
   it('keeps loading state before error state', () => {
@@ -239,5 +240,49 @@ describe('DataTableComponent', () => {
 
     expect(firstRowButtons).toHaveLength(1);
     expect(secondRowButtons).toHaveLength(2);
+  });
+
+  it('applies sticky classes to configured data columns', () => {
+    component.columns = [
+      { key: 'name', labelKey: 'masterData.columns.name', sticky: 'left' },
+      { key: 'updatedAt', labelKey: 'masterData.columns.updatedAt', type: 'datetime' }
+    ];
+    component.rows = [{ id: 'country-1', name: 'Italy', updatedAt: '2026-05-11T09:00:00Z' }];
+
+    fixture.detectChanges();
+
+    const headerCells = fixture.nativeElement.querySelectorAll('thead th') as NodeListOf<HTMLTableCellElement>;
+    const bodyCells = fixture.nativeElement.querySelectorAll('tbody td') as NodeListOf<HTMLTableCellElement>;
+
+    expect(headerCells[0].classList.contains('data-table-sticky-left')).toBe(true);
+    expect(headerCells[1].classList.contains('data-table-sticky-left')).toBe(false);
+    expect(bodyCells[0].classList.contains('data-table-sticky-left')).toBe(true);
+    expect(bodyCells[1].classList.contains('data-table-sticky-left')).toBe(false);
+  });
+
+  it('applies sticky classes to the actions column when configured', () => {
+    component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
+    component.rows = [{ id: 'department-1', name: 'Human Resources' }];
+    component.rowActions = [{ id: 'view', labelKey: 'masterData.actions.view' }];
+    component.actionsColumnSticky = 'right';
+
+    fixture.detectChanges();
+
+    const actionHeader = fixture.nativeElement.querySelector('thead .data-table-actions-header') as HTMLTableCellElement;
+    const actionCell = fixture.nativeElement.querySelector('tbody .data-table-actions-cell') as HTMLTableCellElement;
+
+    expect(actionHeader.classList.contains('data-table-sticky-right')).toBe(true);
+    expect(actionCell.classList.contains('data-table-sticky-right')).toBe(true);
+  });
+
+  it('keeps default tables non-sticky when no sticky option is configured', () => {
+    component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
+    component.rows = [{ id: 'department-1', name: 'Human Resources' }];
+    component.rowActions = [{ id: 'view', labelKey: 'masterData.actions.view' }];
+
+    fixture.detectChanges();
+
+    const stickyCells = fixture.nativeElement.querySelectorAll('.data-table-sticky-left, .data-table-sticky-right');
+    expect(stickyCells).toHaveLength(0);
   });
 });

@@ -118,10 +118,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-053.4 Tenant user administration read/list/detail foundation
 - TASK-053.5 Tenant user role assignment foundation
 - TASK-053.6 Tenant user password administration foundation
+- TASK-053.7 Tenant user create/edit foundation
 
 ### Prossimo passo
 
-- TASK-053.7 Tenant user create/edit foundation
+- TASK-053.8 Tenant user lifecycle foundation
 - Follow-up gia pianificati: TASK-054 frontend visibility UX foundation, TASK-055 backend RBAC enforcement foundation, TASK-055.1 tenant/caller authorization hardening su `/api/admin/roles`
 
 ---
@@ -247,10 +248,10 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
   - TASK-053.2: frontend role permission matrix UI foundation completata;
   - TASK-053.3: tenant custom role CRUD foundation;
   - TASK-053.4: tenant user administration read/list/detail foundation completata;
-  - TASK-053.5: tenant user role assignment foundation completata;
-  - TASK-053.6: tenant user password administration foundation;
-  - TASK-053.7: tenant user create/edit foundation;
-  - TASK-053.8: tenant user lifecycle foundation;
+- TASK-053.5: tenant user role assignment foundation completata;
+- TASK-053.6: tenant user password administration foundation completata;
+- TASK-053.7: tenant user create/edit foundation completata;
+- TASK-053.8: tenant user lifecycle foundation;
   - TASK-053.9: UserAccount Employee link foundation (opzionale/da valutare);
 - TASK-054: permission summary frontend e visibility UX foundation (solo UX, non sicurezza reale);
 - TASK-055: enforcement RBAC reale lato backend con default deny e mapping endpoint/permesso/azione;
@@ -390,6 +391,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.18 | 2026-05-11 | TASK-053.7 completato: foundation create/edit utenti tenant con endpoint form-options/create/update, email normalizzata, password iniziale validata, `PASSWORD_ONLY`, `UserTenantAccess` automatico, update limitato a email/company profile, UI Angular create/edit con componenti shared e test backend/frontend verdi; prossimo passo riallineato a TASK-053.8. |
 | 2.17 | 2026-05-11 | TASK-053.6 completato: foundation reset password amministrativo tenant-aware con endpoint `PUT /api/admin/users/{userId}/password`, validazione `PasswordPolicy`, update di `passwordHash` e `passwordChangedAt`, UI inline nel dettaglio utente, i18n `it/fr/en`, test/backend build frontend verdi e prossimo passo riallineato a TASK-053.7. |
 | 2.16 | 2026-05-11 | TASK-053.5 completato: assegnazione/rimozione ruoli utente tenant con API dedicate, UI minimale nel dettaglio utente, validazioni tenant/accesso/duplicato, build/test backend/frontend verdi e prossimo passo aggiornato a TASK-053.6. |
 | 2.15 | 2026-05-10 | TASK-053.4 completato: foundation read/list/detail amministrazione utenti tenant con API `/api/admin/users`, UI `/admin/users`, dettaglio `/admin/users/:id`, ruoli/accessi tenant read-only, display name derivato da Employee con fallback email, test backend/frontend e prossimo passo riallineato a TASK-053.5. |

@@ -3,12 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
+  UserAdministrationFormOptions,
   UserAdministrationPage,
   UserPasswordResetRequest,
   UserPasswordResetResponse,
   UserAdministrationQuery,
   UserAdministrationRole,
+  UserAdministrationUserCreateRequest,
   UserAdministrationUserDetail,
+  UserAdministrationUserUpdateRequest,
   UserAdministrationUserListItem,
   UserRoleAssignmentRequest
 } from './user-administration.models';
@@ -36,8 +39,20 @@ export class UserAdministrationService {
     return this.http.get<UserAdministrationPage<UserAdministrationUserListItem>>('/api/admin/users', { params });
   }
 
+  findFormOptions(): Observable<UserAdministrationFormOptions> {
+    return this.http.get<UserAdministrationFormOptions>('/api/admin/users/form-options');
+  }
+
+  createUser(payload: UserAdministrationUserCreateRequest): Observable<UserAdministrationUserDetail> {
+    return this.http.post<UserAdministrationUserDetail>('/api/admin/users', payload);
+  }
+
   findUserById(userId: string): Observable<UserAdministrationUserDetail> {
     return this.http.get<UserAdministrationUserDetail>(`/api/admin/users/${userId}`);
+  }
+
+  updateUser(userId: string, payload: UserAdministrationUserUpdateRequest): Observable<UserAdministrationUserDetail> {
+    return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}`, payload);
   }
 
   findAssignedRoles(userId: string, tenantId: string): Observable<readonly UserAdministrationRole[]> {
