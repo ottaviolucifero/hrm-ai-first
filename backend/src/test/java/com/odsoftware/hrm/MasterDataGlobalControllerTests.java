@@ -1,5 +1,6 @@
 package com.odsoftware.hrm;
 
+import com.odsoftware.hrm.dto.masterdata.global.ItalianZipCodeImportReport;
 import com.odsoftware.hrm.repository.master.AreaRepository;
 import com.odsoftware.hrm.repository.master.CountryRepository;
 import com.odsoftware.hrm.repository.master.CurrencyRepository;
@@ -8,7 +9,9 @@ import com.odsoftware.hrm.repository.master.GlobalZipCodeRepository;
 import com.odsoftware.hrm.repository.master.MaritalStatusRepository;
 import com.odsoftware.hrm.repository.master.NationalIdentifierTypeRepository;
 import com.odsoftware.hrm.repository.master.RegionRepository;
+import com.odsoftware.hrm.service.ItalianZipCodeImportService;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -17,12 +20,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -42,6 +47,9 @@ class MasterDataGlobalControllerTests {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@MockitoBean
+	private ItalianZipCodeImportService italianZipCodeImportService;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -245,15 +253,19 @@ class MasterDataGlobalControllerTests {
 	@Test
 	@WithMockUser
 	void masterDataGlobalApiSupportsItalianZipCodeImport() throws Exception {
+		ItalianZipCodeImportReport report = new ItalianZipCodeImportReport(3L, 3L, 3L, 0L, 0L, 0L, List.of());
+		when(italianZipCodeImportService.analyzeDefaultCsv()).thenReturn(report);
+		when(italianZipCodeImportService.importDefaultCsv()).thenReturn(report);
+
 		mockMvc.perform(get("/api/master-data/global/zip-codes/import/italy"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.rowsRead").isNumber())
-				.andExpect(jsonPath("$.totalValidSourceZipCodes").isNumber());
+				.andExpect(jsonPath("$.rowsRead").value(3))
+				.andExpect(jsonPath("$.totalValidSourceZipCodes").value(3));
 
 		mockMvc.perform(post("/api/master-data/global/zip-codes/import/italy").with(csrf()))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.rowsRead").value(8465))
-				.andExpect(jsonPath("$.totalValidSourceZipCodes").value(8465))
+				.andExpect(jsonPath("$.rowsRead").value(3))
+				.andExpect(jsonPath("$.totalValidSourceZipCodes").value(3))
 				.andExpect(jsonPath("$.errors").value(0));
 	}
 
