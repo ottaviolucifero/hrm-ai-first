@@ -38,8 +38,10 @@
               <app-password-field
                 [control]="loginForm.controls.password"
                 [submitted]="submitted"
+                id="loginPassword"
                 [label]="i18n.t('login.passwordLabel')"
                 [placeholder]="i18n.t('login.passwordPlaceholder')"
+                autocomplete="current-password"
               />
 
               <a class="login-forgot-password" href="#" aria-disabled="true" (click)="$event.preventDefault()">

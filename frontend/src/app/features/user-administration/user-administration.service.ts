@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 
 import {
   UserAdministrationPage,
+  UserPasswordResetRequest,
+  UserPasswordResetResponse,
   UserAdministrationQuery,
   UserAdministrationRole,
   UserAdministrationUserDetail,
@@ -50,6 +52,10 @@ export class UserAdministrationService {
 
   assignRole(userId: string, payload: UserRoleAssignmentRequest): Observable<readonly UserAdministrationRole[]> {
     return this.http.post<readonly UserAdministrationRole[]>(`/api/admin/users/${userId}/roles`, payload);
+  }
+
+  resetPassword(userId: string, payload: UserPasswordResetRequest): Observable<UserPasswordResetResponse> {
+    return this.http.put<UserPasswordResetResponse>(`/api/admin/users/${userId}/password`, payload);
   }
 
   removeRole(userId: string, roleId: string, tenantId: string): Observable<void> {

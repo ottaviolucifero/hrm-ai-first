@@ -4,6 +4,8 @@ import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationRoleResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserDetailResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserListItemResponse;
+import com.odsoftware.hrm.dto.useradministration.UserPasswordResetRequest;
+import com.odsoftware.hrm.dto.useradministration.UserPasswordResetResponse;
 import com.odsoftware.hrm.dto.useradministration.UserRoleAssignmentRequest;
 import com.odsoftware.hrm.service.UserAdministrationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/admin/users")
-@Tag(name = "User Administration", description = "Read-only foundation API for tenant user administration")
+@Tag(name = "User Administration", description = "Foundation API for tenant user administration")
 @Validated
 public class UserAdministrationController {
 
@@ -74,6 +77,14 @@ public class UserAdministrationController {
 			@PathVariable UUID userId,
 			@Valid @RequestBody UserRoleAssignmentRequest request) {
 		return userAdministrationService.assignRole(userId, request);
+	}
+
+	@PutMapping("/{userId}/password")
+	@Operation(summary = "Reset a user password for a tenant")
+	public UserPasswordResetResponse resetPassword(
+			@PathVariable UUID userId,
+			@Valid @RequestBody UserPasswordResetRequest request) {
+		return userAdministrationService.resetPassword(userId, request);
 	}
 
 	@DeleteMapping("/{userId}/roles/{roleId}")

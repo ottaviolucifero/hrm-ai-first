@@ -1,14 +1,17 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, forkJoin, finalize } from 'rxjs';
 
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
+import { PasswordFieldComponent } from '../../shared/form-fields/password-field.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import {
   UserAdministrationRole,
+  UserPasswordResetResponse,
   UserAdministrationTenantAccess,
   UserAdministrationUserDetail
 } from './user-administration.models';
@@ -19,13 +22,20 @@ interface ReadOnlyField {
   readonly value: string;
 }
 
+type SecurityStatusVariant = 'default' | 'success' | 'warning';
+
+interface SecurityStatusField extends ReadOnlyField {
+  readonly variant: SecurityStatusVariant;
+}
+
 @Component({
   selector: 'app-user-administration-detail',
-  imports: [AppButtonComponent],
+  imports: [AppButtonComponent, PasswordFieldComponent, ReactiveFormsModule],
   templateUrl: './user-administration-detail.component.html',
   styleUrl: './user-administration-detail.component.scss'
 })
 export class UserAdministrationDetailComponent implements OnDestroy {
+  private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly userAdministrationService = inject(UserAdministrationService);
@@ -35,6 +45,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
   private loadSubscription?: Subscription;
   private roleLoadSubscription?: Subscription;
   private roleMutationSubscription?: Subscription;
+  private passwordMutationSubscription?: Subscription;
 
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
@@ -44,12 +55,53 @@ export class UserAdministrationDetailComponent implements OnDestroy {
   protected readonly roleLoading = signal(false);
   protected readonly roleSaving = signal(false);
   protected readonly roleError = signal(false);
+  protected readonly passwordSaving = signal(false);
   protected readonly assignedRoles = signal<readonly UserAdministrationRole[]>([]);
   protected readonly availableRoles = signal<readonly UserAdministrationRole[]>([]);
   protected readonly roleTenantOptions = computed(() => this.buildTenantOptions(this.user()));
   protected readonly canAssignRole = computed(() =>
     Boolean(this.user() && this.selectedTenantId() && this.selectedRoleId()) && !this.roleLoading() && !this.roleSaving()
   );
+  protected readonly passwordForm = this.formBuilder.group({
+    newPassword: ['', [Validators.required, Validators.maxLength(255)]],
+    confirmPassword: ['', [Validators.required]]
+  });
+  protected readonly canResetPassword = computed(() => {
+    const user = this.user();
+    const tenantId = this.selectedTenantId();
+    return Boolean(user && tenantId) && !this.passwordSaving();
+  });
+
+  protected detailTitle(user: UserAdministrationUserDetail | null): string {
+    const displayName = user?.displayName?.trim();
+    return displayName || this.i18n.t('userAdministration.detail.title');
+  }
+
+  protected shouldShowEmailSubtitle(user: UserAdministrationUserDetail | null): boolean {
+    if (!user) {
+      return false;
+    }
+
+    const displayName = user.displayName?.trim();
+    const email = user.email?.trim();
+    return Boolean(email) && Boolean(displayName) && displayName.toLocaleLowerCase() !== email.toLocaleLowerCase();
+  }
+
+  protected selectedRoleTenantLabel(): string {
+    const tenantId = this.selectedTenantId();
+    const tenant = this.roleTenantOptions().find((access) => access.tenantId === tenantId) ?? this.roleTenantOptions()[0];
+    if (!tenant) {
+      return this.i18n.t('userAdministration.values.none');
+    }
+
+    const tenantName = tenant.tenantName?.trim();
+    const tenantCode = tenant.tenantCode?.trim();
+    if (tenantName && tenantCode) {
+      return `${tenantName} (${tenantCode})`;
+    }
+
+    return tenantName || tenantCode || this.i18n.t('userAdministration.values.none');
+  }
 
   constructor() {
     this.loadUser();
@@ -59,6 +111,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     this.loadSubscription?.unsubscribe();
     this.roleLoadSubscription?.unsubscribe();
     this.roleMutationSubscription?.unsubscribe();
+    this.passwordMutationSubscription?.unsubscribe();
   }
 
   protected goBack(): void {
@@ -138,36 +191,101 @@ export class UserAdministrationDetailComponent implements OnDestroy {
       });
   }
 
+  protected resetPassword(): void {
+    const user = this.user();
+    const tenantId = this.selectedTenantId();
+    if (!user || !tenantId) {
+      return;
+    }
+
+    this.passwordForm.markAllAsTouched();
+    if (this.passwordForm.invalid || this.hasPasswordConfirmationMismatch()) {
+      return;
+    }
+
+    const newPassword = this.passwordForm.controls.newPassword.getRawValue().trim();
+    this.passwordSaving.set(true);
+    this.passwordMutationSubscription?.unsubscribe();
+    this.passwordMutationSubscription = this.userAdministrationService.resetPassword(user.id, { tenantId, newPassword })
+      .pipe(finalize(() => this.passwordSaving.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.applyPasswordResetResponse(response);
+          this.passwordForm.reset();
+          this.notificationService.success(this.i18n.t('userAdministration.password.feedback.success'), {
+            titleKey: 'alert.title.success'
+          });
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveApiMessage(error, 'userAdministration.password.errors.reset'), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
+  protected hasPasswordConfirmationMismatch(): boolean {
+    const { newPassword, confirmPassword } = this.passwordForm.getRawValue();
+    return Boolean(confirmPassword) && newPassword !== confirmPassword;
+  }
+
+  protected confirmPasswordErrorText(): string {
+    return this.hasPasswordConfirmationMismatch()
+      ? this.i18n.t('userAdministration.password.validation.mismatch')
+      : '';
+  }
+
   protected identityFields(user: UserAdministrationUserDetail): readonly ReadOnlyField[] {
     return [
-      { labelKey: 'userAdministration.columns.displayName', value: user.displayName },
       { labelKey: 'userAdministration.columns.email', value: user.email },
       { labelKey: 'userAdministration.columns.firstName', value: this.valueOrDash(user.firstName) },
       { labelKey: 'userAdministration.columns.lastName', value: this.valueOrDash(user.lastName) },
-      { labelKey: 'userAdministration.columns.userType', value: user.userType.code },
+      { labelKey: 'userAdministration.columns.userType', value: this.userTypeValue(user.userType) },
       { labelKey: 'userAdministration.detail.employee', value: user.employee ? `${user.employee.employeeCode} - ${user.employee.firstName} ${user.employee.lastName}` : this.i18n.t('userAdministration.values.none') }
     ];
   }
 
   protected tenantFields(user: UserAdministrationUserDetail): readonly ReadOnlyField[] {
+    const fields: ReadOnlyField[] = [
+      { labelKey: 'userAdministration.detail.membershipTenant', value: this.referenceNameWithCode(user.tenant) }
+    ];
+
+    if (user.primaryTenant && user.primaryTenant.id !== user.tenant.id) {
+      fields.push({
+        labelKey: 'userAdministration.detail.primaryTenant',
+        value: this.referenceNameWithCode(user.primaryTenant)
+      });
+    }
+
+    fields.push({
+      labelKey: 'userAdministration.detail.companyProfile',
+      value: user.companyProfile ? this.companyProfileLabel(user.companyProfile) : this.i18n.t('userAdministration.values.none')
+    });
+
+    return fields;
+  }
+
+  protected authenticationMethodField(user: UserAdministrationUserDetail): ReadOnlyField {
+    return {
+      labelKey: 'userAdministration.detail.authenticationMethod',
+      value: this.authenticationMethodValue(user.authenticationMethod)
+    };
+  }
+
+  protected securityStatusFields(user: UserAdministrationUserDetail): readonly SecurityStatusField[] {
     return [
-      { labelKey: 'masterData.columns.tenant', value: this.referenceLabel(user.tenant) },
-      { labelKey: 'userAdministration.detail.primaryTenant', value: user.primaryTenant ? this.referenceLabel(user.primaryTenant) : this.i18n.t('userAdministration.values.none') },
-      { labelKey: 'userAdministration.detail.companyProfile', value: user.companyProfile ? `${user.companyProfile.code} - ${user.companyProfile.tradeName}` : this.i18n.t('userAdministration.values.none') }
+      { labelKey: 'masterData.columns.active', value: this.booleanValue(user.active), variant: user.active ? 'success' : 'default' },
+      { labelKey: 'userAdministration.columns.locked', value: this.booleanValue(user.locked), variant: user.locked ? 'warning' : 'default' },
+      { labelKey: 'userAdministration.detail.emailVerifiedAt', value: this.dateValue(user.emailVerifiedAt, 'userAdministration.values.never'), variant: 'default' },
+      { labelKey: 'userAdministration.detail.lastLoginAt', value: this.dateValue(user.lastLoginAt, 'userAdministration.values.never'), variant: user.lastLoginAt ? 'warning' : 'default' },
+      { labelKey: 'userAdministration.detail.passwordChangedAt', value: this.dateValue(user.passwordChangedAt, 'userAdministration.values.never'), variant: 'default' },
+      { labelKey: 'userAdministration.detail.failedLoginAttempts', value: String(user.failedLoginAttempts), variant: 'default' }
     ];
   }
 
-  protected securityFields(user: UserAdministrationUserDetail): readonly ReadOnlyField[] {
+  protected securitySecondaryFields(user: UserAdministrationUserDetail): readonly ReadOnlyField[] {
     return [
-      { labelKey: 'userAdministration.detail.authenticationMethod', value: user.authenticationMethod.code },
-      { labelKey: 'userAdministration.detail.preferredLanguage', value: this.valueOrDash(user.preferredLanguage) },
-      { labelKey: 'userAdministration.detail.timeZone', value: user.timeZone ? this.referenceLabel(user.timeZone) : this.i18n.t('userAdministration.values.none') },
-      { labelKey: 'masterData.columns.active', value: this.booleanValue(user.active) },
-      { labelKey: 'userAdministration.columns.locked', value: this.booleanValue(user.locked) },
-      { labelKey: 'userAdministration.detail.emailVerifiedAt', value: this.dateValue(user.emailVerifiedAt) },
-      { labelKey: 'userAdministration.detail.passwordChangedAt', value: this.dateValue(user.passwordChangedAt) },
-      { labelKey: 'userAdministration.detail.lastLoginAt', value: this.dateValue(user.lastLoginAt) },
-      { labelKey: 'userAdministration.detail.failedLoginAttempts', value: String(user.failedLoginAttempts) },
       { labelKey: 'userAdministration.detail.emailOtpEnabled', value: this.booleanValue(user.emailOtpEnabled) },
       { labelKey: 'userAdministration.detail.appOtpEnabled', value: this.booleanValue(user.appOtpEnabled) },
       { labelKey: 'masterData.columns.strongAuthRequired', value: this.booleanValue(user.strongAuthenticationRequired) }
@@ -278,6 +396,21 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     ];
   }
 
+  private applyPasswordResetResponse(response: UserPasswordResetResponse): void {
+    this.user.update((currentUser) => {
+      if (!currentUser || currentUser.id !== response.userId) {
+        return currentUser;
+      }
+
+      return {
+        ...currentUser,
+        passwordChangedAt: response.passwordChangedAt,
+        locked: response.locked,
+        failedLoginAttempts: response.failedLoginAttempts
+      };
+    });
+  }
+
   private resolveApiMessage(error: unknown, fallbackKey: I18nKey): string {
     const response = error instanceof HttpErrorResponse
       ? error
@@ -300,17 +433,65 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     return this.i18n.t(fallbackKey);
   }
 
-  private referenceLabel(reference: { code: string; name: string }): string {
-    return `${reference.code} - ${reference.name}`;
+  private userTypeValue(reference: { code: string; name: string } | null): string {
+    const code = reference?.code?.trim().toUpperCase();
+    if (code === 'TENANT_ADMIN') {
+      return this.i18n.t('userAdministration.userType.tenantAdmin');
+    }
+
+    if (code === 'PLATFORM_SUPER_ADMIN') {
+      return this.i18n.t('userAdministration.userType.platformSuperAdmin');
+    }
+
+    return this.referenceName(reference);
+  }
+
+  private authenticationMethodValue(reference: { code: string; name: string } | null): string {
+    const code = reference?.code?.trim().toUpperCase();
+    if (code === 'PASSWORD_ONLY') {
+      return this.i18n.t('userAdministration.authenticationMethod.passwordOnly');
+    }
+
+    return this.referenceName(reference);
+  }
+
+  private referenceName(reference: { code: string; name: string } | null): string {
+    if (!reference) {
+      return this.i18n.t('userAdministration.values.none');
+    }
+
+    const name = reference.name?.trim();
+    const code = reference.code?.trim();
+    return name || code || this.i18n.t('userAdministration.values.none');
+  }
+
+  private referenceNameWithCode(reference: { code: string; name: string }): string {
+    const name = reference.name?.trim();
+    const code = reference.code?.trim();
+    if (name && code) {
+      return `${name} (${code})`;
+    }
+
+    return name || code || this.i18n.t('userAdministration.values.none');
+  }
+
+  private companyProfileLabel(companyProfile: { code: string; legalName: string; tradeName: string }): string {
+    const primaryName = companyProfile.tradeName?.trim() || companyProfile.legalName?.trim();
+    const code = companyProfile.code?.trim();
+    if (primaryName && code) {
+      return `${primaryName} (${code})`;
+    }
+
+    return primaryName || code || this.i18n.t('userAdministration.values.none');
   }
 
   private booleanValue(value: boolean): string {
     return value ? this.i18n.t('dataTable.boolean.yes') : this.i18n.t('dataTable.boolean.no');
   }
 
-  private dateValue(value: string | null): string {
+  private dateValue(value: string | null, emptyValueKey: I18nKey = 'userAdministration.values.none'): string {
     if (!value) {
-      return this.i18n.t('userAdministration.values.none');
+      return this.i18n.t(emptyValueKey);
     }
 
     const parsedDate = new Date(value);

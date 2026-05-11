@@ -117,10 +117,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-053.2 Frontend role permission matrix UI foundation
 - TASK-053.4 Tenant user administration read/list/detail foundation
 - TASK-053.5 Tenant user role assignment foundation
+- TASK-053.6 Tenant user password administration foundation
 
 ### Prossimo passo
 
-- TASK-053.6 Tenant user password administration foundation
+- TASK-053.7 Tenant user create/edit foundation
 - Follow-up gia pianificati: TASK-054 frontend visibility UX foundation, TASK-055 backend RBAC enforcement foundation, TASK-055.1 tenant/caller authorization hardening su `/api/admin/roles`
 
 ---
@@ -226,7 +227,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-053.6 Tenant user password administration foundation
 - TASK-053.7 Tenant user create/edit foundation
 - TASK-053.8 Tenant user lifecycle foundation
 - TASK-053.9 UserAccount Employee link foundation (opzionale/da valutare)
@@ -390,6 +390,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.17 | 2026-05-11 | TASK-053.6 completato: foundation reset password amministrativo tenant-aware con endpoint `PUT /api/admin/users/{userId}/password`, validazione `PasswordPolicy`, update di `passwordHash` e `passwordChangedAt`, UI inline nel dettaglio utente, i18n `it/fr/en`, test/backend build frontend verdi e prossimo passo riallineato a TASK-053.7. |
 | 2.16 | 2026-05-11 | TASK-053.5 completato: assegnazione/rimozione ruoli utente tenant con API dedicate, UI minimale nel dettaglio utente, validazioni tenant/accesso/duplicato, build/test backend/frontend verdi e prossimo passo aggiornato a TASK-053.6. |
 | 2.15 | 2026-05-10 | TASK-053.4 completato: foundation read/list/detail amministrazione utenti tenant con API `/api/admin/users`, UI `/admin/users`, dettaglio `/admin/users/:id`, ruoli/accessi tenant read-only, display name derivato da Employee con fallback email, test backend/frontend e prossimo passo riallineato a TASK-053.5. |
 | 2.14 | 2026-05-10 | Backlog TASK-053.4 splittato su user administration tenant: TASK-053.4 ridefinito come read/list/detail foundation (ruoli e accessi read-only, nome/cognome derivati da Employee con fallback email), introdotti TASK-053.5/053.6/053.7/053.8 e aggiunto TASK-053.9 opzionale per UserAccount-Employee link foundation; roadmap/prossimi passi riallineati senza modifiche codice applicativo. |
