@@ -53,6 +53,12 @@ export class UserAdministrationComponent implements OnDestroy {
       minWidth: '16rem'
     },
     {
+      key: 'employeeDisplayName',
+      labelKey: 'userAdministration.columns.employeeLink',
+      minWidth: '13rem',
+      formatter: (_value, row) => this.formatEmployeeLink(row as UserAdministrationUserListItem)
+    },
+    {
       key: 'userType.code',
       labelKey: 'userAdministration.columns.userType',
       minWidth: '10rem'
@@ -246,5 +252,14 @@ export class UserAdministrationComponent implements OnDestroy {
     return user.tenantAccesses
       .map((access) => `${access.tenantCode}: ${access.accessRole}`)
       .join(', ');
+  }
+
+  private formatEmployeeLink(user: UserAdministrationUserListItem): string {
+    if (!user.hasEmployeeLink) {
+      return this.i18n.t('userAdministration.values.noEmployeeAssociated');
+    }
+
+    const displayName = user.employeeDisplayName?.trim();
+    return displayName || this.i18n.t('userAdministration.values.employeeLinked');
   }
 }

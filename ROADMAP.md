@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.20
+Versione: 2.21
 Ultimo aggiornamento: 2026-05-11
 Stato: In avanzamento
 
@@ -120,11 +120,12 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-053.6 Tenant user password administration foundation
 - TASK-053.7 Tenant user create/edit foundation
 - TASK-053.8 Tenant user lifecycle foundation
+- TASK-053.9 UserAccount Employee link foundation
 
 ### Prossimo passo
 
 - TASK-054 frontend visibility UX foundation
-- Follow-up gia pianificati: TASK-053.9 UserAccount Employee link foundation (opzionale/da valutare), TASK-055 backend RBAC enforcement foundation, TASK-055.1 tenant/caller authorization hardening su `/api/admin/roles`
+- Follow-up gia pianificati: TASK-055 backend RBAC enforcement foundation, TASK-055.1 tenant/caller authorization hardening su `/api/admin/roles`
 
 ---
 
@@ -229,9 +230,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-053.7 Tenant user create/edit foundation
-- TASK-053.8 Tenant user lifecycle foundation
-- TASK-053.9 UserAccount Employee link foundation (opzionale/da valutare)
 - TASK-054 Frontend permission summary and visibility UX foundation
 - TASK-055 Backend RBAC enforcement foundation
 - TASK-055.1 Tenant/caller authorization hardening for admin role endpoints
@@ -252,8 +250,8 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 - TASK-053.5: tenant user role assignment foundation completata;
 - TASK-053.6: tenant user password administration foundation completata;
 - TASK-053.7: tenant user create/edit foundation completata;
-- TASK-053.8: tenant user lifecycle foundation;
-  - TASK-053.9: UserAccount Employee link foundation (opzionale/da valutare);
+- TASK-053.8: tenant user lifecycle foundation completata;
+- TASK-053.9: UserAccount Employee link foundation completata con link opzionale, fallback email e nessuna duplicazione anagrafica su `UserAccount`;
 - TASK-054: permission summary frontend e visibility UX foundation (solo UX, non sicurezza reale);
 - TASK-055: enforcement RBAC reale lato backend con default deny e mapping endpoint/permesso/azione;
 - TASK-055.1: hardening tenant/caller authorization sugli endpoint admin `/api/admin/roles`.
@@ -313,7 +311,7 @@ Nota roadmap TASK-046:
 - TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
 - TASK-047 introduce la cancellazione fisica sicura dei Master Data come azione distinta da `Disattiva`, consentita solo per record non referenziati.
 - TASK-047 e scomposto in tre subtask incrementali: 047.1 backend foundation, 047.2 frontend action, 047.3 QA and hardening.
-- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-056), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data. TASK-053 resta un contenitore cross-stack e i suoi subtask TASK-053.1..TASK-053.8 non sono milestone principali indipendenti; TASK-053.9 resta follow-up opzionale.
+- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-056), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data. TASK-053 resta un contenitore cross-stack e i suoi subtask TASK-053.1..TASK-053.9 non sono milestone principali indipendenti.
 - Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
 
 ---
@@ -392,6 +390,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.21 | 2026-05-11 | TASK-053.9 completato: formalizzato link opzionale `UserAccount` -> `Employee`, DTO admin espliciti per `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato e nessuna migration o duplicazione anagrafica su `UserAccount`; prossimo passo riallineato a TASK-054. |
 | 2.20 | 2026-05-11 | TASK-053.8 esteso con patch minima UX login: backend auth con codici errore stabili per account inactive/locked solo dopo credenziali corrette, login Angular con messaggi i18n specifici `Account disattivato` / `Account bloccato`, errore generico mantenuto per email inesistente o password errata, test completi verdi. |
 | 2.19 | 2026-05-11 | TASK-053.8 completato: aggiunta foundation lifecycle utenti tenant con endpoint `PUT /api/admin/users/{userId}/activate|deactivate|lock|unlock`, UI Angular nel dettaglio utente con conferma per `disattiva`/`blocca`, i18n `it/fr/en`, test backend/frontend completi verdi; revoca `tenant access` rinviata per assenza di distinzione sicura tra accesso primario e bridge nel contratto corrente. |
 | 2.18 | 2026-05-11 | TASK-053.7 completato: foundation create/edit utenti tenant con endpoint form-options/create/update, email normalizzata, password iniziale validata, `PASSWORD_ONLY`, `UserTenantAccess` automatico, update limitato a email/company profile, UI Angular create/edit con componenti shared e test backend/frontend verdi; prossimo passo riallineato a TASK-053.8. |

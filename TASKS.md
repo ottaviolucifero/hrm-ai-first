@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.16
+Versione: 2.17
 Ultimo aggiornamento: 2026-05-11
 Stato: In avanzamento
 
@@ -3779,7 +3779,7 @@ Fuori scope:
 
 #### TASK-053.9 - UserAccount Employee link foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend + frontend foundation / analysis
 
@@ -3789,15 +3789,35 @@ Scope:
 - gestire casi di account non collegati a Employee;
 - valutare se nome/cognome debbano restare solo su Employee o se serva una modellazione separata per account non-employee.
 
+Decisione:
+
+- `UserAccount` resta il boundary di identita applicativa, login, email, stato account, tenant access e ruoli;
+- `Employee` resta il boundary anagrafico HR;
+- il collegamento `UserAccount.employee` e opzionale;
+- account senza Employee collegato sono validi e usano fallback email / tipo account in UI e API amministrative;
+- `firstName` e `lastName` non vengono duplicati su `UserAccount`;
+- nessuna migration automatica o refactoring strutturale viene introdotto da questo task.
+
+Implementato:
+
+- confermata relazione nullable esistente `user_accounts.employee_id` verso `employees.id`;
+- estesi i DTO amministrazione utenti con `employeeId`, `employeeDisplayName` e `hasEmployeeLink`;
+- mantenuto `displayName` derivato da Employee quando presente e fallback email quando assente;
+- aggiornata UI lista/dettaglio utenti per mostrare esplicitamente account collegato/non collegato a Employee;
+- aggiornati testi i18n `it`/`fr`/`en`;
+- nessun campo anagrafico aggiunto a `UserAccount`, nessuna migration e nessun profilo HR avanzato.
+
 Fuori scope:
 
 - migration automatica senza decisione esplicita;
 - duplicazione non motivata di dati anagrafici;
 - profilo HR avanzato.
 
-Nota:
+Validazione:
 
-- TASK-053.9 resta opzionale/da valutare in base all evoluzione della foundation utenti tenant.
+- `cd backend && .\mvnw.cmd "-Dtest=UserAdministrationControllerTests" test`;
+- se frontend modificato, `cd frontend && npm.cmd run build` e `cd frontend && npm.cmd test`;
+- esiti reali da registrare in `docs/qa/QA-REPORTS.md`.
 
 ### TASK-054 - Frontend permission summary and visibility UX foundation
 
@@ -3964,6 +3984,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.17 | 2026-05-11 | TASK-053.9 completato: chiarito e applicato il link opzionale `UserAccount.employee`, con account validi senza Employee, fallback email/tipo account, DTO admin espliciti `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato, nessuna migration e nessuna duplicazione `firstName`/`lastName` su `UserAccount`. |
 | 2.16 | 2026-05-11 | TASK-053.8 esteso con patch minima UX login: codici errore backend stabili per account inactive/locked solo dopo validazione password corretta, messaggi login i18n `Account disattivato` / `Account bloccato`, mantenuto errore generico per email inesistente o password errata, test backend/frontend completi verdi. |
 | 2.15 | 2026-05-11 | TASK-053.8 completato: aggiunta foundation lifecycle utenti tenant con endpoint `activate/deactivate/lock/unlock` su `/api/admin/users/{userId}`, sezione lifecycle nel dettaglio Angular `/admin/users/:id`, conferma per azioni distruttive, i18n `it/fr/en`, test backend/frontend completi verdi e limite esplicito sulla revoca `tenant access` per mancanza di distinzione sicura tra accesso primario e bridge nel contratto corrente. |
 | 2.14 | 2026-05-11 | TASK-053.7 completato: aggiunta foundation create/edit utenti tenant con API `/api/admin/users/form-options`, `POST /api/admin/users`, `PUT /api/admin/users/{userId}`, create con password iniziale e `UserTenantAccess` automatico, update limitato a email/company profile, UI Angular `/admin/users/new` e `/admin/users/:id/edit`, i18n `it/fr/en`, riuso componenti shared e test backend/frontend completi verdi. |
