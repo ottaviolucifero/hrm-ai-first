@@ -9,5 +9,6 @@ public record ApiErrorResponse(
 		String error,
 		String message,
 		String path,
+		String code,
 		Map<String, String> validationErrors) {
 }

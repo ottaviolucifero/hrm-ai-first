@@ -998,6 +998,44 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Full-stack / integration QA reports
 
+### TASK-053.8 - Tenant user lifecycle foundation
+
+- Data: 2026-05-11
+- Branch: `task-053-8-tenant-user-lifecycle-foundation`
+- Task: TASK-053.8 - Tenant user lifecycle foundation
+- Area verificata: backend `/api/admin/users/{userId}/activate|deactivate|lock|unlock`, backend auth `/api/auth/login`, `UserAdministrationService`, `AuthService`, dettaglio Angular `/admin/users/:id`, login Angular `/login`, i18n `it/fr/en`, test backend/frontend e rispetto del limite su `tenant access`.
+- Attivita eseguite:
+  - aggiunti endpoint amministrativi idempotenti per attivazione/disattivazione e blocco/sblocco utente;
+  - mantenuto il perimetro limitato ai flag `UserAccount.active` e `UserAccount.locked`, senza migration e senza policy aggiuntive di unlock;
+  - esteso il login backend con codici errore stabili `AUTH_ACCOUNT_INACTIVE` e `AUTH_ACCOUNT_LOCKED`, emessi solo dopo lookup email valido e match corretto della password;
+  - mantenuto messaggio/codice generico per email inesistente, password errata e account inactive/locked con password errata, evitando disclosure sull esistenza dell email;
+  - aggiornato il login Angular per mostrare i messaggi i18n `Account disattivato` e `Account bloccato`, lasciando invariato il messaggio generico per credenziali errate;
+  - aggiunta sezione lifecycle nella card Sicurezza del dettaglio utente, con CTA chiare, conferma solo per `disattiva`/`blocca` e feedback tramite `NotificationService`;
+  - verificato il contratto corrente: `UserAdministrationUserDetailResponse` espone `tenantAccesses`, ma non distingue in modo sicuro accesso primario implicito via `UserAccount.tenant` da accesso bridge `UserTenantAccess`;
+  - revoca `tenant access` non implementata e documentata come limite del modello/DTO corrente;
+  - nessun audit applicativo nuovo introdotto, per assenza di un pattern service amministrativo consolidato sopra `AuditLog`.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=AuthControllerTests,UserAdministrationControllerTests" test`
+  - `cd frontend && npm.cmd test -- --include src/app/features/login/login.component.spec.ts`
+  - `cd frontend && npm.cmd test -- --include src/app/features/user-administration/user-administration.service.spec.ts --include src/app/features/user-administration/user-administration.component.spec.ts --include src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - test backend mirato OK, 43 test passed, 0 failure, 0 error;
+  - test frontend login mirato OK, 1 file passed, 6 test passed;
+  - test frontend mirati OK, 3 file passed, 30 test passed;
+  - suite backend completa OK, 161 test passed, 0 failure, 0 error, 0 skipped;
+  - build frontend OK;
+  - suite frontend completa OK, 27 file passed, 171 test passed.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - revoca `tenant access` rinviata: il contratto corrente non espone un discriminante affidabile tra accesso primario e accesso bridge;
+  - nessun audit applicativo nuovo per lifecycle utente: esistono entity/repository `AuditLog`, ma non un helper/service amministrativo riusabile gia validato;
+  - i test backend continuano a mostrare warning noti Mockito/ByteBuddy su JDK 21 e output SQL molto verbosi, non bloccanti;
+  - il comando Maven mirato con `-Dtest=AuthControllerTests,UserAdministrationControllerTests` chiude con `BUILD SUCCESS`, ma il terminale Windows stampa in coda un rumore non bloccante (`'D' ... non reconnu`) dovuto al quoting del comando invocato via PowerShell; i report Surefire confermano comunque l esito verde.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053.7 - Tenant user create/edit foundation
 
 - Data: 2026-05-11

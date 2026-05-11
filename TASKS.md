@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.12
+Versione: 2.16
 Ultimo aggiornamento: 2026-05-11
 Stato: In avanzamento
 
@@ -3748,7 +3748,7 @@ Fuori scope:
 
 #### TASK-053.8 - Tenant user lifecycle foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend + backend foundation
 
@@ -3759,11 +3759,23 @@ Scope:
 - eventuale revoca accesso tenant;
 - audit minimo solo se coerente con pattern esistenti.
 
+Implementato:
+
+- endpoint backend `PUT /api/admin/users/{userId}/activate`, `PUT /api/admin/users/{userId}/deactivate`, `PUT /api/admin/users/{userId}/lock` e `PUT /api/admin/users/{userId}/unlock`;
+- update idempotente dei soli flag `UserAccount.active` e `UserAccount.locked`, con ritorno del dettaglio utente aggiornato e senza nuove migration;
+- login backend/frontend esteso con codici errore stabili per account non attivo o bloccato solo dopo validazione corretta delle credenziali, mantenendo messaggio generico per email inesistente o password errata;
+- UI login aggiornata con messaggi i18n specifici `Account disattivato` e `Account bloccato`, senza cambiare policy JWT, lockout o password;
+- UI Angular nel dettaglio utente `/admin/users/:id` con sezione lifecycle dedicata, CTA chiare, conferma per `disattiva`/`blocca`, feedback `NotificationService`, i18n `it/fr/en` e test frontend/backend;
+- nessuna revoca `tenant access` implementata: `UserAdministrationUserDetailResponse` espone `tenantAccesses`, ma il contratto corrente non distingue in modo sicuro accesso primario implicito via `UserAccount.tenant` da accesso bridge `UserTenantAccess`;
+- nessun audit applicativo nuovo introdotto: esistono entity/repository `AuditLog`, ma non un pattern service amministrativo riusabile gia consolidato per questi endpoint.
+
 Fuori scope:
 
 - cancellazione fisica;
 - policy granulari;
 - enforcement completo.
+- revoca `tenant access` finche il contratto DTO/modello non distingua esplicitamente accesso primario vs bridge;
+- reset automatico di `failedLoginAttempts` o altre policy di unlock non gia definite dal modello corrente.
 
 #### TASK-053.9 - UserAccount Employee link foundation
 
@@ -3952,6 +3964,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.16 | 2026-05-11 | TASK-053.8 esteso con patch minima UX login: codici errore backend stabili per account inactive/locked solo dopo validazione password corretta, messaggi login i18n `Account disattivato` / `Account bloccato`, mantenuto errore generico per email inesistente o password errata, test backend/frontend completi verdi. |
+| 2.15 | 2026-05-11 | TASK-053.8 completato: aggiunta foundation lifecycle utenti tenant con endpoint `activate/deactivate/lock/unlock` su `/api/admin/users/{userId}`, sezione lifecycle nel dettaglio Angular `/admin/users/:id`, conferma per azioni distruttive, i18n `it/fr/en`, test backend/frontend completi verdi e limite esplicito sulla revoca `tenant access` per mancanza di distinzione sicura tra accesso primario e bridge nel contratto corrente. |
 | 2.14 | 2026-05-11 | TASK-053.7 completato: aggiunta foundation create/edit utenti tenant con API `/api/admin/users/form-options`, `POST /api/admin/users`, `PUT /api/admin/users/{userId}`, create con password iniziale e `UserTenantAccess` automatico, update limitato a email/company profile, UI Angular `/admin/users/new` e `/admin/users/:id/edit`, i18n `it/fr/en`, riuso componenti shared e test backend/frontend completi verdi. |
 | 2.13 | 2026-05-11 | TASK-053.6 completato: aggiunta foundation reset password amministrativo tenant-aware con API `PUT /api/admin/users/{userId}/password`, validazione `PasswordPolicy`, update `passwordHash`/`passwordChangedAt`, UI inline nel dettaglio utente, i18n `it/fr/en`, test backend/frontend completi verdi e nessuna introduzione di self-service, email automatiche, MFA runtime o `must_change_password`. |
 | 2.12 | 2026-05-11 | TASK-053.5 completato: aggiunta foundation assegnazione/rimozione ruoli utente tenant con API `/api/admin/users/{userId}/roles`, lista ruoli disponibili per tenant, validazioni tenant/accesso/duplicato, UI minimale nel dettaglio utente, i18n `it/fr/en` e test backend/frontend completi verdi. |

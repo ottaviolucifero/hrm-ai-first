@@ -16,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,19 +25,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
 	private static final String AUTHENTICATION_FAILED_MESSAGE = "Invalid email or password";
+	private static final String ACCOUNT_INACTIVE_MESSAGE = "Account inactive";
+	private static final String ACCOUNT_LOCKED_MESSAGE = "Account locked";
+	private static final String AUTHENTICATION_FAILED_CODE = "AUTH_INVALID_CREDENTIALS";
+	private static final String ACCOUNT_INACTIVE_CODE = "AUTH_ACCOUNT_INACTIVE";
+	private static final String ACCOUNT_LOCKED_CODE = "AUTH_ACCOUNT_LOCKED";
 	private static final String TOKEN_TYPE = "Bearer";
 
 	private final AuthenticationManager authenticationManager;
 	private final JwtService jwtService;
 	private final UserAccountRepository userAccountRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	public AuthService(
 			AuthenticationManager authenticationManager,
 			JwtService jwtService,
-			UserAccountRepository userAccountRepository) {
+			UserAccountRepository userAccountRepository,
+			PasswordEncoder passwordEncoder) {
 		this.authenticationManager = authenticationManager;
 		this.jwtService = jwtService;
 		this.userAccountRepository = userAccountRepository;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Transactional
@@ -44,7 +53,22 @@ public class AuthService {
 		String email = normalizeEmail(request == null ? null : request.email());
 		String password = request == null ? null : request.password();
 		if (email.isBlank() || password == null || password.isBlank()) {
-			throw new AuthenticationFailedException(AUTHENTICATION_FAILED_MESSAGE);
+			throw invalidCredentials();
+		}
+
+		UserAccount userAccount = userAccountRepository.findByEmailIgnoreCase(email)
+				.orElseThrow(this::invalidCredentials);
+		if (userAccount.getPasswordHash() == null || userAccount.getPasswordHash().isBlank()) {
+			throw invalidCredentials();
+		}
+		if (!passwordEncoder.matches(password, userAccount.getPasswordHash())) {
+			throw invalidCredentials();
+		}
+		if (!Boolean.TRUE.equals(userAccount.getActive())) {
+			throw new AuthenticationFailedException(ACCOUNT_INACTIVE_MESSAGE, ACCOUNT_INACTIVE_CODE);
+		}
+		if (Boolean.TRUE.equals(userAccount.getLocked())) {
+			throw new AuthenticationFailedException(ACCOUNT_LOCKED_MESSAGE, ACCOUNT_LOCKED_CODE);
 		}
 		try {
 			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
@@ -56,7 +80,7 @@ public class AuthService {
 					jwtService.expiresIn(),
 					toUserResponse(userDetails));
 		} catch (AuthenticationException exception) {
-			throw new AuthenticationFailedException(AUTHENTICATION_FAILED_MESSAGE);
+			throw invalidCredentials();
 		}
 	}
 
@@ -90,5 +114,9 @@ public class AuthService {
 			return "";
 		}
 		return email.trim().toLowerCase(Locale.ROOT);
+	}
+
+	private AuthenticationFailedException invalidCredentials() {
+		return new AuthenticationFailedException(AUTHENTICATION_FAILED_MESSAGE, AUTHENTICATION_FAILED_CODE);
 	}
 }

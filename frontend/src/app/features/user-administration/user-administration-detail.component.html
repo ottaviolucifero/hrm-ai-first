@@ -150,9 +150,69 @@
                     [label]="i18n.t('userAdministration.password.actions.reset')"
                     [loadingLabel]="i18n.t('userAdministration.password.actions.resetting')"
                     [loading]="passwordSaving()"
-                    [disabled]="!canResetPassword()" />
+                  [disabled]="!canResetPassword()" />
                 </div>
               </form>
+            </div>
+
+            <div class="user-lifecycle-section">
+              <div class="password-reset-section-heading">
+                <h3 id="user-detail-lifecycle-management" class="user-detail-section-title">
+                  {{ i18n.t('userAdministration.lifecycle.title') }}
+                </h3>
+                <p class="user-detail-role-management-subtitle">{{ i18n.t('userAdministration.lifecycle.subtitle') }}</p>
+              </div>
+
+              <div class="user-lifecycle-actions">
+                <app-button
+                  [variant]="activeActionVariant(currentUser)"
+                  size="sm"
+                  [icon]="activeActionIcon(currentUser)"
+                  [label]="activeActionLabel(currentUser)"
+                  [loadingLabel]="activeActionLoadingLabel(currentUser)"
+                  [loading]="lifecycleSaving()"
+                  [disabled]="lifecycleSaving()"
+                  (pressed)="triggerActiveAction()" />
+
+                <app-button
+                  [variant]="lockActionVariant(currentUser)"
+                  size="sm"
+                  [icon]="lockActionIcon(currentUser)"
+                  [label]="lockActionLabel(currentUser)"
+                  [loadingLabel]="lockActionLoadingLabel(currentUser)"
+                  [loading]="lifecycleSaving()"
+                  [disabled]="lifecycleSaving()"
+                  (pressed)="triggerLockAction()" />
+              </div>
+
+              @if (hasPendingLifecycleAction()) {
+                <div class="user-lifecycle-confirm" role="alertdialog" aria-modal="false" aria-labelledby="user-lifecycle-confirm-title">
+                  <div class="user-lifecycle-confirm-content">
+                    <h4 id="user-lifecycle-confirm-title" class="user-detail-section-title">
+                      {{ lifecycleConfirmTitle() }}
+                    </h4>
+                    <p class="user-detail-role-management-subtitle">{{ lifecycleConfirmMessage() }}</p>
+                  </div>
+
+                  <div class="user-lifecycle-confirm-actions">
+                    <app-button
+                      variant="secondary"
+                      size="sm"
+                      [label]="i18n.t('masterData.form.cancel')"
+                      [disabled]="lifecycleSaving()"
+                      (pressed)="cancelLifecycleAction()" />
+                    <app-button
+                      variant="destructive"
+                      size="sm"
+                      icon="ki-filled ki-check-circle"
+                      [label]="lifecycleConfirmActionLabel()"
+                      [loadingLabel]="lifecycleConfirmLoadingLabel()"
+                      [loading]="lifecycleSaving()"
+                      [disabled]="lifecycleSaving()"
+                      (pressed)="confirmLifecycleAction()" />
+                  </div>
+                </div>
+              }
             </div>
           </section>
         </div>

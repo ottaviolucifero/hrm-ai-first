@@ -78,6 +78,30 @@ public class UserAdministrationController {
 		return userAdministrationService.updateUser(userId, request);
 	}
 
+	@PutMapping("/{userId}/activate")
+	@Operation(summary = "Activate a user account")
+	public UserAdministrationUserDetailResponse activateUser(@PathVariable UUID userId) {
+		return userAdministrationService.activateUser(userId);
+	}
+
+	@PutMapping("/{userId}/deactivate")
+	@Operation(summary = "Deactivate a user account")
+	public UserAdministrationUserDetailResponse deactivateUser(@PathVariable UUID userId) {
+		return userAdministrationService.deactivateUser(userId);
+	}
+
+	@PutMapping("/{userId}/lock")
+	@Operation(summary = "Lock a user account")
+	public UserAdministrationUserDetailResponse lockUser(@PathVariable UUID userId) {
+		return userAdministrationService.lockUser(userId);
+	}
+
+	@PutMapping("/{userId}/unlock")
+	@Operation(summary = "Unlock a user account")
+	public UserAdministrationUserDetailResponse unlockUser(@PathVariable UUID userId) {
+		return userAdministrationService.unlockUser(userId);
+	}
+
 	@GetMapping("/{userId}/roles")
 	@Operation(summary = "List roles assigned to a user for a tenant")
 	public List<UserAdministrationRoleResponse> findAssignedRoles(

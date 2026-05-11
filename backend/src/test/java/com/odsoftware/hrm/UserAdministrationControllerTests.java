@@ -309,6 +309,68 @@ class UserAdministrationControllerTests {
 
 	@Test
 	@WithMockUser
+	void userAdministrationActivatesAndDeactivatesUserIdempotently() throws Exception {
+		UserAccount user = saveUser("task0538.active@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
+
+		mockMvc.perform(put("/api/admin/users/{userId}/deactivate", user.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(user.getId().toString()))
+				.andExpect(jsonPath("$.active").value(false))
+				.andExpect(jsonPath("$.locked").value(false));
+
+		mockMvc.perform(put("/api/admin/users/{userId}/deactivate", user.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.active").value(false));
+
+		mockMvc.perform(put("/api/admin/users/{userId}/activate", user.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.active").value(true))
+				.andExpect(jsonPath("$.locked").value(false));
+
+		UserAccount reloadedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+		assertThat(reloadedUser.getActive()).isTrue();
+		assertThat(reloadedUser.getLocked()).isFalse();
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationLocksAndUnlocksUserIdempotently() throws Exception {
+		UserAccount user = saveUser("task0538.lock@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
+		user.setFailedLoginAttempts(4);
+		userAccountRepository.saveAndFlush(user);
+
+		mockMvc.perform(put("/api/admin/users/{userId}/lock", user.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(user.getId().toString()))
+				.andExpect(jsonPath("$.active").value(true))
+				.andExpect(jsonPath("$.locked").value(true))
+				.andExpect(jsonPath("$.failedLoginAttempts").value(4));
+
+		mockMvc.perform(put("/api/admin/users/{userId}/lock", user.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.locked").value(true));
+
+		mockMvc.perform(put("/api/admin/users/{userId}/unlock", user.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.locked").value(false))
+				.andExpect(jsonPath("$.failedLoginAttempts").value(4));
+
+		UserAccount reloadedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+		assertThat(reloadedUser.getActive()).isTrue();
+		assertThat(reloadedUser.getLocked()).isFalse();
+		assertThat(reloadedUser.getFailedLoginAttempts()).isEqualTo(4);
+	}
+
+	@Test
+	@WithMockUser
+	void userAdministrationLifecycleReturnsNotFoundForMissingUser() throws Exception {
+		mockMvc.perform(put("/api/admin/users/{userId}/activate", MISSING_ID))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("User account not found: " + MISSING_ID));
+	}
+
+	@Test
+	@WithMockUser
 	void userAdministrationListsAvailableRolesForTenantExcludingAssignedAndInactiveRoles() throws Exception {
 		UserAccount user = saveUser("task0535.available@example.com", EMPLOYEE_USER_TYPE_ID, null);
 		saveUserTenantAccess(user, "TENANT_USER");
@@ -499,6 +561,14 @@ class UserAdministrationControllerTests {
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}'].put").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/activate']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/activate'].put").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/deactivate']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/deactivate'].put").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/lock']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/lock'].put").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/unlock']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/unlock'].put").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/roles'].post").exists())

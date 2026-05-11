@@ -112,7 +112,8 @@ class AuthControllerTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(loginRequest("task034.wrong.password@example.com", "Wrong1!"))))
 				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.message").value("Invalid email or password"));
+				.andExpect(jsonPath("$.message").value("Invalid email or password"))
+				.andExpect(jsonPath("$.code").value("AUTH_INVALID_CREDENTIALS"));
 	}
 
 	@Test
@@ -121,7 +122,8 @@ class AuthControllerTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(loginRequest("task034.unknown@example.com", VALID_PASSWORD))))
 				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.message").value("Invalid email or password"));
+				.andExpect(jsonPath("$.message").value("Invalid email or password"))
+				.andExpect(jsonPath("$.code").value("AUTH_INVALID_CREDENTIALS"));
 	}
 
 	@Test
@@ -132,7 +134,8 @@ class AuthControllerTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(loginRequest("task034.no.password.hash@example.com", VALID_PASSWORD))))
 				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.message").value("Invalid email or password"));
+				.andExpect(jsonPath("$.message").value("Invalid email or password"))
+				.andExpect(jsonPath("$.code").value("AUTH_INVALID_CREDENTIALS"));
 	}
 
 	@Test
@@ -143,7 +146,8 @@ class AuthControllerTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(loginRequest("task034.inactive@example.com", VALID_PASSWORD))))
 				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.message").value("Invalid email or password"));
+				.andExpect(jsonPath("$.message").value("Account inactive"))
+				.andExpect(jsonPath("$.code").value("AUTH_ACCOUNT_INACTIVE"));
 	}
 
 	@Test
@@ -154,7 +158,32 @@ class AuthControllerTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(loginRequest("task034.locked@example.com", VALID_PASSWORD))))
 				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.message").value("Invalid email or password"));
+				.andExpect(jsonPath("$.message").value("Account locked"))
+				.andExpect(jsonPath("$.code").value("AUTH_ACCOUNT_LOCKED"));
+	}
+
+	@Test
+	void loginWithInactiveAccountAndWrongPasswordStillReturnsGenericUnauthorized() throws Exception {
+		saveUser("task034.inactive.wrong-password@example.com", VALID_PASSWORD, false, false, true);
+
+		mockMvc.perform(post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(loginRequest("task034.inactive.wrong-password@example.com", "Wrong1!"))))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.message").value("Invalid email or password"))
+				.andExpect(jsonPath("$.code").value("AUTH_INVALID_CREDENTIALS"));
+	}
+
+	@Test
+	void loginWithLockedAccountAndWrongPasswordStillReturnsGenericUnauthorized() throws Exception {
+		saveUser("task034.locked.wrong-password@example.com", VALID_PASSWORD, true, true, true);
+
+		mockMvc.perform(post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(loginRequest("task034.locked.wrong-password@example.com", "Wrong1!"))))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.message").value("Invalid email or password"))
+				.andExpect(jsonPath("$.code").value("AUTH_INVALID_CREDENTIALS"));
 	}
 
 	@Test
