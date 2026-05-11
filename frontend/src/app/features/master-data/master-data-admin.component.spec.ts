@@ -310,6 +310,41 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Visualizza');
   });
 
+  it('keeps the shared data table non-sticky by default for master data resources', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'department-1',
+                tenantId: 'tenant-1',
+                code: 'HR',
+                name: 'Human Resources',
+                active: true,
+                updatedAt: '2026-05-06T09:00:00Z'
+              }
+            ])
+          )
+        )
+    });
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const stickyCells = fixture.nativeElement.querySelectorAll('.data-table-sticky-left, .data-table-sticky-right');
+    expect(stickyCells).toHaveLength(0);
+  });
+
   it('opens create form from toolbar on CRUD-enabled resource', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 

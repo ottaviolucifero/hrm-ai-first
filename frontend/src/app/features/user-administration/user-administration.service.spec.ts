@@ -79,6 +79,54 @@ describe('UserAdministrationService', () => {
     request.flush({ id: 'user-1' });
   });
 
+  it('requests user form options', () => {
+    service.findFormOptions().subscribe();
+
+    const request = httpTestingController.expectOne('/api/admin/users/form-options');
+
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      tenants: [],
+      userTypes: [],
+      authenticationMethod: { id: 'auth-1', code: 'PASSWORD_ONLY', name: 'Password only' },
+      companyProfiles: []
+    });
+  });
+
+  it('creates and updates users', () => {
+    service.createUser({
+      email: 'new@example.com',
+      userTypeId: 'type-1',
+      tenantId: 'tenant-1',
+      companyProfileId: 'company-1',
+      initialPassword: 'TenantCreate1!'
+    }).subscribe();
+
+    const createRequest = httpTestingController.expectOne('/api/admin/users');
+    expect(createRequest.request.method).toBe('POST');
+    expect(createRequest.request.body).toEqual({
+      email: 'new@example.com',
+      userTypeId: 'type-1',
+      tenantId: 'tenant-1',
+      companyProfileId: 'company-1',
+      initialPassword: 'TenantCreate1!'
+    });
+    createRequest.flush({ id: 'user-2' });
+
+    service.updateUser('user-2', {
+      email: 'updated@example.com',
+      companyProfileId: null
+    }).subscribe();
+
+    const updateRequest = httpTestingController.expectOne('/api/admin/users/user-2');
+    expect(updateRequest.request.method).toBe('PUT');
+    expect(updateRequest.request.body).toEqual({
+      email: 'updated@example.com',
+      companyProfileId: null
+    });
+    updateRequest.flush({ id: 'user-2' });
+  });
+
   it('requests assigned user roles for a tenant', () => {
     service.findAssignedRoles('user-1', 'tenant-1').subscribe();
 

@@ -20,6 +20,10 @@ export interface UserAdministrationCompanyProfile {
   readonly tradeName: string;
 }
 
+export interface UserAdministrationCompanyProfileOption extends UserAdministrationCompanyProfile {
+  readonly tenantId: string;
+}
+
 export interface UserAdministrationEmployee {
   readonly id: string;
   readonly employeeCode: string;
@@ -96,6 +100,26 @@ export interface UserRoleAssignmentRequest {
 export interface UserPasswordResetRequest {
   readonly tenantId: string;
   readonly newPassword: string;
+}
+
+export interface UserAdministrationUserCreateRequest {
+  readonly email: string;
+  readonly userTypeId: string;
+  readonly tenantId: string;
+  readonly companyProfileId: string | null;
+  readonly initialPassword: string;
+}
+
+export interface UserAdministrationUserUpdateRequest {
+  readonly email: string;
+  readonly companyProfileId: string | null;
+}
+
+export interface UserAdministrationFormOptions {
+  readonly tenants: readonly UserAdministrationReference[];
+  readonly userTypes: readonly UserAdministrationReference[];
+  readonly authenticationMethod: UserAdministrationReference;
+  readonly companyProfiles: readonly UserAdministrationCompanyProfileOption[];
 }
 
 export interface UserPasswordResetResponse {

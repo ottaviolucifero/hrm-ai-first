@@ -118,6 +118,15 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     void this.router.navigate(['/admin/users']);
   }
 
+  protected editUser(): void {
+    const user = this.user();
+    if (!user) {
+      return;
+    }
+
+    void this.router.navigate(['/admin/users', user.id, 'edit']);
+  }
+
   protected retry(): void {
     this.loadUser();
   }

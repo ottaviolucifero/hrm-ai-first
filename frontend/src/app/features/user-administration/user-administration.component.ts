@@ -98,6 +98,11 @@ export class UserAdministrationComponent implements OnDestroy {
       id: 'view',
       labelKey: 'masterData.actions.view',
       disabled: () => this.loading()
+    },
+    {
+      id: 'edit',
+      labelKey: 'masterData.actions.edit',
+      disabled: () => this.loading()
     }
   ]);
   protected readonly pageSizeOptions = [10, 20, 50] as const;
@@ -130,14 +135,19 @@ export class UserAdministrationComponent implements OnDestroy {
     this.searchChanges.next(nextSearch);
   }
 
-  protected refresh(): void {
-    this.loadUsers();
+  protected createUser(): void {
+    void this.router.navigate(['/admin/users/new']);
   }
 
   protected handleRowAction(event: UserAdministrationRowActionEvent): void {
     const user = event.row as UserAdministrationUserListItem;
     if (event.action.id === 'view') {
       void this.router.navigate(['/admin/users', user.id]);
+      return;
+    }
+
+    if (event.action.id === 'edit') {
+      void this.router.navigate(['/admin/users', user.id, 'edit']);
     }
   }
 

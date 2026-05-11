@@ -1,13 +1,17 @@
 package com.odsoftware.hrm.service;
 
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
+import com.odsoftware.hrm.dto.useradministration.UserAdministrationCompanyProfileOptionResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationCompanyProfileResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationEmployeeResponse;
+import com.odsoftware.hrm.dto.useradministration.UserAdministrationFormOptionsResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationReferenceResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationRoleResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationTenantAccessResponse;
+import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserCreateRequest;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserDetailResponse;
 import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserListItemResponse;
+import com.odsoftware.hrm.dto.useradministration.UserAdministrationUserUpdateRequest;
 import com.odsoftware.hrm.dto.useradministration.UserPasswordResetRequest;
 import com.odsoftware.hrm.dto.useradministration.UserPasswordResetResponse;
 import com.odsoftware.hrm.dto.useradministration.UserRoleAssignmentRequest;
@@ -24,19 +28,24 @@ import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.exception.InvalidRequestException;
 import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
+import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.repository.identity.UserAccountRepository;
+import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.RoleRepository;
+import com.odsoftware.hrm.repository.master.UserTypeRepository;
 import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
 import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
 import jakarta.persistence.criteria.Predicate;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.time.OffsetDateTime;
+import java.util.regex.Pattern;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -49,9 +58,15 @@ import com.odsoftware.hrm.security.PasswordPolicy;
 @Transactional(readOnly = true)
 public class UserAdministrationService {
 
+	private static final String PASSWORD_ONLY_AUTHENTICATION_METHOD_CODE = "PASSWORD_ONLY";
+	private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+
 	private final UserAccountRepository userAccountRepository;
 	private final RoleRepository roleRepository;
 	private final TenantRepository tenantRepository;
+	private final CompanyProfileRepository companyProfileRepository;
+	private final UserTypeRepository userTypeRepository;
+	private final AuthenticationMethodRepository authenticationMethodRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final UserTenantAccessRepository userTenantAccessRepository;
 	private final PasswordPolicy passwordPolicy;
@@ -61,6 +76,9 @@ public class UserAdministrationService {
 			UserAccountRepository userAccountRepository,
 			RoleRepository roleRepository,
 			TenantRepository tenantRepository,
+			CompanyProfileRepository companyProfileRepository,
+			UserTypeRepository userTypeRepository,
+			AuthenticationMethodRepository authenticationMethodRepository,
 			UserRoleRepository userRoleRepository,
 			UserTenantAccessRepository userTenantAccessRepository,
 			PasswordPolicy passwordPolicy,
@@ -68,6 +86,9 @@ public class UserAdministrationService {
 		this.userAccountRepository = userAccountRepository;
 		this.roleRepository = roleRepository;
 		this.tenantRepository = tenantRepository;
+		this.companyProfileRepository = companyProfileRepository;
+		this.userTypeRepository = userTypeRepository;
+		this.authenticationMethodRepository = authenticationMethodRepository;
 		this.userRoleRepository = userRoleRepository;
 		this.userTenantAccessRepository = userTenantAccessRepository;
 		this.passwordPolicy = passwordPolicy;
@@ -91,6 +112,31 @@ public class UserAdministrationService {
 				accessesByUserId.getOrDefault(user.getId(), List.of())));
 	}
 
+	public UserAdministrationFormOptionsResponse findFormOptions() {
+		List<UserAdministrationReferenceResponse> tenants = tenantRepository.findAll().stream()
+				.filter(tenant -> Boolean.TRUE.equals(tenant.getActive()))
+				.sorted(Comparator.comparing(Tenant::getCode))
+				.map(this::toTenantResponse)
+				.toList();
+		List<UserAdministrationReferenceResponse> userTypes = userTypeRepository.findAll().stream()
+				.filter(userType -> Boolean.TRUE.equals(userType.getActive()))
+				.filter(userType -> !isPlatformUserType(userType))
+				.sorted(Comparator.comparing(UserType::getCode))
+				.map(this::toUserTypeResponse)
+				.toList();
+		List<UserAdministrationCompanyProfileOptionResponse> companyProfiles = companyProfileRepository.findAll().stream()
+				.filter(companyProfile -> Boolean.TRUE.equals(companyProfile.getActive()))
+				.sorted(Comparator.comparing(CompanyProfile::getCode))
+				.map(this::toCompanyProfileOptionResponse)
+				.toList();
+
+		return new UserAdministrationFormOptionsResponse(
+				tenants,
+				userTypes,
+				toAuthenticationMethodResponse(findPasswordOnlyAuthenticationMethod()),
+				companyProfiles);
+	}
+
 	public UserAdministrationUserDetailResponse findUserById(UUID userId) {
 		UserAccount user = userAccountRepository.findWithAdministrationGraphById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("User account not found: " + userId));
@@ -101,6 +147,60 @@ public class UserAdministrationService {
 				.map(this::toTenantAccessResponse)
 				.toList();
 		return toDetailResponse(user, roles, tenantAccesses);
+	}
+
+	@Transactional
+	public UserAdministrationUserDetailResponse createUser(UserAdministrationUserCreateRequest request) {
+		String email = normalizeAndValidateEmail(request.email());
+		validateEmailIsAvailable(email, null);
+		if (!passwordPolicy.isValid(request.initialPassword())) {
+			throw new InvalidRequestException("Password does not satisfy the current password policy.");
+		}
+
+		Tenant tenant = findTenant(request.tenantId());
+		UserType userType = findAllowedUserType(request.userTypeId());
+		AuthenticationMethod authenticationMethod = findPasswordOnlyAuthenticationMethod();
+		CompanyProfile companyProfile = request.companyProfileId() == null
+				? null
+				: findCompanyProfileForTenant(request.companyProfileId(), tenant.getId());
+
+		UserAccount user = new UserAccount();
+		user.setTenant(tenant);
+		user.setPrimaryTenant(tenant);
+		user.setCompanyProfile(companyProfile);
+		user.setUserType(userType);
+		user.setAuthenticationMethod(authenticationMethod);
+		user.setEmail(email);
+		user.setPasswordHash(passwordEncoder.encode(request.initialPassword()));
+		user.setPasswordChangedAt(OffsetDateTime.now());
+		user.setActive(true);
+		user.setLocked(false);
+		UserAccount savedUser = userAccountRepository.saveAndFlush(user);
+
+		UserTenantAccess tenantAccess = new UserTenantAccess();
+		tenantAccess.setUserAccount(savedUser);
+		tenantAccess.setTenant(tenant);
+		tenantAccess.setAccessRole(userType.getCode());
+		tenantAccess.setActive(true);
+		userTenantAccessRepository.saveAndFlush(tenantAccess);
+
+		return findUserById(savedUser.getId());
+	}
+
+	@Transactional
+	public UserAdministrationUserDetailResponse updateUser(UUID userId, UserAdministrationUserUpdateRequest request) {
+		UserAccount user = userAccountRepository.findWithAdministrationGraphById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User account not found: " + userId));
+		String email = normalizeAndValidateEmail(request.email());
+		validateEmailIsAvailable(email, user.getId());
+		CompanyProfile companyProfile = request.companyProfileId() == null
+				? null
+				: findCompanyProfileForTenant(request.companyProfileId(), user.getTenant().getId());
+
+		user.setEmail(email);
+		user.setCompanyProfile(companyProfile);
+		UserAccount savedUser = userAccountRepository.saveAndFlush(user);
+		return findUserById(savedUser.getId());
 	}
 
 	public List<UserAdministrationRoleResponse> findAssignedRoles(UUID userId, UUID tenantId) {
@@ -310,9 +410,58 @@ public class UserAdministrationService {
 				.orElseThrow(() -> new ResourceNotFoundException("Tenant not found: " + tenantId));
 	}
 
+	private UserType findAllowedUserType(UUID userTypeId) {
+		UserType userType = userTypeRepository.findById(userTypeId)
+				.orElseThrow(() -> new ResourceNotFoundException("User type not found: " + userTypeId));
+		if (!Boolean.TRUE.equals(userType.getActive()) || isPlatformUserType(userType)) {
+			throw new InvalidRequestException("User type is not allowed for tenant user creation: " + userTypeId);
+		}
+
+		return userType;
+	}
+
+	private AuthenticationMethod findPasswordOnlyAuthenticationMethod() {
+		return authenticationMethodRepository.findAll().stream()
+				.filter(authenticationMethod -> PASSWORD_ONLY_AUTHENTICATION_METHOD_CODE.equals(authenticationMethod.getCode()))
+				.findFirst()
+				.orElseThrow(() -> new ResourceNotFoundException("Authentication method not found: " + PASSWORD_ONLY_AUTHENTICATION_METHOD_CODE));
+	}
+
+	private CompanyProfile findCompanyProfileForTenant(UUID companyProfileId, UUID tenantId) {
+		CompanyProfile companyProfile = companyProfileRepository.findById(companyProfileId)
+				.orElseThrow(() -> new ResourceNotFoundException("Company profile not found: " + companyProfileId));
+		if (!tenantId.equals(companyProfile.getTenant().getId())) {
+			throw new InvalidRequestException("Company profile does not belong to tenant: " + companyProfileId);
+		}
+
+		return companyProfile;
+	}
+
 	private Role findRole(UUID roleId) {
 		return roleRepository.findById(roleId)
 				.orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleId));
+	}
+
+	private String normalizeAndValidateEmail(String email) {
+		String normalizedEmail = email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+		if (normalizedEmail.isBlank() || normalizedEmail.length() > 150 || !EMAIL_PATTERN.matcher(normalizedEmail).matches()) {
+			throw new InvalidRequestException("Email is not valid.");
+		}
+
+		return normalizedEmail;
+	}
+
+	private void validateEmailIsAvailable(String email, UUID currentUserId) {
+		userAccountRepository.findByEmailIgnoreCase(email)
+				.filter(existingUser -> currentUserId == null || !existingUser.getId().equals(currentUserId))
+				.ifPresent(existingUser -> {
+					throw new ResourceConflictException("User email already exists: " + email);
+				});
+	}
+
+	private boolean isPlatformUserType(UserType userType) {
+		String code = userType.getCode();
+		return code != null && code.trim().toUpperCase(Locale.ROOT).startsWith("PLATFORM_");
 	}
 
 	private void validateRoleTenant(Role role, Tenant tenant) {
@@ -377,6 +526,15 @@ public class UserAdministrationService {
 						companyProfile.getCode(),
 						companyProfile.getLegalName(),
 						companyProfile.getTradeName());
+	}
+
+	private UserAdministrationCompanyProfileOptionResponse toCompanyProfileOptionResponse(CompanyProfile companyProfile) {
+		return new UserAdministrationCompanyProfileOptionResponse(
+				companyProfile.getId(),
+				companyProfile.getTenant().getId(),
+				companyProfile.getCode(),
+				companyProfile.getLegalName(),
+				companyProfile.getTradeName());
 	}
 
 	private UserAdministrationEmployeeResponse toEmployeeResponse(Employee employee) {

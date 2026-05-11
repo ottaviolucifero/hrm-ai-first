@@ -31,6 +31,14 @@
           icon="ki-filled ki-arrow-left"
           [label]="i18n.t('userAdministration.actions.back')"
           (pressed)="goBack()" />
+        @if (user()) {
+          <app-button
+            variant="primary"
+            size="sm"
+            icon="ki-filled ki-pencil"
+            [label]="i18n.t('userAdministration.actions.edit')"
+            (pressed)="editUser()" />
+        }
         @if (hasError()) {
           <app-button
             variant="secondary"

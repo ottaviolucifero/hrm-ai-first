@@ -1,0 +1,178 @@
+<section class="kt-container-fixed py-4 user-form-page" aria-labelledby="user-form-title">
+  <div class="user-form-layout">
+    <header class="user-form-page-header">
+      <div class="user-form-heading">
+        <span class="user-form-eyebrow">{{ i18n.t('nav.governanceSecurity') }}</span>
+        <h1 id="user-form-title" class="text-xl font-semibold text-mono">{{ i18n.t(titleKey()) }}</h1>
+        <p class="user-form-subtitle">{{ i18n.t(subtitleKey()) }}</p>
+      </div>
+
+      <div class="user-form-page-actions" role="group" [attr.aria-label]="i18n.t('userAdministration.form.actions.toolbar')">
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrow-left"
+          [label]="i18n.t('userAdministration.actions.back')"
+          (pressed)="goBack()" />
+        @if (hasError()) {
+          <app-button
+            variant="secondary"
+            size="sm"
+            icon="ki-filled ki-arrows-circle"
+            [label]="i18n.t('rolePermissions.actions.retry')"
+            (pressed)="retry()" />
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <section class="kt-card user-form-state" role="status" aria-live="polite">
+        {{ i18n.t('userAdministration.form.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card user-form-state user-form-state-error" role="alert">
+        {{ i18n.t('userAdministration.form.errors.load') }}
+      </section>
+    } @else {
+      <form class="user-form-grid" [formGroup]="form" (ngSubmit)="submit()">
+        <section class="kt-card user-form-card" aria-labelledby="user-form-account">
+          <h2 id="user-form-account" class="user-form-card-title">{{ i18n.t('userAdministration.form.account.title') }}</h2>
+
+          <app-email-field
+            [control]="form.controls.email"
+            [label]="i18n.t('userAdministration.columns.email')"
+            [placeholder]="i18n.t('userAdministration.form.email.placeholder')"
+            [submitted]="submitted()" />
+
+          @if (mode() === 'create') {
+            <label class="user-form-field">
+              <span>{{ i18n.t('userAdministration.columns.userType') }}</span>
+              <select class="kt-input" formControlName="userTypeId" [attr.aria-invalid]="form.controls.userTypeId.invalid && submitted()">
+                <option value="">{{ i18n.t('userAdministration.form.userType.placeholder') }}</option>
+                @for (userType of formOptions()?.userTypes ?? []; track userType.id) {
+                  <option [value]="userType.id">{{ userType.name || userType.code }}</option>
+                }
+              </select>
+              @if (form.controls.userTypeId.hasError('required') && submitted()) {
+                <small>{{ i18n.t('userAdministration.form.validation.userTypeRequired') }}</small>
+              }
+            </label>
+          } @else {
+            <app-input
+              formControlName="userTypeLabel"
+              [label]="i18n.t('userAdministration.columns.userType')" />
+          }
+
+          <app-input
+            formControlName="authenticationMethodLabel"
+            [label]="i18n.t('userAdministration.detail.authenticationMethod')" />
+
+          @if (mode() === 'edit' && shouldShowEmployee()) {
+            <app-input
+              formControlName="employeeLabel"
+              [label]="i18n.t('userAdministration.detail.employee')" />
+          }
+
+          @if (mode() === 'create') {
+            <app-password-field
+              id="user-create-initial-password"
+              [control]="form.controls.initialPassword"
+              [label]="i18n.t('userAdministration.form.initialPassword')"
+              autocomplete="new-password"
+              [submitted]="submitted()" />
+
+            <app-password-field
+              id="user-create-confirm-password"
+              [control]="form.controls.confirmPassword"
+              [label]="i18n.t('userAdministration.password.confirmPassword')"
+              [errorText]="confirmPasswordErrorText()"
+              autocomplete="new-password"
+              [submitted]="submitted()" />
+          }
+        </section>
+
+        <section class="kt-card user-form-card" aria-labelledby="user-form-context">
+          <h2 id="user-form-context" class="user-form-card-title">{{ i18n.t('userAdministration.form.context.title') }}</h2>
+
+          @if (canEditTenant()) {
+            <label class="user-form-field">
+              <span>{{ i18n.t('userAdministration.form.tenant.label') }}</span>
+              <select class="kt-input" formControlName="tenantId" (change)="selectTenant($event)" [attr.aria-invalid]="form.controls.tenantId.invalid && submitted()">
+                <option value="">{{ i18n.t('userAdministration.form.tenant.placeholder') }}</option>
+                @for (tenant of formOptions()?.tenants ?? []; track tenant.id) {
+                  <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.code }})</option>
+                }
+              </select>
+              @if (form.controls.tenantId.hasError('required') && submitted()) {
+                <small>{{ i18n.t('userAdministration.form.validation.tenantRequired') }}</small>
+              }
+            </label>
+          } @else {
+            <app-input
+              formControlName="tenantLabel"
+              [label]="i18n.t('userAdministration.form.tenant.label')" />
+          }
+
+          <label class="user-form-field">
+            <span>{{ i18n.t('userAdministration.form.companyProfile.label') }}</span>
+            <select class="kt-input" formControlName="companyProfileId">
+              <option value="">{{ i18n.t('userAdministration.form.companyProfile.none') }}</option>
+              @for (companyProfile of filteredCompanyProfiles(); track companyProfile.id) {
+                <option [value]="companyProfile.id">
+                  {{ companyProfile.tradeName || companyProfile.legalName }} ({{ companyProfile.code }})
+                </option>
+              }
+            </select>
+          </label>
+        </section>
+
+        <section class="kt-card user-form-card user-form-card-wide" aria-labelledby="user-form-summary">
+          <h2 id="user-form-summary" class="user-form-card-title">
+            {{ mode() === 'create' ? i18n.t('userAdministration.form.summary.title') : i18n.t('userAdministration.form.separateManagement.title') }}
+          </h2>
+
+          <div class="user-form-summary-grid">
+            <app-checkbox
+              [label]="i18n.t('masterData.columns.active')"
+              [checked]="true"
+              [disabled]="true"
+              [helpText]="i18n.t('userAdministration.form.summary.active')" />
+            <app-checkbox
+              [label]="i18n.t('userAdministration.columns.locked')"
+              [checked]="false"
+              [disabled]="true"
+              [helpText]="i18n.t('userAdministration.form.summary.locked')" />
+          </div>
+
+          <div class="user-form-notes">
+            @if (mode() === 'create') {
+              <p>{{ i18n.t('userAdministration.form.summary.roles') }}</p>
+              <p>{{ i18n.t('userAdministration.form.summary.employee') }}</p>
+            } @else {
+              <p>{{ i18n.t('userAdministration.form.summary.passwordEdit') }}</p>
+              <p>{{ i18n.t('userAdministration.form.summary.lifecycle') }}</p>
+              <p>{{ i18n.t('userAdministration.form.summary.rolesEdit') }}</p>
+            }
+          </div>
+
+          <div class="user-form-actions">
+            <app-button
+              variant="secondary"
+              type="button"
+              [label]="i18n.t('userAdministration.form.actions.cancel')"
+              [disabled]="saving()"
+              (pressed)="goBack()" />
+            <app-button
+              type="submit"
+              variant="primary"
+              icon="ki-filled ki-check"
+              [label]="i18n.t(submitLabelKey())"
+              [loadingLabel]="i18n.t(submitLoadingLabelKey())"
+              [loading]="saving()"
+              [disabled]="submitDisabled()" />
+          </div>
+        </section>
+      </form>
+    }
+  </div>
+</section>

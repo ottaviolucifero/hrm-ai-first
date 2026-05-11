@@ -8,6 +8,7 @@ import { RoleAdministrationComponent } from './features/role-administration/role
 import { RolePermissionMatrixComponent } from './features/role-permissions/role-permission-matrix.component';
 import { UserAdministrationComponent } from './features/user-administration/user-administration.component';
 import { UserAdministrationDetailComponent } from './features/user-administration/user-administration-detail.component';
+import { UserAdministrationFormComponent } from './features/user-administration/user-administration-form.component';
 import { AppShellComponent } from './layout/shell/app-shell.component';
 
 export const routes: Routes = [
@@ -39,6 +40,14 @@ export const routes: Routes = [
           {
             path: 'users',
             component: UserAdministrationComponent
+          },
+          {
+            path: 'users/new',
+            component: UserAdministrationFormComponent
+          },
+          {
+            path: 'users/:id/edit',
+            component: UserAdministrationFormComponent
           },
           {
             path: 'users/:id',

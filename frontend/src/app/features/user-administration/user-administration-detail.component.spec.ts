@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { NotificationService } from '../../shared/feedback/notification.service';
@@ -44,6 +44,7 @@ describe('UserAdministrationDetailComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Identità');
     expect(fixture.nativeElement.textContent).toContain('Gestione ruoli utente');
     expect(fixture.nativeElement.textContent).toContain('Reset password');
+    expect(fixture.nativeElement.textContent).toContain('Modifica');
     expect(fixture.nativeElement.textContent).toContain('Creato');
     expect(fixture.nativeElement.textContent).toContain('Aggiornato');
     expect(fixture.nativeElement.textContent).not.toContain('accessi tenant');
@@ -86,6 +87,20 @@ describe('UserAdministrationDetailComponent', () => {
     expect(roleManagementSection.querySelector('.user-detail-role-tenant-static')?.textContent).toContain('Tenant (TENANT)');
     expect(roleManagementSection.querySelector('.user-detail-role-select select')).not.toBeNull();
   }, 15000);
+
+  it('navigates to edit from the detail action', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService());
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as { editUser: () => void };
+
+    component.editUser();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/admin/users', 'user-1', 'edit']);
+  });
 
   it('does not duplicate the email in the header when displayName equals email', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
