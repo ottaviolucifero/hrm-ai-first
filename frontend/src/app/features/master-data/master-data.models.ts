@@ -346,7 +346,9 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         id: 'employment-statuses',
         titleKey: 'masterData.entities.employmentStatuses',
         endpoint: '/api/master-data/hr-business/employment-statuses',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'work-modes',
@@ -360,31 +362,41 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         id: 'leave-request-types',
         titleKey: 'masterData.entities.leaveRequestTypes',
         endpoint: '/api/master-data/hr-business/leave-request-types',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'document-types',
         titleKey: 'masterData.entities.documentTypes',
         endpoint: '/api/master-data/hr-business/document-types',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'device-types',
         titleKey: 'masterData.entities.deviceTypes',
         endpoint: '/api/master-data/hr-business/device-types',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'device-brands',
         titleKey: 'masterData.entities.deviceBrands',
         endpoint: '/api/master-data/hr-business/device-brands',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       },
       {
         id: 'device-statuses',
         titleKey: 'masterData.entities.deviceStatuses',
         endpoint: '/api/master-data/hr-business/device-statuses',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_FORM
       }
     ]
   },

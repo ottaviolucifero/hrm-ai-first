@@ -15,5 +15,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
 
 	boolean existsByTenant_IdAndContractType(UUID tenantId, String contractType);
 
+	boolean existsByTenant_IdAndEmploymentStatus(UUID tenantId, String employmentStatus);
+
 	boolean existsByTenant_IdAndWorkMode(UUID tenantId, String workMode);
 }

@@ -4,6 +4,57 @@ Registro ufficiale degli esiti QA.
 
 Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
+## Cross-stack QA reports
+
+### TASK-059 - Master Data CRUD completion
+
+- Data: 2026-05-12
+- Branch: `task-059-master-data-crud-completion`
+- Task: TASK-059 - Master Data CRUD completion
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/MasterDataHrBusinessController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataHrBusinessService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/employee/EmployeeRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/leave/LeaveRequestRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/payroll/PayrollDocumentRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/device/DeviceRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/config/SecurityConfig.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataHrBusinessControllerTests.java`
+  - `frontend/src/app/features/master-data/`
+  - `frontend/src/app/shared/components/data-table/`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - mappate le 6 entita HR/business richieste e confermata presenza backend di CRUD soft-delete gia operativo;
+  - verificato il pattern esistente di physical delete su `Department`, `JobTitle`, `ContractType`, `WorkMode` e riusato il medesimo helper service/controller;
+  - verificato il mapping reale dei riferimenti business richiesti prima della patch: `EmploymentStatus` referenziato da `Employee` tramite `code` string tenant-scoped, `LeaveRequestType` da `LeaveRequest`, `DocumentType` da `PayrollDocument`, `DeviceType`/`DeviceBrand`/`DeviceStatus` da `Device`;
+  - verificato il riuso frontend di `STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS`, `deletePhysicalRow(...)` e `ConfirmDialogComponent`;
+  - confermato che backend e frontend gia usano i permessi esistenti `TENANT.MASTER_DATA.DELETE|MANAGE` e `PLATFORM.MASTER_DATA.DELETE|MANAGE` anche per il physical delete, senza necessita di nuovi permission code o aggiornamenti matrice ruoli.
+- Patch applicata:
+  - aggiunti endpoint `DELETE /physical` in `MasterDataHrBusinessController` per `EmploymentStatus`, `LeaveRequestType`, `DocumentType`, `DeviceType`, `DeviceBrand`, `DeviceStatus`;
+  - estesi repository e `MasterDataHrBusinessService` con reference checks coerenti e fallback `DataIntegrityViolationException -> 409 Conflict`;
+  - abilitate in `MASTER_DATA_CATEGORIES` le row actions `view/edit/deactivate/deletePhysical` per le 6 entita richieste, mantenendo distinta la disattivazione logica;
+  - aggiornato il messaggio `masterData.deletePhysical.confirmMessage` in `it/fr/en`;
+  - estesi i test backend per coprire `204/404/409` su tutti i nuovi endpoint `/physical`;
+  - aggiornati i test frontend per verificare le 4 azioni, il confirmation dialog shared e il permission gating di entrambe le azioni distruttive.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=MasterDataHrBusinessControllerTests test` inizialmente fallito per sandbox/network Maven su parent POM;
+  - `cd backend && .\mvnw.cmd -Dtest=MasterDataHrBusinessControllerTests test` rieseguito con autorizzazione: BUILD SUCCESS, 16 test, 0 failure, 0 error, 0 skipped;
+  - `cd frontend && npm.cmd run build`: OK;
+  - `cd frontend && npm.cmd test`: OK, 30 file test passed, 202 test passed;
+  - `cd backend && .\mvnw.cmd test`: BUILD SUCCESS, 189 test, 0 failure, 0 error, 0 skipped.
+- QA manuale:
+  - non eseguita con browser/app avviate in questa sessione CLI;
+  - validazione funzionale coperta da test backend/frontend su endpoint `/physical`, confirmation dialog shared, refresh tabella e visibility permessi.
+- Regressioni trovate: nessuna regressione automatica rilevata.
+- Limiti/note:
+  - warning non bloccanti Maven/JVM gia noti: Mockito self-attach / ByteBuddy dynamic agent;
+  - in coda ai comandi Maven compare il messaggio shell residuale `'D' n est pas reconnu...`, ma Maven termina con `BUILD SUCCESS`;
+  - `TASK-059.1` resta follow-up necessario per la futura standardizzazione dei `code`; non implementato in questo task.
+- Stato finale: PASS WITH NOTES
+
 ## Documentation QA reports
 
 ### TASK-058 - Backlog reorganization and renumbering from TASK-058

@@ -17,8 +17,10 @@ import com.odsoftware.hrm.entity.master.WorkMode;
 import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.repository.device.DeviceRepository;
 import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
+import com.odsoftware.hrm.repository.leave.LeaveRequestRepository;
 import com.odsoftware.hrm.repository.master.ContractTypeRepository;
 import com.odsoftware.hrm.repository.master.DepartmentRepository;
 import com.odsoftware.hrm.repository.master.DeviceBrandRepository;
@@ -29,6 +31,7 @@ import com.odsoftware.hrm.repository.master.EmploymentStatusRepository;
 import com.odsoftware.hrm.repository.master.JobTitleRepository;
 import com.odsoftware.hrm.repository.master.LeaveRequestTypeRepository;
 import com.odsoftware.hrm.repository.master.WorkModeRepository;
+import com.odsoftware.hrm.repository.payroll.PayrollDocumentRepository;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.BiPredicate;
@@ -47,6 +50,9 @@ public class MasterDataHrBusinessService {
 	private final TenantRepository tenantRepository;
 	private final EmployeeRepository employeeRepository;
 	private final ContractRepository contractRepository;
+	private final LeaveRequestRepository leaveRequestRepository;
+	private final PayrollDocumentRepository payrollDocumentRepository;
+	private final DeviceRepository deviceRepository;
 	private final DepartmentRepository departmentRepository;
 	private final JobTitleRepository jobTitleRepository;
 	private final ContractTypeRepository contractTypeRepository;
@@ -62,6 +68,9 @@ public class MasterDataHrBusinessService {
 			TenantRepository tenantRepository,
 			EmployeeRepository employeeRepository,
 			ContractRepository contractRepository,
+			LeaveRequestRepository leaveRequestRepository,
+			PayrollDocumentRepository payrollDocumentRepository,
+			DeviceRepository deviceRepository,
 			DepartmentRepository departmentRepository,
 			JobTitleRepository jobTitleRepository,
 			ContractTypeRepository contractTypeRepository,
@@ -75,6 +84,9 @@ public class MasterDataHrBusinessService {
 		this.tenantRepository = tenantRepository;
 		this.employeeRepository = employeeRepository;
 		this.contractRepository = contractRepository;
+		this.leaveRequestRepository = leaveRequestRepository;
+		this.payrollDocumentRepository = payrollDocumentRepository;
+		this.deviceRepository = deviceRepository;
 		this.departmentRepository = departmentRepository;
 		this.jobTitleRepository = jobTitleRepository;
 		this.contractTypeRepository = contractTypeRepository;
@@ -194,6 +206,11 @@ public class MasterDataHrBusinessService {
 		disable(id, employmentStatusRepository, "Employment status");
 	}
 
+	@Transactional
+	public void deletePhysicalEmploymentStatus(UUID id) {
+		deletePhysical(id, employmentStatusRepository, this::isEmploymentStatusReferenced, "Employment status");
+	}
+
 	public MasterDataPageResponse<TenantMasterDataResponse> findWorkModes(Integer page, Integer size, String search) {
 		return findAll(workModeRepository, page, size, search);
 	}
@@ -245,6 +262,11 @@ public class MasterDataHrBusinessService {
 		disable(id, leaveRequestTypeRepository, "Leave request type");
 	}
 
+	@Transactional
+	public void deletePhysicalLeaveRequestType(UUID id) {
+		deletePhysical(id, leaveRequestTypeRepository, this::isLeaveRequestTypeReferenced, "Leave request type");
+	}
+
 	public MasterDataPageResponse<TenantMasterDataResponse> findDocumentTypes(Integer page, Integer size, String search) {
 		return findAll(documentTypeRepository, page, size, search);
 	}
@@ -266,6 +288,11 @@ public class MasterDataHrBusinessService {
 	@Transactional
 	public void disableDocumentType(UUID id) {
 		disable(id, documentTypeRepository, "Document type");
+	}
+
+	@Transactional
+	public void deletePhysicalDocumentType(UUID id) {
+		deletePhysical(id, documentTypeRepository, this::isDocumentTypeReferenced, "Document type");
 	}
 
 	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceTypes(Integer page, Integer size, String search) {
@@ -291,6 +318,11 @@ public class MasterDataHrBusinessService {
 		disable(id, deviceTypeRepository, "Device type");
 	}
 
+	@Transactional
+	public void deletePhysicalDeviceType(UUID id) {
+		deletePhysical(id, deviceTypeRepository, this::isDeviceTypeReferenced, "Device type");
+	}
+
 	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceBrands(Integer page, Integer size, String search) {
 		return findAll(deviceBrandRepository, page, size, search);
 	}
@@ -314,6 +346,11 @@ public class MasterDataHrBusinessService {
 		disable(id, deviceBrandRepository, "Device brand");
 	}
 
+	@Transactional
+	public void deletePhysicalDeviceBrand(UUID id) {
+		deletePhysical(id, deviceBrandRepository, this::isDeviceBrandReferenced, "Device brand");
+	}
+
 	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceStatuses(Integer page, Integer size, String search) {
 		return findAll(deviceStatusRepository, page, size, search);
 	}
@@ -335,6 +372,11 @@ public class MasterDataHrBusinessService {
 	@Transactional
 	public void disableDeviceStatus(UUID id) {
 		disable(id, deviceStatusRepository, "Device status");
+	}
+
+	@Transactional
+	public void deletePhysicalDeviceStatus(UUID id) {
+		deletePhysical(id, deviceStatusRepository, this::isDeviceStatusReferenced, "Device status");
 	}
 
 	private <T extends BaseTenantMasterEntity> MasterDataPageResponse<TenantMasterDataResponse> findAll(
@@ -503,6 +545,30 @@ public class MasterDataHrBusinessService {
 
 	private boolean isWorkModeReferenced(WorkMode workMode) {
 		return employeeRepository.existsByTenant_IdAndWorkMode(workMode.getTenantId(), workMode.getCode());
+	}
+
+	private boolean isEmploymentStatusReferenced(EmploymentStatus employmentStatus) {
+		return employeeRepository.existsByTenant_IdAndEmploymentStatus(employmentStatus.getTenantId(), employmentStatus.getCode());
+	}
+
+	private boolean isLeaveRequestTypeReferenced(LeaveRequestType leaveRequestType) {
+		return leaveRequestRepository.existsByLeaveRequestType_Id(leaveRequestType.getId());
+	}
+
+	private boolean isDocumentTypeReferenced(DocumentType documentType) {
+		return payrollDocumentRepository.existsByDocumentType_Id(documentType.getId());
+	}
+
+	private boolean isDeviceTypeReferenced(DeviceType deviceType) {
+		return deviceRepository.existsByType_Id(deviceType.getId());
+	}
+
+	private boolean isDeviceBrandReferenced(DeviceBrand deviceBrand) {
+		return deviceRepository.existsByBrand_Id(deviceBrand.getId());
+	}
+
+	private boolean isDeviceStatusReferenced(DeviceStatus deviceStatus) {
+		return deviceRepository.existsByDeviceStatus_Id(deviceStatus.getId());
 	}
 
 	private ResourceConflictException physicalDeleteConflict(String label) {

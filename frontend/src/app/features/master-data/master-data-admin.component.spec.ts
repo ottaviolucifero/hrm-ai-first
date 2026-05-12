@@ -328,6 +328,156 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Visualizza');
   });
 
+  it('keeps deactivate distinct and executes physical delete for TASK-059 resources', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'employment-status-1',
+                tenantId: 'tenant-1',
+                code: 'ACTIVE',
+                name: 'Active',
+                active: true,
+                updatedAt: '2026-05-12T09:00:00Z'
+              }
+            ])
+          )
+        )
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'employment-status-1',
+                tenantId: 'tenant-1',
+                code: 'ACTIVE',
+                name: 'Active',
+                active: false,
+                updatedAt: '2026-05-12T09:00:00Z'
+              }
+            ])
+          )
+        ),
+      deleteRow: vi.fn(() => of(void 0)),
+      deletePhysicalRow: vi.fn(() => of(void 0))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const selects = fixture.nativeElement.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+    selects[0].value = 'hrBusiness';
+    selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    selects[1].value = 'employment-statuses';
+    selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const newButton = fixture.nativeElement.querySelector('.master-data-toolbar-actions .kt-btn-primary') as HTMLButtonElement;
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+
+    expect(newButton).toBeTruthy();
+    expect(actionButtons).toHaveLength(4);
+
+    actionButtons[2].click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Conferma disattivazione');
+    expect(fixture.nativeElement.textContent).toContain('Active');
+
+    const cancelButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Annulla')) as HTMLButtonElement;
+
+    cancelButton.click();
+    fixture.detectChanges();
+
+    actionButtons[1].click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Modifica');
+    expect(fixture.nativeElement.textContent).toContain('ACTIVE');
+
+    const closeButton = fixture.nativeElement.querySelector('.master-data-modal .kt-btn-ghost') as HTMLButtonElement;
+    closeButton.click();
+    fixture.detectChanges();
+
+    actionButtons[3].click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Conferma eliminazione');
+    expect(fixture.nativeElement.textContent).toContain('Active');
+    expect(fixture.nativeElement.textContent).toContain('L eliminazione e permanente');
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Elimina')) as HTMLButtonElement;
+
+    confirmButton.click();
+    fixture.detectChanges();
+
+    expect(masterDataService.deleteRow).not.toHaveBeenCalled();
+    expect(masterDataService.deletePhysicalRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/employment-statuses' }),
+      'employment-status-1'
+    );
+  });
+
+  it('disables both TASK-059 destructive row actions when the user lacks master data delete permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'device-type-1',
+                tenantId: 'tenant-1',
+                code: 'LAPTOP',
+                name: 'Laptop',
+                active: true
+              }
+            ])
+          )
+        )
+    });
+
+    const fixture = await createFixture(masterDataService, [
+      'TENANT.MASTER_DATA.READ',
+      'TENANT.MASTER_DATA.CREATE',
+      'TENANT.MASTER_DATA.UPDATE'
+    ]);
+    fixture.detectChanges();
+
+    const selects = fixture.nativeElement.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+    selects[0].value = 'hrBusiness';
+    selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    selects[1].value = 'device-types';
+    selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+
+    expect(actionButtons).toHaveLength(4);
+    expect(actionButtons[0].disabled).toBe(false);
+    expect(actionButtons[1].disabled).toBe(false);
+    expect(actionButtons[2].disabled).toBe(true);
+    expect(actionButtons[3].disabled).toBe(true);
+  });
+
   it('keeps the shared data table non-sticky by default for master data resources', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
