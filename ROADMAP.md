@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.35
+Versione: 2.37
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -128,6 +128,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-059 Master Data CRUD completion
 - TASK-059.1 Standardizzare code Master Data HR/business
 - TASK-059.2 Estendere code automatico ai restanti Master Data
+- TASK-060 Autogenerazione codice ruolo custom
 - TASK-061 i18n alert/messages consistency check
 
 ### Prossimo passo
@@ -239,10 +240,11 @@ TASK-059 completed the physical delete completion for the requested HR/business 
 TASK-059.1 completed the code standardization for the 6 requested HR/business master data entities with backend auto-code generation (`PPNNN`), UI non-editable code, and data migration of existing records (including employee employment status mapping).
 TASK-059.2 completed the automatic code extension to `Department`, `JobTitle`, `ContractType` and `WorkMode`, reusing the existing backend/UI pattern and applying V22 data normalization with conditional employee-field remapping only when tenant-scoped `old_code` references actually existed.
 TASK-059.4 completed the Governance/security Master Data rationalization by removing `Role`, `Permission` and `AuditActionType` from the generic UI, keeping `UserType`, `AuthenticationMethod` and `SmtpEncryptionType` visible without auto-code, adding selective auto-code to `CompanyProfileType`, `OfficeLocationType` and `DisciplinaryActionType`, normalizing existing records with Flyway `V23`, enabling physical delete for the three selective auto-code resources in backend/UI, and hiding generic technical tenant columns in the shared Master Data table flow.
+TASK-060 completed the role custom-code decision and implementation by confirming that runtime authorization depends on `permission.code`, keeping semantic seeded system role codes unchanged, generating tenant-scoped custom role codes as `RO###`, removing `code` from create payload/UI, and keeping `code` visible but read-only in edit/view.
 
 Prossimo passo:
 
-- TASK-061 i18n alert/messages consistency check
+- TASK-062 Implementare UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
@@ -402,6 +404,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.37 | 2026-05-12 | TASK-060 completato: confermato che le autorizzazioni runtime dipendono da `permission.code`, mantenuti i codici semantici dei ruoli seed, introdotto auto-code tenant-scoped `RO###` per i ruoli custom con create senza `code` e edit/view read-only; prossimo passo riallineato a `TASK-062`. |
+| 2.36 | 2026-05-12 | Ricostruito `TASK-060` come task documentale separato tra `TASK-059.4` e `TASK-061`, dedicato alla verifica cross-stack dell'uso tecnico di `Role.code` e alla scelta tra codice tecnico, auto-code business/UI o separazione dei due concetti; prossimo passo riallineato a `TASK-060` senza modifiche runtime. |
 | 2.35 | 2026-05-12 | TASK-061 completato: consolidata la consistenza i18n di alert/messages frontend con build/test OK, frontend locale avviato OK, QA manuale browser completata con cambio lingua `it/fr/en` e nessuna regressione rilevata; prossimo passo aggiornato a TASK-062. |
 | 2.34 | 2026-05-12 | TASK-061 avanzato senza chiusura: normalizzati i fallback notifiche frontend per evitare messaggi raw backend fuori i18n, spostati nelle risorse `it/fr/en` gli `aria-label` hardcoded del footer login, build/test frontend verdi e frontend locale avviato con HTTP `200`; prossimo passo resta TASK-061 per completare la QA manuale browser/login/cambio lingua. |
 | 2.33 | 2026-05-12 | TASK-059.4 completato e rifinito dopo test manuale: razionalizzata la Master Data UI Governance/security rimuovendo `Role`, `Permission` e `AuditActionType` dal selettore generico, mantenendo visibili `UserType`/`AuthenticationMethod`/`SmtpEncryptionType`, estendendo auto-code backend/UI a `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, aggiungendo migration `V23` per il riallineamento deterministico dei record esistenti, abilitando la cancellazione fisica con icona delete UI per le tre entita e nascondendo le colonne tecniche tenant; test backend/frontend reali verdi, prossimo passo invariato su TASK-061. |

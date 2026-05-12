@@ -223,10 +223,12 @@ class RoleAdministrationControllerTests {
 	@Test
 	@WithMockUser
 	void roleAdministrationCreatesCustomRole() throws Exception {
-		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(FOUNDATION_TENANT_ID, " task0533_create_role ", " Task 053.3 Create Role ", " Task 053.3 Description ", false)).with(roleAdminCaller()))
+		Tenant customTenant = saveTenant("TASK0533_CREATE_TENANT");
+
+		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(customTenant.getId(), " Task 053.3 Create Role ", " Task 053.3 Description ", false)).with(platformRoleAdminCaller()))
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
-				.andExpect(jsonPath("$.code").value("TASK0533_CREATE_ROLE"))
+				.andExpect(jsonPath("$.tenant.id").value(customTenant.getId().toString()))
+				.andExpect(jsonPath("$.code").value("RO001"))
 				.andExpect(jsonPath("$.name").value("Task 053.3 Create Role"))
 				.andExpect(jsonPath("$.description").value("Task 053.3 Description"))
 				.andExpect(jsonPath("$.systemRole").value(false))
@@ -235,12 +237,27 @@ class RoleAdministrationControllerTests {
 
 	@Test
 	@WithMockUser
-	void roleAdministrationRejectsDuplicateRoleCodeOnCreate() throws Exception {
-		saveRole("TASK0533_DUPLICATE_ROLE", "Task 053.3 Duplicate Role", null);
+	void roleAdministrationCreatesCustomRoleUsingNextTenantProgressiveCode() throws Exception {
+		Tenant customTenant = saveTenant("TASK0533_PROGRESSIVE_TENANT");
+		saveRole(customTenant.getId(), "RO001", "Task 053.3 Existing Custom Role", null, false, true);
 
-		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(FOUNDATION_TENANT_ID, " task0533_duplicate_role ", "Task 053.3 Duplicate Role 2", null, true)).with(roleAdminCaller()))
-				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.message").value("Role code already exists for tenant: TASK0533_DUPLICATE_ROLE"));
+		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(customTenant.getId(), "Task 053.3 Duplicate Role 2", null, true)).with(platformRoleAdminCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.code").value("RO002"))
+				.andExpect(jsonPath("$.active").value(true));
+	}
+
+	@Test
+	@WithMockUser
+	void roleAdministrationCreateIgnoresMatchingAutoCodeInOtherTenant() throws Exception {
+		Tenant targetTenant = saveTenant("TASK0533_CREATE_TARGET_TENANT");
+		Tenant otherTenant = saveTenant("TASK0533_CREATE_OTHER_TENANT");
+		saveRole(otherTenant.getId(), "RO001", "Other tenant custom role", null, false, true);
+
+		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(targetTenant.getId(), "Task 053.3 Tenant Isolated Role", null, true)).with(platformRoleAdminCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.tenant.id").value(targetTenant.getId().toString()))
+				.andExpect(jsonPath("$.code").value("RO001"));
 	}
 
 	@Test
@@ -248,7 +265,7 @@ class RoleAdministrationControllerTests {
 	void roleAdministrationRejectsCrossTenantCreateForTenantCaller() throws Exception {
 		UUID missingTenantId = UUID.fromString("00000000-0000-0000-0000-000000000098");
 
-		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(missingTenantId, "TASK0533_MISSING_TENANT", "Task 053.3 Missing Tenant", null, true)).with(roleAdminCaller()))
+		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(missingTenantId, "Task 053.3 Missing Tenant", null, true)).with(roleAdminCaller()))
 				.andExpect(status().isForbidden())
 				.andExpect(jsonPath("$.message").value("Cross-tenant role administration is not allowed for caller"));
 	}
@@ -453,10 +470,9 @@ class RoleAdministrationControllerTests {
 		return request;
 	}
 
-	private Map<String, Object> createRoleRequest(UUID tenantId, String code, String name, String description, Boolean active) {
+	private Map<String, Object> createRoleRequest(UUID tenantId, String name, String description, Boolean active) {
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("tenantId", tenantId);
-		request.put("code", code);
 		request.put("name", name);
 		request.put("description", description);
 		request.put("active", active);
@@ -497,6 +513,24 @@ class RoleAdministrationControllerTests {
 						.claim("userId", CALLER_USER_ID.toString())
 						.claim("tenantId", FOUNDATION_TENANT_ID.toString())
 						.claim("userType", "TENANT_ADMIN"))
+				.authorities(grantedAuthorities);
+	}
+
+	private RequestPostProcessor platformRoleAdminCaller(String... authorities) {
+		String[] effectiveAuthorities = authorities.length == 0
+				? new String[] {"PLATFORM.ROLE.READ", "PLATFORM.ROLE.CREATE", "PLATFORM.ROLE.UPDATE", "PLATFORM.ROLE.DELETE"}
+				: authorities;
+		List<GrantedAuthority> grantedAuthorities = Stream.concat(
+						Stream.of("USER_TYPE_PLATFORM_SUPER_ADMIN"),
+						Stream.of(effectiveAuthorities))
+				.map(SimpleGrantedAuthority::new)
+				.map(authority -> (GrantedAuthority) authority)
+				.toList();
+		return jwt().jwt(jwt -> jwt
+						.subject("platform.role.admin@example.com")
+						.claim("userId", CALLER_USER_ID.toString())
+						.claim("tenantId", FOUNDATION_TENANT_ID.toString())
+						.claim("userType", "PLATFORM_SUPER_ADMIN"))
 				.authorities(grantedAuthorities);
 	}
 }

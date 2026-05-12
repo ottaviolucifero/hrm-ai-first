@@ -7,7 +7,6 @@ import java.util.UUID;
 
 public record RoleAdministrationRoleCreateRequest(
 		@NotNull UUID tenantId,
-		@NotBlank @Size(max = 50) String code,
 		@NotBlank @Size(max = 100) String name,
 		@Size(max = 500) String description,
 		Boolean active) {

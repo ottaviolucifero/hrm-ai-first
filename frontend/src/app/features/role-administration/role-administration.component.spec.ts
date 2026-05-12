@@ -75,7 +75,6 @@ describe('RoleAdministrationComponent', () => {
     component.handleFormSave({
       mode: 'create',
       value: {
-        code: 'ROLE_CUSTOM',
         name: 'Role custom',
         description: 'Description',
         active: true
@@ -84,7 +83,6 @@ describe('RoleAdministrationComponent', () => {
 
     expect(service.createRole).toHaveBeenCalledWith({
       tenantId: 'tenant-1',
-      code: 'ROLE_CUSTOM',
       name: 'Role custom',
       description: 'Description',
       active: true

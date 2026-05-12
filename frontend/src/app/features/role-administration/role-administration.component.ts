@@ -404,7 +404,6 @@ export class RoleAdministrationComponent implements OnDestroy {
   private buildFormFields(mode: MasterDataFormMode): readonly MasterDataFormField[] {
     if (mode === 'create') {
       return [
-        { key: 'code', labelKey: 'masterData.columns.code', required: true },
         { key: 'name', labelKey: 'masterData.columns.name', required: true },
         { key: 'description', labelKey: 'masterData.columns.description' },
         { key: 'active', labelKey: 'masterData.columns.active', type: 'boolean' }
@@ -431,7 +430,6 @@ export class RoleAdministrationComponent implements OnDestroy {
   private buildCreatePayload(formValue: Record<string, unknown>, tenantId: string): RoleAdministrationCreateRequest {
     return {
       tenantId,
-      code: String(formValue['code'] ?? '').trim(),
       name: String(formValue['name'] ?? '').trim(),
       description: this.normalizeOptionalString(formValue['description']),
       active: formValue['active'] === undefined ? true : Boolean(formValue['active'])
