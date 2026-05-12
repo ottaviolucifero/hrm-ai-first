@@ -342,7 +342,7 @@ describe('MasterDataAdminComponent', () => {
               {
                 id: 'employment-status-1',
                 tenantId: 'tenant-1',
-                code: 'ACTIVE',
+                code: 'ES001',
                 name: 'Active',
                 active: true,
                 updatedAt: '2026-05-12T09:00:00Z'
@@ -356,7 +356,7 @@ describe('MasterDataAdminComponent', () => {
               {
                 id: 'employment-status-1',
                 tenantId: 'tenant-1',
-                code: 'ACTIVE',
+                code: 'ES001',
                 name: 'Active',
                 active: false,
                 updatedAt: '2026-05-12T09:00:00Z'
@@ -403,7 +403,7 @@ describe('MasterDataAdminComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Modifica');
-    expect(fixture.nativeElement.textContent).toContain('ACTIVE');
+    expect(fixture.nativeElement.textContent).toContain('ES001');
 
     const closeButton = fixture.nativeElement.querySelector('.master-data-modal .kt-btn-ghost') as HTMLButtonElement;
     closeButton.click();
@@ -444,7 +444,7 @@ describe('MasterDataAdminComponent', () => {
               {
                 id: 'device-type-1',
                 tenantId: 'tenant-1',
-                code: 'LAPTOP',
+                code: 'DV001',
                 name: 'Laptop',
                 active: true
               }
@@ -735,6 +735,55 @@ describe('MasterDataAdminComponent', () => {
         tenantId: 'tenant-row',
         code: 'HR',
         name: 'People Operations',
+        active: true
+      }
+    );
+  });
+
+  it('omits code from payload for TASK-059 auto-code resources', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fetchRows = vi
+      .fn()
+      .mockReturnValue(of(createPage([])))
+      .mockReturnValueOnce(of(createPage([])))
+      .mockReturnValueOnce(of(createPage([])));
+
+    const masterDataService = createMasterDataService({
+      fetchRows,
+      createRow: vi.fn(() => of({ id: 'employment-status-1', code: 'ES001' }))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      openCreateForm: () => void;
+      handleFormSave: (event: { mode: 'create'; value: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const selects = fixture.nativeElement.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+    selects[0].value = 'hrBusiness';
+    selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    selects[1].value = 'employment-statuses';
+    selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.openCreateForm();
+    fixture.detectChanges();
+
+    component.handleFormSave({
+      mode: 'create',
+      value: { name: 'Active', active: true }
+    });
+    fixture.detectChanges();
+
+    expect(masterDataService.createRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/hr-business/employment-statuses' }),
+      {
+        tenantId: 'tenant-1',
+        name: 'Active',
         active: true
       }
     );

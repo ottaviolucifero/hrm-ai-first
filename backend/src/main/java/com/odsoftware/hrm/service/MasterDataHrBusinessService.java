@@ -1,6 +1,7 @@
 package com.odsoftware.hrm.service;
 
 import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataRequest;
+import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataAutoCodeRequest;
 import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataResponse;
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.entity.common.BaseTenantMasterEntity;
@@ -33,6 +34,7 @@ import com.odsoftware.hrm.repository.master.LeaveRequestTypeRepository;
 import com.odsoftware.hrm.repository.master.WorkModeRepository;
 import com.odsoftware.hrm.repository.payroll.PayrollDocumentRepository;
 import java.util.Locale;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -192,13 +194,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createEmploymentStatus(TenantMasterDataRequest request) {
-		return create(request, EmploymentStatus::new, employmentStatusRepository, employmentStatusRepository::existsByTenantIdAndCode, "Employment status");
+	public TenantMasterDataResponse createEmploymentStatus(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, EmploymentStatus::new, employmentStatusRepository, "Employment status", "ES");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateEmploymentStatus(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, employmentStatusRepository, employmentStatusRepository::existsByTenantIdAndCodeAndIdNot, "Employment status");
+	public TenantMasterDataResponse updateEmploymentStatus(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, employmentStatusRepository, employmentStatusRepository::existsByTenantIdAndCodeAndIdNot, "Employment status");
 	}
 
 	@Transactional
@@ -248,13 +250,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createLeaveRequestType(TenantMasterDataRequest request) {
-		return create(request, LeaveRequestType::new, leaveRequestTypeRepository, leaveRequestTypeRepository::existsByTenantIdAndCode, "Leave request type");
+	public TenantMasterDataResponse createLeaveRequestType(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, LeaveRequestType::new, leaveRequestTypeRepository, "Leave request type", "LR");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateLeaveRequestType(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, leaveRequestTypeRepository, leaveRequestTypeRepository::existsByTenantIdAndCodeAndIdNot, "Leave request type");
+	public TenantMasterDataResponse updateLeaveRequestType(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, leaveRequestTypeRepository, leaveRequestTypeRepository::existsByTenantIdAndCodeAndIdNot, "Leave request type");
 	}
 
 	@Transactional
@@ -276,13 +278,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createDocumentType(TenantMasterDataRequest request) {
-		return create(request, DocumentType::new, documentTypeRepository, documentTypeRepository::existsByTenantIdAndCode, "Document type");
+	public TenantMasterDataResponse createDocumentType(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, DocumentType::new, documentTypeRepository, "Document type", "DT");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateDocumentType(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, documentTypeRepository, documentTypeRepository::existsByTenantIdAndCodeAndIdNot, "Document type");
+	public TenantMasterDataResponse updateDocumentType(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, documentTypeRepository, documentTypeRepository::existsByTenantIdAndCodeAndIdNot, "Document type");
 	}
 
 	@Transactional
@@ -304,13 +306,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createDeviceType(TenantMasterDataRequest request) {
-		return create(request, DeviceType::new, deviceTypeRepository, deviceTypeRepository::existsByTenantIdAndCode, "Device type");
+	public TenantMasterDataResponse createDeviceType(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, DeviceType::new, deviceTypeRepository, "Device type", "DV");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateDeviceType(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, deviceTypeRepository, deviceTypeRepository::existsByTenantIdAndCodeAndIdNot, "Device type");
+	public TenantMasterDataResponse updateDeviceType(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, deviceTypeRepository, deviceTypeRepository::existsByTenantIdAndCodeAndIdNot, "Device type");
 	}
 
 	@Transactional
@@ -332,13 +334,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createDeviceBrand(TenantMasterDataRequest request) {
-		return create(request, DeviceBrand::new, deviceBrandRepository, deviceBrandRepository::existsByTenantIdAndCode, "Device brand");
+	public TenantMasterDataResponse createDeviceBrand(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, DeviceBrand::new, deviceBrandRepository, "Device brand", "DB");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateDeviceBrand(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, deviceBrandRepository, deviceBrandRepository::existsByTenantIdAndCodeAndIdNot, "Device brand");
+	public TenantMasterDataResponse updateDeviceBrand(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, deviceBrandRepository, deviceBrandRepository::existsByTenantIdAndCodeAndIdNot, "Device brand");
 	}
 
 	@Transactional
@@ -360,13 +362,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createDeviceStatus(TenantMasterDataRequest request) {
-		return create(request, DeviceStatus::new, deviceStatusRepository, deviceStatusRepository::existsByTenantIdAndCode, "Device status");
+	public TenantMasterDataResponse createDeviceStatus(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, DeviceStatus::new, deviceStatusRepository, "Device status", "DS");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateDeviceStatus(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, deviceStatusRepository, deviceStatusRepository::existsByTenantIdAndCodeAndIdNot, "Device status");
+	public TenantMasterDataResponse updateDeviceStatus(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, deviceStatusRepository, deviceStatusRepository::existsByTenantIdAndCodeAndIdNot, "Device status");
 	}
 
 	@Transactional
@@ -413,7 +415,12 @@ public class MasterDataHrBusinessService {
 		}
 		T entity = factory.get();
 		applyTenantMasterData(entity, request, code);
-		return toResponse(repository.save(entity));
+		try {
+			return toResponse(repository.save(entity));
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw new ResourceConflictException(label + " code already exists for tenant: " + code);
+		}
 	}
 
 	private <T extends BaseTenantMasterEntity> TenantMasterDataResponse update(
@@ -429,7 +436,52 @@ public class MasterDataHrBusinessService {
 			throw new ResourceConflictException(label + " code already exists for tenant: " + code);
 		}
 		applyTenantMasterData(entity, request, code);
-		return toResponse(repository.save(entity));
+		try {
+			return toResponse(repository.save(entity));
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw new ResourceConflictException(label + " code already exists for tenant: " + code);
+		}
+	}
+
+	private <T extends BaseTenantMasterEntity> TenantMasterDataResponse createAutoCode(
+			TenantMasterDataAutoCodeRequest request,
+			Supplier<T> factory,
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			String label,
+			String codePrefix) {
+		validateTenant(request.tenantId());
+		String code = generateNextCode(request.tenantId(), codePrefix, repository, label);
+		T entity = factory.get();
+		applyTenantMasterData(entity, request.tenantId(), code, request.name(), request.active());
+		try {
+			return toResponse(repository.save(entity));
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw new ResourceConflictException(
+					label + " code generation collision for tenant. Retry create operation.");
+		}
+	}
+
+	private <T extends BaseTenantMasterEntity> TenantMasterDataResponse updateAutoCode(
+			UUID id,
+			TenantMasterDataAutoCodeRequest request,
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			TenantCodeExcludingIdExists existsByTenantIdAndCodeAndIdNot,
+			String label) {
+		T entity = findEntity(id, repository, label);
+		validateTenant(request.tenantId());
+		String code = cleanUpper(entity.getCode());
+		if (existsByTenantIdAndCodeAndIdNot.exists(request.tenantId(), code, id)) {
+			throw new ResourceConflictException(label + " code already exists for tenant: " + code);
+		}
+		applyTenantMasterData(entity, request.tenantId(), code, request.name(), request.active());
+		try {
+			return toResponse(repository.save(entity));
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw new ResourceConflictException(label + " code already exists for tenant: " + code);
+		}
 	}
 
 	private <T extends BaseTenantMasterEntity> void disable(
@@ -474,10 +526,19 @@ public class MasterDataHrBusinessService {
 	}
 
 	private void applyTenantMasterData(BaseTenantMasterEntity entity, TenantMasterDataRequest request, String code) {
-		entity.setTenantId(request.tenantId());
+		applyTenantMasterData(entity, request.tenantId(), code, request.name(), request.active());
+	}
+
+	private void applyTenantMasterData(
+			BaseTenantMasterEntity entity,
+			UUID tenantId,
+			String code,
+			String name,
+			Boolean active) {
+		entity.setTenantId(tenantId);
 		entity.setCode(code);
-		entity.setName(clean(request.name()));
-		entity.setActive(activeOrDefault(request.active()));
+		entity.setName(clean(name));
+		entity.setActive(activeOrDefault(active));
 	}
 
 	private TenantMasterDataResponse toResponse(BaseTenantMasterEntity entity) {
@@ -523,6 +584,46 @@ public class MasterDataHrBusinessService {
 								size,
 								MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")))),
 				mapper);
+	}
+
+	private <T extends BaseTenantMasterEntity> String generateNextCode(
+			UUID tenantId,
+			String codePrefix,
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			String label) {
+		List<T> tenantEntities = repository.findAll(
+				(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("tenantId"), tenantId),
+				Sort.by(Sort.Order.desc("code")));
+		int maxProgressive = 0;
+		for (T entity : tenantEntities) {
+			int parsedProgressive = parseProgressiveCode(entity.getCode(), codePrefix);
+			if (parsedProgressive > maxProgressive) {
+				maxProgressive = parsedProgressive;
+			}
+		}
+
+		if (maxProgressive >= 999) {
+			throw new ResourceConflictException(label + " code progressive exhausted for tenant: " + tenantId);
+		}
+
+		return codePrefix + String.format(Locale.ROOT, "%03d", maxProgressive + 1);
+	}
+
+	private int parseProgressiveCode(String code, String prefix) {
+		String normalizedCode = cleanUpper(code);
+		if (normalizedCode == null || !normalizedCode.startsWith(prefix)) {
+			return -1;
+		}
+		if (normalizedCode.length() != prefix.length() + 3) {
+			return -1;
+		}
+		String progressive = normalizedCode.substring(prefix.length());
+		for (int index = 0; index < progressive.length(); index++) {
+			if (!Character.isDigit(progressive.charAt(index))) {
+				return -1;
+			}
+		}
+		return Integer.parseInt(progressive);
 	}
 
 	@FunctionalInterface

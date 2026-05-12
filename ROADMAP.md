@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.29
+Versione: 2.31
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -126,10 +126,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-056 Shared confirmation dialog foundation
 - TASK-057 Finalize ZIP import foundation and test isolation
 - TASK-059 Master Data CRUD completion
+- TASK-059.1 Standardizzare code Master Data HR/business
 
 ### Prossimo passo
 
-- TASK-060 i18n alert/messages consistency check
+- TASK-059.2 Estendere code automatico ai restanti Master Data
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -233,11 +234,13 @@ Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can 
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
 Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 pagination/generic filters plus TASK-045 shared table refactoring are completed before proceeding to the reusable Master Data CRUD standard foundation.
 TASK-059 completed the physical delete completion for the requested HR/business master data, keeping logical deactivation distinct and reusing the existing DELETE permission model.
+TASK-059.1 completed the code standardization for the 6 requested HR/business master data entities with backend auto-code generation (`PPNNN`), UI non-editable code, and data migration of existing records (including employee employment status mapping).
+TASK-059.2 is planned to extend automatic code management to the remaining HR/business master data entities with the same backend/UI pattern.
 
 Prossimo passo:
 
-- TASK-060 i18n alert/messages consistency check
-- Follow-up gia pianificati: TASK-059.1 standardizzazione futura dei code Master Data HR/business, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
+- TASK-059.2 Estendere code automatico ai restanti Master Data
+- Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -372,15 +375,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-068
+- TASK-036 -> TASK-069
 
 ### Fase 2I - Platform Operations
 
-- TASK-069 -> TASK-070
+- TASK-070 -> TASK-071
 
 ### Fase 3 - Stabilization
 
-- TASK-071 -> TASK-072
+- TASK-072 -> TASK-073
 
 ---
 
@@ -396,6 +399,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.31 | 2026-05-12 | Inserito TASK-059.2 `Estendere code automatico ai restanti Master Data`; prossimo passo riallineato a TASK-059.2 e backlog successivo rinumerato da TASK-060..TASK-072 a TASK-061..TASK-073, con range fasi aggiornati (`2H: 036-069`, `2I: 070-071`, `3: 072-073`). |
+| 2.30 | 2026-05-12 | TASK-059.1 completato: standardizzati i code delle 6 entita HR/business con auto-generazione backend `prefisso+progressivo`, `code` non editabile da UI, migration V21 su PostgreSQL/H2 con aggiornamento dati esistenti e mapping `employees.employment_status`; test backend/frontend reali completati con esito verde. |
 | 2.29 | 2026-05-12 | TASK-059 completato nel perimetro chiarito: aggiunti endpoint `/physical`, reference checks e azione UI di eliminazione fisica per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus, mantenendo la disattivazione logica e pianificando TASK-059.1 per la futura standardizzazione dei code. |
 | 2.28 | 2026-05-12 | TASK-059 completato: CRUD soft-delete Master Data abilitato in UI per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus, backend CRUD esistente confermato con test mirato e suite completa; prossimo passo aggiornato a TASK-060. |
 | 2.27 | 2026-05-12 | Backlog riallineato da TASK-058: TASK-058 mantenuto documentale, aggiunti TASK-059 (Master Data CRUD completion) e TASK-060 (i18n alert/messages consistency check), task successivi rinumerati fino a TASK-072 e range fasi aggiornati (`2H: 036-068`, `2I: 069-070`, `3: 071-072`). |

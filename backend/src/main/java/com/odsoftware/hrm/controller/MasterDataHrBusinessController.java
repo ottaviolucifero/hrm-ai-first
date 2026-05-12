@@ -1,6 +1,7 @@
 package com.odsoftware.hrm.controller;
 
 import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataRequest;
+import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataAutoCodeRequest;
 import com.odsoftware.hrm.dto.masterdata.hrbusiness.TenantMasterDataResponse;
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.service.MasterDataHrBusinessService;
@@ -178,13 +179,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/employment-statuses")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create employment status")
-	public TenantMasterDataResponse createEmploymentStatus(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createEmploymentStatus(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createEmploymentStatus(request);
 	}
 
 	@PutMapping("/employment-statuses/{id}")
 	@Operation(summary = "Update employment status")
-	public TenantMasterDataResponse updateEmploymentStatus(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateEmploymentStatus(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateEmploymentStatus(id, request);
 	}
 
@@ -262,13 +263,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/leave-request-types")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create leave request type")
-	public TenantMasterDataResponse createLeaveRequestType(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createLeaveRequestType(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createLeaveRequestType(request);
 	}
 
 	@PutMapping("/leave-request-types/{id}")
 	@Operation(summary = "Update leave request type")
-	public TenantMasterDataResponse updateLeaveRequestType(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateLeaveRequestType(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateLeaveRequestType(id, request);
 	}
 
@@ -304,13 +305,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/document-types")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create document type")
-	public TenantMasterDataResponse createDocumentType(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createDocumentType(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createDocumentType(request);
 	}
 
 	@PutMapping("/document-types/{id}")
 	@Operation(summary = "Update document type")
-	public TenantMasterDataResponse updateDocumentType(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateDocumentType(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateDocumentType(id, request);
 	}
 
@@ -346,13 +347,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/device-types")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create device type")
-	public TenantMasterDataResponse createDeviceType(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createDeviceType(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createDeviceType(request);
 	}
 
 	@PutMapping("/device-types/{id}")
 	@Operation(summary = "Update device type")
-	public TenantMasterDataResponse updateDeviceType(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateDeviceType(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateDeviceType(id, request);
 	}
 
@@ -388,13 +389,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/device-brands")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create device brand")
-	public TenantMasterDataResponse createDeviceBrand(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createDeviceBrand(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createDeviceBrand(request);
 	}
 
 	@PutMapping("/device-brands/{id}")
 	@Operation(summary = "Update device brand")
-	public TenantMasterDataResponse updateDeviceBrand(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateDeviceBrand(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateDeviceBrand(id, request);
 	}
 
@@ -430,13 +431,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/device-statuses")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create device status")
-	public TenantMasterDataResponse createDeviceStatus(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createDeviceStatus(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createDeviceStatus(request);
 	}
 
 	@PutMapping("/device-statuses/{id}")
 	@Operation(summary = "Update device status")
-	public TenantMasterDataResponse updateDeviceStatus(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateDeviceStatus(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateDeviceStatus(id, request);
 	}
 

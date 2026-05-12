@@ -6,6 +6,52 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-059.1 - Standardizzare code Master Data HR/business
+
+- Data: 2026-05-12
+- Branch: `task-059-1-standardize-master-data-codes`
+- Task: TASK-059.1 - Standardizzare code Master Data HR/business
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/MasterDataHrBusinessController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataHrBusinessService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/masterdata/hrbusiness/TenantMasterDataAutoCodeRequest.java`
+  - `backend/src/main/resources/db/vendor/postgresql/V21__standardize_hr_business_master_data_codes.sql`
+  - `backend/src/main/resources/db/vendor/h2/V21__standardize_hr_business_master_data_codes.sql`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataHrBusinessControllerTests.java`
+  - `frontend/src/app/features/master-data/master-data.models.ts`
+  - `frontend/src/app/features/master-data/master-data-admin.component.ts`
+  - `frontend/src/app/features/master-data/master-data-form.component.ts`
+  - `frontend/src/app/features/master-data/master-data-admin.component.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificata la decisione approvata di migrare anche i codici esistenti delle 6 entita al formato `PPNNN` e di aggiornare `employees.employment_status` via mapping old/new per tenant;
+  - verificato che la generazione code avvenga lato service senza tabella contatori, partendo dal massimo progressivo esistente per tenant/entita/prefisso;
+  - verificato che UI non invii piu `code` per le 6 entita auto-code e che il campo resti non editabile.
+- Patch applicata:
+  - introdotto DTO backend senza `code` per le 6 entita auto-code;
+  - aggiornati controller/service per create/update con auto-generazione `ES/LR/DT/DV/DB/DS + 3 cifre` e preservazione del codice su update;
+  - aggiunte migration V21 PostgreSQL/H2 per re-codifica dati esistenti con aggiornamento `employees.employment_status` tenant-scoped;
+  - aggiornato frontend Master Data con configurazione `autoCode`, campo `code` visibile solo in edit/view (read-only) e payload create/update senza `code` per le 6 entita.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=MasterDataHrBusinessControllerTests,HrmBackendApplicationTests" test`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - backend test mirato: `BUILD SUCCESS`, 70 test, 0 failure, 0 error, 0 skipped;
+  - backend test completo: `BUILD SUCCESS`, 189 test, 0 failure, 0 error, 0 skipped;
+  - frontend test completo: OK, 30 file test passed, 203 test passed;
+  - frontend build: OK.
+- QA manuale:
+  - non eseguita in browser in questa sessione CLI.
+- Regressioni trovate: nessuna regressione automatica rilevata.
+- Limiti/note:
+  - warning non bloccanti Maven/JVM gia noti (Mockito self-attach / ByteBuddy dynamic agent);
+  - nei log Maven resta un messaggio shell residuale `'D' n est pas reconnu...` senza impatto sull esito (`BUILD SUCCESS`).
+- Stato finale: PASS WITH NOTES
+
 ### TASK-059 - Master Data CRUD completion
 
 - Data: 2026-05-12

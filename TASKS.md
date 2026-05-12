@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.25
+Versione: 2.27
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -4064,7 +4064,7 @@ Validazione:
 
 ### TASK-059.1 - Standardizzare code Master Data HR/business
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -4074,7 +4074,41 @@ Include:
 - prefissi proposti: `ES`, `LR`, `DT`, `DV`, `DB`, `DS`;
 - analisi impatto su dati esistenti, API, UI e riferimenti business prima di ogni rollout.
 
-### TASK-060 - i18n alert/messages consistency check
+Completato:
+
+- introdotto DTO backend dedicato senza campo `code` per create/update delle 6 entita (`TenantMasterDataAutoCodeRequest`);
+- aggiornati controller e service HR/business per usare auto-code lato backend su `EmploymentStatus`, `LeaveRequestType`, `DocumentType`, `DeviceType`, `DeviceBrand`, `DeviceStatus`;
+- implementata generazione `code` con formato `PPNNN` (`prefix 2 lettere + progressivo 3 cifre`) calcolando il massimo progressivo per tenant/entita/prefisso e incrementando di 1;
+- mantenuta assenza di tabella contatori, con gestione collisioni tramite vincolo unique esistente e messaggio di conflitto chiaro;
+- resa immutabile la modifica manuale del `code` sulle 6 entita in update (il codice esistente viene preservato);
+- aggiunta migration Flyway `V21` per PostgreSQL e H2 per migrare i codici esistenti delle 6 entita al nuovo formato (`ES/LR/DT/DV/DB/DS` + progressivo), sostituendo i codici seed storici;
+- incluso mapping `employees.employment_status` da vecchio codice a nuovo codice per tenant nella migration;
+- frontend `/master-data` aggiornato per non inviare `code` alle 6 entita auto-code e per mostrare `code` in sola lettura in edit/view (non editabile);
+- mantenuti invariati scope security/tenant/RBAC e pattern shared esistenti (`DataTable`, form metadata-driven, i18n `it/fr/en`).
+
+Validazione:
+
+- backend test completo `cd backend && .\mvnw.cmd test` OK, 189 test, 0 failure, 0 error, 0 skipped;
+- backend test mirato `cd backend && .\mvnw.cmd "-Dtest=MasterDataHrBusinessControllerTests,HrmBackendApplicationTests" test` OK, 70 test, 0 failure, 0 error, 0 skipped;
+- frontend build `cd frontend && npm.cmd run build` OK;
+- frontend test completo `cd frontend && npm.cmd test -- --watch=false` OK, 30 file test, 203 test passed.
+
+### TASK-059.2 - Estendere code automatico ai restanti Master Data
+
+Stato: TODO
+
+Include:
+
+- estendere `code` automatico alle restanti entita Master Data HR/business non ancora coperte da TASK-059.1:
+  - `Department`
+  - `JobTitle`
+  - `ContractType`
+  - `WorkMode`;
+- rendere `code` non editabile da UI anche per queste entita;
+- usare lo stesso pattern backend (`prefisso 2 lettere + progressivo 3 cifre`) e la stessa strategia senza tabella contatori;
+- valutare e pianificare migrazione dei codici esistenti e impatto sui riferimenti business prima del rollout.
+
+### TASK-061 - i18n alert/messages consistency check
 
 Stato: TODO
 
@@ -4087,11 +4121,11 @@ Include:
 - test frontend/build;
 - validazione manuale minima con cambio lingua in UI.
 
-### TASK-061 - Implementare UI Employee management enterprise
+### TASK-062 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-062 - Implementare Security Admin UI
+### TASK-063 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -4103,47 +4137,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-063 - Implementare UI Device governance
+### TASK-064 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-064 - Implementare UI PayrollDocument
+### TASK-065 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-065 - Implementare UI LeaveRequest
+### TASK-066 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-066 - Implementare UI HolidayCalendar
+### TASK-067 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-067 - Implementare Audit UI / compliance explorer
+### TASK-068 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-068 - Implementare UI disciplinary governance
+### TASK-069 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-069 - Implementare Platform Operator / Super Admin governance
+### TASK-070 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-070 - Implementare Cross-tenant admin UI
+### TASK-071 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-071 - Configurare logging, monitoring e observability enterprise
+### TASK-072 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-072 - Test integrato MVP enterprise completo
+### TASK-073 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -4153,6 +4187,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.27 | 2026-05-12 | Inserito TASK-059.2 `Estendere code automatico ai restanti Master Data` e rinumerato il backlog successivo da TASK-060..TASK-072 a TASK-061..TASK-073 in coerenza con la pianificazione. |
+| 2.26 | 2026-05-12 | TASK-059.1 completato: standardizzazione `code` per 6 entita HR/business con auto-generazione backend per tenant/prefisso/progressivo, `code` non editabile da UI, migration V21 PostgreSQL/H2 con re-codifica dati esistenti e mapping `employees.employment_status`, test backend/frontend reali verdi. |
 | 2.25 | 2026-05-12 | TASK-059 completato nel perimetro chiarito: physical delete backend/frontend aggiunto solo per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus, con reference checks, conferma condivisa, i18n aggiornato, test backend/frontend verdi e follow-up TASK-059.1 riservato alla standardizzazione futura dei code. |
 | 2.24 | 2026-05-12 | TASK-059 completato: abilitato CRUD soft-delete frontend per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus riusando DataTable/form/confirmation esistenti; backend CRUD gia presente confermato con test mirato e suite completa, nessuna nuova permission granulare o decisione architetturale. |
 | 2.23 | 2026-05-12 | Backlog riorganizzato da TASK-058: TASK-058 riallineato come task documentale, inseriti TASK-059 (Master Data CRUD completion) e TASK-060 (i18n alert/messages consistency check), task applicativi successivi rinumerati fino a TASK-072 e riferimenti interni aggiornati in coerenza. |
