@@ -13,4 +13,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
 	List<LeaveRequest> findByTenant_IdAndEmployee_IdAndStatus(UUID tenantId, UUID employeeId, LeaveRequestStatus status);
 
 	List<LeaveRequest> findByTenant_IdAndCompanyProfile_Id(UUID tenantId, UUID companyProfileId);
+
+	boolean existsByLeaveRequestType_Id(UUID leaveRequestTypeId);
 }

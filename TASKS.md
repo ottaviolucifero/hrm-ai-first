@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.23
+Versione: 2.25
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -4033,16 +4033,46 @@ Include:
 
 ### TASK-059 - Master Data CRUD completion
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
 - analisi delle entità Master Data esistenti;
 - verifica delle azioni CRUD disponibili a livello tabella/frontend;
 - verifica degli endpoint backend CRUD mancanti;
-- completamento coerente dei CRUD solo dove previsto;
-- rispetto dei pattern esistenti per Master Data, DataTable, i18n, RBAC/authorities e permessi;
-- aggiornamento catalogo permessi/authorities e matrice permessi ruolo se vengono introdotti nuovi CRUD/azioni.
+- completamento del delete fisico solo dove esplicitamente richiesto;
+- mantenimento della disattivazione logica gia esistente;
+- rispetto dei pattern esistenti per Master Data, DataTable, i18n, RBAC/authorities e permessi.
+
+Completato:
+
+- confermato che backend entity, repository, DTO request/response, service, controller ed endpoint CRUD soft-delete erano gia presenti per `EmploymentStatus`, `LeaveRequestType`, `DocumentType`, `DeviceType`, `DeviceBrand` e `DeviceStatus`;
+- aggiunti backend repository checks, service methods ed endpoint `DELETE {id}/physical` per `EmploymentStatus`, `LeaveRequestType`, `DocumentType`, `DeviceType`, `DeviceBrand` e `DeviceStatus`;
+- mantenuto il pattern esistente con `404` su record assente, `409 Conflict` su record referenziato e fallback `DataIntegrityViolationException -> 409`;
+- verificato il mapping reale dei riferimenti business: `Employee.employmentStatus` come string code tenant-scoped, `LeaveRequest.leaveRequestType`, `PayrollDocument.documentType`, `Device.type`, `Device.brand`, `Device.deviceStatus` come FK;
+- abilitati in UI Master Data form create/edit/view e row actions `view/edit/disattiva/elimina` per le sei entita richieste, riusando `DataTableComponent`, `MasterDataFormComponent`, `deletePhysicalRow(...)` e confirmation dialog shared;
+- aggiornato il messaggio i18n `masterData.deletePhysical.confirmMessage` in `it/fr/en` per chiarire che l eliminazione e permanente e consentita solo se il record non e collegato a dati business;
+- confermati permessi/authorities esistenti `TENANT.MASTER_DATA.DELETE|MANAGE` e `PLATFORM.MASTER_DATA.DELETE|MANAGE` per entrambe le azioni distruttive, senza introdurre nuovi permission code o migration;
+- rimandata la standardizzazione del campo `code` a follow-up dedicato `TASK-059.1`.
+
+Validazione:
+
+- backend test mirato `cd backend && .\mvnw.cmd -Dtest=MasterDataHrBusinessControllerTests test` OK, 16 test, 0 failure, 0 error, 0 skipped;
+- backend test completo `cd backend && .\mvnw.cmd test` OK, 189 test, 0 failure, 0 error, 0 skipped;
+- frontend build `cd frontend && npm.cmd run build` OK;
+- frontend test completo `cd frontend && npm.cmd test` OK, 30 file test, 202 test passed.
+
+### TASK-059.1 - Standardizzare code Master Data HR/business
+
+Stato: TODO
+
+Include:
+
+- rendere `code` non editabile da UI per `EmploymentStatus`, `LeaveRequestType`, `DocumentType`, `DeviceType`, `DeviceBrand`, `DeviceStatus`;
+- generare `code` automaticamente lato backend;
+- formato `prefisso 2 lettere + progressivo 3 cifre`;
+- prefissi proposti: `ES`, `LR`, `DT`, `DV`, `DB`, `DS`;
+- analisi impatto su dati esistenti, API, UI e riferimenti business prima di ogni rollout.
 
 ### TASK-060 - i18n alert/messages consistency check
 
@@ -4123,6 +4153,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.25 | 2026-05-12 | TASK-059 completato nel perimetro chiarito: physical delete backend/frontend aggiunto solo per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus, con reference checks, conferma condivisa, i18n aggiornato, test backend/frontend verdi e follow-up TASK-059.1 riservato alla standardizzazione futura dei code. |
+| 2.24 | 2026-05-12 | TASK-059 completato: abilitato CRUD soft-delete frontend per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus riusando DataTable/form/confirmation esistenti; backend CRUD gia presente confermato con test mirato e suite completa, nessuna nuova permission granulare o decisione architetturale. |
 | 2.23 | 2026-05-12 | Backlog riorganizzato da TASK-058: TASK-058 riallineato come task documentale, inseriti TASK-059 (Master Data CRUD completion) e TASK-060 (i18n alert/messages consistency check), task applicativi successivi rinumerati fino a TASK-072 e riferimenti interni aggiornati in coerenza. |
 | 2.22 | 2026-05-12 | TASK-057 chiuso come completato senza patch runtime: verificato che il commit `f9963b9` aveva gia isolato i test ZIP/CAP usando fixture piccola e mock nel controller, confermato che non esistono bootstrap massivi residui su `global_zip_codes`, test backend mirati verdi e prossimo passo riallineato a TASK-058. |
 | 2.21 | 2026-05-12 | TASK-056 completato: introdotto `ConfirmDialogComponent` shared, esteso `DataTableComponent` con conferme dichiarative e target dinamico, migrate le conferme tabellari di Master Data / Ruoli / Utenti, aggiornati i18n `it`/`fr`/`en` e test frontend/documentazione senza modifiche backend. |

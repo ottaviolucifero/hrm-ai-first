@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.27
+Versione: 2.29
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -125,11 +125,10 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-055 Backend RBAC enforcement foundation
 - TASK-056 Shared confirmation dialog foundation
 - TASK-057 Finalize ZIP import foundation and test isolation
+- TASK-059 Master Data CRUD completion
 
 ### Prossimo passo
 
-- TASK-058 Riorganizzazione documentale backlog post TASK-057
-- TASK-059 Master Data CRUD completion
 - TASK-060 i18n alert/messages consistency check
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
@@ -233,12 +232,12 @@ Logo brand color governance is active: frontend UI tasks must use the documented
 Master Data Admin UI must follow backend CRUD APIs. Existing read-only APIs can support consultation, but they are not sufficient for complete administrative CRUD screens.
 UserAccount persistence foundation is available and backend/frontend login foundation is active.
 Global, HR/business and governance/security master data CRUD APIs are available; the read-only Master Data Admin foundation/list is active and TASK-043 pagination/generic filters plus TASK-045 shared table refactoring are completed before proceeding to the reusable Master Data CRUD standard foundation.
+TASK-059 completed the physical delete completion for the requested HR/business master data, keeping logical deactivation distinct and reusing the existing DELETE permission model.
 
 Prossimo passo:
 
-- TASK-058 Riorganizzazione documentale backlog post TASK-057
-- TASK-059 Master Data CRUD completion
 - TASK-060 i18n alert/messages consistency check
+- Follow-up gia pianificati: TASK-059.1 standardizzazione futura dei code Master Data HR/business, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -397,6 +396,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.29 | 2026-05-12 | TASK-059 completato nel perimetro chiarito: aggiunti endpoint `/physical`, reference checks e azione UI di eliminazione fisica per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus, mantenendo la disattivazione logica e pianificando TASK-059.1 per la futura standardizzazione dei code. |
+| 2.28 | 2026-05-12 | TASK-059 completato: CRUD soft-delete Master Data abilitato in UI per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus, backend CRUD esistente confermato con test mirato e suite completa; prossimo passo aggiornato a TASK-060. |
 | 2.27 | 2026-05-12 | Backlog riallineato da TASK-058: TASK-058 mantenuto documentale, aggiunti TASK-059 (Master Data CRUD completion) e TASK-060 (i18n alert/messages consistency check), task successivi rinumerati fino a TASK-072 e range fasi aggiornati (`2H: 036-068`, `2I: 069-070`, `3: 071-072`). |
 | 2.26 | 2026-05-12 | TASK-057 chiuso come completato senza patch runtime: verificato che il commit `f9963b9` aveva gia reso lightweight i test import ZIP/CAP, isolando `ItalianZipCodeImportServiceTests` dal CSV completo e `MasterDataGlobalControllerTests` dall import reale; nessun bootstrap massivo residuo rilevato su `global_zip_codes`, test backend mirati verdi e prossimo passo riallineato a TASK-058. |
 | 2.25 | 2026-05-12 | TASK-056 completato: aggiunto `ConfirmDialogComponent` shared, esteso `DataTableComponent` con conferme dichiarative e target dinamico, migrate le conferme tabellari di Master Data / Ruoli / Utenti, aggiornati i18n `it`/`fr`/`en`, test frontend verdi e prossimo passo riallineato a TASK-057. |

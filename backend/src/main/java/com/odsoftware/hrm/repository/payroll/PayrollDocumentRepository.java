@@ -12,6 +12,8 @@ public interface PayrollDocumentRepository extends JpaRepository<PayrollDocument
 
 	boolean existsByUploadedBy_Id(UUID uploadedById);
 
+	boolean existsByDocumentType_Id(UUID documentTypeId);
+
 	List<PayrollDocument> findByTenant_IdAndEmployee_IdAndPeriodYearAndPeriodMonth(UUID tenantId, UUID employeeId, Integer periodYear, Integer periodMonth);
 
 	Optional<PayrollDocument> findByTenant_IdAndEmployee_IdAndDocumentType_IdAndPeriodYearAndPeriodMonth(UUID tenantId, UUID employeeId, UUID documentTypeId, Integer periodYear, Integer periodMonth);

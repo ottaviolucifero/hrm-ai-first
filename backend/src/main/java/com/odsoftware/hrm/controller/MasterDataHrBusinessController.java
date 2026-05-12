@@ -195,6 +195,13 @@ public class MasterDataHrBusinessController {
 		masterDataHrBusinessService.disableEmploymentStatus(id);
 	}
 
+	@DeleteMapping("/employment-statuses/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete employment status")
+	public void deletePhysicalEmploymentStatus(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalEmploymentStatus(id);
+	}
+
 	@GetMapping("/work-modes")
 	@Operation(summary = "List work modes")
 	public MasterDataPageResponse<TenantMasterDataResponse> findWorkModes(
@@ -272,6 +279,13 @@ public class MasterDataHrBusinessController {
 		masterDataHrBusinessService.disableLeaveRequestType(id);
 	}
 
+	@DeleteMapping("/leave-request-types/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete leave request type")
+	public void deletePhysicalLeaveRequestType(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalLeaveRequestType(id);
+	}
+
 	@GetMapping("/document-types")
 	@Operation(summary = "List document types")
 	public MasterDataPageResponse<TenantMasterDataResponse> findDocumentTypes(
@@ -305,6 +319,13 @@ public class MasterDataHrBusinessController {
 	@Operation(summary = "Disable document type")
 	public void disableDocumentType(@PathVariable UUID id) {
 		masterDataHrBusinessService.disableDocumentType(id);
+	}
+
+	@DeleteMapping("/document-types/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete document type")
+	public void deletePhysicalDocumentType(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalDocumentType(id);
 	}
 
 	@GetMapping("/device-types")
@@ -342,6 +363,13 @@ public class MasterDataHrBusinessController {
 		masterDataHrBusinessService.disableDeviceType(id);
 	}
 
+	@DeleteMapping("/device-types/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete device type")
+	public void deletePhysicalDeviceType(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalDeviceType(id);
+	}
+
 	@GetMapping("/device-brands")
 	@Operation(summary = "List device brands")
 	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceBrands(
@@ -377,6 +405,13 @@ public class MasterDataHrBusinessController {
 		masterDataHrBusinessService.disableDeviceBrand(id);
 	}
 
+	@DeleteMapping("/device-brands/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete device brand")
+	public void deletePhysicalDeviceBrand(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalDeviceBrand(id);
+	}
+
 	@GetMapping("/device-statuses")
 	@Operation(summary = "List device statuses")
 	public MasterDataPageResponse<TenantMasterDataResponse> findDeviceStatuses(
@@ -410,5 +445,12 @@ public class MasterDataHrBusinessController {
 	@Operation(summary = "Disable device status")
 	public void disableDeviceStatus(@PathVariable UUID id) {
 		masterDataHrBusinessService.disableDeviceStatus(id);
+	}
+
+	@DeleteMapping("/device-statuses/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete device status")
+	public void deletePhysicalDeviceStatus(@PathVariable UUID id) {
+		masterDataHrBusinessService.deletePhysicalDeviceStatus(id);
 	}
 }
