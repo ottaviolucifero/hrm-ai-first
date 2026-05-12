@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.32
+Versione: 2.35
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -128,10 +128,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-059 Master Data CRUD completion
 - TASK-059.1 Standardizzare code Master Data HR/business
 - TASK-059.2 Estendere code automatico ai restanti Master Data
+- TASK-061 i18n alert/messages consistency check
 
 ### Prossimo passo
 
-- TASK-061 i18n alert/messages consistency check
+- TASK-062 Implementare UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -401,6 +402,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.35 | 2026-05-12 | TASK-061 completato: consolidata la consistenza i18n di alert/messages frontend con build/test OK, frontend locale avviato OK, QA manuale browser completata con cambio lingua `it/fr/en` e nessuna regressione rilevata; prossimo passo aggiornato a TASK-062. |
+| 2.34 | 2026-05-12 | TASK-061 avanzato senza chiusura: normalizzati i fallback notifiche frontend per evitare messaggi raw backend fuori i18n, spostati nelle risorse `it/fr/en` gli `aria-label` hardcoded del footer login, build/test frontend verdi e frontend locale avviato con HTTP `200`; prossimo passo resta TASK-061 per completare la QA manuale browser/login/cambio lingua. |
 | 2.33 | 2026-05-12 | TASK-059.4 completato e rifinito dopo test manuale: razionalizzata la Master Data UI Governance/security rimuovendo `Role`, `Permission` e `AuditActionType` dal selettore generico, mantenendo visibili `UserType`/`AuthenticationMethod`/`SmtpEncryptionType`, estendendo auto-code backend/UI a `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, aggiungendo migration `V23` per il riallineamento deterministico dei record esistenti, abilitando la cancellazione fisica con icona delete UI per le tre entita e nascondendo le colonne tecniche tenant; test backend/frontend reali verdi, prossimo passo invariato su TASK-061. |
 | 2.32 | 2026-05-12 | TASK-059.2 completato: auto-code esteso a `Department`, `JobTitle`, `ContractType` e `WorkMode`, aggiunta migration V22 PostgreSQL/H2 con remapping condizionale dei campi `employees.*` solo su match reali `old_code` per tenant, prossimo passo aggiornato a TASK-061. |
 | 2.31 | 2026-05-12 | Inserito TASK-059.2 `Estendere code automatico ai restanti Master Data`; prossimo passo riallineato a TASK-059.2 e backlog successivo rinumerato da TASK-060..TASK-072 a TASK-061..TASK-073, con range fasi aggiornati (`2H: 036-069`, `2I: 070-071`, `3: 072-073`). |

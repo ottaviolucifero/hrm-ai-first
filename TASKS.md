@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.29
+Versione: 2.32
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -4224,7 +4224,7 @@ Validazione:
 
 ### TASK-061 - i18n alert/messages consistency check
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -4234,6 +4234,17 @@ Include:
 - controllo fallback lingua;
 - test frontend/build;
 - validazione manuale minima con cambio lingua in UI.
+
+Nota avanzamento:
+
+- fallback raw da API rimosso dalle notifiche frontend coinvolte e sostituito con risoluzione i18n controllata;
+- spostati in i18n gli `aria-label` hardcoded del footer login;
+- `cd frontend && npm.cmd run build` OK;
+- `cd frontend && npm.cmd test -- --watch=false` OK;
+- avvio locale frontend verificato con risposta HTTP `200`;
+- QA manuale browser completata con cambio lingua `it` / `fr` / `en`;
+- nessuna regressione rilevata;
+- TASK-061 completato.
 
 ### TASK-062 - Implementare UI Employee management enterprise
 
@@ -4301,6 +4312,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.32 | 2026-05-12 | TASK-061 completato: confermata coerenza i18n dei messaggi alert/error/success/warning con rimozione dei fallback raw backend e degli `aria-label` hardcoded residui nel login, build/test frontend OK, frontend locale avviato OK, QA manuale browser completata con cambio lingua `it/fr/en` e nessuna regressione rilevata. |
+| 2.31 | 2026-05-12 | TASK-061 portato in `IN_PROGRESS`: rimossi i fallback notifiche non localizzati da API backend, introdotta utility frontend minima per risoluzione errori i18n, spostati in i18n gli `aria-label` hardcoded del footer login, build/test frontend verdi e avvio locale HTTP `200` verificato; task non chiuso per mancanza di QA manuale browser completa in questa sessione CLI. |
 | 2.30 | 2026-05-12 | TASK-059.4 completato: razionalizzata la Master Data UI Governance/security rimuovendo `Role`, `Permission` e `AuditActionType` dal selettore generico, mantenendo visibili `UserType`/`AuthenticationMethod`/`SmtpEncryptionType`, estendendo auto-code backend/UI a `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, nascondendo le colonne tecniche tenant e confermando test backend/frontend reali verdi. |
 | 2.29 | 2026-05-12 | Inseriti `TASK-059.3` e `TASK-059.4` tra `TASK-059.2` e `TASK-061` per ripristinare continuita del backlog senza rinumerare i task successivi; `TASK-060` resta assente come sezione attiva e va ricostruito in task documentale separato. |
 | 2.28 | 2026-05-12 | TASK-059.2 completato: esteso auto-code backend/UI a `Department`, `JobTitle`, `ContractType`, `WorkMode`, aggiunta migration V22 PostgreSQL/H2 con aggiornamento condizionale di `employees.department/job_title/contract_type/work_mode` solo quando allineati a `old_code` reali per tenant, test backend/frontend reali verdi. |

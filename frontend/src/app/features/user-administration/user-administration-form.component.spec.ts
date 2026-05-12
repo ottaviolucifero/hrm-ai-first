@@ -186,7 +186,7 @@ describe('UserAdministrationFormComponent', () => {
     component.submit();
 
     expect(errorSpy).toHaveBeenCalledWith(
-      'User email already exists: new@example.com',
+      'Impossibile creare l utente.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })
     );
   });

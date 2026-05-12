@@ -60,8 +60,8 @@
         </div>
       </div>
 
-      <footer class="login-footer" aria-label="Login legal links">
-        <nav class="login-footer-links" aria-label="Legal">
+      <footer class="login-footer" [attr.aria-label]="i18n.t('login.footer.navigationLabel')">
+        <nav class="login-footer-links" [attr.aria-label]="i18n.t('login.footer.linksLabel')">
           <a href="#" (click)="$event.preventDefault()">{{ i18n.t('login.footer.privacy') }}</a>
           <a href="#" (click)="$event.preventDefault()">{{ i18n.t('login.footer.terms') }}</a>
           <a href="#" (click)="$event.preventDefault()">{{ i18n.t('login.footer.security') }}</a>

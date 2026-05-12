@@ -882,6 +882,57 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-061 - i18n alert/messages consistency check
+
+- Data: 2026-05-12
+- Branch: `task-061-i18n-alert-messages-consistency`
+- Task: TASK-061 - i18n alert/messages consistency check
+- Modello consigliato nel prompt operativo: GPT-5.4
+- Area verificata:
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `frontend/src/app/core/i18n/i18n.service.ts`
+  - `frontend/src/app/core/i18n/i18n.service.spec.ts`
+  - `frontend/src/app/core/i18n/api-error-message.util.ts`
+  - `frontend/src/app/features/login/login.component.html`
+  - `frontend/src/app/features/login/login.component.spec.ts`
+  - `frontend/src/app/features/master-data/master-data-admin.component.ts`
+  - `frontend/src/app/features/master-data/master-data-admin.component.spec.ts`
+  - `frontend/src/app/features/role-administration/role-administration.component.ts`
+  - `frontend/src/app/features/user-administration/user-administration.component.ts`
+  - `frontend/src/app/features/user-administration/user-administration.component.spec.ts`
+  - `frontend/src/app/features/user-administration/user-administration-form.component.ts`
+  - `frontend/src/app/features/user-administration/user-administration-form.component.spec.ts`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.ts`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.spec.ts`
+- Analisi eseguita:
+  - verificata la foundation i18n runtime esistente con fallback a italiano tramite `I18nService.t(...)` e test dedicati gia presenti;
+  - cercati messaggi alert/error/success/warning ancora hardcoded nei componenti/template e trovati due `aria-label` hardcoded nel footer login;
+  - individuato come gap principale la visualizzazione diretta di `validationErrors` e `error.message` provenienti dalle API in varie notifiche frontend, con bypass della traduzione `it/fr/en`;
+  - verificata l assenza di un helper frontend gia esistente per normalizzare questi fallback.
+- Patch applicata:
+  - introdotta utility minima `api-error-message.util.ts` per risolvere i messaggi di errore solo tramite chiavi i18n e mapping per status HTTP;
+  - rimosso l uso diretto dei messaggi raw backend nelle notifiche di `master-data`, `role-administration` e `user-administration`;
+  - mantenuti i mapping specifici gia esistenti per i casi `401/403/404/409/500` dove il frontend possiede gia chiavi dedicate;
+  - spostati in `frontend/src/app/core/i18n/i18n.messages.ts` gli `aria-label` hardcoded del footer login per `it`, `fr` e `en`;
+  - aggiornati i test frontend che prima si aspettavano il testo backend raw e aggiunta verifica sui nuovi `aria-label` localizzati della login.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `powershell -Command Start-Process npm.cmd start -- --host 127.0.0.1 --port 4200 ... ; Invoke-WebRequest http://127.0.0.1:4200`
+- Esiti reali:
+  - build frontend: OK;
+  - test frontend: OK, 30 file test passed, 212 test passed;
+  - avvio frontend locale: OK, risposta HTTP `200`, marker `<app-root>` presente nella pagina servita.
+- QA manuale:
+  - frontend locale avviato correttamente;
+  - login browser e cambio lingua da UI verificati con esito positivo in `it`, `fr` e `en`;
+  - fallback lingua verificato con esito positivo;
+  - messaggi errore/loading/empty state/alert principali verificati nelle schermate disponibili con esito positivo.
+- Regressioni trovate: nessuna regressione automatica rilevata.
+- Limiti/note:
+  - nessun limite residuo rilevato per il perimetro TASK-061.
+- Stato finale: PASS
+
 ### TASK-055 - Frontend user deactivation action exposure on user list (superseded by hard delete/deactivate split)
 
 - Data: 2026-05-12

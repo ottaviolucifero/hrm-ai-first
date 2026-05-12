@@ -1,10 +1,10 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, forkJoin, finalize } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
@@ -378,23 +378,6 @@ export class UserAdministrationFormComponent implements OnDestroy {
   }
 
   private resolveApiMessage(error: unknown, fallbackKey: I18nKey): string {
-    const response = error instanceof HttpErrorResponse
-      ? error
-      : (error as { error?: { message?: unknown; validationErrors?: unknown } });
-    const validationErrors = response.error?.validationErrors;
-    if (validationErrors && typeof validationErrors === 'object') {
-      const messages = Object.values(validationErrors as Record<string, unknown>)
-        .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
-      if (messages.length > 0) {
-        return messages.join(' ');
-      }
-    }
-
-    const apiMessage = response.error?.message;
-    if (typeof apiMessage === 'string' && apiMessage.trim().length > 0) {
-      return apiMessage;
-    }
-
-    return this.i18n.t(fallbackKey);
+    return resolveApiErrorMessage(this.i18n, error, { fallbackKey });
   }
 }

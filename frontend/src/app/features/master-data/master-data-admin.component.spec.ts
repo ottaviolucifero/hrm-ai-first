@@ -818,7 +818,7 @@ describe('MasterDataAdminComponent', () => {
 
     expect(component.isFormOpen()).toBe(true);
     expect(errorSpy).toHaveBeenCalledWith(
-      'Department code generation collision for tenant. Retry create operation.',
+      'Impossibile salvare i dati.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })
     );
   });

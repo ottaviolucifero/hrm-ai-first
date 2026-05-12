@@ -117,6 +117,19 @@ describe('LoginComponent', () => {
     expect(window.localStorage.getItem('hrflow.language')).toBe('en');
     expect(document.documentElement.lang).toBe('en');
   });
+
+  it('localizes the legal footer aria labels', async () => {
+    window.localStorage.setItem('hrflow.language', 'en');
+
+    const fixture = await createLoginFixture();
+    fixture.detectChanges();
+
+    const footer = fixture.nativeElement.querySelector('footer.login-footer') as HTMLElement;
+    const nav = fixture.nativeElement.querySelector('nav.login-footer-links') as HTMLElement;
+
+    expect(footer.getAttribute('aria-label')).toBe('Login legal links navigation');
+    expect(nav.getAttribute('aria-label')).toBe('Legal links');
+  });
 });
 
 async function createLoginFixture(authService = { login: vi.fn() }) {
