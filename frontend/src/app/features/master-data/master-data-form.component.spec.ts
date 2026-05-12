@@ -127,4 +127,18 @@ describe('MasterDataFormComponent', () => {
     expect(footer?.textContent).toContain('Salva');
     expect(footer?.textContent).not.toContain('Chiudi');
   });
+
+  it('omits auto-code field in create mode', () => {
+    component.resourceTitleKey = 'masterData.entities.departments';
+    component.fields = [
+      { key: 'code', labelKey: 'masterData.columns.code', readOnly: true, modes: ['edit', 'view'] },
+      { key: 'name', labelKey: 'masterData.columns.name', required: true }
+    ];
+    component.mode = 'create';
+    component.value = { code: 'DE001', name: 'Human Resources' };
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.app-input-control')).toHaveLength(1);
+  });
 });

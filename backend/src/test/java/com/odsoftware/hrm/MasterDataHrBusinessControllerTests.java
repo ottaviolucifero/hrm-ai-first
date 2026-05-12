@@ -311,7 +311,10 @@ class MasterDataHrBusinessControllerTests {
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessListEndpointsSupportPaginationAndSearch() throws Exception {
 		createTenantMaster("/api/master-data/hr-business/departments", "TASK043_PAGE_A", "Task 043 Page A");
-		createTenantMaster("/api/master-data/hr-business/departments", "TASK043_PAGE_B", "Task 043 Page B");
+		CreatedTenantMaster searchedDepartment = createTenantMasterWithCode(
+				"/api/master-data/hr-business/departments",
+				"TASK043_PAGE_B",
+				"Task 043 Page B");
 		createTenantMaster("/api/master-data/hr-business/departments", "TASK043_PAGE_C", "Task 043 Page C");
 
 		mockMvc.perform(get("/api/master-data/hr-business/departments"))
@@ -328,33 +331,38 @@ class MasterDataHrBusinessControllerTests {
 				.andExpect(jsonPath("$.content.length()").value(2))
 				.andExpect(jsonPath("$.first").value(true));
 
-		mockMvc.perform(get("/api/master-data/hr-business/departments?search=TASK043_PAGE_B"))
+		mockMvc.perform(get("/api/master-data/hr-business/departments?search=Task 043 Page B"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content.length()").value(1))
-				.andExpect(jsonPath("$.content[0].code").value("TASK043_PAGE_B"));
+				.andExpect(jsonPath("$.content[0].code").value(searchedDepartment.code()));
 	}
 
 	@Test
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessListsNewestRecordsFirstByDefault() throws Exception {
-		createTenantMaster("/api/master-data/hr-business/departments", "TASK0465_SORT_A", "Task 0465 Sort A");
-		createTenantMaster("/api/master-data/hr-business/departments", "TASK0465_SORT_B", "Task 0465 Sort B");
+		CreatedTenantMaster firstDepartment = createTenantMasterWithCode(
+				"/api/master-data/hr-business/departments",
+				"TASK0465_SORT_A",
+				"Task 0465 Sort A");
+		CreatedTenantMaster secondDepartment = createTenantMasterWithCode(
+				"/api/master-data/hr-business/departments",
+				"TASK0465_SORT_B",
+				"Task 0465 Sort B");
 
-		mockMvc.perform(get("/api/master-data/hr-business/departments?search=TASK0465_SORT"))
+		mockMvc.perform(get("/api/master-data/hr-business/departments?search=0465"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.content[0].code").value("TASK0465_SORT_B"))
-				.andExpect(jsonPath("$.content[1].code").value("TASK0465_SORT_A"));
+				.andExpect(jsonPath("$.content[0].code").value(secondDepartment.code()))
+				.andExpect(jsonPath("$.content[1].code").value(firstDepartment.code()));
 	}
 
 	@Test
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessApiReturnsValidationErrorForInvalidPayload() throws Exception {
-		mockMvc.perform(postJson("/api/master-data/hr-business/departments", Map.of("code", "", "name", "")))
+		mockMvc.perform(postJson("/api/master-data/hr-business/departments", Map.of("name", "")))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.status").value(400))
 				.andExpect(jsonPath("$.message").value("Validation failed"))
 				.andExpect(jsonPath("$.validationErrors.tenantId").exists())
-				.andExpect(jsonPath("$.validationErrors.code").exists())
 				.andExpect(jsonPath("$.validationErrors.name").exists());
 	}
 
@@ -397,34 +405,41 @@ class MasterDataHrBusinessControllerTests {
 
 	@Test
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
-	void masterDataHrBusinessApiReturnsConflictForTenantCodeDuplicates() throws Exception {
-		createTenantMaster("/api/master-data/hr-business/departments", "TASK031_DUPLICATE", "Task 031 Duplicate");
+	void masterDataHrBusinessApiIgnoresManualCodeForAutoCodeResources() throws Exception {
+		MvcResult result = mockMvc.perform(postJson(
+				"/api/master-data/hr-business/departments",
+				Map.of(
+						"tenantId", FOUNDATION_TENANT_ID,
+						"code", "MANUAL_DEPARTMENT",
+						"name", "Task 031 Auto Department")))
+				.andExpect(status().isCreated())
+				.andReturn();
 
-		mockMvc.perform(postJson("/api/master-data/hr-business/departments", tenantMasterRequest(" task031_duplicate ", "Task 031 Duplicate 2")))
-				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.status").value(409))
-				.andExpect(jsonPath("$.message").value("Department code already exists for tenant: TASK031_DUPLICATE"));
+		assertThat(responseCode(result)).startsWith("DE").isNotEqualTo("MANUAL_DEPARTMENT");
 	}
 
 	@Test
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessPhysicalDeleteReturnsConflictForReferencedRecord() throws Exception {
-		UUID departmentId = createTenantMaster("/api/master-data/hr-business/departments", "TASK0471_REFERENCED_DEPARTMENT", "Task 047.1 Referenced Department");
+		CreatedTenantMaster department = createTenantMasterWithCode(
+				"/api/master-data/hr-business/departments",
+				"TASK0471_REFERENCED_DEPARTMENT",
+				"Task 047.1 Referenced Department");
 		employeeRepository.saveAndFlush(newEmployee(
 				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
 				companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow(),
 				"EMP-T0471-001",
-				"TASK0471_REFERENCED_DEPARTMENT",
+				department.code(),
 				"HR_SPECIALIST",
 				"FULL_TIME",
 				"HYBRID"));
 
-		mockMvc.perform(delete("/api/master-data/hr-business/departments/{id}/physical", departmentId).with(csrf()))
+		mockMvc.perform(delete("/api/master-data/hr-business/departments/{id}/physical", department.id()).with(csrf()))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.status").value(409))
 				.andExpect(jsonPath("$.message").value("Department cannot be physically deleted because it is referenced by other data"));
 
-		assertThat(departmentRepository.findById(departmentId)).isPresent();
+		assertThat(departmentRepository.findById(department.id())).isPresent();
 	}
 
 	@Test
@@ -473,7 +488,7 @@ class MasterDataHrBusinessControllerTests {
 				"/api/master-data/hr-business/document-types",
 				"TASK059_REFERENCED_DOCUMENT_TYPE",
 				"Task 059 Referenced Document Type");
-		UUID task059ContractTypeId = createTenantMaster(
+		CreatedTenantMaster task059ContractType = createTenantMasterWithCode(
 				"/api/master-data/hr-business/contract-types",
 				"TASK059_REFERENCED_CONTRACT_TYPE",
 				"Task 059 Referenced Contract Type");
@@ -483,12 +498,12 @@ class MasterDataHrBusinessControllerTests {
 				"EMP-T059-PAYROLL-001",
 				"FINANCE",
 				"PAYROLL_SPECIALIST",
-				"TASK059_REFERENCED_CONTRACT_TYPE",
+				task059ContractType.code(),
 				defaultEmploymentStatusCode,
 				"ONSITE"));
 		Contract payrollContract = contractRepository.saveAndFlush(newContract(
 				payrollEmployee,
-				contractTypeRepository.findById(task059ContractTypeId).orElseThrow()));
+				contractTypeRepository.findById(task059ContractType.id()).orElseThrow()));
 		DocumentType documentType = documentTypeRepository.findById(documentTypeId).orElseThrow();
 		payrollDocumentRepository.saveAndFlush(newPayrollDocument(payrollEmployee, payrollContract, documentType));
 
@@ -543,33 +558,45 @@ class MasterDataHrBusinessControllerTests {
 		Tenant secondaryTenant = ensureSecondaryTenant();
 		CompanyProfile secondaryCompany = ensureSecondaryCompany(secondaryTenant);
 
-		UUID departmentId = createTenantMaster("/api/master-data/hr-business/departments", "TASK0471_MULTI_DEPARTMENT", "Task 047.1 Multi Department");
-		UUID jobTitleId = createTenantMaster("/api/master-data/hr-business/job-titles", "TASK0471_MULTI_JOB_TITLE", "Task 047.1 Multi Job Title");
-		UUID contractTypeId = createTenantMaster("/api/master-data/hr-business/contract-types", "TASK0471_MULTI_CONTRACT_TYPE", "Task 047.1 Multi Contract Type");
-		UUID workModeId = createTenantMaster("/api/master-data/hr-business/work-modes", "TASK0471_MULTI_WORK_MODE", "Task 047.1 Multi Work Mode");
+		CreatedTenantMaster department = createTenantMasterWithCode(
+				"/api/master-data/hr-business/departments",
+				"TASK0471_MULTI_DEPARTMENT",
+				"Task 047.1 Multi Department");
+		CreatedTenantMaster jobTitle = createTenantMasterWithCode(
+				"/api/master-data/hr-business/job-titles",
+				"TASK0471_MULTI_JOB_TITLE",
+				"Task 047.1 Multi Job Title");
+		CreatedTenantMaster contractType = createTenantMasterWithCode(
+				"/api/master-data/hr-business/contract-types",
+				"TASK0471_MULTI_CONTRACT_TYPE",
+				"Task 047.1 Multi Contract Type");
+		CreatedTenantMaster workMode = createTenantMasterWithCode(
+				"/api/master-data/hr-business/work-modes",
+				"TASK0471_MULTI_WORK_MODE",
+				"Task 047.1 Multi Work Mode");
 
 		employeeRepository.saveAndFlush(newEmployee(
 				secondaryTenant,
 				secondaryCompany,
 				"EMP-T0471-201",
-				"TASK0471_MULTI_DEPARTMENT",
-				"TASK0471_MULTI_JOB_TITLE",
-				"TASK0471_MULTI_CONTRACT_TYPE",
-				"TASK0471_MULTI_WORK_MODE"));
+				department.code(),
+				jobTitle.code(),
+				contractType.code(),
+				workMode.code()));
 
-		mockMvc.perform(delete("/api/master-data/hr-business/departments/{id}/physical", departmentId).with(csrf()))
+		mockMvc.perform(delete("/api/master-data/hr-business/departments/{id}/physical", department.id()).with(csrf()))
 				.andExpect(status().isNoContent());
-		mockMvc.perform(delete("/api/master-data/hr-business/job-titles/{id}/physical", jobTitleId).with(csrf()))
+		mockMvc.perform(delete("/api/master-data/hr-business/job-titles/{id}/physical", jobTitle.id()).with(csrf()))
 				.andExpect(status().isNoContent());
-		mockMvc.perform(delete("/api/master-data/hr-business/contract-types/{id}/physical", contractTypeId).with(csrf()))
+		mockMvc.perform(delete("/api/master-data/hr-business/contract-types/{id}/physical", contractType.id()).with(csrf()))
 				.andExpect(status().isNoContent());
-		mockMvc.perform(delete("/api/master-data/hr-business/work-modes/{id}/physical", workModeId).with(csrf()))
+		mockMvc.perform(delete("/api/master-data/hr-business/work-modes/{id}/physical", workMode.id()).with(csrf()))
 				.andExpect(status().isNoContent());
 
-		assertThat(departmentRepository.findById(departmentId)).isEmpty();
-		assertThat(jobTitleRepository.findById(jobTitleId)).isEmpty();
-		assertThat(contractTypeRepository.findById(contractTypeId)).isEmpty();
-		assertThat(workModeRepository.findById(workModeId)).isEmpty();
+		assertThat(departmentRepository.findById(department.id())).isEmpty();
+		assertThat(jobTitleRepository.findById(jobTitle.id())).isEmpty();
+		assertThat(contractTypeRepository.findById(contractType.id())).isEmpty();
+		assertThat(workModeRepository.findById(workMode.id())).isEmpty();
 	}
 
 	@Test
@@ -620,10 +647,14 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	private UUID createTenantMaster(String path, String code, String name) throws Exception {
+		return createTenantMasterWithCode(path, code, name).id();
+	}
+
+	private CreatedTenantMaster createTenantMasterWithCode(String path, String code, String name) throws Exception {
 		MvcResult result = mockMvc.perform(postJson(path, tenantMasterRequestForResource(path, code, name)))
 				.andExpect(status().isCreated())
 				.andReturn();
-		return responseId(result);
+		return new CreatedTenantMaster(responseId(result), responseCode(result));
 	}
 
 	private Map<String, Object> tenantMasterRequestForResource(String path, String code, String name) {
@@ -680,7 +711,11 @@ class MasterDataHrBusinessControllerTests {
 
 	private String expectedAutoCodePrefix(String path) {
 		return switch (path) {
+			case "/api/master-data/hr-business/departments" -> "DE";
+			case "/api/master-data/hr-business/job-titles" -> "JO";
+			case "/api/master-data/hr-business/contract-types" -> "CO";
 			case "/api/master-data/hr-business/employment-statuses" -> "ES";
+			case "/api/master-data/hr-business/work-modes" -> "WO";
 			case "/api/master-data/hr-business/leave-request-types" -> "LR";
 			case "/api/master-data/hr-business/document-types" -> "DT";
 			case "/api/master-data/hr-business/device-types" -> "DV";
@@ -851,5 +886,8 @@ class MasterDataHrBusinessControllerTests {
 			company.setStreetNumber("2");
 			return companyProfileRepository.saveAndFlush(company);
 		});
+	}
+
+	private record CreatedTenantMaster(UUID id, String code) {
 	}
 }

@@ -53,13 +53,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/departments")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create department")
-	public TenantMasterDataResponse createDepartment(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createDepartment(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createDepartment(request);
 	}
 
 	@PutMapping("/departments/{id}")
 	@Operation(summary = "Update department")
-	public TenantMasterDataResponse updateDepartment(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateDepartment(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateDepartment(id, request);
 	}
 
@@ -95,13 +95,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/job-titles")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create job title")
-	public TenantMasterDataResponse createJobTitle(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createJobTitle(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createJobTitle(request);
 	}
 
 	@PutMapping("/job-titles/{id}")
 	@Operation(summary = "Update job title")
-	public TenantMasterDataResponse updateJobTitle(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateJobTitle(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateJobTitle(id, request);
 	}
 
@@ -137,13 +137,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/contract-types")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create contract type")
-	public TenantMasterDataResponse createContractType(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createContractType(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createContractType(request);
 	}
 
 	@PutMapping("/contract-types/{id}")
 	@Operation(summary = "Update contract type")
-	public TenantMasterDataResponse updateContractType(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateContractType(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateContractType(id, request);
 	}
 
@@ -221,13 +221,13 @@ public class MasterDataHrBusinessController {
 	@PostMapping("/work-modes")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create work mode")
-	public TenantMasterDataResponse createWorkMode(@Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse createWorkMode(@Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.createWorkMode(request);
 	}
 
 	@PutMapping("/work-modes/{id}")
 	@Operation(summary = "Update work mode")
-	public TenantMasterDataResponse updateWorkMode(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataRequest request) {
+	public TenantMasterDataResponse updateWorkMode(@PathVariable UUID id, @Valid @RequestBody TenantMasterDataAutoCodeRequest request) {
 		return masterDataHrBusinessService.updateWorkMode(id, request);
 	}
 

@@ -110,13 +110,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createDepartment(TenantMasterDataRequest request) {
-		return create(request, Department::new, departmentRepository, departmentRepository::existsByTenantIdAndCode, "Department");
+	public TenantMasterDataResponse createDepartment(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, Department::new, departmentRepository, "Department", "DE");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateDepartment(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, departmentRepository, departmentRepository::existsByTenantIdAndCodeAndIdNot, "Department");
+	public TenantMasterDataResponse updateDepartment(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, departmentRepository, departmentRepository::existsByTenantIdAndCodeAndIdNot, "Department");
 	}
 
 	@Transactional
@@ -138,13 +138,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createJobTitle(TenantMasterDataRequest request) {
-		return create(request, JobTitle::new, jobTitleRepository, jobTitleRepository::existsByTenantIdAndCode, "Job title");
+	public TenantMasterDataResponse createJobTitle(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, JobTitle::new, jobTitleRepository, "Job title", "JO");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateJobTitle(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, jobTitleRepository, jobTitleRepository::existsByTenantIdAndCodeAndIdNot, "Job title");
+	public TenantMasterDataResponse updateJobTitle(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, jobTitleRepository, jobTitleRepository::existsByTenantIdAndCodeAndIdNot, "Job title");
 	}
 
 	@Transactional
@@ -166,13 +166,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createContractType(TenantMasterDataRequest request) {
-		return create(request, ContractType::new, contractTypeRepository, contractTypeRepository::existsByTenantIdAndCode, "Contract type");
+	public TenantMasterDataResponse createContractType(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, ContractType::new, contractTypeRepository, "Contract type", "CO");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateContractType(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, contractTypeRepository, contractTypeRepository::existsByTenantIdAndCodeAndIdNot, "Contract type");
+	public TenantMasterDataResponse updateContractType(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, contractTypeRepository, contractTypeRepository::existsByTenantIdAndCodeAndIdNot, "Contract type");
 	}
 
 	@Transactional
@@ -222,13 +222,13 @@ public class MasterDataHrBusinessService {
 	}
 
 	@Transactional
-	public TenantMasterDataResponse createWorkMode(TenantMasterDataRequest request) {
-		return create(request, WorkMode::new, workModeRepository, workModeRepository::existsByTenantIdAndCode, "Work mode");
+	public TenantMasterDataResponse createWorkMode(TenantMasterDataAutoCodeRequest request) {
+		return createAutoCode(request, WorkMode::new, workModeRepository, "Work mode", "WO");
 	}
 
 	@Transactional
-	public TenantMasterDataResponse updateWorkMode(UUID id, TenantMasterDataRequest request) {
-		return update(id, request, workModeRepository, workModeRepository::existsByTenantIdAndCodeAndIdNot, "Work mode");
+	public TenantMasterDataResponse updateWorkMode(UUID id, TenantMasterDataAutoCodeRequest request) {
+		return updateAutoCode(id, request, workModeRepository, workModeRepository::existsByTenantIdAndCodeAndIdNot, "Work mode");
 	}
 
 	@Transactional

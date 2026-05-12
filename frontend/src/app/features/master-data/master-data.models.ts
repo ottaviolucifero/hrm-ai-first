@@ -348,7 +348,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/departments',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'job-titles',
@@ -356,7 +357,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/job-titles',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'contract-types',
@@ -364,7 +366,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/contract-types',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'employment-statuses',
@@ -381,7 +384,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/work-modes',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'leave-request-types',

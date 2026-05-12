@@ -259,6 +259,22 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void flywayMigrationStandardizesSeededWorkModeCodes() {
+		assertThat(workModeRepository.findById(UUID.fromString("60000000-0000-0000-0000-000000000001")))
+				.get()
+				.extracting(workMode -> workMode.getCode())
+				.isEqualTo("WO001");
+		assertThat(workModeRepository.findById(UUID.fromString("60000000-0000-0000-0000-000000000002")))
+				.get()
+				.extracting(workMode -> workMode.getCode())
+				.isEqualTo("WO002");
+		assertThat(workModeRepository.findById(UUID.fromString("60000000-0000-0000-0000-000000000003")))
+				.get()
+				.extracting(workMode -> workMode.getCode())
+				.isEqualTo("WO003");
+	}
+
+	@Test
 	void flywayMigrationSeedsGovernanceSecurityMasterTables() {
 		assertThat(userTypeRepository.count()).isEqualTo(4);
 		assertThat(authenticationMethodRepository.count()).isEqualTo(4);

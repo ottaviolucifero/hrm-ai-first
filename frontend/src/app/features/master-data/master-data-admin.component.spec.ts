@@ -590,7 +590,7 @@ describe('MasterDataAdminComponent', () => {
 
     component.handleFormSave({
       mode: 'create',
-      value: { code: 'HR', name: 'Human Resources', active: true }
+      value: { name: 'Human Resources', active: true }
     });
     fixture.detectChanges();
 
@@ -598,7 +598,6 @@ describe('MasterDataAdminComponent', () => {
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
       {
         tenantId: 'tenant-1',
-        code: 'HR',
         name: 'Human Resources',
         active: true
       }
@@ -625,7 +624,7 @@ describe('MasterDataAdminComponent', () => {
         throwError(() => ({
           status: 409,
           error: {
-            message: 'Department code already exists for tenant: HR'
+            message: 'Department code generation collision for tenant. Retry create operation.'
           }
         }))
       )
@@ -651,13 +650,13 @@ describe('MasterDataAdminComponent', () => {
 
     component.handleFormSave({
       mode: 'create',
-      value: { code: 'HR', name: 'Human Resources', active: true }
+      value: { name: 'Human Resources', active: true }
     });
     fixture.detectChanges();
 
     expect(component.isFormOpen()).toBe(true);
     expect(errorSpy).toHaveBeenCalledWith(
-      'Department code already exists for tenant: HR',
+      'Department code generation collision for tenant. Retry create operation.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })
     );
   });
@@ -733,7 +732,6 @@ describe('MasterDataAdminComponent', () => {
       'department-1',
       {
         tenantId: 'tenant-row',
-        code: 'HR',
         name: 'People Operations',
         active: true
       }

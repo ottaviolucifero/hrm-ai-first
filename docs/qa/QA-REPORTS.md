@@ -6,6 +6,53 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-059.2 - Estendere code automatico ai restanti Master Data
+
+- Data: 2026-05-12
+- Branch: `main`
+- Task: TASK-059.2 - Estendere code automatico ai restanti Master Data
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/MasterDataHrBusinessController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataHrBusinessService.java`
+  - `backend/src/main/resources/db/vendor/postgresql/V22__standardize_remaining_hr_business_master_data_codes.sql`
+  - `backend/src/main/resources/db/vendor/h2/V22__standardize_remaining_hr_business_master_data_codes.sql`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataHrBusinessControllerTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/HrmBackendApplicationTests.java`
+  - `frontend/src/app/features/master-data/master-data.models.ts`
+  - `frontend/src/app/features/master-data/master-data-admin.component.spec.ts`
+  - `frontend/src/app/features/master-data/master-data-form.component.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificato il pattern TASK-059.1 per auto-code backend/UI e riuso senza seconda architettura di generazione;
+  - verificato che `employees.department`, `employees.job_title`, `employees.contract_type` e `employees.work_mode` sono trattati dal codice come riferimenti stringa ai `code` Master Data quando coerenti, ma non hanno FK hard-enforced;
+  - verificato che nel repository corrente esistono seed iniziali solo per `work_modes`, non per `departments`, `job_titles` o `contract_types`;
+  - deciso quindi di aggiornare `employees.*` nella V22 solo quando il valore corrente coincide con un `old_code` reale della tabella target per lo stesso tenant, lasciando invariati eventuali valori descrittivi/free-text.
+- Patch applicata:
+  - estesi controller/service auto-code a `Department`, `JobTitle`, `ContractType` e `WorkMode` con prefissi `DE/JO/CO/WO`;
+  - mantenuto `code` non modificabile su update e non richiesto lato API per le 4 entita;
+  - aggiornata la Master Data UI per usare `STANDARD_CRUD_AUTO_CODE_FORM` e payload senza `code` anche per le 4 entita;
+  - aggiunta migration V22 PostgreSQL/H2 con re-codifica dati esistenti e remapping condizionale di `employees.department/job_title/contract_type/work_mode` solo su match `old_code -> new_code` tenant-scoped;
+  - estesi test backend/frontend su create auto-code, update con `code` preservato, sort/search adattati ai codici automatici e migration seed `work_modes`.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=MasterDataHrBusinessControllerTests,HrmBackendApplicationTests" test`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - backend test mirato: `BUILD SUCCESS`, 71 test, 0 failure, 0 error, 0 skipped;
+  - backend test completo: `BUILD SUCCESS`, 190 test, 0 failure, 0 error, 0 skipped;
+  - frontend test completo: OK, 30 file test passed, 204 test passed;
+  - frontend build: OK.
+- QA manuale:
+  - non eseguita in browser in questa sessione CLI.
+- Regressioni trovate: nessuna regressione automatica rilevata.
+- Limiti/note:
+  - warning non bloccanti Maven/JVM gia noti (Mockito self-attach / ByteBuddy dynamic agent);
+  - nei log Maven resta un messaggio shell residuale `'D' n est pas reconnu...` senza impatto sull esito (`BUILD SUCCESS`).
+- Stato finale: PASS WITH NOTES
+
 ### TASK-059.1 - Standardizzare code Master Data HR/business
 
 - Data: 2026-05-12
