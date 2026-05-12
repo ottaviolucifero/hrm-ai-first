@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
@@ -9,6 +10,7 @@ import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { NotificationService } from '../../shared/feedback/notification.service';
 import {
   DEFAULT_USER_ADMIN_PAGE_SIZE,
   EMPTY_USER_ADMIN_PAGE,
@@ -32,9 +34,11 @@ export class UserAdministrationComponent implements OnDestroy {
   private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly router = inject(Router);
   private readonly userAdministrationService = inject(UserAdministrationService);
+  private readonly notificationService = inject(NotificationService);
   protected readonly i18n = inject(I18nService);
 
   private loadSubscription?: Subscription;
+  private deleteSubscription?: Subscription;
   private readonly searchChanges = new Subject<string>();
   private readonly searchSubscription = this.searchChanges
     .pipe(debounceTime(300), distinctUntilChanged())
@@ -111,7 +115,19 @@ export class UserAdministrationComponent implements OnDestroy {
     {
       id: 'edit',
       labelKey: 'masterData.actions.edit',
-      disabled: () => this.loading() || !this.modulePermissions().canUpdate
+      disabled: () => this.loading() || this.deleting() || !this.modulePermissions().canUpdate
+    },
+    {
+      id: 'deactivate',
+      labelKey: 'userAdministration.lifecycle.actions.deactivate',
+      tone: 'danger',
+      disabled: () => this.loading() || this.deleting() || !this.modulePermissions().canUpdate
+    },
+    {
+      id: 'deletePhysical',
+      labelKey: 'userAdministration.actions.deletePhysical',
+      tone: 'danger',
+      disabled: () => this.loading() || this.deleting() || !this.modulePermissions().canDelete
     }
   ]);
   protected readonly pageSizeOptions = [10, 20, 50] as const;
@@ -121,6 +137,7 @@ export class UserAdministrationComponent implements OnDestroy {
   protected readonly searchInput = signal('');
   protected readonly appliedSearch = signal('');
   protected readonly loading = signal(false);
+  protected readonly deleting = signal(false);
   protected readonly hasError = signal(false);
   protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly tenantId = signal<string | null>(null);
@@ -136,6 +153,7 @@ export class UserAdministrationComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.loadSubscription?.unsubscribe();
+    this.deleteSubscription?.unsubscribe();
     this.searchSubscription.unsubscribe();
   }
 
@@ -155,7 +173,9 @@ export class UserAdministrationComponent implements OnDestroy {
 
   protected handleRowAction(event: UserAdministrationRowActionEvent): void {
     if ((event.action.id === 'view' && !this.modulePermissions().canView)
-      || (event.action.id === 'edit' && !this.modulePermissions().canUpdate)) {
+      || (event.action.id === 'edit' && !this.modulePermissions().canUpdate)
+      || (event.action.id === 'deactivate' && !this.modulePermissions().canUpdate)
+      || (event.action.id === 'deletePhysical' && !this.modulePermissions().canDelete)) {
       return;
     }
 
@@ -167,6 +187,16 @@ export class UserAdministrationComponent implements OnDestroy {
 
     if (event.action.id === 'edit') {
       void this.router.navigate(['/admin/users', user.id, 'edit']);
+      return;
+    }
+
+    if (event.action.id === 'deactivate') {
+      this.deactivateUser(user);
+      return;
+    }
+
+    if (event.action.id === 'deletePhysical') {
+      this.deleteUserPhysically(user);
     }
   }
 
@@ -276,5 +306,114 @@ export class UserAdministrationComponent implements OnDestroy {
 
     const displayName = user.employeeDisplayName?.trim();
     return displayName || this.i18n.t('userAdministration.values.employeeLinked');
+  }
+
+  private deactivateUser(user: UserAdministrationUserListItem): void {
+    if (this.deleting()) {
+      return;
+    }
+
+    const shouldDeactivate = window.confirm(this.i18n.t('userAdministration.lifecycle.deactivate.confirmMessage'));
+    if (!shouldDeactivate) {
+      return;
+    }
+
+    this.deleting.set(true);
+    this.deleteSubscription?.unsubscribe();
+    this.deleteSubscription = this.userAdministrationService.deactivateUser(user.id)
+      .pipe(finalize(() => this.deleting.set(false)))
+      .subscribe({
+        next: () => {
+          this.handleSuccessfulMutation('userAdministration.lifecycle.deactivate.success');
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveDeactivateErrorMessage(error), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
+  private deleteUserPhysically(user: UserAdministrationUserListItem): void {
+    if (this.deleting()) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(this.i18n.t('userAdministration.deletePhysical.confirmMessage'));
+    if (!shouldDelete) {
+      return;
+    }
+
+    this.deleting.set(true);
+    this.deleteSubscription?.unsubscribe();
+    this.deleteSubscription = this.userAdministrationService.deleteUser(user.id)
+      .pipe(finalize(() => this.deleting.set(false)))
+      .subscribe({
+        next: () => {
+          this.handleSuccessfulMutation('userAdministration.deletePhysical.feedback.success');
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveDeleteErrorMessage(error), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
+  private resolveDeactivateErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 401) {
+        return this.i18n.t('userAdministration.deactivate.error.unauthorized');
+      }
+      if (error.status === 403) {
+        return this.i18n.t('userAdministration.deactivate.error.forbidden');
+      }
+      if (error.status === 404) {
+        return this.i18n.t('userAdministration.deactivate.error.notFound');
+      }
+
+      const apiMessage = error.error?.message;
+      if (typeof apiMessage === 'string' && apiMessage.trim().length > 0) {
+        return apiMessage;
+      }
+    }
+
+    return this.i18n.t('userAdministration.deactivate.error.generic');
+  }
+
+  private resolveDeleteErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 401) {
+        return this.i18n.t('userAdministration.deletePhysical.error.unauthorized');
+      }
+      if (error.status === 403) {
+        return this.i18n.t('userAdministration.deletePhysical.error.forbidden');
+      }
+      if (error.status === 404) {
+        return this.i18n.t('userAdministration.deletePhysical.error.notFound');
+      }
+      if (error.status === 409) {
+        return this.i18n.t('userAdministration.deletePhysical.error.conflict');
+      }
+
+      const apiMessage = error.error?.message;
+      if (typeof apiMessage === 'string' && apiMessage.trim().length > 0) {
+        return apiMessage;
+      }
+    }
+
+    return this.i18n.t('userAdministration.deletePhysical.error.generic');
+  }
+
+  private handleSuccessfulMutation(successKey: I18nKey): void {
+    if (this.rows().length === 1 && this.pageIndex() > 0) {
+      this.pageIndex.update((page) => Math.max(0, page - 1));
+    }
+    this.notificationService.success(this.i18n.t(successKey), {
+      titleKey: 'alert.title.success'
+    });
+    this.loadUsers();
   }
 }

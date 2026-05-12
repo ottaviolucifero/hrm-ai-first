@@ -48,7 +48,7 @@ class MasterDataGovernanceSecurityControllerTests {
 	private RoleRepository roleRepository;
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityCrudFlowSupportsAllResources() throws Exception {
 		UUID userTypeId = null;
 
@@ -92,7 +92,7 @@ class MasterDataGovernanceSecurityControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityListEndpointsSupportPaginationAndSearch() throws Exception {
 		saveRole("TASK043_ROLE_A", "Task 043 Role A");
 		saveRole("TASK043_ROLE_B", "Task 043 Role B");
@@ -119,7 +119,7 @@ class MasterDataGovernanceSecurityControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityListsNewestRecordsFirstByDefault() throws Exception {
 		saveRole("TASK0465_ROLE_A", "Task 0465 Role A");
 		Thread.sleep(20L);
@@ -132,7 +132,7 @@ class MasterDataGovernanceSecurityControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityApiReturnsValidationErrorForInvalidPayload() throws Exception {
 		mockMvc.perform(postJson("/api/master-data/governance-security/audit-action-types", Map.of("code", "", "name", "")))
 				.andExpect(status().isBadRequest())
@@ -144,7 +144,7 @@ class MasterDataGovernanceSecurityControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityApiReturnsNotFoundForMissingRecord() throws Exception {
 		mockMvc.perform(get("/api/master-data/governance-security/user-types/{id}", MISSING_ID))
 				.andExpect(status().isNotFound())
@@ -153,7 +153,7 @@ class MasterDataGovernanceSecurityControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityApiReturnsConflictForGlobalCodeDuplicates() throws Exception {
 		createMaster("/api/master-data/governance-security/user-types", globalRequest("TASK032_DUPLICATE_USER_TYPE", "Task 032 Duplicate"));
 
@@ -164,7 +164,7 @@ class MasterDataGovernanceSecurityControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityRejectsRoleCreateBypass() throws Exception {
 		mockMvc.perform(postJson("/api/master-data/governance-security/roles", roleRequest("TASK0533_MASTERDATA_ROLE", "Task 053.3 Master Data Role", false)))
 				.andExpect(status().isBadRequest())
@@ -173,7 +173,7 @@ class MasterDataGovernanceSecurityControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityRejectsRoleUpdateAndDeleteBypass() throws Exception {
 		Role role = saveRole("TASK0533_MASTERDATA_UPDATE_ROLE", "Task 053.3 Master Data Update Role");
 

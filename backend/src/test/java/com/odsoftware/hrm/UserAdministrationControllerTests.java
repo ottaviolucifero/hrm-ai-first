@@ -20,21 +20,27 @@ import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
 import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,6 +54,8 @@ class UserAdministrationControllerTests {
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COMPANY_PROFILE_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
 	private static final UUID MISSING_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");
+	private static final UUID TENANT_CALLER_USER_ID = UUID.fromString("90000000-0000-0000-0000-000000000011");
+	private static final UUID PLATFORM_CALLER_USER_ID = UUID.fromString("90000000-0000-0000-0000-000000000012");
 	private static final UUID PLATFORM_SUPER_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
 	private static final UUID EMPLOYEE_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000004");
@@ -101,6 +109,7 @@ class UserAdministrationControllerTests {
 		saveUserTenantAccess(linkedUser, "TENANT_ADMIN");
 
 		mockMvc.perform(get("/api/admin/users")
+						.with(userAdminCaller())
 						.param("tenantId", FOUNDATION_TENANT_ID.toString())
 						.param("search", "task0534"))
 				.andExpect(status().isOk())
@@ -126,6 +135,7 @@ class UserAdministrationControllerTests {
 		UserAccount user = saveUser(otherTenant, "task0534.platform@example.com");
 
 		mockMvc.perform(get("/api/admin/users")
+						.with(platformUserAdminCaller())
 						.param("search", "task0534.platform@example.com"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content.length()").value(1))
@@ -142,7 +152,7 @@ class UserAdministrationControllerTests {
 		saveUserRole(role, user);
 		saveUserTenantAccess(user, "TENANT_USER");
 
-		mockMvc.perform(get("/api/admin/users/{userId}", user.getId()))
+		mockMvc.perform(get("/api/admin/users/{userId}", user.getId()).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(user.getId().toString()))
 				.andExpect(jsonPath("$.email").value("task0534.detail@example.com"))
@@ -167,7 +177,7 @@ class UserAdministrationControllerTests {
 	@Test
 	@WithMockUser
 	void userAdministrationReturnsNotFoundForMissingUser() throws Exception {
-		mockMvc.perform(get("/api/admin/users/{userId}", MISSING_ID))
+		mockMvc.perform(get("/api/admin/users/{userId}", MISSING_ID).with(userAdminCaller()))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.message").value("User account not found: " + MISSING_ID));
 	}
@@ -175,7 +185,7 @@ class UserAdministrationControllerTests {
 	@Test
 	@WithMockUser
 	void userAdministrationReturnsFormOptionsForCreateEdit() throws Exception {
-		mockMvc.perform(get("/api/admin/users/form-options"))
+		mockMvc.perform(get("/api/admin/users/form-options").with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.tenants[?(@.id=='" + FOUNDATION_TENANT_ID + "')]").exists())
 				.andExpect(jsonPath("$.userTypes[?(@.code=='TENANT_ADMIN')]").exists())
@@ -195,7 +205,7 @@ class UserAdministrationControllerTests {
 						TENANT_ADMIN_USER_TYPE_ID,
 						FOUNDATION_TENANT_ID,
 						FOUNDATION_COMPANY_PROFILE_ID,
-						rawPassword)))
+						rawPassword)).with(userAdminCaller()))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.email").value("task0537.create@example.com"))
 				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
@@ -233,7 +243,7 @@ class UserAdministrationControllerTests {
 						TENANT_ADMIN_USER_TYPE_ID,
 						FOUNDATION_TENANT_ID,
 						null,
-						"TenantCreate1!")))
+						"TenantCreate1!")).with(userAdminCaller()))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.message").value("User email already exists: task0537.duplicate@example.com"));
 	}
@@ -249,7 +259,7 @@ class UserAdministrationControllerTests {
 						TENANT_ADMIN_USER_TYPE_ID,
 						FOUNDATION_TENANT_ID,
 						otherCompanyProfile.getId(),
-						"TenantCreate1!")))
+						"TenantCreate1!")).with(userAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("Company profile does not belong to tenant: " + otherCompanyProfile.getId()));
 	}
@@ -262,7 +272,7 @@ class UserAdministrationControllerTests {
 						PLATFORM_SUPER_ADMIN_USER_TYPE_ID,
 						FOUNDATION_TENANT_ID,
 						null,
-						"TenantCreate1!")))
+						"TenantCreate1!")).with(userAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("User type is not allowed for tenant user creation: " + PLATFORM_SUPER_ADMIN_USER_TYPE_ID));
 	}
@@ -275,7 +285,7 @@ class UserAdministrationControllerTests {
 						TENANT_ADMIN_USER_TYPE_ID,
 						FOUNDATION_TENANT_ID,
 						null,
-						"weak")))
+						"weak")).with(userAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("Password does not satisfy the current password policy."));
 	}
@@ -286,7 +296,7 @@ class UserAdministrationControllerTests {
 		UserAccount user = saveUser("task0537.update@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
 		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
 
-		mockMvc.perform(putJson("/api/admin/users/" + user.getId(), userUpdateRequest(" TASK0537.Updated@Example.COM ", companyProfile.getId())))
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId(), userUpdateRequest(" TASK0537.Updated@Example.COM ", companyProfile.getId())).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.email").value("task0537.updated@example.com"))
 				.andExpect(jsonPath("$.companyProfile.id").value(companyProfile.getId().toString()))
@@ -306,7 +316,7 @@ class UserAdministrationControllerTests {
 	void userAdministrationUpdatesCompanyProfileToNull() throws Exception {
 		UserAccount user = saveUser("task0537.clear-company@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
 
-		mockMvc.perform(putJson("/api/admin/users/" + user.getId(), userUpdateRequest("task0537.clear-company@example.com", null)))
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId(), userUpdateRequest("task0537.clear-company@example.com", null)).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.companyProfile").doesNotExist());
 
@@ -319,17 +329,17 @@ class UserAdministrationControllerTests {
 	void userAdministrationActivatesAndDeactivatesUserIdempotently() throws Exception {
 		UserAccount user = saveUser("task0538.active@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
 
-		mockMvc.perform(put("/api/admin/users/{userId}/deactivate", user.getId()))
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", user.getId()).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(user.getId().toString()))
 				.andExpect(jsonPath("$.active").value(false))
 				.andExpect(jsonPath("$.locked").value(false));
 
-		mockMvc.perform(put("/api/admin/users/{userId}/deactivate", user.getId()))
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", user.getId()).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.active").value(false));
 
-		mockMvc.perform(put("/api/admin/users/{userId}/activate", user.getId()))
+		mockMvc.perform(put("/api/admin/users/{userId}/activate", user.getId()).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.active").value(true))
 				.andExpect(jsonPath("$.locked").value(false));
@@ -346,18 +356,18 @@ class UserAdministrationControllerTests {
 		user.setFailedLoginAttempts(4);
 		userAccountRepository.saveAndFlush(user);
 
-		mockMvc.perform(put("/api/admin/users/{userId}/lock", user.getId()))
+		mockMvc.perform(put("/api/admin/users/{userId}/lock", user.getId()).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(user.getId().toString()))
 				.andExpect(jsonPath("$.active").value(true))
 				.andExpect(jsonPath("$.locked").value(true))
 				.andExpect(jsonPath("$.failedLoginAttempts").value(4));
 
-		mockMvc.perform(put("/api/admin/users/{userId}/lock", user.getId()))
+		mockMvc.perform(put("/api/admin/users/{userId}/lock", user.getId()).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.locked").value(true));
 
-		mockMvc.perform(put("/api/admin/users/{userId}/unlock", user.getId()))
+		mockMvc.perform(put("/api/admin/users/{userId}/unlock", user.getId()).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.locked").value(false))
 				.andExpect(jsonPath("$.failedLoginAttempts").value(4));
@@ -371,7 +381,7 @@ class UserAdministrationControllerTests {
 	@Test
 	@WithMockUser
 	void userAdministrationLifecycleReturnsNotFoundForMissingUser() throws Exception {
-		mockMvc.perform(put("/api/admin/users/{userId}/activate", MISSING_ID))
+		mockMvc.perform(put("/api/admin/users/{userId}/activate", MISSING_ID).with(userAdminCaller()))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.message").value("User account not found: " + MISSING_ID));
 	}
@@ -387,6 +397,7 @@ class UserAdministrationControllerTests {
 		saveUserRole(assignedRole, user);
 
 		mockMvc.perform(get("/api/admin/users/{userId}/available-roles", user.getId())
+						.with(userAdminCaller())
 						.param("tenantId", FOUNDATION_TENANT_ID.toString()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[?(@.id=='" + availableRole.getId() + "')].code").value("TASK0535_AVAILABLE_ROLE"))
@@ -401,6 +412,7 @@ class UserAdministrationControllerTests {
 		UserAccount user = saveUser("task0535.emptyroles@example.com", EMPLOYEE_USER_TYPE_ID, null);
 
 		mockMvc.perform(get("/api/admin/users/{userId}/roles", user.getId())
+						.with(userAdminCaller())
 						.param("tenantId", FOUNDATION_TENANT_ID.toString()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(0));
@@ -413,6 +425,7 @@ class UserAdministrationControllerTests {
 		Role availableRole = saveRole("TASK0535_EMPTY_AVAILABLE", "Task 053.5 Empty Available Role");
 
 		mockMvc.perform(get("/api/admin/users/{userId}/available-roles", user.getId())
+						.with(userAdminCaller())
 						.param("tenantId", FOUNDATION_TENANT_ID.toString()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[?(@.id=='" + availableRole.getId() + "')].code").value("TASK0535_EMPTY_AVAILABLE"))
@@ -426,7 +439,7 @@ class UserAdministrationControllerTests {
 		saveUserTenantAccess(user, "TENANT_USER");
 		Role role = saveRole("TASK0535_ASSIGN_ROLE", "Task 053.5 Assign Role");
 
-		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, role.getId())))
+		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, role.getId())).with(userAdminCaller()))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.length()").value(1))
 				.andExpect(jsonPath("$[0].id").value(role.getId().toString()))
@@ -443,7 +456,7 @@ class UserAdministrationControllerTests {
 		Role role = saveRole("TASK0535_DUPLICATE_ASSIGNMENT", "Task 053.5 Duplicate Assignment");
 		saveUserRole(role, user);
 
-		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, role.getId())))
+		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, role.getId())).with(userAdminCaller()))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.message").value("Role already assigned to user for tenant: " + role.getId()));
 	}
@@ -456,21 +469,21 @@ class UserAdministrationControllerTests {
 		Tenant otherTenant = saveTenant("TASK0535_ROLE_OTHER_TENANT");
 		Role otherTenantRole = saveRole(otherTenant.getId(), "TASK0535_OTHER_TENANT_ROLE", "Task 053.5 Other Tenant Role", true);
 
-		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, otherTenantRole.getId())))
+		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(FOUNDATION_TENANT_ID, otherTenantRole.getId())).with(userAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("Role does not belong to tenant: " + otherTenantRole.getId()));
 	}
 
 	@Test
 	@WithMockUser
-	void userAdministrationRejectsRoleAssignmentWithoutActiveTenantAccess() throws Exception {
+	void userAdministrationRejectsCrossTenantRoleAssignmentForTenantCaller() throws Exception {
 		UserAccount user = saveUser("task0535.noaccess@example.com", EMPLOYEE_USER_TYPE_ID, null);
 		Tenant otherTenant = saveTenant("TASK0535_NO_ACCESS_TENANT");
 		Role role = saveRole(otherTenant.getId(), "TASK0535_NO_ACCESS_ROLE", "Task 053.5 No Access Role", true);
 
-		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(otherTenant.getId(), role.getId())))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("User does not have active access to tenant: " + otherTenant.getId()));
+		mockMvc.perform(postJson("/api/admin/users/" + user.getId() + "/roles", roleAssignmentRequest(otherTenant.getId(), role.getId())).with(userAdminCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant user administration is not allowed for caller"));
 	}
 
 	@Test
@@ -482,6 +495,7 @@ class UserAdministrationControllerTests {
 		saveUserRole(role, user);
 
 		mockMvc.perform(delete("/api/admin/users/{userId}/roles/{roleId}", user.getId(), role.getId())
+						.with(userAdminCaller())
 						.param("tenantId", FOUNDATION_TENANT_ID.toString()))
 				.andExpect(status().isNoContent());
 
@@ -499,7 +513,7 @@ class UserAdministrationControllerTests {
 		userAccountRepository.saveAndFlush(user);
 
 		String rawPassword = "TenantReset1!";
-		MvcResult result = mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(FOUNDATION_TENANT_ID, rawPassword)))
+		MvcResult result = mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(FOUNDATION_TENANT_ID, rawPassword)).with(userAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.userId").value(user.getId().toString()))
 				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
@@ -527,7 +541,7 @@ class UserAdministrationControllerTests {
 		UserAccount user = saveUser("task0536.reset.access@example.com", EMPLOYEE_USER_TYPE_ID, null);
 		saveUserTenantAccess(user, otherTenant, "TENANT_USER");
 
-		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(otherTenant.getId(), "TenantAccess1!")))
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(otherTenant.getId(), "TenantAccess1!")).with(platformUserAdminCaller("PLATFORM.USER.UPDATE")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.tenantId").value(otherTenant.getId().toString()));
 
@@ -540,20 +554,194 @@ class UserAdministrationControllerTests {
 	void userAdministrationRejectsPasswordResetWhenPasswordDoesNotSatisfyPolicy() throws Exception {
 		UserAccount user = saveUser("task0536.weak@example.com", EMPLOYEE_USER_TYPE_ID, null);
 
-		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(FOUNDATION_TENANT_ID, "weak")))
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(FOUNDATION_TENANT_ID, "weak")).with(userAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("Password does not satisfy the current password policy."));
 	}
 
 	@Test
 	@WithMockUser
-	void userAdministrationRejectsPasswordResetWithoutActiveTenantAccess() throws Exception {
+	void userAdministrationRejectsCrossTenantPasswordResetForTenantCaller() throws Exception {
 		UserAccount user = saveUser("task0536.noaccess@example.com", EMPLOYEE_USER_TYPE_ID, null);
 		Tenant otherTenant = saveTenant("TASK0536_NO_ACCESS_TENANT");
 
-		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(otherTenant.getId(), "OtherTenant1!")))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("User does not have active access to tenant: " + otherTenant.getId()));
+		mockMvc.perform(putJson("/api/admin/users/" + user.getId() + "/password", passwordResetRequest(otherTenant.getId(), "OtherTenant1!")).with(userAdminCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant user administration is not allowed for caller"));
+	}
+
+	@Test
+	void userAdministrationRejectsCallerWithoutReadPermission() throws Exception {
+		mockMvc.perform(get("/api/admin/users/form-options")
+						.with(userAdminCaller("TENANT.USER.UPDATE")))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
+	void userAdministrationRejectsCrossTenantListForTenantCaller() throws Exception {
+		Tenant otherTenant = saveTenant("TASK055_USERS_LIST_OTHER_TENANT");
+
+		mockMvc.perform(get("/api/admin/users")
+						.with(userAdminCaller())
+						.param("tenantId", otherTenant.getId().toString()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant user administration is not allowed for caller"));
+	}
+
+	@Test
+	void userAdministrationRejectsDeleteWithoutDeletePermission() throws Exception {
+		UserAccount user = saveUser("task055.delete.permission@example.com", EMPLOYEE_USER_TYPE_ID, null);
+
+		mockMvc.perform(delete("/api/admin/users/{userId}", user.getId())
+						.with(userAdminCaller("TENANT.USER.READ", "TENANT.USER.UPDATE")))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
+	void userAdministrationRejectsDeactivateWithoutUpdatePermission() throws Exception {
+		UserAccount user = saveUser("task055.deactivate.permission@example.com", EMPLOYEE_USER_TYPE_ID, null);
+
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", user.getId())
+						.with(userAdminCaller("TENANT.USER.READ", "TENANT.USER.DELETE")))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
+	void userAdministrationRejectsDeleteWithoutToken() throws Exception {
+		UserAccount user = saveUser("task055.delete.without-token@example.com", EMPLOYEE_USER_TYPE_ID, null);
+
+		mockMvc.perform(delete("/api/admin/users/{userId}", user.getId()))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void userAdministrationRejectsDeactivateWithoutToken() throws Exception {
+		UserAccount user = saveUser("task055.deactivate.without-token@example.com", EMPLOYEE_USER_TYPE_ID, null);
+
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", user.getId()))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void userAdministrationDeleteReturnsNotFoundForMissingUser() throws Exception {
+		mockMvc.perform(delete("/api/admin/users/{userId}", MISSING_ID)
+						.with(userAdminCaller()))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("User account not found: " + MISSING_ID));
+	}
+
+	@Test
+	void userAdministrationDeactivateReturnsNotFoundForMissingUser() throws Exception {
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", MISSING_ID)
+						.with(userAdminCaller()))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("User account not found: " + MISSING_ID));
+	}
+
+	@Test
+	void userAdministrationRejectsDeleteAcrossTenantForTenantCaller() throws Exception {
+		Tenant otherTenant = saveTenant("TASK055_USERS_DELETE_OTHER_TENANT");
+		UserAccount user = saveUser(otherTenant, "task055.delete.other-tenant@example.com");
+
+		mockMvc.perform(delete("/api/admin/users/{userId}", user.getId())
+						.with(userAdminCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant user administration is not allowed for caller"));
+	}
+
+	@Test
+	void userAdministrationRejectsDeactivateAcrossTenantForTenantCaller() throws Exception {
+		Tenant otherTenant = saveTenant("TASK055_USERS_DEACTIVATE_OTHER_TENANT");
+		UserAccount user = saveUser(otherTenant, "task055.deactivate.other-tenant@example.com");
+
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", user.getId())
+						.with(userAdminCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant user administration is not allowed for caller"));
+	}
+
+	@Test
+	void userAdministrationRejectsDeleteOfPlatformUserForTenantCaller() throws Exception {
+		UserAccount user = saveUser("task055.delete.platform@example.com", PLATFORM_SUPER_ADMIN_USER_TYPE_ID, null);
+
+		mockMvc.perform(delete("/api/admin/users/{userId}", user.getId())
+						.with(userAdminCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Tenant administrators cannot manage platform users"));
+	}
+
+	@Test
+	void userAdministrationRejectsDeactivateOfPlatformUserForTenantCaller() throws Exception {
+		UserAccount user = saveUser("task055.deactivate.platform@example.com", PLATFORM_SUPER_ADMIN_USER_TYPE_ID, null);
+
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", user.getId())
+						.with(userAdminCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Tenant administrators cannot manage platform users"));
+	}
+
+	@Test
+	void userAdministrationRejectsSelfDelete() throws Exception {
+		UserAccount callerAccount = saveUser("task055.self-delete@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
+
+		mockMvc.perform(delete("/api/admin/users/{userId}", callerAccount.getId())
+						.with(userAdminCallerForUser(callerAccount.getId())))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Caller cannot delete its own user account"));
+	}
+
+	@Test
+	void userAdministrationRejectsSelfDeactivate() throws Exception {
+		UserAccount callerAccount = saveUser("task055.self-deactivate@example.com", TENANT_ADMIN_USER_TYPE_ID, null);
+
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", callerAccount.getId())
+						.with(userAdminCallerForUser(callerAccount.getId())))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Caller cannot deactivate its own user account"));
+	}
+
+	@Test
+	void userAdministrationDeletesUserPhysicallyWhenUnreferenced() throws Exception {
+		UserAccount user = saveUser("task055.delete.success@example.com", EMPLOYEE_USER_TYPE_ID, null);
+
+		mockMvc.perform(delete("/api/admin/users/{userId}", user.getId())
+						.with(userAdminCaller()))
+				.andExpect(status().isNoContent());
+
+		assertThat(userAccountRepository.findById(user.getId())).isEmpty();
+	}
+
+	@Test
+	void userAdministrationReturnsConflictWhenDeletingReferencedUser() throws Exception {
+		UserAccount user = saveUser("task055.delete.referenced@example.com", EMPLOYEE_USER_TYPE_ID, null);
+		Role role = saveRole("TASK055_DELETE_REFERENCED_ROLE", "Task 055 Delete Referenced Role");
+		saveUserRole(role, user);
+
+		mockMvc.perform(delete("/api/admin/users/{userId}", user.getId())
+						.with(userAdminCaller()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").value("Utente non cancellabile perche gia referenziato."));
+
+		UserAccount reloadedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+		assertThat(reloadedUser.getActive()).isTrue();
+		assertThat(userRoleRepository.existsByUserAccount_Id(user.getId())).isTrue();
+	}
+
+	@Test
+	void userAdministrationDeactivatesUserSuccessfully() throws Exception {
+		UserAccount user = saveUser("task055.deactivate.success@example.com", EMPLOYEE_USER_TYPE_ID, null);
+
+		mockMvc.perform(patch("/api/admin/users/{userId}/deactivate", user.getId())
+						.with(userAdminCaller()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(user.getId().toString()))
+				.andExpect(jsonPath("$.active").value(false));
+
+		UserAccount reloadedUser = userAccountRepository.findById(user.getId()).orElseThrow();
+		assertThat(reloadedUser.getActive()).isFalse();
 	}
 
 	@Test
@@ -571,7 +759,7 @@ class UserAdministrationControllerTests {
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/activate']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/activate'].put").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/deactivate']").exists())
-				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/deactivate'].put").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/deactivate'].patch").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/lock']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/lock'].put").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/unlock']").exists())
@@ -584,7 +772,8 @@ class UserAdministrationControllerTests {
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/available-roles']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/available-roles'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/password']").exists())
-				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/password'].put").exists());
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}/password'].put").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/users/{userId}'].delete").exists());
 	}
 
 	private Tenant saveTenant(String code) {
@@ -730,5 +919,45 @@ class UserAdministrationControllerTests {
 		return put(path)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request));
+	}
+
+	private RequestPostProcessor userAdminCaller(String... authorities) {
+		return userAdminCallerForUser(TENANT_CALLER_USER_ID, authorities);
+	}
+
+	private RequestPostProcessor userAdminCallerForUser(UUID userId, String... authorities) {
+		String[] effectiveAuthorities = authorities.length == 0
+				? new String[] {"TENANT.USER.READ", "TENANT.USER.CREATE", "TENANT.USER.UPDATE", "TENANT.USER.DELETE"}
+				: authorities;
+		java.util.List<GrantedAuthority> grantedAuthorities = Stream.concat(
+						Stream.of("USER_TYPE_TENANT_ADMIN"),
+						Stream.of(effectiveAuthorities))
+				.map(SimpleGrantedAuthority::new)
+				.map(authority -> (GrantedAuthority) authority)
+				.toList();
+		return jwt().jwt(jwt -> jwt
+						.subject("user.admin@example.com")
+						.claim("userId", userId.toString())
+						.claim("tenantId", FOUNDATION_TENANT_ID.toString())
+						.claim("userType", "TENANT_ADMIN"))
+				.authorities(grantedAuthorities);
+	}
+
+	private RequestPostProcessor platformUserAdminCaller(String... authorities) {
+		String[] effectiveAuthorities = authorities.length == 0
+				? new String[] {"PLATFORM.USER.READ", "PLATFORM.USER.CREATE", "PLATFORM.USER.UPDATE", "PLATFORM.USER.DELETE"}
+				: authorities;
+		java.util.List<GrantedAuthority> grantedAuthorities = Stream.concat(
+						Stream.of("USER_TYPE_PLATFORM_SUPER_ADMIN"),
+						Stream.of(effectiveAuthorities))
+				.map(SimpleGrantedAuthority::new)
+				.map(authority -> (GrantedAuthority) authority)
+				.toList();
+		return jwt().jwt(jwt -> jwt
+						.subject("platform.admin@example.com")
+						.claim("userId", PLATFORM_CALLER_USER_ID.toString())
+						.claim("tenantId", FOUNDATION_TENANT_ID.toString())
+						.claim("userType", "PLATFORM_SUPER_ADMIN"))
+				.authorities(grantedAuthorities);
 	}
 }

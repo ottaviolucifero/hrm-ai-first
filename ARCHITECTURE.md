@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.2
-Ultimo aggiornamento: 2026-05-10
+Versione: 1.3
+Ultimo aggiornamento: 2026-05-12
 Stato: Bozza
 
 ---
@@ -99,8 +99,9 @@ Fonti gia presenti:
 - `UserTenantAccess` dichiara accessi espliciti di un utente verso un tenant;
 - `UserRole` collega utenti e ruoli dentro un tenant;
 - `RolePermission` collega ruoli e permessi dentro un tenant;
-- il JWT corrente espone `userId`, `tenantId` e `userType`, con authority tecnica minima `USER_TYPE_<userType>`;
-- RBAC runtime completo, tenant switching e impersonation restano demandati a task successivi.
+- il JWT corrente espone `userId`, `tenantId` e `userType`, mantenendo autenticazione stateless;
+- le permission authority runtime vengono risolte lato backend a ogni request dal bridge `UserTenantAccess` + `UserRole` + `RolePermission` + `Permission`, includendo solo record attivi;
+- tenant switching e impersonation restano demandati a task successivi.
 
 ### 4.1 PLATFORM_SUPER_ADMIN
 
@@ -175,6 +176,7 @@ Regole:
 - create/update/delete richiedono tenant corrente coerente con token, accesso tenant e permessi assegnati;
 - i record referenziati non devono essere cancellati fisicamente;
 - disattivazione logica e delete fisico restano azioni distinte;
+- per user administration, `DELETE /api/admin/users/{userId}` rappresenta hard delete controllato e deve restituire `409 Conflict` se esistono riferimenti; la disattivazione logica passa da `PATCH /api/admin/users/{userId}/deactivate`;
 - nessun payload frontend puo imporre un `tenantId` diverso da quello autorizzato senza controllo backend.
 
 ### 4.6 Regole cross-tenant
@@ -195,11 +197,12 @@ Il backend e l'unica fonte autorevole dell'autorizzazione.
 
 Regole:
 
-- Spring Security/JWT autentica l'utente, ma i service/controller devono applicare policy autorizzative quando TASK-055 introdurra enforcement reale;
+- Spring Security/JWT autentica l'utente e il backend applica enforcement autorizzativo reale con mapping esplicito endpoint/permesso e `default deny` sugli endpoint non mappati;
 - il naming futuro dei permessi deve restare coerente con il modello `SCOPE.RESOURCE.ACTION`, ad esempio `PLATFORM.TENANT.MANAGE`, `TENANT.MASTER_DATA.READ`, `TENANT.MASTER_DATA.CREATE`;
-- le authority derivate da JWT non devono essere trattate come RBAC completo finche non esiste caricamento controllato di ruoli/permessi;
+- le authority derivate dal token non sono trusted in modo statico: i permessi runtime devono essere ricalcolati dal backend usando i bridge e lo stato attivo dell'account;
 - tenant isolation deve essere verificata lato backend su ogni API tenant-scoped;
-- il backend non deve fidarsi della sola visibilita frontend.
+- il backend non deve fidarsi della sola visibilita frontend;
+- gli endpoint admin utente/ruolo devono bloccare cross-tenant non autorizzato, gestione utenti platform da parte di tenant admin e self-delete amministrativo.
 
 ### 4.8 Impatto frontend visibility
 
@@ -221,5 +224,5 @@ Restano fuori da questa architettura documentale e sono demandati al backlog:
 - foundation stabile dei codici permesso in TASK-052;
 - amministrazione tenant di utenti e ruoli in TASK-053;
 - visibility frontend autorizzativa in TASK-054;
-- enforcement backend API in TASK-055;
-- tenant switching runtime, impersonation runtime e MFA operativa.
+- tenant switching runtime, impersonation runtime e MFA operativa;
+- estensione del mapping permission/resource ad API future oggi ancora negate esplicitamente per mancanza di resource approvata.

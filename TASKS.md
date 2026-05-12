@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.18
-Ultimo aggiornamento: 2026-05-11
+Versione: 2.19
+Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
 ---
@@ -3761,7 +3761,7 @@ Scope:
 
 Implementato:
 
-- endpoint backend `PUT /api/admin/users/{userId}/activate`, `PUT /api/admin/users/{userId}/deactivate`, `PUT /api/admin/users/{userId}/lock` e `PUT /api/admin/users/{userId}/unlock`;
+- endpoint backend `PUT /api/admin/users/{userId}/activate`, `PATCH /api/admin/users/{userId}/deactivate`, `PUT /api/admin/users/{userId}/lock` e `PUT /api/admin/users/{userId}/unlock`;
 - update idempotente dei soli flag `UserAccount.active` e `UserAccount.locked`, con ritorno del dettaglio utente aggiornato e senza nuove migration;
 - login backend/frontend esteso con codici errore stabili per account non attivo o bloccato solo dopo validazione corretta delle credenziali, mantenendo messaggio generico per email inesistente o password errata;
 - UI login aggiornata con messaggi i18n specifici `Account disattivato` e `Account bloccato`, senza cambiare policy JWT, lockout o password;
@@ -3858,7 +3858,7 @@ Fuori scope:
 
 ### TASK-055 - Backend RBAC enforcement foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend authorization enforcement
 
@@ -3873,9 +3873,25 @@ Scope:
 - mapping endpoint/azione verso `Permission` code;
 - controllo permessi del caller;
 - controllo tenant/caller authorization;
+- protezione endpoint admin, inclusi `/api/admin/roles` e `/api/admin/users`;
+- `DELETE /api/admin/users/{userId}` come cancellazione fisica controllata;
+- `PATCH /api/admin/users/{userId}/deactivate` come disattivazione utente (delete logico);
 - test negativi per utente autenticato senza permessi;
 - test cross-tenant;
-- protezione endpoint admin, inclusi `/api/admin/roles`.
+- aggiornamento documentazione governance e QA.
+
+Completato:
+
+- aggiunta risoluzione backend delle authority da DB per request JWT tramite `UserTenantAccess`, `UserRole`, `RolePermission` e `Permission` attivi;
+- mantenuta autenticazione JWT stateless, ma con ricalcolo server-side dei permessi del caller a ogni richiesta;
+- introdotto `default deny` in `SecurityConfig` per endpoint non esplicitamente mappati;
+- protetti `/api/admin/users/**`, `/api/admin/roles/**` e gli endpoint `master-data` con mapping `SCOPE.RESOURCE.ACTION`;
+- protetti gli endpoint read `core-hr` gia coperti da resource approvate (`EMPLOYEE`, `CONTRACT`, `DEVICE`, `PAYROLL_DOCUMENT`, `LEAVE_REQUEST`) e negati esplicitamente gli endpoint senza resource approvata;
+- introdotti controlli tenant/caller lato service per utenti e ruoli admin, con blocco cross-tenant per caller tenant e blocco gestione utenti platform da parte di tenant admin;
+- riallineato `DELETE /api/admin/users/{userId}` a cancellazione fisica controllata, senza cascade delete, con `409 Conflict` se l utente e referenziato e blocco self-delete;
+- aggiunto `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica (`active=false`), con blocco self-deactivate;
+- aggiunti handler JSON coerenti per `401` e `403`;
+- aggiornati i test backend admin/security e la suite master-data esistente al nuovo enforcement esplicito.
 
 Nota di sicurezza:
 
@@ -3890,7 +3906,7 @@ Fuori scope:
 
 #### TASK-055.1 - Tenant/caller authorization hardening for admin role endpoints
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend authorization hardening
 
@@ -3899,6 +3915,12 @@ Scope:
 - completare controlli tenant/caller sugli endpoint `/api/admin/roles`;
 - impedire accessi admin cross-tenant non autorizzati anche con payload/query manipolati;
 - introdurre test negativi dedicati sui casi tenant mismatch e caller senza permessi.
+
+Esito:
+
+- completato dentro TASK-055;
+- i controlli tenant/caller sono stati applicati sia a `/api/admin/roles` sia a `/api/admin/users`;
+- mantenuto come riferimento storico ma assorbito dalla foundation enforcement.
 
 Fuori scope:
 
@@ -3995,6 +4017,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.19 | 2026-05-12 | TASK-055 completato: introdotto enforcement RBAC reale lato backend con authority risolte da DB per request JWT, `default deny` sugli endpoint protetti, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato e nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica; test backend completi verdi e patch frontend minima allineata. |
 | 2.18 | 2026-05-11 | TASK-054 completato: introdotta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar visibile ma frozen senza permessi CRUD, guard route `view/create/update`, applicazione ai moduli `/master-data`, `/admin/roles`, `/admin/permissions`, `/admin/users`, test frontend verdi e nessuna modifica backend. |
 | 2.17 | 2026-05-11 | TASK-053.9 completato: chiarito e applicato il link opzionale `UserAccount.employee`, con account validi senza Employee, fallback email/tipo account, DTO admin espliciti `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato, nessuna migration e nessuna duplicazione `firstName`/`lastName` su `UserAccount`. |
 | 2.16 | 2026-05-11 | TASK-053.8 esteso con patch minima UX login: codici errore backend stabili per account inactive/locked solo dopo validazione password corretta, messaggi login i18n `Account disattivato` / `Account bloccato`, mantenuto errore generico per email inesistente o password errata, test backend/frontend completi verdi. |

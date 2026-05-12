@@ -79,7 +79,7 @@ class MasterDataGlobalControllerTests {
 	private NationalIdentifierTypeRepository nationalIdentifierTypeRepository;
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalGeoCrudFlowSupportsListGetCreateUpdateAndDisable() throws Exception {
 		UUID countryId = createCountry("Task 030 Country", "QZ");
 		mockMvc.perform(get("/api/master-data/global/countries"))
@@ -142,7 +142,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalSimpleMasterCrudFlowSupportsListGetCreateUpdateAndDisable() throws Exception {
 		UUID currencyId = createCurrency("XQA", "Task 030 Currency", "XQA");
 		mockMvc.perform(get("/api/master-data/global/currencies"))
@@ -204,7 +204,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalListEndpointsSupportPaginationAndSearch() throws Exception {
 		long totalCountries = countryRepository.count();
 
@@ -239,7 +239,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalListsNewestRecordsFirstByDefault() throws Exception {
 		createCountry("Task 0465 Country A", "Z1");
 		createCountry("Task 0465 Country B", "Z2");
@@ -251,7 +251,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiSupportsItalianZipCodeImport() throws Exception {
 		ItalianZipCodeImportReport report = new ItalianZipCodeImportReport(3L, 3L, 3L, 0L, 0L, 0L, List.of());
 		when(italianZipCodeImportService.analyzeDefaultCsv()).thenReturn(report);
@@ -270,7 +270,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiReturnsNotFoundForMissingRecord() throws Exception {
 		mockMvc.perform(get("/api/master-data/global/currencies/{id}", MISSING_ID))
 				.andExpect(status().isNotFound())
@@ -279,7 +279,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiReturnsValidationErrorForInvalidPayload() throws Exception {
 		mockMvc.perform(postJson("/api/master-data/global/countries", Map.of("isoCode", "QZ")))
 				.andExpect(status().isBadRequest())
@@ -289,7 +289,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiAllowsCountryWithoutDefaultCurrency() throws Exception {
 		mockMvc.perform(postJson("/api/master-data/global/countries", countryRequest("Task 042 Country", "QC", null)))
 				.andExpect(status().isCreated())
@@ -298,7 +298,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiReturnsValidationErrorForInvalidId() throws Exception {
 		mockMvc.perform(get("/api/master-data/global/countries/not-a-uuid"))
 				.andExpect(status().isBadRequest())
@@ -307,7 +307,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiReturnsConflictForNaturalKeyDuplicates() throws Exception {
 		createGender("TASK030_DUPLICATE", "Task 030 Duplicate Gender");
 
@@ -318,7 +318,7 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiValidatesGeographicRelationshipConsistency() throws Exception {
 		UUID countryId = createCountry("Task 030 Mismatch Country", "QB");
 		UUID italyRegionId = createRegion(ITALY_COUNTRY_ID, "Task 030 Italy Region", "IT-T030");

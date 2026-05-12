@@ -1,13 +1,16 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { NotificationService } from '../../shared/feedback/notification.service';
 import { UserAdministrationComponent } from './user-administration.component';
 import { UserAdministrationService } from './user-administration.service';
 
 describe('UserAdministrationComponent', () => {
   afterEach(() => {
+    vi.restoreAllMocks();
     window.localStorage.removeItem('hrflow.language');
     TestBed.resetTestingModule();
   });
@@ -78,6 +81,206 @@ describe('UserAdministrationComponent', () => {
     });
 
     expect(navigateSpy).toHaveBeenCalledWith(['/admin/users', 'user-1', 'edit']);
+  });
+
+  it('exposes deactivate and delete row actions with coherent permission gates', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), 'TENANT_ADMIN', ['TENANT.USER.READ']);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      rowActions: () => readonly { id: string; disabled?: boolean | ((row: Record<string, unknown>) => boolean) }[];
+    };
+    const deactivateAction = component.rowActions().find((action) => action.id === 'deactivate');
+    const deletePhysicalAction = component.rowActions().find((action) => action.id === 'deletePhysical');
+
+    expect(deactivateAction).toBeTruthy();
+    expect(deletePhysicalAction).toBeTruthy();
+    expect(typeof deactivateAction?.disabled).toBe('function');
+    expect(typeof deletePhysicalAction?.disabled).toBe('function');
+    expect((deactivateAction?.disabled as (row: Record<string, unknown>) => boolean)({ id: 'user-1' })).toBe(true);
+    expect((deletePhysicalAction?.disabled as (row: Record<string, unknown>) => boolean)({ id: 'user-1' })).toBe(true);
+  });
+
+  it('confirms deactivation, calls API and refreshes the list', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    const component = fixture.componentInstance as unknown as {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+
+    component.handleRowAction({
+      action: { id: 'deactivate' },
+      row: { id: 'user-1' }
+    });
+
+    expect(confirmSpy).toHaveBeenCalledWith('Vuoi disattivare questo utente?');
+    expect(service.deactivateUser).toHaveBeenCalledWith('user-1');
+    expect(service.findUsers).toHaveBeenCalledTimes(2);
+    expect(successSpy).toHaveBeenCalledWith(
+      'Utente disattivato correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+  });
+
+  it('does not call deactivate when confirmation is cancelled', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const component = fixture.componentInstance as unknown as {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+
+    component.handleRowAction({
+      action: { id: 'deactivate' },
+      row: { id: 'user-1' }
+    });
+
+    expect(service.deactivateUser).not.toHaveBeenCalled();
+    expect(service.findUsers).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows unauthorized delete message on 401', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      deactivateUser: vi.fn(() => throwError(() => new HttpErrorResponse({ status: 401 })))
+    });
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
+    const component = fixture.componentInstance as unknown as {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+
+    component.handleRowAction({
+      action: { id: 'deactivate' },
+      row: { id: 'user-1' }
+    });
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Sessione non valida. Effettua di nuovo l accesso.',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
+  });
+
+  it('shows forbidden deactivate message on 403', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      deactivateUser: vi.fn(() => throwError(() => new HttpErrorResponse({ status: 403 })))
+    });
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
+    const component = fixture.componentInstance as unknown as {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+
+    component.handleRowAction({
+      action: { id: 'deactivate' },
+      row: { id: 'user-1' }
+    });
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Non sei autorizzato a disattivare questo utente.',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
+  });
+
+  it('shows not-found deactivate message on 404', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      deactivateUser: vi.fn(() => throwError(() => new HttpErrorResponse({ status: 404 })))
+    });
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
+    const component = fixture.componentInstance as unknown as {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+
+    component.handleRowAction({
+      action: { id: 'deactivate' },
+      row: { id: 'user-1' }
+    });
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'L utente selezionato non esiste piu.',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
+  });
+
+  it('confirms physical delete, calls API and refreshes the list', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    const component = fixture.componentInstance as unknown as {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+
+    component.handleRowAction({
+      action: { id: 'deletePhysical' },
+      row: { id: 'user-1' }
+    });
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Vuoi cancellare definitivamente questo utente? L operazione riuscira solo se non esistono riferimenti collegati.'
+    );
+    expect(service.deleteUser).toHaveBeenCalledWith('user-1');
+    expect(service.findUsers).toHaveBeenCalledTimes(2);
+    expect(successSpy).toHaveBeenCalledWith(
+      'Utente cancellato correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+  });
+
+  it('shows conflict delete message on 409', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      deleteUser: vi.fn(() => throwError(() => new HttpErrorResponse({ status: 409 })))
+    });
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
+    const component = fixture.componentInstance as unknown as {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+
+    component.handleRowAction({
+      action: { id: 'deletePhysical' },
+      row: { id: 'user-1' }
+    });
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Utente non cancellabile perche gia referenziato. Puoi disattivarlo.',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
   });
 
   it('reports load errors through the shared table error state', async () => {
@@ -211,6 +414,8 @@ function createService(overrides: Partial<UserAdministrationService> = {}): User
       first: true,
       last: true
     })),
+    deleteUser: vi.fn(() => of(void 0)),
+    deactivateUser: vi.fn(() => of({ id: 'user-1', active: false })),
     findUserById: vi.fn(),
     ...overrides
   } as UserAdministrationService;

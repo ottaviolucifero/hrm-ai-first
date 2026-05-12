@@ -16,6 +16,8 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID>,
 
 	Optional<UserAccount> findByEmailIgnoreCase(String email);
 
+	boolean existsByCreatedBy_IdOrUpdatedBy_Id(UUID createdById, UUID updatedById);
+
 	@Override
 	@EntityGraph(attributePaths = {
 			"tenant",

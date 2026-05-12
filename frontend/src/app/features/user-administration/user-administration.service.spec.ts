@@ -140,7 +140,7 @@ describe('UserAdministrationService', () => {
 
     expect(activateRequest.request.method).toBe('PUT');
     expect(activateRequest.request.body).toEqual({});
-    expect(deactivateRequest.request.method).toBe('PUT');
+    expect(deactivateRequest.request.method).toBe('PATCH');
     expect(deactivateRequest.request.body).toEqual({});
     expect(lockRequest.request.method).toBe('PUT');
     expect(lockRequest.request.body).toEqual({});

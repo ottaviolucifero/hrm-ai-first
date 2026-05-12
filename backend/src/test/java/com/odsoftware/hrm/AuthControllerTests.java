@@ -244,6 +244,47 @@ class AuthControllerTests {
 	}
 
 	@Test
+	void tokenWithGrantedPermissionAccessesUserAdministrationEndpoint() throws Exception {
+		saveUser("task055.user-admin.allowed@example.com", VALID_PASSWORD, true, false, true);
+		UserAccount userAccount = userAccountRepository.findByEmailIgnoreCase("task055.user-admin.allowed@example.com").orElseThrow();
+		assignPermissions(userAccount, TENANT_USER_READ);
+		String token = loginAndReadToken("task055.user-admin.allowed@example.com", VALID_PASSWORD);
+
+		mockMvc.perform(get("/api/admin/users/form-options")
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tenants[0].id").value(FOUNDATION_TENANT_ID.toString()));
+	}
+
+	@Test
+	void tokenWithoutGrantedPermissionIsForbiddenOnUserAdministrationEndpoint() throws Exception {
+		saveUser("task055.user-admin.denied@example.com", VALID_PASSWORD, true, false, true);
+		String token = loginAndReadToken("task055.user-admin.denied@example.com", VALID_PASSWORD);
+
+		mockMvc.perform(get("/api/admin/users/form-options")
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
+	void tokenLosesRbacAuthoritiesAfterLogicalDelete() throws Exception {
+		UserAccount userAccount = saveUser("task055.deleted@example.com", VALID_PASSWORD, true, false, true);
+		assignPermissions(userAccount, TENANT_USER_READ);
+		String token = loginAndReadToken("task055.deleted@example.com", VALID_PASSWORD);
+
+		UserAccount reloadedUser = userAccountRepository.findById(userAccount.getId()).orElseThrow();
+		reloadedUser.setActive(false);
+		reloadedUser.setDeletedAt(java.time.OffsetDateTime.now());
+		userAccountRepository.saveAndFlush(reloadedUser);
+
+		mockMvc.perform(get("/api/admin/users/form-options")
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
 	void openApiRemainsPublicAndIncludesAuthEndpoints() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())

@@ -138,6 +138,140 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-055 corrective patch - user hard delete and separate deactivate endpoint
+
+- Data: 2026-05-12
+- Branch: `main`
+- Task: TASK-055 corrective patch - align user administration with controlled hard delete plus separate deactivate endpoint
+- Modello consigliato nel prompt operativo: GPT-5.5
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/UserAdministrationController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/UserAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/config/SecurityConfig.java`
+  - `backend/src/test/java/com/odsoftware/hrm/UserAdministrationControllerTests.java`
+  - `frontend/src/app/features/user-administration/`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `ARCHITECTURE.md`
+- Patch applicata:
+  - riallineato `DELETE /api/admin/users/{userId}` a cancellazione fisica controllata, con `409 Conflict` e messaggio chiaro se l utente e gia referenziato;
+  - aggiunto `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica utente, mantenendo blocchi cross-tenant, tenant-admin vs platform user e self-deactivate;
+  - aggiornato `SecurityConfig` per proteggere il nuovo `PATCH` con permission update coerente;
+  - estesa la suite backend con casi negativi/successo per `DELETE` hard e `PATCH deactivate`;
+  - aggiornata la lista utenti frontend con action distinte `Disattiva utente` e `Cancella definitivamente`, conferme separate, refresh lista ed error handling `401/403/404/409`;
+  - aggiornate chiavi i18n `it/fr/en` e test frontend minimi del modulo user administration;
+  - corretta la documentazione corrente per distinguere chiaramente hard delete e disattivazione logica.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=UserAdministrationControllerTests test`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - suite mirata backend `UserAdministrationControllerTests`: `BUILD SUCCESS`, 45 test, 0 failure, 0 error, 0 skipped;
+  - suite backend completa: `BUILD SUCCESS`, 185 test complessivi, 0 failure, 0 error, 0 skipped;
+  - build frontend: OK;
+  - suite frontend completa: OK, 29 file test, 193 test passati.
+- Esito funzionale confermato:
+  - `DELETE /api/admin/users/{userId}` cancella fisicamente solo utenti non referenziati;
+  - `DELETE /api/admin/users/{userId}` restituisce `409 Conflict` e lascia il record invariato se l utente e referenziato;
+  - `PATCH /api/admin/users/{userId}/deactivate` disattiva logicamente l utente e blocca self-deactivate;
+  - la UI separa correttamente `Disattiva utente` da `Cancella definitivamente`.
+- Note:
+  - questo report sostituisce le note della stessa data che descrivevano `DELETE /api/admin/users/{userId}` come delete logico.
+- Stato finale: PASS
+
+### TASK-055 follow-up - User deactivation endpoint negative coverage completion (superseded)
+
+- Data: 2026-05-12
+- Branch: `main`
+- Task: TASK-055 follow-up - complete negative coverage for user deactivation endpoint `DELETE /api/admin/users/{userId}`
+- Modello consigliato nel prompt operativo: GPT-5.3 / GPT-5.3 Codex
+- Area verificata: `backend/src/test/java/com/odsoftware/hrm/UserAdministrationControllerTests.java`
+- Patch applicata (test-only, scope minimo):
+  - aggiunto test `401` per chiamata senza token;
+  - aggiunto test `404` per user inesistente;
+  - aggiunto test idempotenza su utente gia disattivato logicamente.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=UserAdministrationControllerTests test`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - suite mirata `UserAdministrationControllerTests`: `BUILD SUCCESS`, 38 test, 0 failure, 0 error, 0 skipped;
+  - suite backend completa: `BUILD SUCCESS`, 178 test complessivi, 0 failure, 0 error, 0 skipped.
+- Esito comportamento idempotenza:
+  - confermato comportamento idempotente coerente con implementazione attuale;
+  - seconda `DELETE` su utente gia cancellato logicamente restituisce ancora `204 No Content` e mantiene `deletedAt` invariato.
+- Regressioni trovate: nessuna.
+- Stato finale: PASS
+
+### TASK-055 - Backend RBAC enforcement foundation (independent QA pass)
+
+- Data: 2026-05-12
+- Branch: `main`
+- Task: TASK-055 - Backend RBAC enforcement foundation
+- Modello consigliato nel prompt operativo: GPT-5.3 / GPT-5.3 Codex
+- Area verificata: `SecurityConfig`, authority runtime da DB, `/api/admin/users`, `/api/admin/roles`, tenant/caller authorization, `DELETE /api/admin/users/{userId}`, suite test backend e coerenza `TASKS.md`/`ROADMAP.md`/`ARCHITECTURE.md`/`DECISIONS.md`.
+- Comando test eseguito:
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali test:
+  - `BUILD SUCCESS`;
+  - 175 test eseguiti, 0 failure, 0 error, 0 skipped (somma report Surefire).
+- Verifiche positive confermate:
+  - endpoint pubblici previsti restano pubblici (`/api/auth/login`, `/v3/api-docs/**`, `/swagger-ui/**`);
+  - enforcement backend con mapping esplicito metodo/endpoint -> permission code in `SecurityConfig`;
+  - default deny presente su endpoint non mappati (`anyRequest().denyAll()`);
+  - authority runtime ricalcolate da DB per request JWT (bridge `UserTenantAccess` + `UserRole` + `RolePermission` + `Permission`, con filtro stato attivo);
+  - `/api/admin/users/**` e `/api/admin/roles/**` protetti per metodo HTTP;
+  - blocco cross-tenant su admin utenti/ruoli per caller tenant;
+  - blocco gestione utenti platform da parte di tenant admin;
+  - blocco self-delete;
+  - `DELETE /api/admin/users/{userId}` implementato come delete logico (`active=false`, `deletedAt` valorizzato) con risposta `204 No Content`.
+- Findings:
+  - `MAJOR` - Copertura test negativa incompleta sul delete user rispetto ai controlli richiesti:
+    - manca test esplicito `DELETE /api/admin/users/{userId}` senza token (`401`);
+    - manca test esplicito `DELETE /api/admin/users/{userId}` con utente inesistente (`404`);
+    - manca test esplicito di idempotenza del delete (seconda chiamata su utente gia logicamente cancellato).
+  - `NOTE` - I controlli applicativi sono comunque presenti nel service (`findUser` + guardrail caller + branch logico su `deletedAt`), quindi il rischio e di copertura QA, non di bug funzionale immediato.
+- Riferimenti tecnici principali:
+  - `backend/src/main/java/com/odsoftware/hrm/config/SecurityConfig.java`
+  - `backend/src/main/java/com/odsoftware/hrm/security/PermissionAuthorityService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/UserAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/RoleAdministrationService.java`
+  - `backend/src/test/java/com/odsoftware/hrm/UserAdministrationControllerTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/AuthControllerTests.java`
+- Stato finale: FAIL
+
+### TASK-055 - Backend RBAC enforcement foundation
+
+- Data: 2026-05-12
+- Branch: `main`
+- Task: TASK-055 - Backend RBAC enforcement foundation
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `SecurityConfig`, authority resolution JWT/runtime, `UserAdministrationService`, `RoleAdministrationService`, endpoint `/api/admin/users`, `/api/admin/roles`, protezione `master-data`/`core-hr`, documentazione governance.
+- Attivita eseguite:
+  - introdotta risoluzione runtime delle authority da DB per request JWT tramite `UserTenantAccess`, `UserRole`, `RolePermission` e `Permission`;
+  - applicato `default deny` in `SecurityConfig` con mapping esplicito endpoint/metodo -> permission code;
+  - protetti `/api/admin/users/**`, `/api/admin/roles/**` e gli endpoint `master-data`; negati esplicitamente gli endpoint `core-hr` senza resource approvata;
+  - aggiunti controlli tenant/caller nei service admin con blocco cross-tenant, blocco gestione utenti platform da parte di tenant admin e blocco self-delete;
+  - aggiunto `DELETE /api/admin/users/{userId}` con delete logico (`active=false`, `deletedAt` valorizzato);
+  - estesa/adeguata la suite test backend admin/security e la suite master-data esistente al nuovo enforcement.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=AuthControllerTests,RoleAdministrationControllerTests,UserAdministrationControllerTests,HrmBackendApplicationTests" test`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - suite mirata OK, `BUILD SUCCESS`, 128 test eseguiti, 0 failure, 0 error, 0 skipped;
+  - suite backend completa OK, `BUILD SUCCESS`;
+  - durante il lavoro sono emersi fallimenti reali nei test legacy `master-data` dovuti al nuovo `default deny`; corretti aggiungendo le authority esplicite richieste ai test esistenti.
+- QA manuale browser eseguita/non eseguita: non eseguita in questa sessione CLI.
+- Regressioni trovate:
+  - nessuna regressione applicativa residua confermata dopo l'adeguamento della suite completa;
+  - confermato che i vecchi test `@WithMockUser` senza authority esplicite non erano piu validi con il nuovo enforcement.
+- Limiti/note:
+  - il runtime resta JWT stateless ma non si fida di permessi client-side o di authority statiche non ricalcolate;
+  - tenant switching, impersonation e il mapping permission/resource per future API fuori catalogo restano backlog successivo;
+  - nei log Maven restano warning noti Mockito/ByteBuddy non bloccanti.
+- Stato finale: PASS
+
 ### TASK-054 follow-up - Auth permission exposure patch
 
 - Data: 2026-05-12
@@ -468,6 +602,37 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: backend test OK (107 test, 0 failure, 0 errori, 0 skipped), fix applicato e validato, nessuna regressione bloccante.
 
 ## Frontend QA reports
+
+### TASK-055 - Frontend user deactivation action exposure on user list (superseded by hard delete/deactivate split)
+
+- Data: 2026-05-12
+- Branch: `main`
+- Task: TASK-055 frontend follow-up - expose user deactivation action in `/admin/users` list
+- Modello consigliato nel prompt operativo: GPT-5.3 / GPT-5.3 Codex
+- Area verificata:
+  - `frontend/src/app/features/user-administration/user-administration.component.ts`
+  - `frontend/src/app/features/user-administration/user-administration.service.ts`
+  - `frontend/src/app/features/user-administration/user-administration.component.spec.ts`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+- Patch applicata (scope minimo):
+  - aggiunta row action `deactivate` nella lista utenti con icona standard DataTable per disattivazione (action id `deactivate`, tone `danger`);
+  - aggiunta conferma utente prima della chiamata di disattivazione;
+  - aggiunta chiamata frontend `DELETE /api/admin/users/{userId}` nel service;
+  - aggiunto refresh lista dopo disattivazione riuscita;
+  - aggiunta gestione errori `401/403/404` con messaggi i18n coerenti;
+  - aggiornate chiavi i18n `it/fr/en` per conferma, successo ed errori di disattivazione;
+  - estesa copertura test frontend del modulo user administration per action di disattivazione.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend: OK;
+  - test frontend: OK, 29 file test passed, 191 test passed.
+- Regressioni trovate: nessuna nei test automatici eseguiti.
+- Limiti/note:
+  - durante il primo run test e stato corretto un errore TypeScript nel test aggiunto (`readonly Array`), poi run ripetuto con esito verde;
+  - patch limitata a user administration, nessuna modifica shared strutturale e nessun redesign.
+- Stato finale: PASS
 
 ### TASK-053.7 - User list DataTable alignment and sticky actions patch
 

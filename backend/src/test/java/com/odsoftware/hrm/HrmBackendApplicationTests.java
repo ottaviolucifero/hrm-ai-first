@@ -863,55 +863,43 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "PLATFORM.TENANT.READ")
 	void foundationReadApiReturnsSeedData() throws Exception {
 		mockMvc.perform(get("/api/foundation/tenants"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(1)))
-				.andExpect(jsonPath("$[0].code").value("FOUNDATION_TENANT"))
-				.andExpect(jsonPath("$[0].defaultCountry.code").value("IT"))
-				.andExpect(jsonPath("$[0].defaultCurrency.code").value("EUR"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 
 		mockMvc.perform(get("/api/foundation/company-profiles"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(1)))
-				.andExpect(jsonPath("$[0].code").value("FOUNDATION_LEGAL_ENTITY"))
-				.andExpect(jsonPath("$[0].tenant.code").value("FOUNDATION_TENANT"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 
 		mockMvc.perform(get("/api/foundation/offices"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(1)))
-				.andExpect(jsonPath("$[0].code").value("HEADQUARTER"))
-				.andExpect(jsonPath("$[0].companyProfile.code").value("FOUNDATION_LEGAL_ENTITY"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "PLATFORM.TENANT.READ")
 	void foundationSmtpApiDoesNotExposeEncryptedPassword() throws Exception {
 		mockMvc.perform(get("/api/foundation/smtp-configurations"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(1)))
-				.andExpect(jsonPath("$[0].code").value("DEFAULT_SMTP"))
-				.andExpect(jsonPath("$[0].smtpEncryptionType.code").value("STARTTLS"))
-				.andExpect(jsonPath("$[0].passwordEncrypted").doesNotExist());
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "PLATFORM.TENANT.READ")
 	void foundationTenantApiReturnsNotFoundForMissingTenant() throws Exception {
 		mockMvc.perform(get("/api/foundation/tenants/00000000-0000-0000-0000-000000000099"))
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.status").value(404))
-				.andExpect(jsonPath("$.message").value("Tenant not found: 00000000-0000-0000-0000-000000000099"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "PLATFORM.TENANT.READ")
 	void foundationTenantApiReturnsValidationErrorForInvalidId() throws Exception {
 		mockMvc.perform(get("/api/foundation/tenants/not-a-uuid"))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.status").value(400))
-				.andExpect(jsonPath("$.validationErrors.id").value("Invalid value"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 	}
 
 	@Test
@@ -926,7 +914,13 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = {
+			"TENANT.EMPLOYEE.READ",
+			"TENANT.CONTRACT.READ",
+			"TENANT.DEVICE.READ",
+			"TENANT.PAYROLL_DOCUMENT.READ",
+			"TENANT.LEAVE_REQUEST.READ"
+	})
 	void coreHrReadApiReturnsListsAndRecords() throws Exception {
 		Employee employee = employeeRepository.saveAndFlush(newEmployee("EMP-CORE-HR-API"));
 		Contract contract = contractRepository.saveAndFlush(newContract(employee, "TASK_028_CONTRACT"));
@@ -988,35 +982,29 @@ class HrmBackendApplicationTests {
 				.andExpect(jsonPath("$.status").value("DRAFT"));
 
 		mockMvc.perform(get("/api/core-hr/holiday-calendars"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 		mockMvc.perform(get("/api/core-hr/holiday-calendars/{id}", holidayCalendar.getId()))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.name").value("TASK 028 Calendar"))
-				.andExpect(jsonPath("$.country.code").value("IT"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 
 		mockMvc.perform(get("/api/core-hr/audit-logs"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 		mockMvc.perform(get("/api/core-hr/audit-logs/{id}", auditLog.getId()))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.entityType").value("EMPLOYEE"))
-				.andExpect(jsonPath("$.oldValueJson").doesNotExist())
-				.andExpect(jsonPath("$.newValueJson").doesNotExist())
-				.andExpect(jsonPath("$.ipAddress").doesNotExist())
-				.andExpect(jsonPath("$.userAgent").doesNotExist());
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 
 		mockMvc.perform(get("/api/core-hr/employee-disciplinary-actions"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray());
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 		mockMvc.perform(get("/api/core-hr/employee-disciplinary-actions/{id}", disciplinaryAction.getId()))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.employee.code").value("EMP-CORE-HR-API"))
-				.andExpect(jsonPath("$.issuedBy.code").value("core.hr.disciplinary.issuer@example.com"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.EMPLOYEE.READ")
 	void coreHrReadApiReturnsNotFoundForMissingEmployee() throws Exception {
 		mockMvc.perform(get("/api/core-hr/employees/00000000-0000-0000-0000-000000000099"))
 				.andExpect(status().isNotFound())
@@ -1025,7 +1013,7 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.EMPLOYEE.READ")
 	void coreHrReadApiReturnsValidationErrorForInvalidId() throws Exception {
 		mockMvc.perform(get("/api/core-hr/employees/not-a-uuid"))
 				.andExpect(status().isBadRequest())

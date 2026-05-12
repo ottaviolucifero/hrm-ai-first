@@ -55,12 +55,16 @@ export class UserAdministrationService {
     return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}`, payload);
   }
 
+  deleteUser(userId: string): Observable<void> {
+    return this.http.delete<void>(`/api/admin/users/${userId}`);
+  }
+
   activateUser(userId: string): Observable<UserAdministrationUserDetail> {
     return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}/activate`, {});
   }
 
   deactivateUser(userId: string): Observable<UserAdministrationUserDetail> {
-    return this.http.put<UserAdministrationUserDetail>(`/api/admin/users/${userId}/deactivate`, {});
+    return this.http.patch<UserAdministrationUserDetail>(`/api/admin/users/${userId}/deactivate`, {});
   }
 
   lockUser(userId: string): Observable<UserAdministrationUserDetail> {

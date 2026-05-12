@@ -20,17 +20,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,6 +50,7 @@ class RoleAdministrationControllerTests {
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID MISSING_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");
+	private static final UUID CALLER_USER_ID = UUID.fromString("90000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
 	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
 
@@ -86,6 +92,7 @@ class RoleAdministrationControllerTests {
 		saveRole(otherTenant.getId(), "TASK0531_LIST_OTHER_ROLE", "Task 053.1 Other Role", null, false, true);
 
 		mockMvc.perform(get("/api/admin/roles")
+						.with(roleAdminCaller())
 						.param("tenantId", FOUNDATION_TENANT_ID.toString())
 						.param("search", "TASK0531_LIST_ROLE"))
 				.andExpect(status().isOk())
@@ -103,7 +110,7 @@ class RoleAdministrationControllerTests {
 	void roleAdministrationReturnsRoleDetailWithTenantReference() throws Exception {
 		Role role = saveRole("TASK0531_DETAIL_ROLE", "Task 053.1 Detail Role", "Task 053.1 Detail Description");
 
-		mockMvc.perform(get("/api/admin/roles/{roleId}", role.getId()))
+		mockMvc.perform(get("/api/admin/roles/{roleId}", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(role.getId().toString()))
 				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
@@ -121,7 +128,7 @@ class RoleAdministrationControllerTests {
 		Permission permission = savePermission("TASK0531_READ_PERMISSION", "Task 053.1 Read Permission");
 		saveRolePermission(role, permission);
 
-		mockMvc.perform(get("/api/admin/roles/{roleId}/permissions", role.getId()))
+		mockMvc.perform(get("/api/admin/roles/{roleId}/permissions", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(1))
 				.andExpect(jsonPath("$[0].id").value(permission.getId().toString()))
@@ -138,7 +145,7 @@ class RoleAdministrationControllerTests {
 		Permission newPermissionB = savePermission("TASK0531_UPDATE_NEW_PERMISSION_B", "Task 053.1 Update New Permission B");
 		saveRolePermission(role, oldPermission);
 
-		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(newPermissionB.getId(), newPermissionA.getId())))
+		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(newPermissionB.getId(), newPermissionA.getId())).with(roleAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.roleId").value(role.getId().toString()))
 				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
@@ -157,7 +164,7 @@ class RoleAdministrationControllerTests {
 		Role role = saveRole("TASK0531_DEDUP_ROLE", "Task 053.1 Dedup Role", null);
 		Permission permission = savePermission("TASK0531_DEDUP_PERMISSION", "Task 053.1 Dedup Permission");
 
-		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(permission.getId(), permission.getId())))
+		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(permission.getId(), permission.getId())).with(roleAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.permissions.length()").value(1))
 				.andExpect(jsonPath("$.permissions[0].id").value(permission.getId().toString()));
@@ -168,7 +175,7 @@ class RoleAdministrationControllerTests {
 	@Test
 	@WithMockUser
 	void roleAdministrationReturnsNotFoundForMissingRole() throws Exception {
-		mockMvc.perform(get("/api/admin/roles/{roleId}", MISSING_ID))
+		mockMvc.perform(get("/api/admin/roles/{roleId}", MISSING_ID).with(roleAdminCaller()))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.status").value(404))
 				.andExpect(jsonPath("$.message").value("Role not found: " + MISSING_ID));
@@ -179,7 +186,7 @@ class RoleAdministrationControllerTests {
 	void roleAdministrationReturnsNotFoundForMissingPermissionOnUpdate() throws Exception {
 		Role role = saveRole("TASK0531_MISSING_PERMISSION_ROLE", "Task 053.1 Missing Permission Role", null);
 
-		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(MISSING_ID)))
+		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(MISSING_ID)).with(roleAdminCaller()))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.status").value(404))
 				.andExpect(jsonPath("$.message").value("Permission not found: " + MISSING_ID));
@@ -192,7 +199,7 @@ class RoleAdministrationControllerTests {
 		Tenant otherTenant = saveTenant("TASK0531_PERMISSION_OTHER_TENANT");
 		Permission otherTenantPermission = savePermission(otherTenant.getId(), "TASK0531_OTHER_TENANT_PERMISSION", "Task 053.1 Other Tenant Permission");
 
-		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(otherTenantPermission.getId())))
+		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(otherTenantPermission.getId())).with(roleAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.status").value(400))
 				.andExpect(jsonPath("$.message").value("Permission does not belong to role tenant: " + otherTenantPermission.getId()));
@@ -204,6 +211,7 @@ class RoleAdministrationControllerTests {
 		Role role = saveRole("TASK0531_VALIDATION_ROLE", "Task 053.1 Validation Role", null);
 
 		mockMvc.perform(put("/api/admin/roles/{roleId}/permissions", role.getId())
+						.with(roleAdminCaller())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{}"))
 				.andExpect(status().isBadRequest())
@@ -215,7 +223,7 @@ class RoleAdministrationControllerTests {
 	@Test
 	@WithMockUser
 	void roleAdministrationCreatesCustomRole() throws Exception {
-		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(FOUNDATION_TENANT_ID, " task0533_create_role ", " Task 053.3 Create Role ", " Task 053.3 Description ", false)))
+		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(FOUNDATION_TENANT_ID, " task0533_create_role ", " Task 053.3 Create Role ", " Task 053.3 Description ", false)).with(roleAdminCaller()))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.code").value("TASK0533_CREATE_ROLE"))
@@ -230,19 +238,19 @@ class RoleAdministrationControllerTests {
 	void roleAdministrationRejectsDuplicateRoleCodeOnCreate() throws Exception {
 		saveRole("TASK0533_DUPLICATE_ROLE", "Task 053.3 Duplicate Role", null);
 
-		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(FOUNDATION_TENANT_ID, " task0533_duplicate_role ", "Task 053.3 Duplicate Role 2", null, true)))
+		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(FOUNDATION_TENANT_ID, " task0533_duplicate_role ", "Task 053.3 Duplicate Role 2", null, true)).with(roleAdminCaller()))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.message").value("Role code already exists for tenant: TASK0533_DUPLICATE_ROLE"));
 	}
 
 	@Test
 	@WithMockUser
-	void roleAdministrationReturnsNotFoundForMissingTenantOnCreate() throws Exception {
+	void roleAdministrationRejectsCrossTenantCreateForTenantCaller() throws Exception {
 		UUID missingTenantId = UUID.fromString("00000000-0000-0000-0000-000000000098");
 
-		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(missingTenantId, "TASK0533_MISSING_TENANT", "Task 053.3 Missing Tenant", null, true)))
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.message").value("Tenant not found: " + missingTenantId));
+		mockMvc.perform(postJson("/api/admin/roles", createRoleRequest(missingTenantId, "TASK0533_MISSING_TENANT", "Task 053.3 Missing Tenant", null, true)).with(roleAdminCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant role administration is not allowed for caller"));
 	}
 
 	@Test
@@ -250,7 +258,7 @@ class RoleAdministrationControllerTests {
 	void roleAdministrationUpdatesCustomRoleNameAndDescription() throws Exception {
 		Role role = saveRole("TASK0533_UPDATE_ROLE", "Task 053.3 Update Role", "Old description");
 
-		mockMvc.perform(putJson("/api/admin/roles/" + role.getId(), updateRoleRequest(" Task 053.3 Updated Role ", " Updated description ")))
+		mockMvc.perform(putJson("/api/admin/roles/" + role.getId(), updateRoleRequest(" Task 053.3 Updated Role ", " Updated description ")).with(roleAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.code").value("TASK0533_UPDATE_ROLE"))
 				.andExpect(jsonPath("$.name").value("Task 053.3 Updated Role"))
@@ -262,11 +270,11 @@ class RoleAdministrationControllerTests {
 	void roleAdministrationActivatesAndDeactivatesCustomRole() throws Exception {
 		Role role = saveRole(FOUNDATION_TENANT_ID, "TASK0533_TOGGLE_ROLE", "Task 053.3 Toggle Role", null, false, false);
 
-		mockMvc.perform(put("/api/admin/roles/{roleId}/activate", role.getId()))
+		mockMvc.perform(put("/api/admin/roles/{roleId}/activate", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.active").value(true));
 
-		mockMvc.perform(put("/api/admin/roles/{roleId}/deactivate", role.getId()))
+		mockMvc.perform(put("/api/admin/roles/{roleId}/deactivate", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.active").value(false));
 	}
@@ -278,7 +286,7 @@ class RoleAdministrationControllerTests {
 		Permission permission = savePermission("TASK0533_DELETE_PERMISSION", "Task 053.3 Delete Permission");
 		saveRolePermission(role, permission);
 
-		mockMvc.perform(delete("/api/admin/roles/{roleId}", role.getId()))
+		mockMvc.perform(delete("/api/admin/roles/{roleId}", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isNoContent());
 
 		assertThat(roleRepository.findById(role.getId())).isEmpty();
@@ -291,7 +299,7 @@ class RoleAdministrationControllerTests {
 		Role role = saveRole("TASK0533_ASSIGNED_ROLE", "Task 053.3 Assigned Role", null);
 		saveUserRole(role, saveUser("task0533.assigned@example.com"));
 
-		mockMvc.perform(delete("/api/admin/roles/{roleId}", role.getId()))
+		mockMvc.perform(delete("/api/admin/roles/{roleId}", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.message").value("Role cannot be deleted because it is assigned to one or more users"));
 	}
@@ -302,21 +310,51 @@ class RoleAdministrationControllerTests {
 		Role role = saveRole(FOUNDATION_TENANT_ID, "TASK0533_SYSTEM_ROLE", "Task 053.3 System Role", null, true, true);
 		Permission permission = savePermission("TASK0533_SYSTEM_PERMISSION", "Task 053.3 System Permission");
 
-		mockMvc.perform(putJson("/api/admin/roles/" + role.getId(), updateRoleRequest("System role updated", "Description")))
+		mockMvc.perform(putJson("/api/admin/roles/" + role.getId(), updateRoleRequest("System role updated", "Description")).with(roleAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("System roles cannot be modified through tenant role administration"));
-		mockMvc.perform(put("/api/admin/roles/{roleId}/activate", role.getId()))
+		mockMvc.perform(put("/api/admin/roles/{roleId}/activate", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("System roles cannot be modified through tenant role administration"));
-		mockMvc.perform(put("/api/admin/roles/{roleId}/deactivate", role.getId()))
+		mockMvc.perform(put("/api/admin/roles/{roleId}/deactivate", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("System roles cannot be modified through tenant role administration"));
-		mockMvc.perform(delete("/api/admin/roles/{roleId}", role.getId()))
+		mockMvc.perform(delete("/api/admin/roles/{roleId}", role.getId()).with(roleAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("System roles cannot be modified through tenant role administration"));
-		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(permission.getId())))
+		mockMvc.perform(putJson("/api/admin/roles/" + role.getId() + "/permissions", permissionUpdateRequest(permission.getId())).with(roleAdminCaller()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("System roles cannot be modified through tenant role administration"));
+	}
+
+	@Test
+	void roleAdministrationRejectsCallerWithoutReadPermission() throws Exception {
+		mockMvc.perform(get("/api/admin/roles")
+						.with(roleAdminCaller("TENANT.ROLE.UPDATE")))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
+	void roleAdministrationRejectsCrossTenantListForTenantCaller() throws Exception {
+		Tenant otherTenant = saveTenant("TASK055_ROLE_LIST_OTHER_TENANT");
+
+		mockMvc.perform(get("/api/admin/roles")
+						.with(roleAdminCaller())
+						.param("tenantId", otherTenant.getId().toString()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant role administration is not allowed for caller"));
+	}
+
+	@Test
+	void roleAdministrationRejectsOtherTenantRoleDetailForTenantCaller() throws Exception {
+		Tenant otherTenant = saveTenant("TASK055_ROLE_DETAIL_OTHER_TENANT");
+		Role otherTenantRole = saveRole(otherTenant.getId(), "TASK055_OTHER_TENANT_ROLE", "Task 055 Other Tenant Role", true);
+
+		mockMvc.perform(get("/api/admin/roles/{roleId}", otherTenantRole.getId())
+						.with(roleAdminCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant role administration is not allowed for caller"));
 	}
 
 	@Test
@@ -348,6 +386,10 @@ class RoleAdministrationControllerTests {
 
 	private Role saveRole(String code, String name, String description) {
 		return saveRole(FOUNDATION_TENANT_ID, code, name, description, false, true);
+	}
+
+	private Role saveRole(UUID tenantId, String code, String name, boolean active) {
+		return saveRole(tenantId, code, name, null, false, active);
 	}
 
 	private Role saveRole(UUID tenantId, String code, String name, String description, boolean systemRole, boolean active) {
@@ -438,5 +480,23 @@ class RoleAdministrationControllerTests {
 		return put(path)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request));
+	}
+
+	private RequestPostProcessor roleAdminCaller(String... authorities) {
+		String[] effectiveAuthorities = authorities.length == 0
+				? new String[] {"TENANT.ROLE.READ", "TENANT.ROLE.CREATE", "TENANT.ROLE.UPDATE", "TENANT.ROLE.DELETE"}
+				: authorities;
+		List<GrantedAuthority> grantedAuthorities = Stream.concat(
+						Stream.of("USER_TYPE_TENANT_ADMIN"),
+						Stream.of(effectiveAuthorities))
+				.map(SimpleGrantedAuthority::new)
+				.map(authority -> (GrantedAuthority) authority)
+				.toList();
+		return jwt().jwt(jwt -> jwt
+						.subject("role.admin@example.com")
+						.claim("userId", CALLER_USER_ID.toString())
+						.claim("tenantId", FOUNDATION_TENANT_ID.toString())
+						.claim("userType", "TENANT_ADMIN"))
+				.authorities(grantedAuthorities);
 	}
 }

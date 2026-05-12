@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -84,8 +85,8 @@ public class UserAdministrationController {
 		return userAdministrationService.activateUser(userId);
 	}
 
-	@PutMapping("/{userId}/deactivate")
-	@Operation(summary = "Deactivate a user account")
+	@PatchMapping("/{userId}/deactivate")
+	@Operation(summary = "Logically deactivate a user account")
 	public UserAdministrationUserDetailResponse deactivateUser(@PathVariable UUID userId) {
 		return userAdministrationService.deactivateUser(userId);
 	}
@@ -143,5 +144,12 @@ public class UserAdministrationController {
 			@PathVariable UUID roleId,
 			@RequestParam UUID tenantId) {
 		userAdministrationService.removeRole(userId, roleId, tenantId);
+	}
+
+	@DeleteMapping("/{userId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Permanently delete a user account when it is not referenced")
+	public void deleteUser(@PathVariable UUID userId) {
+		userAdministrationService.deleteUser(userId);
 	}
 }

@@ -106,7 +106,7 @@ class MasterDataHrBusinessControllerTests {
 	private CompanyProfileTypeRepository companyProfileTypeRepository;
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessCrudFlowSupportsAllResources() throws Exception {
 		UUID departmentId = null;
 
@@ -144,7 +144,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessPhysicalDeleteRemovesUnreferencedCrudCandidateRecords() throws Exception {
 		UUID departmentId = createTenantMaster("/api/master-data/hr-business/departments", "TASK0471_PHYSICAL_DEPARTMENT", "Task 047.1 Physical Department");
 		UUID jobTitleId = createTenantMaster("/api/master-data/hr-business/job-titles", "TASK0471_PHYSICAL_JOB_TITLE", "Task 047.1 Physical Job Title");
@@ -167,7 +167,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessListEndpointsSupportPaginationAndSearch() throws Exception {
 		createTenantMaster("/api/master-data/hr-business/departments", "TASK043_PAGE_A", "Task 043 Page A");
 		createTenantMaster("/api/master-data/hr-business/departments", "TASK043_PAGE_B", "Task 043 Page B");
@@ -194,7 +194,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessListsNewestRecordsFirstByDefault() throws Exception {
 		createTenantMaster("/api/master-data/hr-business/departments", "TASK0465_SORT_A", "Task 0465 Sort A");
 		createTenantMaster("/api/master-data/hr-business/departments", "TASK0465_SORT_B", "Task 0465 Sort B");
@@ -206,7 +206,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessApiReturnsValidationErrorForInvalidPayload() throws Exception {
 		mockMvc.perform(postJson("/api/master-data/hr-business/departments", Map.of("code", "", "name", "")))
 				.andExpect(status().isBadRequest())
@@ -218,7 +218,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessApiReturnsNotFoundForMissingRecord() throws Exception {
 		mockMvc.perform(get("/api/master-data/hr-business/departments/{id}", MISSING_ID))
 				.andExpect(status().isNotFound())
@@ -227,7 +227,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessPhysicalDeleteReturnsNotFoundForMissingRecord() throws Exception {
 		mockMvc.perform(delete("/api/master-data/hr-business/departments/{id}/physical", MISSING_ID).with(csrf()))
 				.andExpect(status().isNotFound())
@@ -236,7 +236,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessApiReturnsConflictForTenantCodeDuplicates() throws Exception {
 		createTenantMaster("/api/master-data/hr-business/departments", "TASK031_DUPLICATE", "Task 031 Duplicate");
 
@@ -247,7 +247,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessPhysicalDeleteReturnsConflictForReferencedRecord() throws Exception {
 		UUID departmentId = createTenantMaster("/api/master-data/hr-business/departments", "TASK0471_REFERENCED_DEPARTMENT", "Task 047.1 Referenced Department");
 		employeeRepository.saveAndFlush(newEmployee(
@@ -268,7 +268,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessPhysicalDeleteIgnoresSameCodeReferencesFromAnotherTenant() throws Exception {
 		Tenant secondaryTenant = ensureSecondaryTenant();
 		CompanyProfile secondaryCompany = ensureSecondaryCompany(secondaryTenant);
@@ -303,7 +303,7 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessApiReturnsNotFoundForMissingTenant() throws Exception {
 		UUID missingTenantId = UUID.fromString("00000000-0000-0000-0000-000000000098");
 

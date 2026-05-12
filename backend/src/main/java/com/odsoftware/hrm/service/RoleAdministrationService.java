@@ -32,8 +32,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.odsoftware.hrm.security.CurrentCaller;
+import com.odsoftware.hrm.security.CurrentCallerService;
 
 @Service
 @Transactional(readOnly = true)
@@ -44,24 +47,28 @@ public class RoleAdministrationService {
 	private final RolePermissionRepository rolePermissionRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final TenantRepository tenantRepository;
+	private final CurrentCallerService currentCallerService;
 
 	public RoleAdministrationService(
 			RoleRepository roleRepository,
 			PermissionRepository permissionRepository,
 			RolePermissionRepository rolePermissionRepository,
 			UserRoleRepository userRoleRepository,
-			TenantRepository tenantRepository) {
+			TenantRepository tenantRepository,
+			CurrentCallerService currentCallerService) {
 		this.roleRepository = roleRepository;
 		this.permissionRepository = permissionRepository;
 		this.rolePermissionRepository = rolePermissionRepository;
 		this.userRoleRepository = userRoleRepository;
 		this.tenantRepository = tenantRepository;
+		this.currentCallerService = currentCallerService;
 	}
 
 	public MasterDataPageResponse<RoleAdministrationRoleListItemResponse> findRoles(UUID tenantId, Integer page, Integer size, String search) {
+		UUID authorizedTenantId = resolveAuthorizedTenantFilter(tenantId);
 		return MasterDataQuerySupport.toPageResponse(
 				roleRepository.findAll(
-						roleSpecification(tenantId, search),
+						roleSpecification(authorizedTenantId, search),
 						MasterDataQuerySupport.buildPageable(
 								page,
 								size,
@@ -71,12 +78,14 @@ public class RoleAdministrationService {
 
 	public RoleAdministrationRoleDetailResponse findRoleById(UUID roleId) {
 		Role role = findRole(roleId);
+		assertCallerCanManageRoleTenant(role);
 		Tenant tenant = findTenant(role.getTenantId());
 		return toRoleDetailResponse(role, tenant);
 	}
 
 	@Transactional
 	public RoleAdministrationRoleDetailResponse createRole(RoleAdministrationRoleCreateRequest request) {
+		assertCallerCanManageTenant(request.tenantId());
 		Tenant tenant = findTenant(request.tenantId());
 		String code = cleanUpper(request.code());
 		if (roleRepository.existsByTenantIdAndCode(tenant.getId(), code)) {
@@ -113,6 +122,7 @@ public class RoleAdministrationService {
 
 	public RolePermissionAssignmentResponse findAssignedPermissions(UUID roleId) {
 		Role role = findRole(roleId);
+		assertCallerCanManageRoleTenant(role);
 		return toAssignmentResponse(role, findAssignedRolePermissions(role));
 	}
 
@@ -168,8 +178,10 @@ public class RoleAdministrationService {
 	}
 
 	private Role findRole(UUID roleId) {
-		return roleRepository.findById(roleId)
+		Role role = roleRepository.findById(roleId)
 				.orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleId));
+		assertCallerCanManageRoleTenant(role);
+		return role;
 	}
 
 	private Role findMutableCustomRole(UUID roleId) {
@@ -288,5 +300,31 @@ public class RoleAdministrationService {
 		}
 		String cleaned = value.trim();
 		return cleaned.isEmpty() ? null : cleaned;
+	}
+
+	private UUID resolveAuthorizedTenantFilter(UUID tenantId) {
+		CurrentCaller caller = currentCaller();
+		if (caller.isPlatformUser()) {
+			return tenantId;
+		}
+		if (tenantId != null && !caller.tenantId().equals(tenantId)) {
+			throw new AccessDeniedException("Cross-tenant role administration is not allowed for caller");
+		}
+		return caller.tenantId();
+	}
+
+	private void assertCallerCanManageTenant(UUID tenantId) {
+		CurrentCaller caller = currentCaller();
+		if (!caller.isPlatformUser() && !caller.tenantId().equals(tenantId)) {
+			throw new AccessDeniedException("Cross-tenant role administration is not allowed for caller");
+		}
+	}
+
+	private void assertCallerCanManageRoleTenant(Role role) {
+		assertCallerCanManageTenant(role.getTenantId());
+	}
+
+	private CurrentCaller currentCaller() {
+		return currentCallerService.requireCurrentCaller();
 	}
 }

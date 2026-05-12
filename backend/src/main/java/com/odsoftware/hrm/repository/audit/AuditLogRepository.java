@@ -9,6 +9,8 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, UUID> {
 
 	List<AuditLog> findByTenant_Id(UUID tenantId);
 
+	boolean existsByUserAccount_Id(UUID userAccountId);
+
 	List<AuditLog> findByTenant_IdAndUserAccount_Id(UUID tenantId, UUID userAccountId);
 
 	List<AuditLog> findByTenant_IdAndAuditActionType_Id(UUID tenantId, UUID auditActionTypeId);

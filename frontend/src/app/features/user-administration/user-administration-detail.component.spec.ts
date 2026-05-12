@@ -340,7 +340,7 @@ describe('UserAdministrationDetailComponent', () => {
     component.triggerActiveAction();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Conferma disattivazione utente');
-    expect(fixture.nativeElement.textContent).toContain('Vuoi disattivare questo account utente?');
+    expect(fixture.nativeElement.textContent).toContain('Vuoi disattivare questo utente?');
 
     component.confirmLifecycleAction();
     fixture.detectChanges();

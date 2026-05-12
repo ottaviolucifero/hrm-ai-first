@@ -28,12 +28,15 @@ import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.exception.InvalidRequestException;
 import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
+import com.odsoftware.hrm.repository.audit.AuditLogRepository;
 import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.repository.disciplinary.EmployeeDisciplinaryActionRepository;
 import com.odsoftware.hrm.repository.identity.UserAccountRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.master.UserTypeRepository;
+import com.odsoftware.hrm.repository.payroll.PayrollDocumentRepository;
 import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
 import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
 import jakarta.persistence.criteria.Predicate;
@@ -45,13 +48,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.dao.DataIntegrityViolationException;
 import java.util.regex.Pattern;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.odsoftware.hrm.security.CurrentCaller;
+import com.odsoftware.hrm.security.CurrentCallerService;
 import com.odsoftware.hrm.security.PasswordPolicy;
 
 @Service
@@ -69,8 +76,12 @@ public class UserAdministrationService {
 	private final AuthenticationMethodRepository authenticationMethodRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final UserTenantAccessRepository userTenantAccessRepository;
+	private final AuditLogRepository auditLogRepository;
+	private final PayrollDocumentRepository payrollDocumentRepository;
+	private final EmployeeDisciplinaryActionRepository employeeDisciplinaryActionRepository;
 	private final PasswordPolicy passwordPolicy;
 	private final PasswordEncoder passwordEncoder;
+	private final CurrentCallerService currentCallerService;
 
 	public UserAdministrationService(
 			UserAccountRepository userAccountRepository,
@@ -81,8 +92,12 @@ public class UserAdministrationService {
 			AuthenticationMethodRepository authenticationMethodRepository,
 			UserRoleRepository userRoleRepository,
 			UserTenantAccessRepository userTenantAccessRepository,
+			AuditLogRepository auditLogRepository,
+			PayrollDocumentRepository payrollDocumentRepository,
+			EmployeeDisciplinaryActionRepository employeeDisciplinaryActionRepository,
 			PasswordPolicy passwordPolicy,
-			PasswordEncoder passwordEncoder) {
+			PasswordEncoder passwordEncoder,
+			CurrentCallerService currentCallerService) {
 		this.userAccountRepository = userAccountRepository;
 		this.roleRepository = roleRepository;
 		this.tenantRepository = tenantRepository;
@@ -91,13 +106,18 @@ public class UserAdministrationService {
 		this.authenticationMethodRepository = authenticationMethodRepository;
 		this.userRoleRepository = userRoleRepository;
 		this.userTenantAccessRepository = userTenantAccessRepository;
+		this.auditLogRepository = auditLogRepository;
+		this.payrollDocumentRepository = payrollDocumentRepository;
+		this.employeeDisciplinaryActionRepository = employeeDisciplinaryActionRepository;
 		this.passwordPolicy = passwordPolicy;
 		this.passwordEncoder = passwordEncoder;
+		this.currentCallerService = currentCallerService;
 	}
 
 	public MasterDataPageResponse<UserAdministrationUserListItemResponse> findUsers(UUID tenantId, Integer page, Integer size, String search) {
+		UUID authorizedTenantId = resolveAuthorizedTenantFilter(tenantId);
 		Page<UserAccount> userPage = userAccountRepository.findAll(
-				userSpecification(tenantId, search),
+				userSpecification(authorizedTenantId, search, !currentCaller().isPlatformUser()),
 				MasterDataQuerySupport.buildPageable(
 						page,
 						size,
@@ -113,8 +133,10 @@ public class UserAdministrationService {
 	}
 
 	public UserAdministrationFormOptionsResponse findFormOptions() {
+		CurrentCaller caller = currentCaller();
 		List<UserAdministrationReferenceResponse> tenants = tenantRepository.findAll().stream()
 				.filter(tenant -> Boolean.TRUE.equals(tenant.getActive()))
+				.filter(tenant -> caller.isPlatformUser() || tenant.getId().equals(caller.tenantId()))
 				.sorted(Comparator.comparing(Tenant::getCode))
 				.map(this::toTenantResponse)
 				.toList();
@@ -126,6 +148,7 @@ public class UserAdministrationService {
 				.toList();
 		List<UserAdministrationCompanyProfileOptionResponse> companyProfiles = companyProfileRepository.findAll().stream()
 				.filter(companyProfile -> Boolean.TRUE.equals(companyProfile.getActive()))
+				.filter(companyProfile -> caller.isPlatformUser() || companyProfile.getTenant().getId().equals(caller.tenantId()))
 				.sorted(Comparator.comparing(CompanyProfile::getCode))
 				.map(this::toCompanyProfileOptionResponse)
 				.toList();
@@ -138,8 +161,7 @@ public class UserAdministrationService {
 	}
 
 	public UserAdministrationUserDetailResponse findUserById(UUID userId) {
-		UserAccount user = userAccountRepository.findWithAdministrationGraphById(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("User account not found: " + userId));
+		UserAccount user = findUserForAdministration(userId);
 		List<UserAdministrationRoleResponse> roles = userRoleRepository.findWithRoleAndTenantByUserAccountId(userId).stream()
 				.map(this::toRoleResponse)
 				.toList();
@@ -151,6 +173,7 @@ public class UserAdministrationService {
 
 	@Transactional
 	public UserAdministrationUserDetailResponse createUser(UserAdministrationUserCreateRequest request) {
+		assertCallerCanManageTenant(request.tenantId());
 		String email = normalizeAndValidateEmail(request.email());
 		validateEmailIsAvailable(email, null);
 		if (!passwordPolicy.isValid(request.initialPassword())) {
@@ -189,8 +212,8 @@ public class UserAdministrationService {
 
 	@Transactional
 	public UserAdministrationUserDetailResponse updateUser(UUID userId, UserAdministrationUserUpdateRequest request) {
-		UserAccount user = userAccountRepository.findWithAdministrationGraphById(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("User account not found: " + userId));
+		UserAccount user = findUserForAdministration(userId);
+		assertUserNotDeleted(user);
 		String email = normalizeAndValidateEmail(request.email());
 		validateEmailIsAvailable(email, user.getId());
 		CompanyProfile companyProfile = request.companyProfileId() == null
@@ -205,27 +228,35 @@ public class UserAdministrationService {
 
 	@Transactional
 	public UserAdministrationUserDetailResponse activateUser(UUID userId) {
+		assertUserNotDeleted(findUser(userId));
 		return updateUserActive(userId, true);
 	}
 
 	@Transactional
 	public UserAdministrationUserDetailResponse deactivateUser(UUID userId) {
+		UserAccount user = findUser(userId);
+		assertUserNotDeleted(user);
+		if (currentCaller().userId().equals(user.getId())) {
+			throw new AccessDeniedException("Caller cannot deactivate its own user account");
+		}
 		return updateUserActive(userId, false);
 	}
 
 	@Transactional
 	public UserAdministrationUserDetailResponse lockUser(UUID userId) {
+		assertUserNotDeleted(findUser(userId));
 		return updateUserLocked(userId, true);
 	}
 
 	@Transactional
 	public UserAdministrationUserDetailResponse unlockUser(UUID userId) {
+		assertUserNotDeleted(findUser(userId));
 		return updateUserLocked(userId, false);
 	}
 
 	public List<UserAdministrationRoleResponse> findAssignedRoles(UUID userId, UUID tenantId) {
 		UserAccount user = findUser(userId);
-		Tenant tenant = requireTenantAccess(user, tenantId);
+		Tenant tenant = requireAuthorizedTenantAccessForCallerAndTarget(user, tenantId);
 
 		return userRoleRepository.findWithRoleAndTenantByUserAccountIdAndTenantId(userId, tenantId).stream()
 				.map(this::toRoleResponse)
@@ -234,7 +265,7 @@ public class UserAdministrationService {
 
 	public List<UserAdministrationRoleResponse> findAvailableRoles(UUID userId, UUID tenantId) {
 		UserAccount user = findUser(userId);
-		Tenant tenant = requireTenantAccess(user, tenantId);
+		Tenant tenant = requireAuthorizedTenantAccessForCallerAndTarget(user, tenantId);
 
 		List<UUID> assignedRoleIds = userRoleRepository.findWithRoleAndTenantByUserAccountIdAndTenantId(userId, tenantId).stream()
 				.map(userRole -> userRole.getRole().getId())
@@ -248,7 +279,8 @@ public class UserAdministrationService {
 	@Transactional
 	public List<UserAdministrationRoleResponse> assignRole(UUID userId, UserRoleAssignmentRequest request) {
 		UserAccount user = findUser(userId);
-		Tenant tenant = requireTenantAccess(user, request.tenantId());
+		assertUserNotDeleted(user);
+		Tenant tenant = requireAuthorizedTenantAccessForCallerAndTarget(user, request.tenantId());
 		Role role = findRole(request.roleId());
 		validateRoleTenant(role, tenant);
 
@@ -268,7 +300,8 @@ public class UserAdministrationService {
 	@Transactional
 	public UserPasswordResetResponse resetPassword(UUID userId, UserPasswordResetRequest request) {
 		UserAccount user = findUser(userId);
-		Tenant tenant = requireTenantAccess(user, request.tenantId());
+		assertUserNotDeleted(user);
+		Tenant tenant = requireAuthorizedTenantAccessForCallerAndTarget(user, request.tenantId());
 		if (!passwordPolicy.isValid(request.newPassword())) {
 			throw new InvalidRequestException("Password does not satisfy the current password policy.");
 		}
@@ -287,7 +320,8 @@ public class UserAdministrationService {
 	@Transactional
 	public void removeRole(UUID userId, UUID roleId, UUID tenantId) {
 		UserAccount user = findUser(userId);
-		Tenant tenant = requireTenantAccess(user, tenantId);
+		assertUserNotDeleted(user);
+		Tenant tenant = requireAuthorizedTenantAccessForCallerAndTarget(user, tenantId);
 		Role role = findRole(roleId);
 		validateRoleTenant(role, tenant);
 
@@ -297,7 +331,26 @@ public class UserAdministrationService {
 		userRoleRepository.flush();
 	}
 
-	private Specification<UserAccount> userSpecification(UUID tenantId, String search) {
+	@Transactional
+	public void deleteUser(UUID userId) {
+		UserAccount user = findUser(userId);
+		CurrentCaller caller = currentCaller();
+		if (caller.userId().equals(user.getId())) {
+			throw new AccessDeniedException("Caller cannot delete its own user account");
+		}
+		if (isUserReferenced(user)) {
+			throw userDeleteConflict();
+		}
+		try {
+			userAccountRepository.delete(user);
+			userAccountRepository.flush();
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw userDeleteConflict();
+		}
+	}
+
+	private Specification<UserAccount> userSpecification(UUID tenantId, String search, boolean excludePlatformUsers) {
 		Specification<UserAccount> searchSpecification = MasterDataQuerySupport.searchSpecification(
 				search,
 				"email",
@@ -309,18 +362,20 @@ public class UserAdministrationService {
 				"companyProfile.code",
 				"companyProfile.legalName",
 				"companyProfile.tradeName");
-		if (tenantId == null) {
-			return searchSpecification;
-		}
-
 		return (root, query, criteriaBuilder) -> {
-			Predicate tenantPredicate = criteriaBuilder.equal(root.get("tenant").get("id"), tenantId);
+			Predicate predicate = criteriaBuilder.conjunction();
+			if (tenantId != null) {
+				predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("tenant").get("id"), tenantId));
+			}
+			if (excludePlatformUsers) {
+				predicate = criteriaBuilder.and(predicate, criteriaBuilder.notLike(criteriaBuilder.upper(root.get("userType").get("code")), "PLATFORM_%"));
+			}
 			if (searchSpecification == null) {
-				return tenantPredicate;
+				return predicate;
 			}
 
 			Predicate searchPredicate = searchSpecification.toPredicate(root, query, criteriaBuilder);
-			return searchPredicate == null ? tenantPredicate : criteriaBuilder.and(tenantPredicate, searchPredicate);
+			return searchPredicate == null ? predicate : criteriaBuilder.and(predicate, searchPredicate);
 		};
 	}
 
@@ -427,8 +482,17 @@ public class UserAdministrationService {
 	}
 
 	private UserAccount findUser(UUID userId) {
-		return userAccountRepository.findById(userId)
+		UserAccount user = userAccountRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("User account not found: " + userId));
+		assertCallerCanManageTargetUser(user);
+		return user;
+	}
+
+	private UserAccount findUserForAdministration(UUID userId) {
+		UserAccount user = userAccountRepository.findWithAdministrationGraphById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User account not found: " + userId));
+		assertCallerCanManageTargetUser(user);
+		return user;
 	}
 
 	private Tenant findTenant(UUID tenantId) {
@@ -492,6 +556,17 @@ public class UserAdministrationService {
 		return findUserById(savedUser.getId());
 	}
 
+	private boolean isUserReferenced(UserAccount user) {
+		UUID userId = user.getId();
+		return user.getEmployee() != null
+				|| userRoleRepository.existsByUserAccount_Id(userId)
+				|| userTenantAccessRepository.existsByUserAccount_Id(userId)
+				|| auditLogRepository.existsByUserAccount_Id(userId)
+				|| payrollDocumentRepository.existsByUploadedBy_Id(userId)
+				|| employeeDisciplinaryActionRepository.existsByIssuedBy_Id(userId)
+				|| userAccountRepository.existsByCreatedBy_IdOrUpdatedBy_Id(userId, userId);
+	}
+
 	private UserAdministrationUserDetailResponse updateUserLocked(UUID userId, boolean locked) {
 		UserAccount user = findUser(userId);
 		user.setLocked(locked);
@@ -510,7 +585,9 @@ public class UserAdministrationService {
 		}
 	}
 
-	private Tenant requireTenantAccess(UserAccount user, UUID tenantId) {
+	private Tenant requireAuthorizedTenantAccessForCallerAndTarget(UserAccount user, UUID tenantId) {
+		assertCallerCanManageTenant(tenantId);
+		assertCallerCanManageTargetUser(user);
 		Tenant tenant = findTenant(tenantId);
 		if (hasTenantAccess(user, tenantId)) {
 			return tenant;
@@ -621,5 +698,47 @@ public class UserAdministrationService {
 
 	private String safe(String value) {
 		return value == null ? "" : value;
+	}
+
+	private UUID resolveAuthorizedTenantFilter(UUID tenantId) {
+		CurrentCaller caller = currentCaller();
+		if (caller.isPlatformUser()) {
+			return tenantId;
+		}
+		if (tenantId != null && !caller.tenantId().equals(tenantId)) {
+			throw new AccessDeniedException("Cross-tenant user administration is not allowed for caller");
+		}
+		return caller.tenantId();
+	}
+
+	private void assertCallerCanManageTenant(UUID tenantId) {
+		CurrentCaller caller = currentCaller();
+		if (!caller.isPlatformUser() && !caller.tenantId().equals(tenantId)) {
+			throw new AccessDeniedException("Cross-tenant user administration is not allowed for caller");
+		}
+	}
+
+	private void assertCallerCanManageTargetUser(UserAccount user) {
+		CurrentCaller caller = currentCaller();
+		if (!caller.isPlatformUser() && user.getTenant() != null && !caller.tenantId().equals(user.getTenant().getId())) {
+			throw new AccessDeniedException("Cross-tenant user administration is not allowed for caller");
+		}
+		if (!caller.isPlatformUser() && isPlatformUserType(user.getUserType())) {
+			throw new AccessDeniedException("Tenant administrators cannot manage platform users");
+		}
+	}
+
+	private void assertUserNotDeleted(UserAccount user) {
+		if (user.getDeletedAt() != null) {
+			throw new InvalidRequestException("User account is logically deleted: " + user.getId());
+		}
+	}
+
+	private ResourceConflictException userDeleteConflict() {
+		return new ResourceConflictException("Utente non cancellabile perche gia referenziato.");
+	}
+
+	private CurrentCaller currentCaller() {
+		return currentCallerService.requireCurrentCaller();
 	}
 }

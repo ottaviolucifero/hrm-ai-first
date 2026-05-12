@@ -9,6 +9,8 @@ public interface EmployeeDisciplinaryActionRepository extends JpaRepository<Empl
 
 	List<EmployeeDisciplinaryAction> findByTenant_IdAndEmployee_Id(UUID tenantId, UUID employeeId);
 
+	boolean existsByIssuedBy_Id(UUID issuedById);
+
 	List<EmployeeDisciplinaryAction> findByTenant_IdAndCompanyProfile_Id(UUID tenantId, UUID companyProfileId);
 
 	List<EmployeeDisciplinaryAction> findByTenant_IdAndEmployee_IdAndActiveTrue(UUID tenantId, UUID employeeId);
