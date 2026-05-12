@@ -37,6 +37,7 @@
             size="sm"
             icon="ki-filled ki-pencil"
             [label]="i18n.t('userAdministration.actions.edit')"
+            [disabled]="!modulePermissions().canUpdate"
             (pressed)="editUser()" />
         }
         @if (hasError()) {

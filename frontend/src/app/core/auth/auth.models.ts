@@ -3,6 +3,8 @@ export interface AuthenticatedUser {
   tenantId: string;
   email: string;
   userType: string;
+  authorities?: readonly string[];
+  permissions?: readonly string[];
 }
 
 export interface LoginRequest {

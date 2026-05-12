@@ -1,6 +1,10 @@
 import { Component, EventEmitter, Output, computed, inject, signal } from '@angular/core';
 import { IsActiveMatchOptions, Router, RouterLink } from '@angular/router';
+import { take } from 'rxjs';
 
+import { PermissionModuleId } from '../../core/authorization/permission-summary.models';
+import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 
@@ -9,6 +13,7 @@ interface SidebarNavNode {
   readonly titleKey: I18nKey;
   readonly initial?: string;
   readonly route?: `/${string}`;
+  readonly permissionModule?: PermissionModuleId;
   readonly children?: readonly SidebarNavNode[];
 }
 
@@ -68,7 +73,8 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
       {
         id: 'governance-master-data',
         titleKey: 'nav.masterData',
-        route: '/master-data'
+        route: '/master-data',
+        permissionModule: 'master-data'
       },
       {
         id: 'governance-security',
@@ -77,17 +83,20 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
           {
             id: 'governance-security-roles',
             titleKey: 'nav.roles',
-            route: '/admin/roles'
+            route: '/admin/roles',
+            permissionModule: 'roles'
           },
           {
             id: 'governance-security-users',
             titleKey: 'nav.users',
-            route: '/admin/users'
+            route: '/admin/users',
+            permissionModule: 'users'
           },
           {
             id: 'governance-security-permissions',
             titleKey: 'nav.permissions',
-            route: '/admin/permissions'
+            route: '/admin/permissions',
+            permissionModule: 'permissions'
           }
         ]
       }
@@ -264,6 +273,10 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
         cursor: not-allowed;
       }
 
+      :host .app-sidebar-link--frozen {
+        opacity: 0.74;
+      }
+
       :host .app-sidebar-link--top {
         font-size: 0.91rem;
         font-weight: 600;
@@ -428,11 +441,16 @@ const ACTIVE_ROUTE_OPTIONS: IsActiveMatchOptions = {
   ]
 })
 export class AppSidebarComponent {
+  private readonly authService = inject(AuthService);
+  private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly router = inject(Router);
   protected readonly i18n = inject(I18nService);
 
   @Output() readonly sidebarCollapsedChange = new EventEmitter<boolean>();
 
+  protected readonly userPermissionState = signal<{
+    readonly modules: ReadonlySet<PermissionModuleId>;
+  }>({ modules: new Set<PermissionModuleId>() });
   protected readonly searchTerm = signal('');
   protected readonly sidebarCollapsed = signal(false);
   protected readonly expandedNodeIds = signal<ReadonlySet<string>>(new Set(['people', 'hr-operations', 'governance', 'governance-security']));
@@ -449,6 +467,24 @@ export class AppSidebarComponent {
   protected readonly displayedNavigationTree = computed(() =>
     this.sidebarCollapsed() ? SIDEBAR_NAVIGATION : this.visibleNavigationTree()
   );
+
+  constructor() {
+    this.authService.loadAuthenticatedUser()
+      .pipe(take(1))
+      .subscribe({
+        next: (user) => {
+          this.userPermissionState.set({
+            modules: new Set(
+              (['master-data', 'roles', 'permissions', 'users'] as const)
+                .filter((moduleId) => this.permissionSummaryService.hasAnyPermission(user, moduleId))
+            )
+          });
+        },
+        error: () => {
+          this.userPermissionState.set({ modules: new Set<PermissionModuleId>() });
+        }
+      });
+  }
 
   protected updateSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -499,6 +535,22 @@ export class AppSidebarComponent {
 
   protected hasActiveDescendant(node: SidebarNavNode): boolean {
     return Boolean(node.children?.some((childNode) => this.isActiveRoute(childNode) || this.hasActiveDescendant(childNode)));
+  }
+
+  protected canNavigate(node: SidebarNavNode): boolean {
+    if (!node.route || !node.permissionModule) {
+      return Boolean(node.route);
+    }
+
+    return this.userPermissionState().modules.has(node.permissionModule);
+  }
+
+  protected isFrozen(node: SidebarNavNode): boolean {
+    return Boolean(node.route && node.permissionModule) && !this.canNavigate(node);
+  }
+
+  protected frozenTitle(node: SidebarNavNode): string {
+    return `${this.nodeTitle(node)} - ${this.i18n.t('authorization.sidebar.frozenTitle')}`;
   }
 
   protected navigationInitial(node: SidebarNavNode): string {

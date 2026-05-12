@@ -44,6 +44,19 @@ describe('RoleAdministrationComponent', () => {
     expect(customRoleButtons.length).toBeGreaterThan(1);
   });
 
+  it('keeps the create action visible but disabled without create permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), ['TENANT.ROLE.READ']);
+    fixture.detectChanges();
+
+    const newButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Nuovo ruolo')) as HTMLButtonElement;
+
+    expect(newButton).toBeTruthy();
+    expect(newButton.disabled).toBe(true);
+  });
+
   it('creates a custom role using the authenticated tenant id', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -90,7 +103,10 @@ describe('RoleAdministrationComponent', () => {
   });
 });
 
-async function createFixture(serviceOverrides: Partial<RoleAdministrationService>) {
+async function createFixture(
+  serviceOverrides: Partial<RoleAdministrationService>,
+  permissions: readonly string[] = ['TENANT.ROLE.READ', 'TENANT.ROLE.CREATE', 'TENANT.ROLE.UPDATE', 'TENANT.ROLE.DELETE']
+) {
   await TestBed.configureTestingModule({
     imports: [RoleAdministrationComponent],
     providers: [
@@ -101,7 +117,8 @@ async function createFixture(serviceOverrides: Partial<RoleAdministrationService
             id: 'user-1',
             tenantId: 'tenant-1',
             email: 'qa@example.com',
-            userType: 'TENANT_ADMIN'
+            userType: 'TENANT_ADMIN',
+            permissions
           })
         }
       },

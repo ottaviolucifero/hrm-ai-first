@@ -120,7 +120,8 @@
                           <div class="app-sidebar-subtree app-sidebar-subtree--level-2 flex-col">
                             @for (grandchildNode of childNode.children; track grandchildNode.id) {
                               <div class="app-sidebar-item">
-                                @if (grandchildNode.route; as route) {
+                              @if (grandchildNode.route; as route) {
+                                @if (canNavigate(grandchildNode)) {
                                   <a
                                     class="sidebar-focus app-sidebar-link app-sidebar-link--deep"
                                     [routerLink]="route"
@@ -137,6 +138,20 @@
                                     <span class="app-sidebar-title">{{ nodeTitle(grandchildNode) }}</span>
                                   </a>
                                 } @else {
+                                  <button
+                                    class="app-sidebar-link app-sidebar-link--deep app-sidebar-link--frozen w-full"
+                                    type="button"
+                                    disabled
+                                    [attr.title]="frozenTitle(grandchildNode)"
+                                    data-sidebar-level="2"
+                                  >
+                                    <span class="app-sidebar-bullet">
+                                      <span class="size-1.5 rounded-full bg-muted"></span>
+                                    </span>
+                                    <span class="app-sidebar-title">{{ nodeTitle(grandchildNode) }}</span>
+                                  </button>
+                                }
+                              } @else {
                                   <button class="app-sidebar-link app-sidebar-link--deep w-full opacity-60" type="button" disabled data-sidebar-level="2">
                                     <span class="app-sidebar-bullet">
                                       <span class="size-1.5 rounded-full bg-muted"></span>
@@ -149,21 +164,36 @@
                           </div>
                         }
                       } @else if (childNode.route; as route) {
-                        <a
-                          class="sidebar-focus app-sidebar-link app-sidebar-link--nested"
-                          [routerLink]="route"
-                          [class.app-sidebar-link--active]="isActiveRoute(childNode)"
-                          data-sidebar-level="1"
-                        >
-                          <span class="app-sidebar-bullet">
-                            <span
-                              class="size-1.5 rounded-full"
-                              [class.bg-primary]="isActiveRoute(childNode)"
-                              [class.bg-muted]="!isActiveRoute(childNode)"
-                            ></span>
-                          </span>
-                          <span class="app-sidebar-title">{{ nodeTitle(childNode) }}</span>
-                        </a>
+                        @if (canNavigate(childNode)) {
+                          <a
+                            class="sidebar-focus app-sidebar-link app-sidebar-link--nested"
+                            [routerLink]="route"
+                            [class.app-sidebar-link--active]="isActiveRoute(childNode)"
+                            data-sidebar-level="1"
+                          >
+                            <span class="app-sidebar-bullet">
+                              <span
+                                class="size-1.5 rounded-full"
+                                [class.bg-primary]="isActiveRoute(childNode)"
+                                [class.bg-muted]="!isActiveRoute(childNode)"
+                              ></span>
+                            </span>
+                            <span class="app-sidebar-title">{{ nodeTitle(childNode) }}</span>
+                          </a>
+                        } @else {
+                          <button
+                            class="app-sidebar-link app-sidebar-link--nested app-sidebar-link--frozen w-full"
+                            type="button"
+                            disabled
+                            [attr.title]="frozenTitle(childNode)"
+                            data-sidebar-level="1"
+                          >
+                            <span class="app-sidebar-bullet">
+                              <span class="size-1.5 rounded-full bg-muted"></span>
+                            </span>
+                            <span class="app-sidebar-title">{{ nodeTitle(childNode) }}</span>
+                          </button>
+                        }
                       } @else {
                         <button class="app-sidebar-link app-sidebar-link--nested w-full opacity-60" type="button" disabled data-sidebar-level="1">
                           <span class="app-sidebar-bullet">
@@ -177,19 +207,35 @@
                 </div>
               }
             } @else if (node.route; as route) {
-              <a
-                class="sidebar-focus app-sidebar-link app-sidebar-link--top"
-                [routerLink]="route"
-                [class.app-sidebar-link--active]="isActiveRoute(node)"
-                [class.app-sidebar-link--collapsed]="sidebarCollapsed()"
-                [attr.title]="sidebarCollapsed() ? nodeTitle(node) : null"
-                data-sidebar-level="0"
-              >
-                <span class="app-sidebar-mark">{{ navigationInitial(node) }}</span>
-                @if (!sidebarCollapsed()) {
-                  <span class="app-sidebar-title">{{ nodeTitle(node) }}</span>
-                }
-              </a>
+              @if (canNavigate(node)) {
+                <a
+                  class="sidebar-focus app-sidebar-link app-sidebar-link--top"
+                  [routerLink]="route"
+                  [class.app-sidebar-link--active]="isActiveRoute(node)"
+                  [class.app-sidebar-link--collapsed]="sidebarCollapsed()"
+                  [attr.title]="sidebarCollapsed() ? nodeTitle(node) : null"
+                  data-sidebar-level="0"
+                >
+                  <span class="app-sidebar-mark">{{ navigationInitial(node) }}</span>
+                  @if (!sidebarCollapsed()) {
+                    <span class="app-sidebar-title">{{ nodeTitle(node) }}</span>
+                  }
+                </a>
+              } @else {
+                <button
+                  class="app-sidebar-link app-sidebar-link--top app-sidebar-link--frozen w-full"
+                  type="button"
+                  disabled
+                  [class.app-sidebar-link--collapsed]="sidebarCollapsed()"
+                  [attr.title]="frozenTitle(node)"
+                  data-sidebar-level="0"
+                >
+                  <span class="app-sidebar-mark">{{ navigationInitial(node) }}</span>
+                  @if (!sidebarCollapsed()) {
+                    <span class="app-sidebar-title">{{ nodeTitle(node) }}</span>
+                  }
+                </button>
+              }
             } @else {
               <button class="app-sidebar-link app-sidebar-link--top w-full opacity-60" type="button" disabled data-sidebar-level="0">
                 <span class="app-sidebar-bullet">

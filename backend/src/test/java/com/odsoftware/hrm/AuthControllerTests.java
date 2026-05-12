@@ -1,9 +1,16 @@
 package com.odsoftware.hrm;
 
+import com.odsoftware.hrm.entity.master.Permission;
+import com.odsoftware.hrm.entity.master.Role;
 import com.odsoftware.hrm.entity.identity.UserAccount;
+import com.odsoftware.hrm.entity.rbac.RolePermission;
+import com.odsoftware.hrm.entity.rbac.UserRole;
+import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.repository.identity.UserAccountRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
+import com.odsoftware.hrm.repository.master.PermissionRepository;
+import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.master.UserTypeRepository;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,6 +43,9 @@ class AuthControllerTests {
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
 	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
+	private static final String TENANT_USER_READ = "TENANT.USER.READ";
+	private static final String TENANT_USER_UPDATE = "TENANT.USER.UPDATE";
+	private static final String TENANT_MASTER_DATA_READ = "TENANT.MASTER_DATA.READ";
 	private static final String VALID_PASSWORD = "Secret1!";
 
 	@Autowired
@@ -57,11 +67,27 @@ class AuthControllerTests {
 	private AuthenticationMethodRepository authenticationMethodRepository;
 
 	@Autowired
+	private RoleRepository roleRepository;
+
+	@Autowired
+	private PermissionRepository permissionRepository;
+
+	@Autowired
+	private com.odsoftware.hrm.repository.rbac.UserRoleRepository userRoleRepository;
+
+	@Autowired
+	private com.odsoftware.hrm.repository.rbac.RolePermissionRepository rolePermissionRepository;
+
+	@Autowired
+	private com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository userTenantAccessRepository;
+
+	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@Test
 	void loginWithValidEmailAndPasswordReturnsBearerToken() throws Exception {
 		UserAccount userAccount = saveUser("task034.valid@example.com", VALID_PASSWORD, true, false, true);
+		assignPermissions(userAccount, TENANT_USER_READ, TENANT_USER_UPDATE);
 
 		mockMvc.perform(post("/api/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -73,7 +99,12 @@ class AuthControllerTests {
 				.andExpect(jsonPath("$.user.id").value(userAccount.getId().toString()))
 				.andExpect(jsonPath("$.user.tenantId").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.user.email").value("task034.valid@example.com"))
-				.andExpect(jsonPath("$.user.userType").value("TENANT_ADMIN"));
+				.andExpect(jsonPath("$.user.userType").value("TENANT_ADMIN"))
+				.andExpect(jsonPath("$.user.authorities[0]").value("USER_TYPE_TENANT_ADMIN"))
+				.andExpect(jsonPath("$.user.authorities[1]").value(TENANT_USER_READ))
+				.andExpect(jsonPath("$.user.authorities[2]").value(TENANT_USER_UPDATE))
+				.andExpect(jsonPath("$.user.permissions[0]").value("TENANT.USER.VIEW"))
+				.andExpect(jsonPath("$.user.permissions[1]").value("TENANT.USER.UPDATE"));
 	}
 
 	@Test
@@ -195,6 +226,7 @@ class AuthControllerTests {
 	@Test
 	void meWithValidTokenReturnsAuthenticatedUser() throws Exception {
 		UserAccount userAccount = saveUser("task034.me@example.com", VALID_PASSWORD, true, false, true);
+		assignPermissions(userAccount, TENANT_MASTER_DATA_READ, TENANT_USER_READ);
 		String token = loginAndReadToken("task034.me@example.com", VALID_PASSWORD);
 
 		mockMvc.perform(get("/api/auth/me")
@@ -203,7 +235,12 @@ class AuthControllerTests {
 				.andExpect(jsonPath("$.id").value(userAccount.getId().toString()))
 				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.email").value("task034.me@example.com"))
-				.andExpect(jsonPath("$.userType").value("TENANT_ADMIN"));
+				.andExpect(jsonPath("$.userType").value("TENANT_ADMIN"))
+				.andExpect(jsonPath("$.authorities[0]").value("USER_TYPE_TENANT_ADMIN"))
+				.andExpect(jsonPath("$.authorities[1]").value(TENANT_MASTER_DATA_READ))
+				.andExpect(jsonPath("$.authorities[2]").value(TENANT_USER_READ))
+				.andExpect(jsonPath("$.permissions[0]").value("TENANT.MASTER_DATA.VIEW"))
+				.andExpect(jsonPath("$.permissions[1]").value("TENANT.USER.VIEW"));
 	}
 
 	@Test
@@ -254,5 +291,40 @@ class AuthControllerTests {
 		userAccount.setActive(active);
 		userAccount.setLocked(locked);
 		return userAccountRepository.saveAndFlush(userAccount);
+	}
+
+	private void assignPermissions(UserAccount userAccount, String... permissionCodes) {
+		UserTenantAccess tenantAccess = new UserTenantAccess();
+		tenantAccess.setUserAccount(userAccount);
+		tenantAccess.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		tenantAccess.setAccessRole("TENANT_ADMIN");
+		userTenantAccessRepository.saveAndFlush(tenantAccess);
+
+		Role role = new Role();
+		role.setTenantId(FOUNDATION_TENANT_ID);
+		role.setCode("AUTH_TEST_" + userAccount.getId().toString().replace("-", "").substring(0, 12).toUpperCase());
+		role.setName("Auth test role");
+		role.setSystemRole(false);
+		role.setActive(true);
+		role = roleRepository.saveAndFlush(role);
+
+		UserRole userRole = new UserRole();
+		userRole.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		userRole.setUserAccount(userAccount);
+		userRole.setRole(role);
+		userRoleRepository.saveAndFlush(userRole);
+
+		for (String permissionCode : permissionCodes) {
+			Permission permission = permissionRepository.findAll().stream()
+					.filter(candidate -> FOUNDATION_TENANT_ID.equals(candidate.getTenantId()))
+					.filter(candidate -> permissionCode.equals(candidate.getCode()))
+					.findFirst()
+					.orElseThrow();
+			RolePermission rolePermission = new RolePermission();
+			rolePermission.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+			rolePermission.setRole(role);
+			rolePermission.setPermission(permission);
+			rolePermissionRepository.saveAndFlush(rolePermission);
+		}
 	}
 }

@@ -2,6 +2,8 @@ import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
 
+import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
+import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -27,6 +29,7 @@ import { UserAdministrationService } from './user-administration.service';
 })
 export class UserAdministrationComponent implements OnDestroy {
   private readonly authService = inject(AuthService);
+  private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly router = inject(Router);
   private readonly userAdministrationService = inject(UserAdministrationService);
   protected readonly i18n = inject(I18nService);
@@ -103,12 +106,12 @@ export class UserAdministrationComponent implements OnDestroy {
     {
       id: 'view',
       labelKey: 'masterData.actions.view',
-      disabled: () => this.loading()
+      disabled: () => this.loading() || !this.modulePermissions().canView
     },
     {
       id: 'edit',
       labelKey: 'masterData.actions.edit',
-      disabled: () => this.loading()
+      disabled: () => this.loading() || !this.modulePermissions().canUpdate
     }
   ]);
   protected readonly pageSizeOptions = [10, 20, 50] as const;
@@ -119,6 +122,7 @@ export class UserAdministrationComponent implements OnDestroy {
   protected readonly appliedSearch = signal('');
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
+  protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly tenantId = signal<string | null>(null);
   protected readonly viewScopeKey = signal<I18nKey>('userAdministration.scope.tenant');
   protected readonly rows = computed(() => this.pageData().content);
@@ -142,10 +146,19 @@ export class UserAdministrationComponent implements OnDestroy {
   }
 
   protected createUser(): void {
+    if (!this.modulePermissions().canCreate) {
+      return;
+    }
+
     void this.router.navigate(['/admin/users/new']);
   }
 
   protected handleRowAction(event: UserAdministrationRowActionEvent): void {
+    if ((event.action.id === 'view' && !this.modulePermissions().canView)
+      || (event.action.id === 'edit' && !this.modulePermissions().canUpdate)) {
+      return;
+    }
+
     const user = event.row as UserAdministrationUserListItem;
     if (event.action.id === 'view') {
       void this.router.navigate(['/admin/users', user.id]);
@@ -203,6 +216,7 @@ export class UserAdministrationComponent implements OnDestroy {
       .pipe(
         take(1),
         switchMap((user) => {
+          this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'users'));
           const platformScope = user.userType.startsWith('PLATFORM_');
           const tenantId = platformScope ? null : user.tenantId;
           this.tenantId.set(tenantId);
@@ -214,6 +228,7 @@ export class UserAdministrationComponent implements OnDestroy {
       .subscribe({
         next: (pageData) => this.pageData.set(pageData),
         error: () => {
+          this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY);
           this.pageData.set(this.emptyPage());
           this.hasError.set(true);
         }

@@ -7,14 +7,14 @@
         <p class="master-data-subtitle">{{ i18n.t('masterData.subtitle') }}</p>
       </div>
       <div class="master-data-page-actions master-data-toolbar-actions" role="group" [attr.aria-label]="i18n.t('masterData.actionsLabel')">
-        @if (canCreate()) {
+        @if (supportsCreate()) {
           <app-button
             variant="primary"
             size="sm"
             buttonClass="master-data-primary-action"
             icon="ki-filled ki-plus"
             [label]="i18n.t('masterData.actions.new')"
-            [disabled]="loading() || deleting()"
+            [disabled]="loading() || deleting() || !canCreate()"
             (pressed)="openCreateForm()" />
         }
       </div>

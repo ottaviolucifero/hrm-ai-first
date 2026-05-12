@@ -41,6 +41,19 @@ describe('UserAdministrationComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Vista platform');
   });
 
+  it('keeps the create action visible but disabled without create permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), 'TENANT_ADMIN', ['TENANT.USER.READ']);
+    fixture.detectChanges();
+
+    const createButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Nuovo utente')) as HTMLButtonElement;
+
+    expect(createButton).toBeTruthy();
+    expect(createButton.disabled).toBe(true);
+  });
+
   it('navigates to user detail from the row action', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -93,7 +106,11 @@ describe('UserAdministrationComponent', () => {
   });
 });
 
-async function createFixture(serviceOverrides: Partial<UserAdministrationService>, userType = 'TENANT_ADMIN') {
+async function createFixture(
+  serviceOverrides: Partial<UserAdministrationService>,
+  userType = 'TENANT_ADMIN',
+  permissions: readonly string[] = ['TENANT.USER.READ', 'TENANT.USER.CREATE', 'TENANT.USER.UPDATE', 'TENANT.USER.DELETE']
+) {
   await TestBed.configureTestingModule({
     imports: [UserAdministrationComponent],
     providers: [
@@ -105,7 +122,8 @@ async function createFixture(serviceOverrides: Partial<UserAdministrationService
             id: 'current-user',
             tenantId: 'tenant-1',
             email: 'qa@example.com',
-            userType
+            userType,
+            permissions
           })
         }
       },

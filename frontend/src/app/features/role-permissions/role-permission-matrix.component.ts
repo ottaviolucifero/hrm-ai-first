@@ -1,6 +1,8 @@
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Subscription, forkJoin, switchMap, take } from 'rxjs';
 
+import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
+import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -23,7 +25,7 @@ import { RolePermissionMatrixService } from './role-permission-matrix.service';
 
 const ROLE_PAGE_SIZE = 100;
 const PERMISSION_PAGE_SIZE = 100;
-const RESOURCE_ORDER: readonly RolePermissionResourceCode[] = ['MASTER_DATA', 'ROLE'];
+const RESOURCE_ORDER: readonly RolePermissionResourceCode[] = ['MASTER_DATA', 'USER', 'ROLE'];
 const VISIBLE_RESOURCES = new Set<RolePermissionResourceCode>(RESOURCE_ORDER);
 
 const MODULE_LABELS: Record<RolePermissionResourceCode, I18nKey> = {
@@ -60,6 +62,7 @@ const ACTION_LABELS: Record<RolePermissionVisibleAction, I18nKey> = {
 export class RolePermissionMatrixComponent implements OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
+  private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly rolePermissionMatrixService = inject(RolePermissionMatrixService);
   protected readonly i18n = inject(I18nService);
 
@@ -75,6 +78,7 @@ export class RolePermissionMatrixComponent implements OnDestroy {
   protected readonly saving = signal(false);
   protected readonly hasPageError = signal(false);
   protected readonly hasSelectionError = signal(false);
+  protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly currentTenantId = signal<string | null>(null);
   protected readonly roles = signal<readonly RolePermissionMatrixRoleListItem[]>([]);
   protected readonly selectedRoleId = signal<string | null>(null);
@@ -93,6 +97,7 @@ export class RolePermissionMatrixComponent implements OnDestroy {
   protected readonly hasUnsavedChanges = computed(
     () => !this.samePermissionSet(this.initialPermissionIds(), this.selectedPermissionIds())
   );
+  protected readonly canUpdatePermissions = computed(() => this.modulePermissions().canUpdate);
   protected readonly isRoleListEmpty = computed(
     () => !this.loading() && !this.hasPageError() && this.roles().length === 0
   );
@@ -170,11 +175,20 @@ export class RolePermissionMatrixComponent implements OnDestroy {
   }
 
   protected canReset(): boolean {
-    return Boolean(this.selectedRoleId()) && !this.selectedRoleReadOnly() && !this.saving() && this.hasUnsavedChanges();
+    return Boolean(this.selectedRoleId())
+      && this.canUpdatePermissions()
+      && !this.selectedRoleReadOnly()
+      && !this.saving()
+      && this.hasUnsavedChanges();
   }
 
   protected canSave(): boolean {
-    return Boolean(this.selectedRoleId()) && !this.selectedRoleReadOnly() && !this.saving() && !this.loadingSelection() && this.hasUnsavedChanges();
+    return Boolean(this.selectedRoleId())
+      && this.canUpdatePermissions()
+      && !this.selectedRoleReadOnly()
+      && !this.saving()
+      && !this.loadingSelection()
+      && this.hasUnsavedChanges();
   }
 
   protected roleBadgeKey(role: Pick<RolePermissionMatrixRoleListItem, 'systemRole'>): I18nKey {
@@ -194,7 +208,12 @@ export class RolePermissionMatrixComponent implements OnDestroy {
   }
 
   protected isPermissionDisabled(permission: RolePermissionMatrixPermission | null): boolean {
-    return permission === null || permission.active !== true || this.loadingSelection() || this.saving() || this.selectedRoleReadOnly();
+    return permission === null
+      || permission.active !== true
+      || !this.canUpdatePermissions()
+      || this.loadingSelection()
+      || this.saving()
+      || this.selectedRoleReadOnly();
   }
 
   protected checkboxAriaLabel(row: RolePermissionMatrixRow, action: RolePermissionVisibleAction): string {
@@ -223,6 +242,7 @@ export class RolePermissionMatrixComponent implements OnDestroy {
       .pipe(
         take(1),
         switchMap((user) => {
+          this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'permissions'));
           this.currentTenantId.set(user.tenantId);
           return forkJoin({
             rolesPage: this.rolePermissionMatrixService.findRoles(user.tenantId, {
@@ -246,6 +266,7 @@ export class RolePermissionMatrixComponent implements OnDestroy {
         },
         error: () => {
           this.loading.set(false);
+          this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY);
           this.hasPageError.set(true);
         }
       });

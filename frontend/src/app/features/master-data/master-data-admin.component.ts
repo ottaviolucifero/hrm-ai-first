@@ -2,6 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
 
+import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
+import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -35,6 +37,7 @@ import { MasterDataService } from './master-data.service';
 })
 export class MasterDataAdminComponent implements OnDestroy {
   private readonly authService = inject(AuthService);
+  private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly masterDataService = inject(MasterDataService);
   private readonly notificationService = inject(NotificationService);
   protected readonly i18n = inject(I18nService);
@@ -62,6 +65,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly appliedSearch = signal('');
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
+  protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly lastTriggeredRowAction = signal<MasterDataRowActionEvent | null>(null);
   protected readonly lastFormSubmission = signal<MasterDataFormSubmitEvent | null>(null);
   protected readonly formMode = signal<MasterDataFormMode | null>(null);
@@ -74,8 +78,11 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly formConfig = computed<MasterDataFormConfig | null>(() => this.selectedResource().form ?? null);
   protected readonly formFields = computed(() => this.formConfig()?.fields ?? []);
   protected readonly openFormMode = computed<MasterDataFormMode>(() => this.formMode() ?? 'view');
-  protected readonly canCreate = computed(
+  protected readonly supportsCreate = computed(
     () => this.formConfig()?.modes.includes('create') === true
+  );
+  protected readonly canCreate = computed(
+    () => this.supportsCreate() && this.modulePermissions().canCreate
   );
   protected readonly isFormOpen = computed(() => this.formMode() !== null && this.formConfig() !== null);
   protected readonly isDeleteConfirmOpen = computed(
@@ -111,6 +118,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   );
 
   constructor() {
+    this.loadPermissionSummary();
     this.loadSelectedResource();
   }
 
@@ -155,10 +163,18 @@ export class MasterDataAdminComponent implements OnDestroy {
   }
 
   protected openCreateForm(): void {
+    if (!this.canCreate()) {
+      return;
+    }
+
     this.openForm('create', null);
   }
 
   protected handleRowAction(event: MasterDataRowActionEvent): void {
+    if (!this.isActionAllowed(event.action.id)) {
+      return;
+    }
+
     this.lastTriggeredRowAction.set(event);
 
     if (event.action.id === 'edit') {
@@ -346,6 +362,15 @@ export class MasterDataAdminComponent implements OnDestroy {
       });
   }
 
+  private loadPermissionSummary(): void {
+    this.authService.loadAuthenticatedUser()
+      .pipe(take(1))
+      .subscribe({
+        next: (user) => this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'master-data')),
+        error: () => this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY)
+      });
+  }
+
   private buildQuery(): MasterDataQuery {
     return {
       page: this.pageIndex(),
@@ -457,6 +482,10 @@ export class MasterDataAdminComponent implements OnDestroy {
     return {
       ...action,
       disabled: (row: MasterDataRow) => {
+        if (!this.isActionAllowed(action.id)) {
+          return true;
+        }
+
         const disabledByAction = typeof baseDisabled === 'function'
           ? baseDisabled(row)
           : baseDisabled === true;
@@ -468,6 +497,22 @@ export class MasterDataAdminComponent implements OnDestroy {
         return this.deleting();
       }
     };
+  }
+
+  private isActionAllowed(actionId: string): boolean {
+    const permissions = this.modulePermissions();
+
+    switch (actionId) {
+      case 'view':
+        return permissions.canView;
+      case 'edit':
+        return permissions.canUpdate;
+      case 'deactivate':
+      case 'deletePhysical':
+        return permissions.canDelete;
+      default:
+        return true;
+    }
   }
 
   private describeRow(row: MasterDataRow | null): string {

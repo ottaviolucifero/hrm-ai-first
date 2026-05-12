@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard, loginRedirectGuard } from './core/auth/auth.guard';
+import { permissionGuard } from './core/authorization/permission.guard';
 import { HomeComponent } from './features/home/home.component';
 import { LoginComponent } from './features/login/login.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
@@ -28,34 +29,69 @@ export const routes: Routes = [
       },
       {
         path: 'master-data',
-        component: MasterDataAdminComponent
+        component: MasterDataAdminComponent,
+        canActivate: [permissionGuard],
+        data: {
+          permissionModule: 'master-data',
+          requiredAction: 'view'
+        }
       },
       {
         path: 'admin',
         children: [
           {
             path: 'roles',
-            component: RoleAdministrationComponent
+            component: RoleAdministrationComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'roles',
+              requiredAction: 'view'
+            }
           },
           {
             path: 'users',
-            component: UserAdministrationComponent
+            component: UserAdministrationComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'users',
+              requiredAction: 'view'
+            }
           },
           {
             path: 'users/new',
-            component: UserAdministrationFormComponent
+            component: UserAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'users',
+              requiredAction: 'create'
+            }
           },
           {
             path: 'users/:id/edit',
-            component: UserAdministrationFormComponent
+            component: UserAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'users',
+              requiredAction: 'update'
+            }
           },
           {
             path: 'users/:id',
-            component: UserAdministrationDetailComponent
+            component: UserAdministrationDetailComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'users',
+              requiredAction: 'view'
+            }
           },
           {
             path: 'permissions',
-            component: RolePermissionMatrixComponent
+            component: RolePermissionMatrixComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'permissions',
+              requiredAction: 'view'
+            }
           }
         ]
       }

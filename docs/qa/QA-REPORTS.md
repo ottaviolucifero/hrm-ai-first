@@ -138,6 +138,148 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-054 follow-up - Auth permission exposure patch
+
+- Data: 2026-05-12
+- Branch: `task-054-frontend-permission-summary-visibility-ux`
+- Task: TASK-054 follow-up - expose real CRUD permissions to frontend strict freeze
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `/api/auth/login`, `/api/auth/me`, DTO auth, risoluzione permessi da `UserRole` + `RolePermission` + `Permission`, filtro `UserTenantAccess.active`, parser frontend `VIEW` alias.
+- Attivita eseguite:
+  - esteso `AuthenticatedUserResponse` con `authorities` e `permissions`;
+  - risolti i permission code effettivi dell utente autenticato dal tenant corrente;
+  - esposti in `authorities` i codici tecnici reali piu `USER_TYPE_*`;
+  - esposti in `permissions` i soli codici CRUD frontend-compatible con `VIEW/CREATE/UPDATE/DELETE`;
+  - aggiunto bugfix frontend minimale per accettare `VIEW` come alias di `READ` senza cambiare la strict freeze UX.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=AuthControllerTests,HrmBackendApplicationTests" test`
+  - `cd backend && .\mvnw.cmd "-Dtest=AuthControllerTests" test`
+  - `cd backend && .\mvnw.cmd "-Dtest=HrmBackendApplicationTests" test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - run backend combinato KO per inquinamento del contesto di test: `AuthControllerTests` crea ruoli di test e `HrmBackendApplicationTests` verifica conteggi seed nello stesso database condiviso;
+  - `AuthControllerTests` separato OK, `BUILD SUCCESS`, 15 test eseguiti, 0 failure, 0 error;
+  - `HrmBackendApplicationTests` separato OK, `BUILD SUCCESS`, 53 test eseguiti, 0 failure, 0 error;
+  - build frontend OK;
+  - test frontend OK, 29 file di test passed, 185 test passed.
+- QA manuale browser eseguita/non eseguita: non eseguita in questa sessione CLI.
+- Regressioni trovate: nessuna regressione funzionale confermata nei run separati.
+- Limiti/note:
+  - nessun backend enforcement RBAC introdotto; la patch espone solo dati autorizzativi al frontend;
+  - nessun modulo futuro e stato abilitato;
+  - se un account non ha assegnazioni reali `UserRole`/`RolePermission` nel tenant corrente, la sidebar resta correttamente frozen;
+  - i comandi Maven emettono warning noti Mockito/ByteBuddy e rumore di quoting PowerShell non bloccante dopo il `BUILD SUCCESS`.
+- Stato finale: PASS WITH NOTES
+
+### TASK-054 follow-up - Tenant admin RBAC bootstrap patch
+
+- Data: 2026-05-12
+- Branch: `task-054-frontend-permission-summary-visibility-ux`
+- Task: TASK-054 follow-up - bootstrap RBAC bridge data for seeded `TENANT_ADMIN`
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: seed `Permission`, `Role`, `RolePermission`, `UserRole`, `UserTenantAccess`, response `/api/auth/login` e `/api/auth/me`, compatibilita con strict freeze frontend.
+- Attivita eseguite:
+  - identificata la causa reale del freeze totale: il frontend riceveva `permissions: []` non per bug UX ma per assenza di assegnazioni RBAC bootstrap al ruolo seed `TENANT_ADMIN`;
+  - aggiunta migration vendor `V20` per assegnare al ruolo `TENANT_ADMIN` i 16 permessi CRUD di `MASTER_DATA`, `USER`, `ROLE`, `PERMISSION`;
+  - aggiunto backfill di `user_tenant_accesses` e `user_roles` per gli account seed `TENANT_ADMIN` gia esistenti;
+  - mantenuta separazione tra `authorities` tecniche e `permissions` frontend-compatible;
+  - aggiunto test backend sulla bootstrap matrix e corretto il test per evitare lazy loading fuori sessione.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=AuthControllerTests" test`
+  - `cd backend && .\mvnw.cmd "-Dtest=HrmBackendApplicationTests" test`
+- Esiti reali:
+  - `AuthControllerTests` OK, `BUILD SUCCESS`, 15 test eseguiti, 0 failure, 0 error;
+  - `HrmBackendApplicationTests` OK, `BUILD SUCCESS`, 54 test eseguiti, 0 failure, 0 error.
+- QA manuale browser eseguita/non eseguita: non eseguita in questa sessione CLI.
+- Regressioni trovate: nessuna regressione backend confermata nei test mirati.
+- Limiti/note:
+  - la patch non introduce enforcement RBAC server-side; abilita solo l esposizione corretta dei permessi e il bootstrap minimo dei bridge seed;
+  - la verifica manuale finale richiede riavvio applicazione con Flyway `V20` applicata e nuovo login dell utente `TENANT_ADMIN`;
+  - Home resta sempre accessibile; i moduli senza permessi CRUD reali restano frozen per design.
+- Stato finale: PASS WITH NOTES
+
+### TASK-054 follow-up - PostgreSQL V20 syntax fix
+
+- Data: 2026-05-12
+- Branch: `task-054-frontend-permission-summary-visibility-ux`
+- Task: TASK-054 follow-up - fix PostgreSQL syntax in `V20__bootstrap_tenant_admin_rbac.sql`
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: migration vendor `db/vendor/postgresql/V20__bootstrap_tenant_admin_rbac.sql`, coerenza con `db/vendor/h2/V20__bootstrap_tenant_admin_rbac.sql`, boot reale `spring-boot:run` su profilo `dev`.
+- Attivita eseguite:
+  - corretto il join della seed table `VALUES` nella migration PostgreSQL;
+  - riallineata la stessa query nella variante H2 per mantenere coerenza logica;
+  - corretto un test brittle sui ruoli seed che falliva nella suite completa per contaminazione dati tra test;
+  - verificato l avvio reale del backend contro PostgreSQL locale con Flyway alla versione `20`.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test`
+  - `cd backend && .\mvnw.cmd spring-boot:run`
+- Esiti reali:
+  - test backend completi OK, `BUILD SUCCESS`;
+  - primo `spring-boot:run` KO con `42P01 missing FROM-clause entry for table "seed"`, usato per identificare il secondo fix sintattico;
+  - `spring-boot:run` finale OK su profilo `dev`: connessione a `jdbc:postgresql://localhost:5432/hrm_db`, Flyway valida 20 migration, schema corrente `20`, `Schema "public" is up to date. No migration necessary.`
+- QA manuale browser eseguita/non eseguita: non eseguita in questa sessione CLI.
+- Regressioni trovate: nessuna regressione backend confermata dopo il fix finale.
+- Limiti/note:
+  - non sono presenti nel repository credenziali QA riusabili per completare in CLI la login verification su un account reale del database locale;
+  - la verifica di `permissions != []` resta da confermare con login manuale dell utente `TENANT_ADMIN` presente nel tuo ambiente PostgreSQL.
+- Stato finale: PASS WITH NOTES
+
+### TASK-054 follow-up - User permissions in role matrix
+
+- Data: 2026-05-12
+- Branch: `task-054-frontend-permission-summary-visibility-ux`
+- Task: TASK-054 follow-up - expose `Utenti` CRUD permissions in `/admin/permissions`
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: seed `Permission` e bootstrap `V20`, service/repository gia usati dalla matrice permessi ruolo, filtro frontend dei moduli visibili, i18n `it/fr/en`, wiring UX gia esistente su `/admin/users`.
+- Attivita eseguite:
+  - verificato che backend seed e bootstrap includono gia `TENANT.USER.READ/CREATE/UPDATE/DELETE`;
+  - confermato che `/api/auth/login` e `/api/auth/me` espongono gia i permission code necessari al frontend;
+  - corretto il filtro frontend della matrice permessi ruolo per includere anche la resource `USER` accanto a `MASTER_DATA` e `ROLE`;
+  - aggiornati i test Angular della matrice per coprire la presenza del modulo `Utenti` e dei relativi checkbox CRUD.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - test backend completi OK, `BUILD SUCCESS`;
+  - build frontend OK;
+  - test frontend OK, 29 file di test passed, 185 test passed.
+- QA manuale browser eseguita/non eseguita: non eseguita in questa sessione CLI.
+- Regressioni trovate: nessuna regressione automatica rilevata; la foundation strict freeze resta invariata.
+- Limiti/note:
+  - nessuna modifica backend ulteriore necessaria per questa patch finale; il problema residuo era nel filtro frontend dei moduli mostrati nella matrice;
+  - la validazione end-to-end con login admin/ruolo custom e assegnazione live dei permessi Utenti resta da eseguire manualmente nel browser.
+- Stato finale: PASS WITH NOTES
+
+### TASK-054 - Frontend permission summary and visibility UX foundation
+
+- Data: 2026-05-11
+- Branch: `task-054-frontend-permission-summary-visibility-ux`
+- Task: TASK-054 - Frontend permission summary and visibility UX foundation
+- Agente/Modello usato: GPT-5.5 Thinking
+- Area verificata: `auth/me` frontend, servizio centralizzato permission summary, route guard UX, sidebar frozen/disabled, moduli `/master-data`, `/admin/roles`, `/admin/permissions`, `/admin/users`, i18n `it/fr/en`, documentazione governance.
+- Attivita eseguite:
+  - confermato che `/api/auth/me` espone solo `id`, `tenantId`, `email`, `userType` e nessun permission summary reale;
+  - introdotta foundation frontend per parsing `SCOPE.RESOURCE.ACTION` verso `view/create/update/delete`;
+  - mantenuta la sidebar visibile per i moduli applicativi e congelata quando manca qualsiasi permesso CRUD;
+  - aggiunta guard frontend con redirect a `/` e warning UX quando manca `view/create/update`;
+  - applicata la foundation ai moduli attivi `master-data`, `roles`, `permissions`, `users`;
+  - registrata decisione durevole su default frozen e natura UX-only della soluzione.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend OK;
+  - test frontend OK, 29 file di test passed, 184 test passed.
+- QA manuale browser eseguita/non eseguita: non eseguita in questa sessione CLI.
+- Regressioni trovate: nessuna regressione automatica rilevata.
+- Limiti/note:
+  - nessuna modifica backend o catalogo permission;
+  - finche `/api/auth/me` non espone permission codes reali, i moduli protetti restano frozen per design;
+  - il modulo Utenti puo richiedere authorities/permission codes backend dedicati in TASK-055 o task follow-up.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053.9 - UserAccount Employee link foundation
 
 - Data: 2026-05-11
