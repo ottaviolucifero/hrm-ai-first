@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.32
+Versione: 2.34
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -4222,6 +4222,48 @@ Validazione:
 - frontend build `cd frontend && npm.cmd run build` OK;
 - frontend test completo `cd frontend && npm.cmd test -- --watch=false` OK, 30 file test, 211 test passed.
 
+### TASK-060 - Verifica uso tecnico codice ruolo e strategia codice autogenerato
+
+Stato: DONE
+
+Decisione adottata:
+
+- `Role.code` non e usato come authority runtime; l enforcement backend usa `permission.code` risolto via `RolePermission`.
+- i ruoli di sistema seedati mantengono il codice semantico esistente, ad esempio `TENANT_ADMIN`, `HR_MANAGER`, `SUPERVISOR`;
+- i ruoli custom creati da UI/API generano automaticamente `Role.code` con formato tenant-scoped `RO001`, `RO002`, `RO003`, ...;
+- il codice resta visibile in lista/dettaglio;
+- il codice non e editabile;
+- il create form `/admin/roles` non espone piu il campo `code`;
+- edit/view mantengono `code` in sola lettura;
+- non viene introdotto alcun campo `businessCode`.
+
+Implementazione:
+
+- aggiornato `RoleAdministrationService` per ignorare il vecchio input `code` in creazione e generare il prossimo progressivo `RO###` per tenant;
+- mantenuto il vincolo unico `(tenant_id, code)` e la gestione collisioni tramite vincolo DB con errore applicativo coerente;
+- confermato che l update ruolo non modifica il codice;
+- aggiornato `RoleAdministrationRoleCreateRequest` rimuovendo `code`;
+- aggiornati test backend per coprire:
+  - creazione senza `code`;
+  - primo codice `RO001`;
+  - progressivo successivo corretto;
+  - isolamento tenant del progressivo;
+  - protezione dei ruoli di sistema;
+- aggiornato frontend role administration per:
+  - rimuovere `code` dal payload create;
+  - rimuovere `code` dal form di creazione;
+  - mantenere `code` visibile in tabella;
+  - mantenere `code` read-only in edit/view;
+- aggiornati i test frontend collegati al payload create.
+
+Validazione:
+
+- analisi confermata: `Role.code` non governa autorizzazioni runtime; le autorizzazioni backend restano basate su `permission.code`;
+- backend test mirato `cd backend && .\mvnw.cmd -Dtest=RoleAdministrationControllerTests test` OK, 22 test, 0 failure, 0 error, 0 skipped;
+- backend test completo `cd backend && .\mvnw.cmd test` OK, 197 test, 0 failure, 0 error, 0 skipped;
+- frontend build `cd frontend && npm.cmd run build` OK;
+- frontend test completo `cd frontend && npm.cmd test -- --watch=false` OK, 30 file test, 212 test passed.
+
 ### TASK-061 - i18n alert/messages consistency check
 
 Stato: DONE
@@ -4312,6 +4354,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.34 | 2026-05-12 | TASK-060 completato: `Role.code` resta semantico solo per i ruoli seed di sistema, mentre i ruoli custom tenant usano auto-code `RO###` generato lato backend; create senza campo `code`, edit/view read-only, test backend/frontend reali verdi e nessun `businessCode` introdotto. |
+| 2.33 | 2026-05-12 | Ricostruito `TASK-060` come task documentale separato prima di `TASK-061` per analizzare l'uso tecnico di `Role.code` e definire la strategia corretta tra codice tecnico, auto-code business/UI o separazione dei due concetti, senza modifiche runtime in questa fase. |
 | 2.32 | 2026-05-12 | TASK-061 completato: confermata coerenza i18n dei messaggi alert/error/success/warning con rimozione dei fallback raw backend e degli `aria-label` hardcoded residui nel login, build/test frontend OK, frontend locale avviato OK, QA manuale browser completata con cambio lingua `it/fr/en` e nessuna regressione rilevata. |
 | 2.31 | 2026-05-12 | TASK-061 portato in `IN_PROGRESS`: rimossi i fallback notifiche non localizzati da API backend, introdotta utility frontend minima per risoluzione errori i18n, spostati in i18n gli `aria-label` hardcoded del footer login, build/test frontend verdi e avvio locale HTTP `200` verificato; task non chiuso per mancanza di QA manuale browser completa in questa sessione CLI. |
 | 2.30 | 2026-05-12 | TASK-059.4 completato: razionalizzata la Master Data UI Governance/security rimuovendo `Role`, `Permission` e `AuditActionType` dal selettore generico, mantenendo visibili `UserType`/`AuthenticationMethod`/`SmtpEncryptionType`, estendendo auto-code backend/UI a `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, nascondendo le colonne tecniche tenant e confermando test backend/frontend reali verdi. |

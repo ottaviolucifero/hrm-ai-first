@@ -52,7 +52,6 @@ export interface RoleAdministrationPage<T> {
 
 export interface RoleAdministrationCreateRequest {
   readonly tenantId: string;
-  readonly code: string;
   readonly name: string;
   readonly description?: string | null;
   readonly active?: boolean;

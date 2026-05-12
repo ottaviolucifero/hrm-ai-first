@@ -21,6 +21,7 @@ import com.odsoftware.hrm.repository.master.PermissionRepository;
 import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.rbac.RolePermissionRepository;
 import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import jakarta.persistence.criteria.Predicate;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -41,6 +42,8 @@ import com.odsoftware.hrm.security.CurrentCallerService;
 @Service
 @Transactional(readOnly = true)
 public class RoleAdministrationService {
+
+	private static final String CUSTOM_ROLE_CODE_PREFIX = "RO";
 
 	private final RoleRepository roleRepository;
 	private final PermissionRepository permissionRepository;
@@ -87,10 +90,7 @@ public class RoleAdministrationService {
 	public RoleAdministrationRoleDetailResponse createRole(RoleAdministrationRoleCreateRequest request) {
 		assertCallerCanManageTenant(request.tenantId());
 		Tenant tenant = findTenant(request.tenantId());
-		String code = cleanUpper(request.code());
-		if (roleRepository.existsByTenantIdAndCode(tenant.getId(), code)) {
-			throw new ResourceConflictException("Role code already exists for tenant: " + code);
-		}
+		String code = generateNextRoleCode(tenant.getId());
 
 		Role role = new Role();
 		role.setTenantId(tenant.getId());
@@ -99,7 +99,12 @@ public class RoleAdministrationService {
 		role.setDescription(clean(request.description()));
 		role.setSystemRole(false);
 		role.setActive(activeOrDefault(request.active()));
-		return toRoleDetailResponse(roleRepository.save(role), tenant);
+		try {
+			return toRoleDetailResponse(roleRepository.save(role), tenant);
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw new ResourceConflictException("Role code generation collision for tenant. Retry create operation.");
+		}
 	}
 
 	@Transactional
@@ -287,6 +292,42 @@ public class RoleAdministrationService {
 
 	private Boolean activeOrDefault(Boolean active) {
 		return active == null ? Boolean.TRUE : active;
+	}
+
+	private String generateNextRoleCode(UUID tenantId) {
+		List<Role> tenantRoles = roleRepository.findAll(
+				(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("tenantId"), tenantId),
+				Sort.by(Sort.Order.desc("code")));
+		int maxProgressive = 0;
+		for (Role role : tenantRoles) {
+			int parsedProgressive = parseProgressiveCode(role.getCode(), CUSTOM_ROLE_CODE_PREFIX);
+			if (parsedProgressive > maxProgressive) {
+				maxProgressive = parsedProgressive;
+			}
+		}
+
+		if (maxProgressive >= 999) {
+			throw new ResourceConflictException("Role code progressive exhausted for tenant: " + tenantId);
+		}
+
+		return CUSTOM_ROLE_CODE_PREFIX + String.format(Locale.ROOT, "%03d", maxProgressive + 1);
+	}
+
+	private int parseProgressiveCode(String code, String prefix) {
+		String normalizedCode = cleanUpper(code);
+		if (normalizedCode == null || !normalizedCode.startsWith(prefix)) {
+			return -1;
+		}
+		if (normalizedCode.length() != prefix.length() + 3) {
+			return -1;
+		}
+		String progressive = normalizedCode.substring(prefix.length());
+		for (int index = 0; index < progressive.length(); index++) {
+			if (!Character.isDigit(progressive.charAt(index))) {
+				return -1;
+			}
+		}
+		return Integer.parseInt(progressive);
 	}
 
 	private String cleanUpper(String value) {

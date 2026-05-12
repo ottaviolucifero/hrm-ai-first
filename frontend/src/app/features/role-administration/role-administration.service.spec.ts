@@ -51,7 +51,6 @@ describe('RoleAdministrationService', () => {
   it('creates a role with the expected payload', () => {
     service.createRole({
       tenantId: 'tenant-1',
-      code: 'ROLE_CUSTOM',
       name: 'Role custom',
       description: 'Description',
       active: true
@@ -62,7 +61,6 @@ describe('RoleAdministrationService', () => {
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({
       tenantId: 'tenant-1',
-      code: 'ROLE_CUSTOM',
       name: 'Role custom',
       description: 'Description',
       active: true

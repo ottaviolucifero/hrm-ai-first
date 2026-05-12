@@ -6,6 +6,54 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-060 - Autogenerazione codice ruolo custom
+
+- Data: 2026-05-12
+- Branch: `task-060-role-code-autogeneration`
+- Task: TASK-060 - Autogenerazione codice ruolo custom
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/service/RoleAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/roleadministration/RoleAdministrationRoleCreateRequest.java`
+  - `backend/src/test/java/com/odsoftware/hrm/RoleAdministrationControllerTests.java`
+  - `frontend/src/app/features/role-administration/role-administration.component.ts`
+  - `frontend/src/app/features/role-administration/role-administration.models.ts`
+  - `frontend/src/app/features/role-administration/role-administration.component.spec.ts`
+  - `frontend/src/app/features/role-administration/role-administration.service.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificato che l autorizzazione runtime backend usa `permission.code` e non `role.code`, tramite bridge `UserRole` + `RolePermission`;
+  - verificato che `Role.code` resta usato come dato esposto in list/detail e user administration, oltre che nei seed/test dei ruoli di sistema;
+  - verificato il pattern auto-code gia adottato nei Master Data recenti: prefisso esplicito + progressivo a 3 cifre per tenant, senza tabella contatori, con collisione demandata al vincolo DB;
+  - verificata l assenza di una utility shared gia centralizzata per il calcolo del prossimo progressivo, evitando refactor fuori scope.
+- Patch applicata:
+  - rimosso `code` da `RoleAdministrationRoleCreateRequest`;
+  - aggiornato `RoleAdministrationService` per generare automaticamente `RO###` per tenant in create, ignorando ogni input `code` lato API/UI e preservando il codice esistente in update;
+  - mantenuti invariati i codici semantici dei ruoli di sistema seedati;
+  - aggiornati i test backend per coprire `RO001`, progressivo successivo, isolamento tenant e protezione ruoli di sistema;
+  - aggiornato il frontend `/admin/roles` per non mostrare piu `code` nel create form e non inviarlo nel payload create, mantenendolo visibile in tabella e read-only in edit/view;
+  - aggiornati i test frontend collegati al create payload.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=RoleAdministrationControllerTests test`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+- Esiti reali:
+  - backend test mirato ruoli: `BUILD SUCCESS`, 22 test, 0 failure, 0 error, 0 skipped;
+  - backend test completo: `BUILD SUCCESS`, 197 test, 0 failure, 0 error, 0 skipped;
+  - frontend build: OK;
+  - frontend test completo: OK, 30 file test passed, 212 test passed.
+- QA manuale:
+  - non eseguita in browser in questa sessione CLI.
+- Regressioni trovate:
+  - durante il primo pass della suite backend completa sono falliti 2 test su `RoleAdministrationControllerTests` per aspettative fragili su `RO001` nel tenant foundation condiviso; corretti isolando i casi con tenant dedicati e caller platform, poi suite mirata e completa rieseguite con esito verde;
+  - nessuna regressione residua dopo il rerun completo backend/frontend.
+- Limiti/note:
+  - warning non bloccanti Maven/JVM gia noti (Mockito self-attach / ByteBuddy dynamic agent);
+  - nei log Maven compare ancora il messaggio shell residuale `'D' n est pas reconnu...` senza impatto sull esito finale della build/test.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-059.4 - Razionalizzazione Governance/security Master Data UI e auto-code selettivo
 
 - Data: 2026-05-12
