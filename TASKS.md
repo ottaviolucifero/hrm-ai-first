@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.27
+Versione: 2.29
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -4095,7 +4095,7 @@ Validazione:
 
 ### TASK-059.2 - Estendere code automatico ai restanti Master Data
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -4107,6 +4107,97 @@ Include:
 - rendere `code` non editabile da UI anche per queste entita;
 - usare lo stesso pattern backend (`prefisso 2 lettere + progressivo 3 cifre`) e la stessa strategia senza tabella contatori;
 - valutare e pianificare migrazione dei codici esistenti e impatto sui riferimenti business prima del rollout.
+
+Completato:
+
+- esteso il DTO backend `TenantMasterDataAutoCodeRequest` anche a `Department`, `JobTitle`, `ContractType` e `WorkMode`, rimuovendo il `code` dal contratto applicativo di create/update per queste 4 entita;
+- aggiornati controller e service HR/business per usare auto-code lato backend su `Department`, `JobTitle`, `ContractType` e `WorkMode`;
+- applicati i prefissi `DE`, `JO`, `CO`, `WO` con progressivo a 3 cifre, riusando il pattern esistente tenant-scoped basato sul massimo progressivo per entita/prefisso, senza tabella contatori;
+- preservato il `code` esistente in update per tutte le 4 entita e mantenuta la gestione collisioni tramite vincolo unique esistente e messaggio di conflitto chiaro;
+- aggiunta migration Flyway `V22` per PostgreSQL e H2 per normalizzare i codici esistenti di `departments`, `job_titles`, `contract_types` e `work_modes`;
+- verificato prima della migration che `employees.department`, `employees.job_title`, `employees.contract_type` e `employees.work_mode` sono usati dal codice come riferimenti stringa ai `code` Master Data quando coerenti, ma non hanno FK hard-enforced;
+- implementato quindi aggiornamento condizionale di `employees.*` solo quando il valore corrente coincide con un `old_code` reale della rispettiva tabella per lo stesso tenant; eventuali valori descrittivi o free-text non vengono modificati;
+- confermato nel repository corrente che non esistono seed iniziali per `Department`, `JobTitle` e `ContractType`, mentre `WorkMode` ha seed storici migrati al nuovo formato in `V22`;
+- frontend `/master-data` aggiornato per rendere `code` non editabile anche per `Department`, `JobTitle`, `ContractType` e `WorkMode`, riusando il pattern `autoCode` e il form shared metadata-driven;
+- aggiornati test backend/frontend per coprire create auto-code, update con `code` preservato, migration seed `WorkMode`, payload UI senza `code` e visibilita del campo in sola lettura.
+
+Validazione:
+
+- backend test mirato `cd backend && .\mvnw.cmd "-Dtest=MasterDataHrBusinessControllerTests,HrmBackendApplicationTests" test` OK, 71 test, 0 failure, 0 error, 0 skipped;
+- backend test completo `cd backend && .\mvnw.cmd test` OK, 190 test, 0 failure, 0 error, 0 skipped;
+- frontend test completo `cd frontend && npm.cmd test -- --watch=false` OK, 30 file test, 204 test passed;
+- frontend build `cd frontend && npm.cmd run build` OK.
+
+### TASK-059.3 - Analisi Governance/security Master Data, interfacce Sicurezza e gestione codice
+
+Stato: TODO
+
+Include:
+
+- analizzare le entita Governance/security:
+  - `UserType`
+  - `AuthenticationMethod`
+  - `Role`
+  - `Permission`
+  - `AuditActionType`
+  - `DisciplinaryActionType`
+  - `SmtpEncryptionType`
+  - `CompanyProfileType`
+  - `OfficeLocationType`;
+- verificare duplicazioni tra Master Data generica e UI Sicurezza;
+- classificare il tipo di `code`:
+  - tecnico
+  - semantico
+  - visuale/anagrafico
+  - authority;
+- valutare il rischio di modifica del `code`;
+- definire quali entita devono restare nella Master Data generica;
+- definire quali entita devono essere escluse dalla Master Data generica;
+- definire quali entita devono essere read-only;
+- definire quali entita possono usare auto-code `PPNNN`;
+- documentare rischi su RBAC, authorities, seed, audit, tenant, utenti, ruoli custom, migrazioni e test.
+
+Decisione attesa:
+
+- `Role` e `Permission` non devono restare come anagrafiche editabili nella Master Data generica;
+- `AuditActionType` e tecnico e non deve essere gestito dalla Master Data generica;
+- `CompanyProfileType`, `OfficeLocationType`, `DisciplinaryActionType` sono candidati per auto-code futuro;
+- `UserType`, `AuthenticationMethod`, `SmtpEncryptionType` devono mantenere codici tecnici stabili.
+
+### TASK-059.4 - Razionalizzazione Governance/security Master Data UI e auto-code selettivo
+
+Stato: TODO
+
+Include:
+
+- rimuovere/nascondere dalla UI Master Data generica:
+  - `Role`
+  - `Permission`
+  - `AuditActionType`;
+- lasciare visibili nella Master Data generica, senza auto-code:
+  - `UserType`
+  - `AuthenticationMethod`
+  - `SmtpEncryptionType`;
+- applicare auto-code `PPNNN` a:
+  - `CompanyProfileType` con prefisso `CP`;
+  - `OfficeLocationType` con prefisso `OL`;
+  - `DisciplinaryActionType` con prefisso `DA`;
+- rendere `code` non editabile da UI per le entita con auto-code;
+- nascondere sempre dalla tabella Master Data generica le colonne:
+  - `tenant`
+  - `tenantId`
+  - `tenantName`;
+- non modificare `Role.code`, `Permission.code`, `UserType.code`, `AuthenticationMethod.code`, `SmtpEncryptionType.code`, `AuditActionType.code`;
+- non modificare seed tecnici, RBAC, authorities o tenant isolation fuori scope;
+- aggiornare test backend/frontend mirati;
+- aggiornare `TASKS.md`, `ROADMAP.md` e `docs/qa/QA-REPORTS.md` a completamento task.
+
+Note:
+
+- `Role` resta gestito solo sotto UI Sicurezza `/admin/roles`;
+- `Permission` resta gestito solo tramite matrice/catalogo permessi sotto Sicurezza;
+- `AuditActionType` resta tecnico per audit log;
+- eventuali viste Platform Admin / Owner Platform con filtro tenant saranno gestite in task separato.
 
 ### TASK-061 - i18n alert/messages consistency check
 
@@ -4187,6 +4278,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.29 | 2026-05-12 | Inseriti `TASK-059.3` e `TASK-059.4` tra `TASK-059.2` e `TASK-061` per ripristinare continuita del backlog senza rinumerare i task successivi; `TASK-060` resta assente come sezione attiva e va ricostruito in task documentale separato. |
+| 2.28 | 2026-05-12 | TASK-059.2 completato: esteso auto-code backend/UI a `Department`, `JobTitle`, `ContractType`, `WorkMode`, aggiunta migration V22 PostgreSQL/H2 con aggiornamento condizionale di `employees.department/job_title/contract_type/work_mode` solo quando allineati a `old_code` reali per tenant, test backend/frontend reali verdi. |
 | 2.27 | 2026-05-12 | Inserito TASK-059.2 `Estendere code automatico ai restanti Master Data` e rinumerato il backlog successivo da TASK-060..TASK-072 a TASK-061..TASK-073 in coerenza con la pianificazione. |
 | 2.26 | 2026-05-12 | TASK-059.1 completato: standardizzazione `code` per 6 entita HR/business con auto-generazione backend per tenant/prefisso/progressivo, `code` non editabile da UI, migration V21 PostgreSQL/H2 con re-codifica dati esistenti e mapping `employees.employment_status`, test backend/frontend reali verdi. |
 | 2.25 | 2026-05-12 | TASK-059 completato nel perimetro chiarito: physical delete backend/frontend aggiunto solo per EmploymentStatus, LeaveRequestType, DocumentType, DeviceType, DeviceBrand e DeviceStatus, con reference checks, conferma condivisa, i18n aggiornato, test backend/frontend verdi e follow-up TASK-059.1 riservato alla standardizzazione futura dei code. |
