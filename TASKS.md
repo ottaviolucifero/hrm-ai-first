@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.19
+Versione: 2.20
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -3928,7 +3928,53 @@ Fuori scope:
 - nuove feature amministrative non richieste da enforcement;
 - refactor esteso fuori dal perimetro authorization.
 
-### TASK-056 - Finalize ZIP import foundation and test isolation
+### TASK-056 - Shared confirmation dialog foundation
+
+Stato: TODO
+
+Tipo: Frontend shared UX foundation
+
+Obiettivo:
+
+- Introdurre un componente shared Angular per popup di conferma si/no da riusare nelle azioni critiche, ad esempio disattivazione o cancellazione record.
+
+Scope:
+
+- creare un componente shared di conferma, ad esempio `ConfirmDialogComponent`;
+- usare il mockup Stitch fornito come riferimento UX;
+- supportare almeno:
+  - titolo;
+  - messaggio;
+  - label pulsante conferma;
+  - label pulsante annulla;
+  - variante/severita, ad esempio info/warning/danger;
+  - stato loading durante conferma, se utile;
+- integrare il componente con il componente shared DataTable esistente;
+- permettere alle row actions critiche/distruttive del DataTable di richiedere conferma prima di emettere l azione;
+- applicare il popup alle tabelle esistenti che usano il DataTable shared, dove sono presenti azioni come elimina, cancella definitivamente o disattiva;
+- aggiornare i18n `it`/`fr`/`en`;
+- aggiungere test frontend minimi.
+
+Vincoli:
+
+- nessun redesign generale;
+- nessuna duplicazione di popup per singola feature;
+- nessuna nuova tabella;
+- riusare pattern e stile esistenti;
+- non introdurre librerie esterne se non necessarie;
+- mantenere compatibilita con le row actions gia esistenti;
+- non modificare backend;
+- non implementare in questo task documentale.
+
+Fuori scope:
+
+- workflow approvativi;
+- modali form complesse;
+- bulk confirmation;
+- redesign completo DataTable;
+- modifiche backend.
+
+### TASK-057 - Finalize ZIP import foundation and test isolation
 
 Stato: TODO
 
@@ -3951,11 +3997,11 @@ Fuori scope:
 - redesign del modello ZIP globale;
 - introduzione di logiche permessi utenti/ruoli.
 
-### TASK-057 - Implementare UI Employee management enterprise
+### TASK-058 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
-### TASK-058 - Implementare Security Admin UI
+### TASK-059 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -3967,47 +4013,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-059 - Implementare UI Device governance
+### TASK-060 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-060 - Implementare UI PayrollDocument
+### TASK-061 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-061 - Implementare UI LeaveRequest
+### TASK-062 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-062 - Implementare UI HolidayCalendar
+### TASK-063 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-063 - Implementare Audit UI / compliance explorer
+### TASK-064 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-064 - Implementare UI disciplinary governance
+### TASK-065 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-065 - Implementare Platform Operator / Super Admin governance
+### TASK-066 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-066 - Implementare Cross-tenant admin UI
+### TASK-067 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-067 - Configurare logging, monitoring e observability enterprise
+### TASK-068 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-068 - Test integrato MVP enterprise completo
+### TASK-069 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -4017,6 +4063,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.20 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 su ZIP import slitta a TASK-057 e i task successivi vengono rinumerati in modo coerente fino a TASK-069, senza modifiche a codice frontend/backend. |
 | 2.19 | 2026-05-12 | TASK-055 completato: introdotto enforcement RBAC reale lato backend con authority risolte da DB per request JWT, `default deny` sugli endpoint protetti, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato e nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica; test backend completi verdi e patch frontend minima allineata. |
 | 2.18 | 2026-05-11 | TASK-054 completato: introdotta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar visibile ma frozen senza permessi CRUD, guard route `view/create/update`, applicazione ai moduli `/master-data`, `/admin/roles`, `/admin/permissions`, `/admin/users`, test frontend verdi e nessuna modifica backend. |
 | 2.17 | 2026-05-11 | TASK-053.9 completato: chiarito e applicato il link opzionale `UserAccount.employee`, con account validi senza Employee, fallback email/tipo account, DTO admin espliciti `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato, nessuna migration e nessuna duplicazione `firstName`/`lastName` su `UserAccount`. |
@@ -4029,7 +4076,7 @@ Stato: TODO
 | 2.10 | 2026-05-10 | TASK-053.4 splittato in backlog utenti tenant: ridefinito TASK-053.4 come read/list/detail foundation (ruoli/accessi read-only, nome/cognome derivati da Employee con fallback email), aggiunti TASK-053.5 role assignment, TASK-053.6 password administration, TASK-053.7 create/edit, TASK-053.8 lifecycle e TASK-053.9 opzionale per UserAccount-Employee link, senza modifiche codice applicativo. |
 | 2.09 | 2026-05-10 | Backlog allineato pre-commit TASK-053.3: aggiunta regola governance CRUD/permessi nei process notes, chiarito limite/follow-up di TASK-053.3 (foundation CRUD + protezione `system_role`), ridefiniti TASK-054 e TASK-055 e aggiunto TASK-055.1 per tenant/caller authorization su endpoint admin `/api/admin/roles`, senza modifiche codice applicativo. |
 | 2.08 | 2026-05-10 | TASK-053.2 riallineato dopo review: route frontend rinominata in `/admin/permissions`, menu `Governance > Sicurezza > Permessi`, matrice filtrata ai soli permessi Master Data reali presenti, test/frontend QA aggiornati e nota esplicita sulla validazione manuale tenant-aware. |
-| 2.07 | 2026-05-10 | TASK-053.2 completato: aggiunta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware, con riuso API backend gia presenti `/api/admin/roles`, route/shell/sidebar coerenti, estensione minima retrocompatibile di `app-checkbox`, build/test frontend verdi e backlog raffinato con nuovo TASK-053.3 per CRUD ruoli custom tenant, TASK-053.4 per user administration e TASK-056 per il debito tecnico import ZIP. |
+| 2.07 | 2026-05-10 | TASK-053.2 completato: aggiunta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware, con riuso API backend gia presenti `/api/admin/roles`, route/shell/sidebar coerenti, estensione minima retrocompatibile di `app-checkbox`, build/test frontend verdi e backlog raffinato con nuovo TASK-053.3 per CRUD ruoli custom tenant, TASK-053.4 per user administration e TASK-057 per il debito tecnico import ZIP. |
 | 2.06 | 2026-05-10 | TASK-053.1 completato: aggiunta API backend `/api/admin/roles` per lista/dettaglio ruoli, lettura permessi assegnati e replace transazionale delle assegnazioni ruolo-permesso con DTO espliciti, validazione tenant role/permission, test mirati verdi e fix cast UUID in Flyway V18 per PostgreSQL; nessuna UI, security/JWT/enforcement o import CAP modificati. |
 | 2.05 | 2026-05-10 | TASK-053 riorganizzato come epic/contenitore con subtask interni TASK-053.1 backend role administration API foundation, TASK-053.2 frontend role permission matrix UI foundation, TASK-053.3 tenant custom role CRUD foundation e TASK-053.4 tenant user administration UI/API foundation; chiariti fuori scope verso TASK-054 frontend visibility e TASK-055 backend enforcement, senza modifiche codice. |
 | 2.04 | 2026-05-10 | TASK-052 completato: introdotti enum/helper backend per codici permission `SCOPE.RESOURCE.ACTION`, migration Flyway V18 con matrice iniziale PLATFORM/TENANT per resource/action approvate, seed system_permission e test backend mirati validati senza enforcement runtime o granularita per singola entita Master Data. |

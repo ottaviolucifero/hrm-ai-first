@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.31
-Ultimo aggiornamento: 2026-05-11
+Versione: 1.32
+Ultimo aggiornamento: 2026-05-12
 Stato: Attivo
 
 ---
@@ -1426,10 +1426,40 @@ Il frontend introduce un servizio centralizzato di summary autorizzativo, una gu
 
 ---
 
+### DEC-037 - Shared confirmation dialog for critical UI actions
+
+Data: 2026-05-12
+Stato: Approvata
+
+Decisione:
+
+Le azioni UI critiche o distruttive, come cancellazione definitiva e disattivazione record, devono usare un componente shared di conferma si/no.
+
+Motivazione:
+
+Evitare conferme duplicate per feature, mantenere coerenza UX e centralizzare testi, varianti visuali e comportamento delle conferme.
+
+Alternative escluse:
+
+- popup di conferma locali duplicati per singola feature;
+- conferme distruttive eseguite senza passaggio esplicito di validazione utente;
+- introduzione di pattern diversi per ogni tabella o modulo quando il caso e coperto dal componente shared.
+
+Impatto:
+
+Le tabelle basate su shared DataTable devono poter richiedere conferma prima di eseguire una row action critica.
+
+Le nuove feature non devono creare popup di conferma locali se il componente shared copre il caso.
+
+Il componente dovra rispettare i18n e linee guida UX gia documentate.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.32 | 2026-05-12 | Aggiunta DEC-037 per formalizzare il pattern shared di conferma per azioni UI critiche/distruttive, con riuso obbligatorio, coerenza UX, i18n e integrazione attesa con il shared DataTable. |
 | 1.31 | 2026-05-11 | Aggiunta DEC-036 per formalizzare la visibility frontend centralizzata su summary CRUD, sidebar visibile ma frozen senza permessi, route guardate su `view/create/update` e default frozen quando `/api/auth/me` non espone permission summary reale. |
 | 1.30 | 2026-05-11 | Aggiunta DEC-035 per formalizzare il link opzionale `UserAccount.employee`, account validi senza Employee, fallback email/tipo account e divieto di duplicare dati anagrafici su `UserAccount`. |
 | 1.29 | 2026-05-11 | Aggiunta DEC-034 per chiarire che nei form amministrazione utenti tenant si mostra un solo campo `Tenant`; `primaryTenant` resta dettaglio backend e la distinzione tenant/default tenant e rinviata agli scenari platform o multi-tenant futuri. |

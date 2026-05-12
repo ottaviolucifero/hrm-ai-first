@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.23
+Versione: 2.24
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -126,7 +126,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-056 finalize ZIP import foundation and test isolation
+- TASK-056 Shared confirmation dialog foundation
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -232,7 +232,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-056 Finalize ZIP import foundation and test isolation
+- TASK-056 Shared confirmation dialog foundation
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -254,7 +254,8 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 - TASK-054: permission summary frontend e visibility UX foundation completata (solo UX, non sicurezza reale);
 - TASK-055: enforcement RBAC reale lato backend completato con default deny, mapping endpoint/permesso/azione, authority runtime risolte da DB, `DELETE /api/admin/users/{userId}` come hard delete controllato e `PATCH /api/admin/users/{userId}/deactivate` come disattivazione logica;
 - TASK-055.1: hardening tenant/caller completato e assorbito dentro TASK-055.
-- TASK-056: debito tecnico dedicato alla finalizzazione della foundation import ZIP e all isolamento dei side effect in test.
+- TASK-056: foundation frontend shared per conferme si/no su azioni critiche, con riferimento UX Stitch, integrazione con DataTable, i18n `it`/`fr`/`en` e test frontend minimi.
+- TASK-057: debito tecnico dedicato alla finalizzazione della foundation import ZIP e all isolamento dei side effect in test.
 
 Nota roadmap TASK-048:
 
@@ -310,7 +311,8 @@ Nota roadmap TASK-046:
 - TASK-046.5 chiude il ciclo con QA/stabilizzazione e allineamento documentale.
 - TASK-047 introduce la cancellazione fisica sicura dei Master Data come azione distinta da `Disattiva`, consentita solo per record non referenziati.
 - TASK-047 e scomposto in tre subtask incrementali: 047.1 backend foundation, 047.2 frontend action, 047.3 QA and hardening.
-- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-056), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data. TASK-053 resta un contenitore cross-stack e i suoi subtask TASK-053.1..TASK-053.9 non sono milestone principali indipendenti.
+- Dopo TASK-047 il blocco prioritario passa a Super Admin / utenti / ruoli / permessi (TASK-049..TASK-055), con distinzione esplicita tra scope `PLATFORM` e `TENANT`, ruoli seed non eliminabili, ruoli custom tenant-specific e permessi CRUD Global/Tenant Master Data. TASK-053 resta un contenitore cross-stack e i suoi subtask TASK-053.1..TASK-053.9 non sono milestone principali indipendenti.
+- Prima dei task applicativi successivi viene inserito TASK-056 come foundation shared frontend per le conferme di azioni critiche; l ex task tecnico ZIP slitta a TASK-057 e i task successivi vengono rinumerati di conseguenza.
 - Il frontend migliora visibilita/UX ma non sostituisce mai i controlli di sicurezza backend.
 
 ---
@@ -365,15 +367,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-063
+- TASK-036 -> TASK-064
 
 ### Fase 2I - Platform Operations
 
-- TASK-064 -> TASK-065
+- TASK-065 -> TASK-066
 
 ### Fase 3 - Stabilization
 
-- TASK-066 -> TASK-067
+- TASK-067 -> TASK-069
 
 ---
 
@@ -389,6 +391,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.24 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 ZIP slitta a TASK-057, i range roadmap vengono riallineati fino a TASK-069 e il prossimo passo viene aggiornato di conseguenza. |
 | 2.23 | 2026-05-12 | TASK-055 completato: enforcement RBAC backend reale attivato con authority risolte da DB per request JWT, `default deny`, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato, nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica e suite backend/frontend verde; prossimo passo riallineato a TASK-056. |
 | 2.22 | 2026-05-11 | TASK-054 completato: aggiunta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar dei moduli sempre visibile ma frozen senza permessi CRUD, guard frontend sulle route protette e applicazione ai moduli amministrativi attivi; prossimo passo riallineato a TASK-055. |
 | 2.21 | 2026-05-11 | TASK-053.9 completato: formalizzato link opzionale `UserAccount` -> `Employee`, DTO admin espliciti per `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato e nessuna migration o duplicazione anagrafica su `UserAccount`; prossimo passo riallineato a TASK-054. |
@@ -401,7 +404,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 | 2.14 | 2026-05-10 | Backlog TASK-053.4 splittato su user administration tenant: TASK-053.4 ridefinito come read/list/detail foundation (ruoli e accessi read-only, nome/cognome derivati da Employee con fallback email), introdotti TASK-053.5/053.6/053.7/053.8 e aggiunto TASK-053.9 opzionale per UserAccount-Employee link foundation; roadmap/prossimi passi riallineati senza modifiche codice applicativo. |
 | 2.13 | 2026-05-10 | Backlog RBAC follow-up riallineato pre-commit TASK-053.3: confermato limite foundation di TASK-053.3, aggiornati target di TASK-054 (permission summary + visibility UX) e TASK-055 (enforcement backend con default deny e mapping endpoint/permesso/azione), aggiunto TASK-055.1 per hardening tenant/caller sugli endpoint admin `/api/admin/roles`, senza rinumerare i task principali. |
 | 2.12 | 2026-05-10 | TASK-053.2 riallineato dopo review: route frontend rinominata in `/admin/permissions`, voce menu `Governance > Sicurezza > Permessi`, matrice limitata ai soli permessi Master Data reali e nota QA esplicita sulla necessita di un utente tenant-aware per la validazione manuale completa. |
-| 2.11 | 2026-05-10 | TASK-053.2 completato: introdotta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware con route/shell/sidebar coerenti, riuso API backend gia presenti `/api/admin/roles`, build/test frontend verdi; prossimo passo aggiornato a TASK-053.3 e backlog raffinato con nuovo TASK-056 dedicato al debito tecnico import ZIP. |
+| 2.11 | 2026-05-10 | TASK-053.2 completato: introdotta UI frontend `/admin/permissions` per matrice permessi ruolo tenant-aware con route/shell/sidebar coerenti, riuso API backend gia presenti `/api/admin/roles`, build/test frontend verdi; prossimo passo aggiornato a TASK-053.3 e backlog raffinato con nuovo TASK-057 dedicato al debito tecnico import ZIP. |
 | 2.10 | 2026-05-10 | TASK-053.1 completato: introdotta API backend `/api/admin/roles` per lista/dettaglio ruoli, lettura permessi assegnati e replace transazionale delle assegnazioni ruolo-permesso; prossimo passo aggiornato a TASK-053.2, suite mirata backend verde e suite completa interrotta per output massivo preesistente su `global_zip_codes`. |
 | 2.09 | 2026-05-10 | TASK-053 riorganizzato come epic/contenitore con subtask interni 053.1 backend role administration API, 053.2 frontend role permission matrix UI e 053.3 tenant user administration; prossimo passo operativo aggiornato a TASK-053.1 senza promuovere i subtask a milestone principali e mantenendo TASK-054/TASK-055 come task principali successivi. |
 | 2.08 | 2026-05-10 | TASK-052 completato: introdotta foundation permessi `SCOPE.RESOURCE.ACTION` con enum/helper backend, migration Flyway V18 e 100 permessi seed `system_permission=true`; prossimo passo aggiornato a TASK-053. |
