@@ -1,10 +1,10 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
 
 import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
 import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
@@ -371,66 +371,26 @@ export class MasterDataAdminComponent implements OnDestroy {
   }
 
   private resolveSaveError(error: unknown): string {
-    const extractedMessage = this.extractApiMessage(error);
-    if (extractedMessage) {
-      return extractedMessage;
-    }
-
-    return this.i18n.t('masterData.form.error.generic');
+    return resolveApiErrorMessage(this.i18n, error, {
+      fallbackKey: 'masterData.form.error.generic'
+    });
   }
 
   private resolveDeleteError(error: unknown, mode: MasterDataDeleteMode): string {
-    const extractedMessage = this.extractApiMessage(error);
-    if (extractedMessage) {
-      return extractedMessage;
-    }
-
-    const status = error instanceof HttpErrorResponse
-      ? error.status
-      : Number((error as { status?: unknown })?.status ?? 0);
-
     const keyPrefix = mode === 'physical' ? 'masterData.deletePhysical.error.' : 'masterData.delete.error.';
-
-    switch (status) {
-      case 400:
-        return this.i18n.t(`${keyPrefix}badRequest` as const);
-      case 401:
-        return this.i18n.t(`${keyPrefix}unauthorized` as const);
-      case 403:
-        return this.i18n.t(`${keyPrefix}forbidden` as const);
-      case 404:
-        return this.i18n.t(`${keyPrefix}notFound` as const);
-      case 409:
-        return this.i18n.t(`${keyPrefix}conflict` as const);
-      case 500:
-        return this.i18n.t(`${keyPrefix}server` as const);
-      default:
-        return this.i18n.t(mode === 'physical'
-          ? 'masterData.deletePhysical.error.generic'
-          : 'masterData.delete.error.generic'
-        );
-    }
-  }
-
-  private extractApiMessage(error: unknown): string | null {
-    const response = error instanceof HttpErrorResponse
-      ? error
-      : (error as { error?: { message?: unknown; validationErrors?: unknown } });
-    const validationErrors = response.error?.validationErrors;
-    if (validationErrors && typeof validationErrors === 'object') {
-      const messages = Object.values(validationErrors as Record<string, unknown>)
-        .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
-      if (messages.length > 0) {
-        return messages.join(' ');
+    return resolveApiErrorMessage(this.i18n, error, {
+      fallbackKey: mode === 'physical'
+        ? 'masterData.deletePhysical.error.generic'
+        : 'masterData.delete.error.generic',
+      statusKeys: {
+        400: `${keyPrefix}badRequest` as I18nKey,
+        401: `${keyPrefix}unauthorized` as I18nKey,
+        403: `${keyPrefix}forbidden` as I18nKey,
+        404: `${keyPrefix}notFound` as I18nKey,
+        409: `${keyPrefix}conflict` as I18nKey,
+        500: `${keyPrefix}server` as I18nKey
       }
-    }
-
-    const apiMessage = response.error?.message;
-    if (typeof apiMessage === 'string' && apiMessage.trim().length > 0) {
-      return apiMessage;
-    }
-
-    return null;
+    });
   }
 
   private executeDeleteAction(mode: MasterDataDeleteMode, row: MasterDataRow): void {

@@ -440,7 +440,7 @@ describe('UserAdministrationDetailComponent', () => {
     expect(service.deactivateUser).toHaveBeenCalledWith('user-1');
     expect(component.lifecycleSaving()).toBe(false);
     expect(errorSpy).toHaveBeenCalledWith(
-      'User lifecycle update failed.',
+      'Impossibile disattivare l utente.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })
     );
   });
@@ -491,7 +491,7 @@ describe('UserAdministrationDetailComponent', () => {
     expect(service.resetPassword).toHaveBeenCalled();
     expect(component.passwordSaving()).toBe(false);
     expect(errorSpy).toHaveBeenCalledWith(
-      'Password does not satisfy the current password policy.',
+      'Impossibile aggiornare la password utente.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })
     );
   });

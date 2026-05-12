@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
@@ -6,6 +5,7 @@ import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, sw
 import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
 import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
@@ -371,48 +371,26 @@ export class UserAdministrationComponent implements OnDestroy {
   }
 
   private resolveDeactivateErrorMessage(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      if (error.status === 401) {
-        return this.i18n.t('userAdministration.deactivate.error.unauthorized');
+    return resolveApiErrorMessage(this.i18n, error, {
+      fallbackKey: 'userAdministration.deactivate.error.generic',
+      statusKeys: {
+        401: 'userAdministration.deactivate.error.unauthorized',
+        403: 'userAdministration.deactivate.error.forbidden',
+        404: 'userAdministration.deactivate.error.notFound'
       }
-      if (error.status === 403) {
-        return this.i18n.t('userAdministration.deactivate.error.forbidden');
-      }
-      if (error.status === 404) {
-        return this.i18n.t('userAdministration.deactivate.error.notFound');
-      }
-
-      const apiMessage = error.error?.message;
-      if (typeof apiMessage === 'string' && apiMessage.trim().length > 0) {
-        return apiMessage;
-      }
-    }
-
-    return this.i18n.t('userAdministration.deactivate.error.generic');
+    });
   }
 
   private resolveDeleteErrorMessage(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      if (error.status === 401) {
-        return this.i18n.t('userAdministration.deletePhysical.error.unauthorized');
+    return resolveApiErrorMessage(this.i18n, error, {
+      fallbackKey: 'userAdministration.deletePhysical.error.generic',
+      statusKeys: {
+        401: 'userAdministration.deletePhysical.error.unauthorized',
+        403: 'userAdministration.deletePhysical.error.forbidden',
+        404: 'userAdministration.deletePhysical.error.notFound',
+        409: 'userAdministration.deletePhysical.error.conflict'
       }
-      if (error.status === 403) {
-        return this.i18n.t('userAdministration.deletePhysical.error.forbidden');
-      }
-      if (error.status === 404) {
-        return this.i18n.t('userAdministration.deletePhysical.error.notFound');
-      }
-      if (error.status === 409) {
-        return this.i18n.t('userAdministration.deletePhysical.error.conflict');
-      }
-
-      const apiMessage = error.error?.message;
-      if (typeof apiMessage === 'string' && apiMessage.trim().length > 0) {
-        return apiMessage;
-      }
-    }
-
-    return this.i18n.t('userAdministration.deletePhysical.error.generic');
+    });
   }
 
   private handleSuccessfulMutation(successKey: I18nKey): void {
