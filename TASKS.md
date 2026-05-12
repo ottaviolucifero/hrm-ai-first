@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.22
+Versione: 2.23
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -4017,11 +4017,51 @@ Fuori scope:
 - redesign del modello ZIP globale;
 - introduzione di logiche permessi utenti/ruoli.
 
-### TASK-058 - Implementare UI Employee management enterprise
+### TASK-058 - Riorganizzazione documentale backlog post TASK-057
 
 Stato: TODO
 
-### TASK-059 - Implementare Security Admin UI
+Obiettivo:
+
+- riallineare la pianificazione backlog dopo TASK-057 con numerazione coerente e riferimenti aggiornati.
+
+Include:
+
+- aggiornamento coordinato di `TASKS.md` e `ROADMAP.md`;
+- verifica riferimenti incrociati e range fasi;
+- conferma assenza di riferimenti incoerenti alla numerazione precedente.
+
+### TASK-059 - Master Data CRUD completion
+
+Stato: TODO
+
+Include:
+
+- analisi delle entità Master Data esistenti;
+- verifica delle azioni CRUD disponibili a livello tabella/frontend;
+- verifica degli endpoint backend CRUD mancanti;
+- completamento coerente dei CRUD solo dove previsto;
+- rispetto dei pattern esistenti per Master Data, DataTable, i18n, RBAC/authorities e permessi;
+- aggiornamento catalogo permessi/authorities e matrice permessi ruolo se vengono introdotti nuovi CRUD/azioni.
+
+### TASK-060 - i18n alert/messages consistency check
+
+Stato: TODO
+
+Include:
+
+- revisione messaggi alert/error/success/warning;
+- verifica i18n italiano/francese/inglese;
+- rimozione stringhe hardcoded in componenti/template;
+- controllo fallback lingua;
+- test frontend/build;
+- validazione manuale minima con cambio lingua in UI.
+
+### TASK-061 - Implementare UI Employee management enterprise
+
+Stato: TODO
+
+### TASK-062 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -4033,47 +4073,47 @@ Include:
 - ruoli
 - permessi
 
-### TASK-060 - Implementare UI Device governance
+### TASK-063 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-061 - Implementare UI PayrollDocument
+### TASK-064 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-062 - Implementare UI LeaveRequest
+### TASK-065 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-063 - Implementare UI HolidayCalendar
+### TASK-066 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-064 - Implementare Audit UI / compliance explorer
+### TASK-067 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-065 - Implementare UI disciplinary governance
+### TASK-068 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-066 - Implementare Platform Operator / Super Admin governance
+### TASK-069 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-067 - Implementare Cross-tenant admin UI
+### TASK-070 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-068 - Configurare logging, monitoring e observability enterprise
+### TASK-071 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-069 - Test integrato MVP enterprise completo
+### TASK-072 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -4083,9 +4123,10 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.23 | 2026-05-12 | Backlog riorganizzato da TASK-058: TASK-058 riallineato come task documentale, inseriti TASK-059 (Master Data CRUD completion) e TASK-060 (i18n alert/messages consistency check), task applicativi successivi rinumerati fino a TASK-072 e riferimenti interni aggiornati in coerenza. |
 | 2.22 | 2026-05-12 | TASK-057 chiuso come completato senza patch runtime: verificato che il commit `f9963b9` aveva gia isolato i test ZIP/CAP usando fixture piccola e mock nel controller, confermato che non esistono bootstrap massivi residui su `global_zip_codes`, test backend mirati verdi e prossimo passo riallineato a TASK-058. |
 | 2.21 | 2026-05-12 | TASK-056 completato: introdotto `ConfirmDialogComponent` shared, esteso `DataTableComponent` con conferme dichiarative e target dinamico, migrate le conferme tabellari di Master Data / Ruoli / Utenti, aggiornati i18n `it`/`fr`/`en` e test frontend/documentazione senza modifiche backend. |
-| 2.20 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 su ZIP import slitta a TASK-057 e i task successivi vengono rinumerati in modo coerente fino a TASK-069, senza modifiche a codice frontend/backend. |
+| 2.20 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 su ZIP import slitta a TASK-057 e i task successivi vengono rinumerati in modo coerente fino a TASK-072, senza modifiche a codice frontend/backend. |
 | 2.19 | 2026-05-12 | TASK-055 completato: introdotto enforcement RBAC reale lato backend con authority risolte da DB per request JWT, `default deny` sugli endpoint protetti, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato e nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica; test backend completi verdi e patch frontend minima allineata. |
 | 2.18 | 2026-05-11 | TASK-054 completato: introdotta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar visibile ma frozen senza permessi CRUD, guard route `view/create/update`, applicazione ai moduli `/master-data`, `/admin/roles`, `/admin/permissions`, `/admin/users`, test frontend verdi e nessuna modifica backend. |
 | 2.17 | 2026-05-11 | TASK-053.9 completato: chiarito e applicato il link opzionale `UserAccount.employee`, con account validi senza Employee, fallback email/tipo account, DTO admin espliciti `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato, nessuna migration e nessuna duplicazione `firstName`/`lastName` su `UserAccount`. |

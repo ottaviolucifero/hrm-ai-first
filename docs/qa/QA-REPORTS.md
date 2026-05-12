@@ -6,6 +6,30 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Documentation QA reports
 
+### TASK-058 - Backlog reorganization and renumbering from TASK-058
+
+- Data: 2026-05-12
+- Branch: `main`
+- Task: TASK-058 backlog reorganization + insertion TASK-059/TASK-060
+- Tipo verifica: aggiornamento documentale/backlog
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata: `AGENTS.md`, `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`, `docs/qa/QA-REPORTS.md`, `docs/ai-prompts/codex-prompt-governance.md`
+- Attivita eseguite:
+  - verificata la sequenza task da TASK-058 in avanti e la coerenza cross-file tra `TASKS.md` e `ROADMAP.md`;
+  - mantenuto `TASK-058` come task documentale di riorganizzazione backlog;
+  - inseriti `TASK-059` (Master Data CRUD completion) e `TASK-060` (i18n alert/messages consistency check) con scope esplicito;
+  - rinumerati in avanti i task applicativi successivi fino a `TASK-072`;
+  - aggiornati i range di fase in roadmap e le cronologie versione dei documenti aggiornati.
+- Test automatici eseguiti: non eseguiti; task solo documentale/backlog.
+- Modifiche codice: nessuna modifica backend/frontend applicativa.
+- Controlli richiesti:
+  - `git diff`
+  - ricerca testuale `TASK-059`
+  - ricerca testuale `TASK-060`
+  - ricerca eventuali riferimenti legacy incoerenti alla numerazione precedente
+- Regressioni trovate: nessuna regressione documentale rilevata.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-053.4 - Tenant user administration backlog split
 
 - Data: 2026-05-10

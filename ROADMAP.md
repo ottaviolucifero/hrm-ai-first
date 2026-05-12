@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.26
+Versione: 2.27
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -128,7 +128,9 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-058 Implementare UI Employee management enterprise
+- TASK-058 Riorganizzazione documentale backlog post TASK-057
+- TASK-059 Master Data CRUD completion
+- TASK-060 i18n alert/messages consistency check
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -234,7 +236,9 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-058 Implementare UI Employee management enterprise
+- TASK-058 Riorganizzazione documentale backlog post TASK-057
+- TASK-059 Master Data CRUD completion
+- TASK-060 i18n alert/messages consistency check
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -369,15 +373,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-064
+- TASK-036 -> TASK-068
 
 ### Fase 2I - Platform Operations
 
-- TASK-065 -> TASK-066
+- TASK-069 -> TASK-070
 
 ### Fase 3 - Stabilization
 
-- TASK-067 -> TASK-069
+- TASK-071 -> TASK-072
 
 ---
 
@@ -393,9 +397,10 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.27 | 2026-05-12 | Backlog riallineato da TASK-058: TASK-058 mantenuto documentale, aggiunti TASK-059 (Master Data CRUD completion) e TASK-060 (i18n alert/messages consistency check), task successivi rinumerati fino a TASK-072 e range fasi aggiornati (`2H: 036-068`, `2I: 069-070`, `3: 071-072`). |
 | 2.26 | 2026-05-12 | TASK-057 chiuso come completato senza patch runtime: verificato che il commit `f9963b9` aveva gia reso lightweight i test import ZIP/CAP, isolando `ItalianZipCodeImportServiceTests` dal CSV completo e `MasterDataGlobalControllerTests` dall import reale; nessun bootstrap massivo residuo rilevato su `global_zip_codes`, test backend mirati verdi e prossimo passo riallineato a TASK-058. |
 | 2.25 | 2026-05-12 | TASK-056 completato: aggiunto `ConfirmDialogComponent` shared, esteso `DataTableComponent` con conferme dichiarative e target dinamico, migrate le conferme tabellari di Master Data / Ruoli / Utenti, aggiornati i18n `it`/`fr`/`en`, test frontend verdi e prossimo passo riallineato a TASK-057. |
-| 2.24 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 ZIP slitta a TASK-057, i range roadmap vengono riallineati fino a TASK-069 e il prossimo passo viene aggiornato di conseguenza. |
+| 2.24 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 ZIP slitta a TASK-057, i range roadmap vengono riallineati fino a TASK-072 e il prossimo passo viene aggiornato di conseguenza. |
 | 2.23 | 2026-05-12 | TASK-055 completato: enforcement RBAC backend reale attivato con authority risolte da DB per request JWT, `default deny`, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato, nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica e suite backend/frontend verde; prossimo passo riallineato a TASK-056. |
 | 2.22 | 2026-05-11 | TASK-054 completato: aggiunta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar dei moduli sempre visibile ma frozen senza permessi CRUD, guard frontend sulle route protette e applicazione ai moduli amministrativi attivi; prossimo passo riallineato a TASK-055. |
 | 2.21 | 2026-05-11 | TASK-053.9 completato: formalizzato link opzionale `UserAccount` -> `Employee`, DTO admin espliciti per `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato e nessuna migration o duplicazione anagrafica su `UserAccount`; prossimo passo riallineato a TASK-054. |
