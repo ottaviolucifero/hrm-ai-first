@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.21
+Versione: 2.22
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -3982,7 +3982,7 @@ Fuori scope:
 
 ### TASK-057 - Finalize ZIP import foundation and test isolation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend technical debt
 
@@ -3996,6 +3996,20 @@ Scope:
 - isolare meglio i side effect non pertinenti nelle suite tecniche;
 - mantenere invariato il comportamento runtime applicativo salvo correzioni mirate e autorizzate;
 - migliorare osservabilita, gating o test ergonomics dell import ZIP foundation.
+
+Esito:
+
+- lo scope principale e gia stato coperto dal commit `f9963b9` (`test: make Italian ZIP import tests lightweight`), verificato come patch limitata ai test backend;
+- `ItalianZipCodeImportServiceTests` non usa piu il CSV completo da `8465` righe e lavora su fixture CSV piccola in memoria da `3` righe;
+- `MasterDataGlobalControllerTests` isola l import ZIP tramite `@MockitoBean ItalianZipCodeImportService` e non attiva piu l import reale del CSV di default;
+- non risultano bootstrap o test aggiuntivi che attivino import massivi automatici su `global_zip_codes`;
+- il comportamento runtime applicativo e rimasto invariato: `ItalianZipCodeImportService`, `MasterDataGlobalService` e gli endpoint dedicati continuano a usare il CSV reale solo su invocazione esplicita.
+
+Validazione:
+
+- ricerca repository su `ItalianZipCodeImportService`, `importDefaultCsv`, `analyzeDefaultCsv`, `global_zip_codes`, `italy-zip-codes.csv`, `8465`;
+- review del commit `f9963b9` e confronto con lo stato corrente dei test backend;
+- eseguito `cd backend && .\\mvnw.cmd -Dtest=ItalianZipCodeImportServiceTests,MasterDataGlobalControllerTests test` con `BUILD SUCCESS`.
 
 Fuori scope:
 
@@ -4069,6 +4083,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.22 | 2026-05-12 | TASK-057 chiuso come completato senza patch runtime: verificato che il commit `f9963b9` aveva gia isolato i test ZIP/CAP usando fixture piccola e mock nel controller, confermato che non esistono bootstrap massivi residui su `global_zip_codes`, test backend mirati verdi e prossimo passo riallineato a TASK-058. |
 | 2.21 | 2026-05-12 | TASK-056 completato: introdotto `ConfirmDialogComponent` shared, esteso `DataTableComponent` con conferme dichiarative e target dinamico, migrate le conferme tabellari di Master Data / Ruoli / Utenti, aggiornati i18n `it`/`fr`/`en` e test frontend/documentazione senza modifiche backend. |
 | 2.20 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 su ZIP import slitta a TASK-057 e i task successivi vengono rinumerati in modo coerente fino a TASK-069, senza modifiche a codice frontend/backend. |
 | 2.19 | 2026-05-12 | TASK-055 completato: introdotto enforcement RBAC reale lato backend con authority risolte da DB per request JWT, `default deny` sugli endpoint protetti, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato e nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica; test backend completi verdi e patch frontend minima allineata. |

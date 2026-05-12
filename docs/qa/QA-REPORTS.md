@@ -138,6 +138,51 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-057 - Finalize ZIP import foundation and test isolation
+
+- Data: 2026-05-12
+- Branch: `main`
+- Task: TASK-057 - Finalize ZIP import foundation and test isolation
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `backend/src/test/java/com/odsoftware/hrm/service/ItalianZipCodeImportServiceTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataGlobalControllerTests.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/ItalianZipCodeImportService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataGlobalService.java`
+  - `backend/src/main/resources/application-test.yml`
+  - commit `f9963b9`
+- Attivita eseguite:
+  - verificato che `TASK-057` fosse ancora `TODO` e circoscritto a technical debt/test isolation;
+  - ricercati tutti i riferimenti a `ItalianZipCodeImportService`, `importDefaultCsv`, `analyzeDefaultCsv`, `global_zip_codes`, `italy-zip-codes.csv` e `8465` in `backend/src/main` e `backend/src/test`;
+  - confrontato il commit `f9963b9 - test: make Italian ZIP import tests lightweight` con lo stato corrente;
+  - verificato che `ItalianZipCodeImportServiceTests` usi una fixture CSV piccola in memoria da `3` righe e non il CSV completo;
+  - verificato che `MasterDataGlobalControllerTests` mocki `ItalianZipCodeImportService` e non attivi piu l import reale del CSV di default;
+  - verificato che non esistano runner/bootstrap/test resources che attivino import automatici o insert/select massivi su `global_zip_codes`;
+  - verificato che il runtime applicativo sia invariato e che il CSV reale resti usato solo da chiamate esplicite ai metodi runtime `analyzeDefaultCsv()` e `importDefaultCsv()`.
+- Comandi eseguiti:
+  - `findstr /S /N /I "importDefaultCsv analyzeDefaultCsv global_zip_codes italy-zip-codes 8465" backend\src\test\java\*.java`
+  - `rg -n "ItalianZipCodeImportService|importDefaultCsv|analyzeDefaultCsv|global_zip_codes|italy-zip-codes|8465" backend/src/main backend/src/test`
+  - `git show --stat --oneline f9963b9`
+  - `git show f9963b9 -- backend/src/test/java`
+  - `cd backend && .\mvnw.cmd "-Dtest=ItalianZipCodeImportServiceTests,MasterDataGlobalControllerTests" test`
+- Esiti reali:
+  - ricerca test: solo `ItalianZipCodeImportServiceTests` e `MasterDataGlobalControllerTests` risultano direttamente collegati allo scope ZIP/CAP;
+  - `git show` conferma che `f9963b9` ha modificato solo i due file di test sopra indicati;
+  - test backend mirati: `BUILD SUCCESS`, `15` test eseguiti, `0` failure, `0` error, `0` skipped;
+  - nei log dei test mirati non emergono import da `8465` righe o bootstrap massivi su `global_zip_codes`, ma solo operazioni coerenti con la fixture piccola da `3` righe;
+  - warning non bloccanti presenti nei log Maven/JVM: Mockito self-attach / ByteBuddy dynamic agent.
+- Esito scope:
+  - PASS;
+  - lo scope principale del TASK-057 risulta gia coperto dal commit test-only `f9963b9`;
+  - non sono emerse modifiche runtime aggiuntive necessarie;
+  - il task e stato chiuso come verifica e hardening documentale.
+- Limiti/note:
+  - il comando Maven con `-Dtest=...` ha prodotto in coda un messaggio shell residuale `'D' n’est pas reconnu...`, ma la suite e terminata con `BUILD SUCCESS`; il problema e di quoting shell, non di test failure;
+  - non e stata rieseguita l intera suite backend perche il task richiedeva isolamento e verifica mirata dello scope ZIP/CAP.
+- Stato finale: PASS
+
 ### TASK-055 corrective patch - user hard delete and separate deactivate endpoint
 
 - Data: 2026-05-12

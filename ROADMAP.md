@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.25
+Versione: 2.26
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -124,10 +124,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-054 Frontend permission summary and visibility UX foundation
 - TASK-055 Backend RBAC enforcement foundation
 - TASK-056 Shared confirmation dialog foundation
+- TASK-057 Finalize ZIP import foundation and test isolation
 
 ### Prossimo passo
 
-- TASK-057 Finalize ZIP import foundation and test isolation
+- TASK-058 Implementare UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -233,7 +234,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-057 Finalize ZIP import foundation and test isolation
+- TASK-058 Implementare UI Employee management enterprise
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -392,6 +393,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.26 | 2026-05-12 | TASK-057 chiuso come completato senza patch runtime: verificato che il commit `f9963b9` aveva gia reso lightweight i test import ZIP/CAP, isolando `ItalianZipCodeImportServiceTests` dal CSV completo e `MasterDataGlobalControllerTests` dall import reale; nessun bootstrap massivo residuo rilevato su `global_zip_codes`, test backend mirati verdi e prossimo passo riallineato a TASK-058. |
 | 2.25 | 2026-05-12 | TASK-056 completato: aggiunto `ConfirmDialogComponent` shared, esteso `DataTableComponent` con conferme dichiarative e target dinamico, migrate le conferme tabellari di Master Data / Ruoli / Utenti, aggiornati i18n `it`/`fr`/`en`, test frontend verdi e prossimo passo riallineato a TASK-057. |
 | 2.24 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 ZIP slitta a TASK-057, i range roadmap vengono riallineati fino a TASK-069 e il prossimo passo viene aggiornato di conseguenza. |
 | 2.23 | 2026-05-12 | TASK-055 completato: enforcement RBAC backend reale attivato con authority risolte da DB per request JWT, `default deny`, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato, nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica e suite backend/frontend verde; prossimo passo riallineato a TASK-056. |
