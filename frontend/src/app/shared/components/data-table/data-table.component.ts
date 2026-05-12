@@ -4,8 +4,11 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { I18nKey } from '../../../core/i18n/i18n.messages';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../button/app-button.component';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogConfig } from '../confirm-dialog/confirm-dialog.models';
 import {
   DataTableAction,
+  DataTableActionConfirmation,
   DataTableColumn,
   DataTableColumnAlign,
   DataTableColumnSticky,
@@ -16,9 +19,15 @@ import {
   DataTableRow
 } from './data-table.models';
 
+interface PendingDataTableConfirmation {
+  readonly action: DataTableAction;
+  readonly row: DataTableRow;
+  readonly config: ConfirmDialogConfig;
+}
+
 @Component({
   selector: 'app-data-table',
-  imports: [NgStyle, AppButtonComponent],
+  imports: [NgStyle, AppButtonComponent, ConfirmDialogComponent],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.scss'
 })
@@ -54,6 +63,8 @@ export class DataTableComponent {
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();
   @Output() rowAction = new EventEmitter<DataTableRowActionEvent>();
+
+  protected pendingConfirmation: PendingDataTableConfirmation | null = null;
 
   protected visibleColumns(): readonly DataTableColumn[] {
     return this.columns.filter((column) => column.visible !== false);
@@ -250,7 +261,33 @@ export class DataTableComponent {
       return;
     }
 
+    if (action.confirmation) {
+      this.pendingConfirmation = {
+        action,
+        row,
+        config: this.resolveConfirmationConfig(action.confirmation, row)
+      };
+      return;
+    }
+
     this.rowAction.emit({ action, row });
+  }
+
+  protected cancelPendingConfirmation(): void {
+    this.pendingConfirmation = null;
+  }
+
+  protected confirmPendingConfirmation(): void {
+    const pending = this.pendingConfirmation;
+    if (!pending) {
+      return;
+    }
+
+    this.pendingConfirmation = null;
+    this.rowAction.emit({
+      action: pending.action,
+      row: pending.row
+    });
   }
 
   protected rowActionIconClass(action: DataTableAction): readonly string[] {
@@ -284,6 +321,33 @@ export class DataTableComponent {
 
   private columnType(column: DataTableColumn): DataTableColumnType {
     return column.type ?? 'text';
+  }
+
+  private resolveConfirmationConfig(
+    confirmation: DataTableActionConfirmation<DataTableRow>,
+    row: DataTableRow
+  ): ConfirmDialogConfig {
+    return {
+      titleKey: confirmation.titleKey,
+      messageKey: confirmation.messageKey,
+      confirmLabelKey: confirmation.confirmLabelKey,
+      cancelLabelKey: confirmation.cancelLabelKey,
+      severity: confirmation.severity,
+      mode: confirmation.mode,
+      targetLabelKey: confirmation.targetLabelKey,
+      targetValue: this.resolveConfirmationTargetValue(confirmation.targetValue, row)
+    };
+  }
+
+  private resolveConfirmationTargetValue(
+    targetValue: DataTableActionConfirmation<DataTableRow>['targetValue'],
+    row: DataTableRow
+  ): string | number | null {
+    if (typeof targetValue === 'function') {
+      return targetValue(row);
+    }
+
+    return targetValue ?? null;
   }
 
   private formatDateValue(value: string): string {

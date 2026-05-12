@@ -91,6 +91,33 @@ describe('RoleAdministrationComponent', () => {
     });
   });
 
+  it('opens the shared confirmation dialog before deleting a custom role', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const customRoleButtons = rows[1].querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+
+    customRoleButtons[3].click();
+    fixture.detectChanges();
+
+    expect(service.deleteRole).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Conferma eliminazione ruolo');
+    expect(fixture.nativeElement.textContent).toContain('HR editor');
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Elimina')) as HTMLButtonElement;
+
+    confirmButton.click();
+    fixture.detectChanges();
+
+    expect(service.deleteRole).toHaveBeenCalledWith('role-custom');
+  });
+
   it('reports load errors through the shared table error state', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 

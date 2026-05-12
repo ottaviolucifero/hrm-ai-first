@@ -109,19 +109,22 @@ describe('UserAdministrationComponent', () => {
     const service = createService();
     const fixture = await createFixture(service);
     fixture.detectChanges();
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
-    const component = fixture.componentInstance as unknown as {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-    };
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const actionButtons = rows[0].querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    component.handleRowAction({
-      action: { id: 'deactivate' },
-      row: { id: 'user-1' }
-    });
+    actionButtons[2].click();
+    fixture.detectChanges();
 
-    expect(confirmSpy).toHaveBeenCalledWith('Vuoi disattivare questo utente?');
+    expect(fixture.nativeElement.textContent).toContain('Conferma disattivazione utente');
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Disattiva')) as HTMLButtonElement;
+
+    confirmButton.click();
+
     expect(service.deactivateUser).toHaveBeenCalledWith('user-1');
     expect(service.findUsers).toHaveBeenCalledTimes(2);
     expect(successSpy).toHaveBeenCalledWith(
@@ -136,15 +139,17 @@ describe('UserAdministrationComponent', () => {
     const service = createService();
     const fixture = await createFixture(service);
     fixture.detectChanges();
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
-    const component = fixture.componentInstance as unknown as {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-    };
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const actionButtons = rows[0].querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    component.handleRowAction({
-      action: { id: 'deactivate' },
-      row: { id: 'user-1' }
-    });
+    actionButtons[2].click();
+    fixture.detectChanges();
+
+    const cancelButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Annulla')) as HTMLButtonElement;
+
+    cancelButton.click();
 
     expect(service.deactivateUser).not.toHaveBeenCalled();
     expect(service.findUsers).toHaveBeenCalledTimes(1);
@@ -158,17 +163,19 @@ describe('UserAdministrationComponent', () => {
     });
     const fixture = await createFixture(service);
     fixture.detectChanges();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
-    const component = fixture.componentInstance as unknown as {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-    };
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const actionButtons = rows[0].querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    component.handleRowAction({
-      action: { id: 'deactivate' },
-      row: { id: 'user-1' }
-    });
+    actionButtons[2].click();
+    fixture.detectChanges();
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Disattiva')) as HTMLButtonElement;
+
+    confirmButton.click();
 
     expect(errorSpy).toHaveBeenCalledWith(
       'Sessione non valida. Effettua di nuovo l accesso.',
@@ -184,17 +191,19 @@ describe('UserAdministrationComponent', () => {
     });
     const fixture = await createFixture(service);
     fixture.detectChanges();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
-    const component = fixture.componentInstance as unknown as {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-    };
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const actionButtons = rows[0].querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    component.handleRowAction({
-      action: { id: 'deactivate' },
-      row: { id: 'user-1' }
-    });
+    actionButtons[2].click();
+    fixture.detectChanges();
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Disattiva')) as HTMLButtonElement;
+
+    confirmButton.click();
 
     expect(errorSpy).toHaveBeenCalledWith(
       'Non sei autorizzato a disattivare questo utente.',
@@ -210,17 +219,19 @@ describe('UserAdministrationComponent', () => {
     });
     const fixture = await createFixture(service);
     fixture.detectChanges();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
-    const component = fixture.componentInstance as unknown as {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-    };
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const actionButtons = rows[0].querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    component.handleRowAction({
-      action: { id: 'deactivate' },
-      row: { id: 'user-1' }
-    });
+    actionButtons[2].click();
+    fixture.detectChanges();
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Disattiva')) as HTMLButtonElement;
+
+    confirmButton.click();
 
     expect(errorSpy).toHaveBeenCalledWith(
       'L utente selezionato non esiste piu.',
@@ -234,21 +245,22 @@ describe('UserAdministrationComponent', () => {
     const service = createService();
     const fixture = await createFixture(service);
     fixture.detectChanges();
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
-    const component = fixture.componentInstance as unknown as {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-    };
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const actionButtons = rows[0].querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    component.handleRowAction({
-      action: { id: 'deletePhysical' },
-      row: { id: 'user-1' }
-    });
+    actionButtons[3].click();
+    fixture.detectChanges();
 
-    expect(confirmSpy).toHaveBeenCalledWith(
-      'Vuoi cancellare definitivamente questo utente? L operazione riuscira solo se non esistono riferimenti collegati.'
-    );
+    expect(fixture.nativeElement.textContent).toContain('Conferma cancellazione definitiva utente');
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Cancella definitivamente')) as HTMLButtonElement;
+
+    confirmButton.click();
+
     expect(service.deleteUser).toHaveBeenCalledWith('user-1');
     expect(service.findUsers).toHaveBeenCalledTimes(2);
     expect(successSpy).toHaveBeenCalledWith(
@@ -265,17 +277,19 @@ describe('UserAdministrationComponent', () => {
     });
     const fixture = await createFixture(service);
     fixture.detectChanges();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
-    const component = fixture.componentInstance as unknown as {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-    };
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+    const actionButtons = rows[0].querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
 
-    component.handleRowAction({
-      action: { id: 'deletePhysical' },
-      row: { id: 'user-1' }
-    });
+    actionButtons[3].click();
+    fixture.detectChanges();
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Cancella definitivamente')) as HTMLButtonElement;
+
+    confirmButton.click();
 
     expect(errorSpy).toHaveBeenCalledWith(
       'Utente non cancellabile perche gia referenziato. Puoi disattivarlo.',

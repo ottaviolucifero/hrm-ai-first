@@ -86,46 +86,6 @@
         (pageSizeChange)="updatePageSize($event)" />
     </section>
 
-    @if (isDeleteConfirmOpen()) {
-      <div class="master-data-modal-overlay" role="presentation">
-        <div class="master-data-modal master-data-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="master-data-delete-title">
-          <section class="kt-card master-data-confirm-panel">
-            <div class="kt-card-header master-data-form-header">
-              <h2 id="master-data-delete-title" class="kt-card-title text-lg">
-                {{ i18n.t(deleteConfirmTitleKey()) }}
-              </h2>
-            </div>
-
-            <div class="kt-card-content master-data-confirm-body">
-              <p class="master-data-confirm-message">{{ i18n.t(deleteConfirmMessageKey()) }}</p>
-
-              @if (deleteTargetLabel(); as targetLabel) {
-                <p class="master-data-confirm-target">{{ targetLabel }}</p>
-              }
-
-              <div class="master-data-form-actions">
-                <app-button
-                  variant="destructive"
-                  size="sm"
-                  icon="ki-filled ki-trash"
-                  [label]="i18n.t(deleteConfirmActionKey())"
-                  [loadingLabel]="i18n.t(deleteProcessingMessageKey())"
-                  [loading]="deleting()"
-                  [disabled]="deleting()"
-                  (pressed)="confirmDelete()" />
-                <app-button
-                  variant="secondary"
-                  size="sm"
-                  [label]="i18n.t('masterData.form.cancel')"
-                  [disabled]="deleting()"
-                  (pressed)="closeDeleteConfirm()" />
-              </div>
-            </div>
-          </section>
-        </div>
-      </div>
-    }
-
     @if (isFormOpen()) {
       <div class="master-data-modal-overlay" role="presentation">
         <div class="master-data-modal" role="dialog" aria-modal="true" aria-labelledby="master-data-form-title">

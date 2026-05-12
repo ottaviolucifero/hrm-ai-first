@@ -3,6 +3,10 @@
   font-family: inherit;
 }
 
+:host-context(body) {
+  overflow-anchor: none;
+}
+
 .data-table-state {
   display: flex;
   flex-direction: column;

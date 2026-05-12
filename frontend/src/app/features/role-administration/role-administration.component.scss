@@ -114,27 +114,6 @@
   width: min(100%, 44rem);
 }
 
-.role-admin-confirm-modal {
-  max-width: 30rem;
-}
-
-.role-admin-confirm-panel,
-.role-admin-confirm-body {
-  display: grid;
-  gap: 1rem;
-}
-
-.role-admin-confirm-target {
-  color: var(--color-text-default, #0f172a);
-  font-weight: 600;
-}
-
-.role-admin-form-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-}
-
 @media (max-width: 960px) {
   .role-admin-page-header,
   .role-admin-list-toolbar {

@@ -102,19 +102,13 @@ export class RoleAdministrationComponent implements OnDestroy {
   protected readonly actingRoleId = signal<string | null>(null);
   protected readonly formMode = signal<MasterDataFormMode | null>(null);
   protected readonly formRole = signal<RoleAdministrationRoleListItem | null>(null);
-  protected readonly pendingDeleteRole = signal<RoleAdministrationRoleListItem | null>(null);
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly isFormOpen = computed(() => this.formMode() !== null);
-  protected readonly isDeleteConfirmOpen = computed(() => this.pendingDeleteRole() !== null);
   protected readonly openFormMode = computed<MasterDataFormMode>(() => this.formMode() ?? 'view');
   protected readonly formFields = computed(() => this.buildFormFields(this.openFormMode()));
   protected readonly tableEmptyMessageKey = computed<I18nKey>(
     () => this.appliedSearch() ? 'roleAdministration.table.noResults' : 'roleAdministration.table.empty'
   );
-  protected readonly deleteTargetLabel = computed(() => {
-    const role = this.pendingDeleteRole();
-    return role ? role.name : '';
-  });
   protected readonly protectedHint = computed(() => this.i18n.t('roleAdministration.protectedHint'));
   protected readonly rowActions = computed<readonly RoleAdministrationRowAction[]>(() => [
     {
@@ -141,6 +135,15 @@ export class RoleAdministrationComponent implements OnDestroy {
       id: 'deactivate',
       labelKey: 'roleAdministration.actions.deactivate',
       tone: 'danger',
+      confirmation: {
+        titleKey: 'roleAdministration.deactivate.confirmTitle',
+        messageKey: 'roleAdministration.deactivate.confirmMessage',
+        confirmLabelKey: 'roleAdministration.deactivate.confirmAction',
+        cancelLabelKey: 'masterData.form.cancel',
+        severity: 'warning',
+        targetLabelKey: 'confirmDialog.target.selectedEntity',
+        targetValue: (row) => this.toRoleRow(row).name
+      },
       visible: (row) => {
         const role = this.toRoleRow(row);
         return role.systemRole !== true && role.active === true;
@@ -151,6 +154,15 @@ export class RoleAdministrationComponent implements OnDestroy {
       id: 'deletePhysical',
       labelKey: 'masterData.actions.deletePhysical',
       tone: 'danger',
+      confirmation: {
+        titleKey: 'roleAdministration.delete.confirmTitle',
+        messageKey: 'roleAdministration.delete.confirmMessage',
+        confirmLabelKey: 'roleAdministration.delete.confirmAction',
+        cancelLabelKey: 'masterData.form.cancel',
+        severity: 'danger',
+        targetLabelKey: 'confirmDialog.target.selectedEntity',
+        targetValue: (row) => this.toRoleRow(row).name
+      },
       visible: (row) => this.toRoleRow(row).systemRole !== true,
       disabled: (row) => !this.modulePermissions().canDelete || this.isBusy(this.toRoleRow(row))
     }
@@ -217,7 +229,7 @@ export class RoleAdministrationComponent implements OnDestroy {
     }
 
     if (event.action.id === 'deletePhysical') {
-      this.pendingDeleteRole.set(role);
+      this.deleteRole(role);
     }
   }
 
@@ -269,40 +281,6 @@ export class RoleAdministrationComponent implements OnDestroy {
   protected closeForm(): void {
     this.formMode.set(null);
     this.formRole.set(null);
-  }
-
-  protected closeDeleteConfirm(): void {
-    this.pendingDeleteRole.set(null);
-  }
-
-  protected confirmDelete(): void {
-    const role = this.pendingDeleteRole();
-    if (!role) {
-      return;
-    }
-
-    this.deleting.set(true);
-    this.deleteSubscription?.unsubscribe();
-    this.deleteSubscription = this.roleAdministrationService.deleteRole(role.id)
-      .pipe(finalize(() => this.deleting.set(false)))
-      .subscribe({
-        next: () => {
-          if (this.rows().length === 1 && this.pageIndex() > 0) {
-            this.pageIndex.update((page) => Math.max(0, page - 1));
-          }
-          this.notificationService.success(this.i18n.t('roleAdministration.feedback.deleteSuccess'), {
-            titleKey: 'alert.title.success'
-          });
-          this.closeDeleteConfirm();
-          this.loadRoles();
-        },
-        error: (error) => {
-          this.notificationService.error(this.resolveApiMessage(error, 'roleAdministration.errors.deleteGeneric'), {
-            titleKey: 'alert.title.danger',
-            dismissible: true
-          });
-        }
-      });
   }
 
   protected goToPreviousPage(): void {
@@ -395,6 +373,30 @@ export class RoleAdministrationComponent implements OnDestroy {
               dismissible: true
             }
           );
+        }
+      });
+  }
+
+  private deleteRole(role: RoleAdministrationRoleListItem): void {
+    this.deleting.set(true);
+    this.deleteSubscription?.unsubscribe();
+    this.deleteSubscription = this.roleAdministrationService.deleteRole(role.id)
+      .pipe(finalize(() => this.deleting.set(false)))
+      .subscribe({
+        next: () => {
+          if (this.rows().length === 1 && this.pageIndex() > 0) {
+            this.pageIndex.update((page) => Math.max(0, page - 1));
+          }
+          this.notificationService.success(this.i18n.t('roleAdministration.feedback.deleteSuccess'), {
+            titleKey: 'alert.title.success'
+          });
+          this.loadRoles();
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveApiMessage(error, 'roleAdministration.errors.deleteGeneric'), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
         }
       });
   }

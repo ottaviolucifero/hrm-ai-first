@@ -121,12 +121,30 @@ export class UserAdministrationComponent implements OnDestroy {
       id: 'deactivate',
       labelKey: 'userAdministration.lifecycle.actions.deactivate',
       tone: 'danger',
+      confirmation: {
+        titleKey: 'userAdministration.lifecycle.deactivate.confirmTitle',
+        messageKey: 'userAdministration.lifecycle.deactivate.confirmMessage',
+        confirmLabelKey: 'userAdministration.lifecycle.deactivate.confirmAction',
+        cancelLabelKey: 'masterData.form.cancel',
+        severity: 'warning',
+        targetLabelKey: 'confirmDialog.target.selectedEntity',
+        targetValue: (row) => this.confirmationTarget(row as UserAdministrationUserListItem)
+      },
       disabled: () => this.loading() || this.deleting() || !this.modulePermissions().canUpdate
     },
     {
       id: 'deletePhysical',
       labelKey: 'userAdministration.actions.deletePhysical',
       tone: 'danger',
+      confirmation: {
+        titleKey: 'userAdministration.deletePhysical.confirmTitle',
+        messageKey: 'userAdministration.deletePhysical.confirmMessage',
+        confirmLabelKey: 'userAdministration.deletePhysical.confirmAction',
+        cancelLabelKey: 'masterData.form.cancel',
+        severity: 'danger',
+        targetLabelKey: 'confirmDialog.target.selectedEntity',
+        targetValue: (row) => this.confirmationTarget(row as UserAdministrationUserListItem)
+      },
       disabled: () => this.loading() || this.deleting() || !this.modulePermissions().canDelete
     }
   ]);
@@ -191,12 +209,12 @@ export class UserAdministrationComponent implements OnDestroy {
     }
 
     if (event.action.id === 'deactivate') {
-      this.deactivateUser(user);
+      this.deactivateUser(user.id);
       return;
     }
 
     if (event.action.id === 'deletePhysical') {
-      this.deleteUserPhysically(user);
+      this.deleteUserPhysically(user.id);
     }
   }
 
@@ -308,19 +326,14 @@ export class UserAdministrationComponent implements OnDestroy {
     return displayName || this.i18n.t('userAdministration.values.employeeLinked');
   }
 
-  private deactivateUser(user: UserAdministrationUserListItem): void {
+  private deactivateUser(userId: string): void {
     if (this.deleting()) {
-      return;
-    }
-
-    const shouldDeactivate = window.confirm(this.i18n.t('userAdministration.lifecycle.deactivate.confirmMessage'));
-    if (!shouldDeactivate) {
       return;
     }
 
     this.deleting.set(true);
     this.deleteSubscription?.unsubscribe();
-    this.deleteSubscription = this.userAdministrationService.deactivateUser(user.id)
+    this.deleteSubscription = this.userAdministrationService.deactivateUser(userId)
       .pipe(finalize(() => this.deleting.set(false)))
       .subscribe({
         next: () => {
@@ -335,19 +348,14 @@ export class UserAdministrationComponent implements OnDestroy {
       });
   }
 
-  private deleteUserPhysically(user: UserAdministrationUserListItem): void {
+  private deleteUserPhysically(userId: string): void {
     if (this.deleting()) {
-      return;
-    }
-
-    const shouldDelete = window.confirm(this.i18n.t('userAdministration.deletePhysical.confirmMessage'));
-    if (!shouldDelete) {
       return;
     }
 
     this.deleting.set(true);
     this.deleteSubscription?.unsubscribe();
-    this.deleteSubscription = this.userAdministrationService.deleteUser(user.id)
+    this.deleteSubscription = this.userAdministrationService.deleteUser(userId)
       .pipe(finalize(() => this.deleting.set(false)))
       .subscribe({
         next: () => {
@@ -415,5 +423,14 @@ export class UserAdministrationComponent implements OnDestroy {
       titleKey: 'alert.title.success'
     });
     this.loadUsers();
+  }
+
+  private confirmationTarget(user: UserAdministrationUserListItem): string {
+    const displayName = user.displayName.trim();
+    if (displayName.length > 0) {
+      return displayName;
+    }
+
+    return user.email.trim();
   }
 }

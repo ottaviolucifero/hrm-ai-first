@@ -1736,5 +1736,44 @@ Nota operativa:
 - Limiti note: il controllo toggle mobile sidebar non è stato introdotto, coerente con vincoli del task e stato attuale della shell (sidebar desktop/mobile gestita separatamente).
 - Stato finale: PASS WITH NOTES
 
+### TASK-056 - Shared confirmation dialog foundation
+
+- Data: 2026-05-12
+- Branch: `task-056-shared-confirmation-dialog-docs`
+- Task: TASK-056 - Shared confirmation dialog foundation
+- Agente/Modello usato: GPT-5.5
+- Allegati UX analizzati:
+  - `Conferma eliminazione.html`
+  - `conferma inserimento.html`
+  - `errore di sistema.html`
+  - `conferma eliminazione.png`
+  - `conferma inserimento.png`
+  - `errore di sistema.png`
+- Aree/file verificati:
+  - `frontend/src/app/shared/components/confirm-dialog`
+  - `frontend/src/app/shared/components/data-table`
+  - `frontend/src/app/features/master-data`
+  - `frontend/src/app/features/role-administration`
+  - `frontend/src/app/features/user-administration`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - build frontend OK;
+  - prima esecuzione `npm.cmd test` KO per una sola asserzione nel nuovo `confirm-dialog.component.spec.ts` che verificava l uppercase visuale nel `textContent`; corretta l asserzione, rieseguiti i test;
+  - seconda esecuzione `npm.cmd test` OK, 30 file di test passed, 200 test passed.
+- Verifiche funzionali:
+  - introdotto `ConfirmDialogComponent` shared generico con severita `info/success/warning/danger/error`, target opzionale e modalita `message`;
+  - `DataTableComponent` esteso con configurazione `confirmation` e target dinamico da riga, senza rompere le row actions non confermate;
+  - migrate le conferme tabellari locali di Master Data, Role Administration e User Administration al nuovo flusso shared;
+  - nessuna modifica backend eseguita.
+- Limiti/note:
+  - il popup shared innescato dal DataTable conferma e poi emette l azione; non resta aperto durante la mutation async, coerentemente con lo scope che assegna al DataTable sola orchestrazione di apertura/conferma/annulla/emissione;
+  - QA manuale browser non eseguita in questa sessione CLI.
+- Stato finale: PASS
+
 
 

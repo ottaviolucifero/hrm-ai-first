@@ -72,8 +72,6 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly formValue = signal<MasterDataRow | null>(null);
   protected readonly saving = signal(false);
   protected readonly deleting = signal(false);
-  protected readonly pendingDeleteRow = signal<MasterDataRow | null>(null);
-  protected readonly pendingDeleteMode = signal<MasterDataDeleteMode | null>(null);
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly formConfig = computed<MasterDataFormConfig | null>(() => this.selectedResource().form ?? null);
   protected readonly formFields = computed(() => this.formConfig()?.fields ?? []);
@@ -85,23 +83,6 @@ export class MasterDataAdminComponent implements OnDestroy {
     () => this.supportsCreate() && this.modulePermissions().canCreate
   );
   protected readonly isFormOpen = computed(() => this.formMode() !== null && this.formConfig() !== null);
-  protected readonly isDeleteConfirmOpen = computed(
-    () => this.pendingDeleteRow() !== null && this.pendingDeleteMode() !== null
-  );
-  protected readonly deleteTargetLabel = computed(() => this.describeRow(this.pendingDeleteRow()));
-  protected readonly isDeletePhysical = computed(() => this.pendingDeleteMode() === 'physical');
-  protected readonly deleteConfirmTitleKey = computed(
-    () => this.isDeletePhysical() ? 'masterData.deletePhysical.confirmTitle' : 'masterData.delete.confirmTitle'
-  );
-  protected readonly deleteConfirmMessageKey = computed(
-    () => this.isDeletePhysical() ? 'masterData.deletePhysical.confirmMessage' : 'masterData.delete.confirmMessage'
-  );
-  protected readonly deleteConfirmActionKey = computed(
-    () => this.isDeletePhysical() ? 'masterData.deletePhysical.confirmAction' : 'masterData.delete.confirmAction'
-  );
-  protected readonly deleteProcessingMessageKey = computed(
-    () => this.isDeletePhysical() ? 'masterData.deletePhysical.processing' : 'masterData.delete.processing'
-  );
   protected readonly selectedCategory = computed(
     () => this.categories.find((category) => category.id === this.selectedCategoryId()) ?? this.categories[0]
   );
@@ -139,7 +120,6 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.selectedCategoryId.set(nextCategory.id);
     this.selectedResourceId.set(nextCategory.resources[0].id);
     this.closeForm();
-    this.closeDeleteConfirm();
     this.pageIndex.set(0);
     this.loadSelectedResource();
   }
@@ -147,7 +127,6 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected updateResource(event: Event): void {
     this.selectedResourceId.set((event.target as HTMLSelectElement).value);
     this.closeForm();
-    this.closeDeleteConfirm();
     this.pageIndex.set(0);
     this.loadSelectedResource();
   }
@@ -186,11 +165,11 @@ export class MasterDataAdminComponent implements OnDestroy {
     }
 
     if (event.action.id === 'deletePhysical') {
-      this.openDeleteConfirm('physical', event.row);
+      this.executeDeleteAction('physical', event.row);
     }
 
     if (event.action.id === 'deactivate') {
-      this.openDeleteConfirm('deactivate', event.row);
+      this.executeDeleteAction('deactivate', event.row);
     }
   }
 
@@ -251,59 +230,9 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.closeForm();
   }
 
-  protected confirmDelete(): void {
-    const row = this.pendingDeleteRow();
-    const rowId = typeof row?.['id'] === 'string' ? row['id'] as string : null;
-    const mode = this.pendingDeleteMode();
-
-    if (!rowId || !mode) {
-      this.notificationService.error(this.i18n.t('masterData.delete.error.generic'), {
-        titleKey: 'alert.title.danger',
-        dismissible: true
-      });
-      return;
-    }
-
-    this.deleting.set(true);
-    this.deleteSubscription?.unsubscribe();
-    const deletion$ = mode === 'physical'
-      ? this.masterDataService.deletePhysicalRow(this.selectedResource(), rowId)
-      : this.masterDataService.deleteRow(this.selectedResource(), rowId);
-
-    this.deleteSubscription = deletion$
-      .pipe(finalize(() => this.deleting.set(false)))
-      .subscribe({
-        next: () => {
-          if (this.rows().length === 1 && this.pageIndex() > 0) {
-            this.pageIndex.update((page) => Math.max(0, page - 1));
-          }
-
-          this.notificationService.success(
-            mode === 'physical'
-              ? this.i18n.t('masterData.deletePhysical.feedback.success')
-              : this.i18n.t('masterData.delete.feedback.success'),
-            { titleKey: 'alert.title.success' }
-          );
-          this.closeDeleteConfirm();
-          this.loadSelectedResource();
-        },
-        error: (error) => {
-          this.notificationService.error(this.resolveDeleteError(error, mode), {
-            titleKey: 'alert.title.danger',
-            dismissible: true
-          });
-        }
-      });
-  }
-
   protected closeForm(): void {
     this.formMode.set(null);
     this.formValue.set(null);
-  }
-
-  protected closeDeleteConfirm(): void {
-    this.pendingDeleteRow.set(null);
-    this.pendingDeleteMode.set(null);
   }
 
   protected goToPreviousPage(): void {
@@ -393,15 +322,8 @@ export class MasterDataAdminComponent implements OnDestroy {
       return;
     }
 
-    this.closeDeleteConfirm();
     this.formMode.set(mode);
     this.formValue.set(row);
-  }
-
-  private openDeleteConfirm(mode: MasterDataDeleteMode, row: MasterDataRow): void {
-    this.closeForm();
-    this.pendingDeleteMode.set(mode);
-    this.pendingDeleteRow.set(row);
   }
 
   private buildMutationPayload(formValue: Record<string, unknown>, tenantId: string): MasterDataMutationRequest {
@@ -476,6 +398,48 @@ export class MasterDataAdminComponent implements OnDestroy {
     return null;
   }
 
+  private executeDeleteAction(mode: MasterDataDeleteMode, row: MasterDataRow): void {
+    const rowId = typeof row['id'] === 'string' ? row['id'] as string : null;
+
+    if (!rowId) {
+      this.notificationService.error(this.i18n.t('masterData.delete.error.generic'), {
+        titleKey: 'alert.title.danger',
+        dismissible: true
+      });
+      return;
+    }
+
+    this.deleting.set(true);
+    this.deleteSubscription?.unsubscribe();
+    const deletion$ = mode === 'physical'
+      ? this.masterDataService.deletePhysicalRow(this.selectedResource(), rowId)
+      : this.masterDataService.deleteRow(this.selectedResource(), rowId);
+
+    this.deleteSubscription = deletion$
+      .pipe(finalize(() => this.deleting.set(false)))
+      .subscribe({
+        next: () => {
+          if (this.rows().length === 1 && this.pageIndex() > 0) {
+            this.pageIndex.update((page) => Math.max(0, page - 1));
+          }
+
+          this.notificationService.success(
+            mode === 'physical'
+              ? this.i18n.t('masterData.deletePhysical.feedback.success')
+              : this.i18n.t('masterData.delete.feedback.success'),
+            { titleKey: 'alert.title.success' }
+          );
+          this.loadSelectedResource();
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveDeleteError(error, mode), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
   private decorateRowAction(action: MasterDataRowActionEvent['action']) {
     const baseDisabled = action.disabled;
 
@@ -513,24 +477,5 @@ export class MasterDataAdminComponent implements OnDestroy {
       default:
         return true;
     }
-  }
-
-  private describeRow(row: MasterDataRow | null): string {
-    if (!row) {
-      return '';
-    }
-
-    const name = row['name'];
-    if (typeof name === 'string' && name.trim().length > 0) {
-      return name;
-    }
-
-    const code = row['code'];
-    if (typeof code === 'string' && code.trim().length > 0) {
-      return code;
-    }
-
-    const id = row['id'];
-    return typeof id === 'string' ? id : '';
   }
 }

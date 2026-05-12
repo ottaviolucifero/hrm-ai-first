@@ -1,4 +1,5 @@
 import { I18nKey } from '../../../core/i18n/i18n.messages';
+import { ConfirmDialogMode, ConfirmDialogSeverity } from '../confirm-dialog/confirm-dialog.models';
 
 export type DataTableColumnType =
   | 'text'
@@ -16,12 +17,24 @@ export type DataTableColumnSticky = 'left' | 'right';
 
 export type DataTableRow = Record<string, unknown>;
 
+export interface DataTableActionConfirmation<T extends DataTableRow = DataTableRow> {
+  readonly titleKey: I18nKey;
+  readonly messageKey: I18nKey;
+  readonly confirmLabelKey?: I18nKey;
+  readonly cancelLabelKey?: I18nKey;
+  readonly severity?: ConfirmDialogSeverity;
+  readonly mode?: ConfirmDialogMode;
+  readonly targetLabelKey?: I18nKey;
+  readonly targetValue?: string | number | ((row: T) => string | number | null);
+}
+
 export interface DataTableAction<T extends DataTableRow = DataTableRow> {
   readonly id: string;
   readonly labelKey: I18nKey;
   readonly visible?: boolean | ((row: T) => boolean);
   readonly tone?: 'default' | 'danger';
   readonly disabled?: boolean | ((row: T) => boolean);
+  readonly confirmation?: DataTableActionConfirmation<T>;
 }
 
 export interface DataTableRowActionEvent<T extends DataTableRow = DataTableRow> {
