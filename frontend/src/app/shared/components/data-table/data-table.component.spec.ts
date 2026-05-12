@@ -217,6 +217,75 @@ describe('DataTableComponent', () => {
     );
   });
 
+  it('keeps normal row actions immediate when no confirmation is configured', () => {
+    const rowActionSpy = vi.fn();
+    component.rowAction.subscribe(rowActionSpy);
+    component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
+    component.rows = [{ id: 'department-1', name: 'Human Resources' }];
+    component.rowActions = [{ id: 'view', labelKey: 'masterData.actions.view' }];
+
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('.data-table-action') as HTMLButtonElement;
+    button.click();
+
+    expect(rowActionSpy).toHaveBeenCalledTimes(1);
+    expect(fixture.nativeElement.textContent).not.toContain('Conferma eliminazione');
+  });
+
+  it('opens a confirmation dialog before emitting a configured row action', () => {
+    const rowActionSpy = vi.fn();
+    component.rowAction.subscribe(rowActionSpy);
+    component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
+    component.rows = [{ id: 'department-1', name: 'Human Resources' }];
+    component.rowActions = [
+      {
+        id: 'deletePhysical',
+        labelKey: 'masterData.actions.deletePhysical',
+        tone: 'danger',
+        confirmation: {
+          titleKey: 'confirmDialog.delete.title',
+          messageKey: 'confirmDialog.delete.message',
+          confirmLabelKey: 'confirmDialog.delete.confirm',
+          cancelLabelKey: 'confirmDialog.actions.cancel',
+          severity: 'danger',
+          targetLabelKey: 'confirmDialog.target.selectedEntity',
+          targetValue: (row) => String(row['name'] ?? '')
+        }
+      }
+    ];
+
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('.data-table-action') as HTMLButtonElement;
+    button.click();
+    fixture.detectChanges();
+
+    expect(rowActionSpy).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Conferma eliminazione');
+    expect(fixture.nativeElement.textContent).toContain('Human Resources');
+
+    const dialogButtons = fixture.nativeElement.querySelectorAll('.confirm-dialog button') as NodeListOf<HTMLButtonElement>;
+    dialogButtons[0].click();
+    fixture.detectChanges();
+
+    expect(rowActionSpy).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).not.toContain('Conferma eliminazione');
+
+    button.click();
+    fixture.detectChanges();
+
+    const confirmButtons = fixture.nativeElement.querySelectorAll('.confirm-dialog button') as NodeListOf<HTMLButtonElement>;
+    confirmButtons[1].click();
+
+    expect(rowActionSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: expect.objectContaining({ id: 'deletePhysical' }),
+        row: expect.objectContaining({ id: 'department-1' })
+      })
+    );
+  });
+
   it('supports row-specific action visibility', () => {
     component.columns = [{ key: 'name', labelKey: 'masterData.columns.name' }];
     component.rows = [

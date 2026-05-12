@@ -1,0 +1,61 @@
+@if (config; as currentConfig) {
+  <div class="confirm-dialog-overlay" role="presentation">
+    <div class="confirm-dialog-backdrop" aria-hidden="true"></div>
+
+    <section
+      class="confirm-dialog"
+      [ngClass]="[
+        'confirm-dialog-severity-' + severity(currentConfig),
+        mode(currentConfig) === 'message' ? 'confirm-dialog-message-mode' : ''
+      ]"
+      [attr.role]="dialogRole(currentConfig)"
+      aria-modal="true"
+      [attr.aria-labelledby]="titleId()"
+      [attr.aria-describedby]="descriptionId()">
+      <div class="confirm-dialog-body">
+        <div class="confirm-dialog-icon-shell" [ngClass]="'confirm-dialog-icon-shell-' + severity(currentConfig)">
+          <i [class]="iconClass(currentConfig)" aria-hidden="true"></i>
+        </div>
+
+        <h2 [id]="titleId()" class="confirm-dialog-title">
+          {{ i18n.t(currentConfig.titleKey) }}
+        </h2>
+
+        <p [id]="descriptionId()" class="confirm-dialog-message">
+          {{ i18n.t(currentConfig.messageKey) }}
+        </p>
+
+        @if (targetVisible(currentConfig)) {
+          <div class="confirm-dialog-target">
+            @if (currentConfig.targetLabelKey; as targetLabelKey) {
+              <p class="confirm-dialog-target-label">{{ i18n.t(targetLabelKey) }}</p>
+            }
+            <p class="confirm-dialog-target-value">{{ targetValue(currentConfig) }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="confirm-dialog-footer" [ngClass]="mode(currentConfig) === 'message' ? 'confirm-dialog-footer-single' : ''">
+        @if (mode(currentConfig) === 'confirm') {
+          <app-button
+            variant="outline"
+            size="sm"
+            [label]="i18n.t(cancelLabelKey(currentConfig))"
+            [disabled]="isBusy(currentConfig)"
+            [buttonClass]="secondaryButtonClass(currentConfig)"
+            (pressed)="emitCancel()" />
+        }
+
+        <app-button
+          [variant]="primaryVariant(currentConfig)"
+          size="sm"
+          [label]="i18n.t(confirmLabelKey(currentConfig))"
+          [loadingLabel]="i18n.t(confirmLabelKey(currentConfig))"
+          [loading]="isBusy(currentConfig)"
+          [disabled]="isBusy(currentConfig)"
+          [buttonClass]="primaryButtonClass(currentConfig)"
+          (pressed)="emitConfirm()" />
+      </div>
+    </section>
+  </div>
+}

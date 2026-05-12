@@ -61,46 +61,6 @@
         (pageSizeChange)="updatePageSize($event)" />
     </section>
 
-    @if (isDeleteConfirmOpen()) {
-      <div class="role-admin-modal-overlay" role="presentation">
-        <div class="role-admin-modal role-admin-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="role-admin-delete-title">
-          <section class="kt-card role-admin-confirm-panel">
-            <div class="kt-card-header role-admin-form-header">
-              <h2 id="role-admin-delete-title" class="kt-card-title text-lg">
-                {{ i18n.t('roleAdministration.delete.confirmTitle') }}
-              </h2>
-            </div>
-
-            <div class="kt-card-content role-admin-confirm-body">
-              <p class="role-admin-confirm-message">{{ i18n.t('roleAdministration.delete.confirmMessage') }}</p>
-
-              @if (deleteTargetLabel(); as targetLabel) {
-                <p class="role-admin-confirm-target">{{ targetLabel }}</p>
-              }
-
-              <div class="role-admin-form-actions">
-                <app-button
-                  variant="secondary"
-                  size="sm"
-                  [label]="i18n.t('masterData.form.cancel')"
-                  [disabled]="deleting()"
-                  (pressed)="closeDeleteConfirm()" />
-                <app-button
-                  variant="destructive"
-                  size="sm"
-                  icon="ki-filled ki-trash"
-                  [label]="i18n.t('roleAdministration.delete.confirmAction')"
-                  [loadingLabel]="i18n.t('roleAdministration.delete.processing')"
-                  [loading]="deleting()"
-                  [disabled]="deleting()"
-                  (pressed)="confirmDelete()" />
-              </div>
-            </div>
-          </section>
-        </div>
-      </div>
-    }
-
     @if (isFormOpen()) {
       <div class="role-admin-modal-overlay" role="presentation">
         <div class="role-admin-modal" role="dialog" aria-modal="true" aria-labelledby="master-data-form-title">

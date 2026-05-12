@@ -628,13 +628,14 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Human Resources');
 
     const cancelButton = Array.from(
-      fixture.nativeElement.querySelectorAll('.master-data-confirm-panel button')
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
     ).find((button) => (button as HTMLButtonElement).textContent?.includes('Annulla')) as HTMLButtonElement;
 
     cancelButton.click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).not.toContain('Conferma disattivazione');
+    expect(masterDataService.deleteRow).not.toHaveBeenCalled();
   });
 
   it('opens a physical delete confirmation and deletes row from /physical endpoint', async () => {
@@ -676,11 +677,6 @@ describe('MasterDataAdminComponent', () => {
     const fixture = await createFixture(masterDataService);
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
-    const component = fixture.componentInstance as MasterDataAdminComponent & {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-      confirmDelete: () => void;
-      isDeleteConfirmOpen: () => boolean;
-    };
     fixture.detectChanges();
 
     const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
@@ -695,7 +691,11 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Conferma eliminazione');
     expect(fixture.nativeElement.textContent).toContain('Human Resources');
 
-    component.confirmDelete();
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Elimina')) as HTMLButtonElement;
+
+    confirmButton.click();
     fixture.detectChanges();
 
     expect(masterDataService.deletePhysicalRow).toHaveBeenCalledWith(
@@ -706,7 +706,6 @@ describe('MasterDataAdminComponent', () => {
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
       { page: 0, size: 20 }
     );
-    expect(component.isDeleteConfirmOpen()).toBe(false);
     expect(successSpy).toHaveBeenCalledWith(
       expect.stringContaining('Record eliminato correttamente.'),
       expect.objectContaining({ titleKey: 'alert.title.success' })
@@ -788,9 +787,6 @@ describe('MasterDataAdminComponent', () => {
     const component = fixture.componentInstance as MasterDataAdminComponent & {
       refresh: () => void;
       pageIndex: { set: (page: number) => void };
-      isDeleteConfirmOpen: () => boolean;
-      confirmDelete: () => void;
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
     };
     fixture.detectChanges();
 
@@ -812,7 +808,11 @@ describe('MasterDataAdminComponent', () => {
     actionButtons[3].click();
     fixture.detectChanges();
 
-    component.confirmDelete();
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Elimina')) as HTMLButtonElement;
+
+    confirmButton.click();
     fixture.detectChanges();
 
     expect(((component as unknown as { pageIndex: () => number }).pageIndex)()).toBe(0);
@@ -848,11 +848,6 @@ describe('MasterDataAdminComponent', () => {
     const fixture = await createFixture(masterDataService);
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
-    const component = fixture.componentInstance as MasterDataAdminComponent & {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-      confirmDelete: () => void;
-      isDeleteConfirmOpen: () => boolean;
-    };
     fixture.detectChanges();
 
     const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
@@ -864,10 +859,14 @@ describe('MasterDataAdminComponent', () => {
     actionButtons[3].click();
     fixture.detectChanges();
 
-    component.confirmDelete();
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Elimina')) as HTMLButtonElement;
+
+    confirmButton.click();
     fixture.detectChanges();
 
-    expect(component.isDeleteConfirmOpen()).toBe(true);
+    expect(fixture.nativeElement.textContent).not.toContain('Conferma eliminazione');
     expect(errorSpy).toHaveBeenCalledWith(
       'Il record non puo essere eliminato perche e collegato ad altri dati.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })
@@ -913,11 +912,6 @@ describe('MasterDataAdminComponent', () => {
     const fixture = await createFixture(masterDataService);
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
-    const component = fixture.componentInstance as MasterDataAdminComponent & {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-      confirmDelete: () => void;
-      isDeleteConfirmOpen: () => boolean;
-    };
     fixture.detectChanges();
 
     const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
@@ -925,19 +919,15 @@ describe('MasterDataAdminComponent', () => {
     categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
     fixture.detectChanges();
 
-    component.handleRowAction({
-      action: { id: 'deactivate' },
-      row: {
-        id: 'department-1',
-        tenantId: 'tenant-1',
-        code: 'HR',
-        name: 'Human Resources',
-        active: true
-      }
-    });
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    actionButtons[2].click();
     fixture.detectChanges();
 
-    component.confirmDelete();
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Conferma')) as HTMLButtonElement;
+
+    confirmButton.click();
     fixture.detectChanges();
 
     expect(masterDataService.deleteRow).toHaveBeenCalledWith(
@@ -948,7 +938,6 @@ describe('MasterDataAdminComponent', () => {
       expect.objectContaining({ endpoint: '/api/master-data/hr-business/departments' }),
       { page: 0, size: 20 }
     );
-    expect(component.isDeleteConfirmOpen()).toBe(false);
     expect(successSpy).toHaveBeenCalledWith(
       expect.stringContaining('Record disattivato correttamente.'),
       expect.objectContaining({ titleKey: 'alert.title.success' })
@@ -982,11 +971,6 @@ describe('MasterDataAdminComponent', () => {
     const fixture = await createFixture(masterDataService);
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
-    const component = fixture.componentInstance as MasterDataAdminComponent & {
-      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
-      confirmDelete: () => void;
-      isDeleteConfirmOpen: () => boolean;
-    };
     fixture.detectChanges();
 
     const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
@@ -994,22 +978,18 @@ describe('MasterDataAdminComponent', () => {
     categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
     fixture.detectChanges();
 
-    component.handleRowAction({
-      action: { id: 'deactivate' },
-      row: {
-        id: 'department-1',
-        tenantId: 'tenant-1',
-        code: 'HR',
-        name: 'Human Resources',
-        active: true
-      }
-    });
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    actionButtons[2].click();
     fixture.detectChanges();
 
-    component.confirmDelete();
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Conferma')) as HTMLButtonElement;
+
+    confirmButton.click();
     fixture.detectChanges();
 
-    expect(component.isDeleteConfirmOpen()).toBe(true);
+    expect(fixture.nativeElement.textContent).not.toContain('Conferma disattivazione');
     expect(errorSpy).toHaveBeenCalledWith(
       'Non sei autorizzato a disattivare questo record.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })

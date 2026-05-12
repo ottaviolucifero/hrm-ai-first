@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.24
+Versione: 2.25
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -123,10 +123,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-053.9 UserAccount Employee link foundation
 - TASK-054 Frontend permission summary and visibility UX foundation
 - TASK-055 Backend RBAC enforcement foundation
+- TASK-056 Shared confirmation dialog foundation
 
 ### Prossimo passo
 
-- TASK-056 Shared confirmation dialog foundation
+- TASK-057 Finalize ZIP import foundation and test isolation
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -232,7 +233,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-056 Shared confirmation dialog foundation
+- TASK-057 Finalize ZIP import foundation and test isolation
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -254,7 +255,7 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 - TASK-054: permission summary frontend e visibility UX foundation completata (solo UX, non sicurezza reale);
 - TASK-055: enforcement RBAC reale lato backend completato con default deny, mapping endpoint/permesso/azione, authority runtime risolte da DB, `DELETE /api/admin/users/{userId}` come hard delete controllato e `PATCH /api/admin/users/{userId}/deactivate` come disattivazione logica;
 - TASK-055.1: hardening tenant/caller completato e assorbito dentro TASK-055.
-- TASK-056: foundation frontend shared per conferme si/no su azioni critiche, con riferimento UX Stitch, integrazione con DataTable, i18n `it`/`fr`/`en` e test frontend minimi.
+- TASK-056: foundation frontend shared per conferme si/no su azioni critiche completata con `ConfirmDialogComponent`, estensione dichiarativa del `DataTableComponent`, applicazione a Master Data / Ruoli / Utenti e suite frontend verde.
 - TASK-057: debito tecnico dedicato alla finalizzazione della foundation import ZIP e all isolamento dei side effect in test.
 
 Nota roadmap TASK-048:
@@ -391,6 +392,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.25 | 2026-05-12 | TASK-056 completato: aggiunto `ConfirmDialogComponent` shared, esteso `DataTableComponent` con conferme dichiarative e target dinamico, migrate le conferme tabellari di Master Data / Ruoli / Utenti, aggiornati i18n `it`/`fr`/`en`, test frontend verdi e prossimo passo riallineato a TASK-057. |
 | 2.24 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 ZIP slitta a TASK-057, i range roadmap vengono riallineati fino a TASK-069 e il prossimo passo viene aggiornato di conseguenza. |
 | 2.23 | 2026-05-12 | TASK-055 completato: enforcement RBAC backend reale attivato con authority risolte da DB per request JWT, `default deny`, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato, nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica e suite backend/frontend verde; prossimo passo riallineato a TASK-056. |
 | 2.22 | 2026-05-11 | TASK-054 completato: aggiunta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar dei moduli sempre visibile ma frozen senza permessi CRUD, guard frontend sulle route protette e applicazione ai moduli amministrativi attivi; prossimo passo riallineato a TASK-055. |

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.20
+Versione: 2.21
 Ultimo aggiornamento: 2026-05-12
 Stato: In avanzamento
 
@@ -3930,7 +3930,7 @@ Fuori scope:
 
 ### TASK-056 - Shared confirmation dialog foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend shared UX foundation
 
@@ -3964,7 +3964,13 @@ Vincoli:
 - non introdurre librerie esterne se non necessarie;
 - mantenere compatibilita con le row actions gia esistenti;
 - non modificare backend;
-- non implementare in questo task documentale.
+
+Validazione:
+
+- `ConfirmDialogComponent` shared introdotto con varianti `info`/`success`/`warning`/`danger`/`error`, target opzionale e modalita `message` per popup di errore applicativo.
+- `DataTableComponent` esteso con configurazione `confirmation` sulle row actions e supporto a target dinamico da riga.
+- popup applicato alle tabelle shared di Master Data, Role Administration e User Administration senza duplicare logiche di conferma nelle feature.
+- i18n `it`/`fr`/`en` e test frontend aggiornati con esito verde su `npm.cmd run build` e `npm.cmd test`.
 
 Fuori scope:
 
@@ -4063,6 +4069,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.21 | 2026-05-12 | TASK-056 completato: introdotto `ConfirmDialogComponent` shared, esteso `DataTableComponent` con conferme dichiarative e target dinamico, migrate le conferme tabellari di Master Data / Ruoli / Utenti, aggiornati i18n `it`/`fr`/`en` e test frontend/documentazione senza modifiche backend. |
 | 2.20 | 2026-05-12 | Inserito nuovo TASK-056 `Shared confirmation dialog foundation` prima del backlog applicativo successivo; l ex TASK-056 su ZIP import slitta a TASK-057 e i task successivi vengono rinumerati in modo coerente fino a TASK-069, senza modifiche a codice frontend/backend. |
 | 2.19 | 2026-05-12 | TASK-055 completato: introdotto enforcement RBAC reale lato backend con authority risolte da DB per request JWT, `default deny` sugli endpoint protetti, mapping esplicito endpoint/permessi, hardening tenant/caller su `/api/admin/users` e `/api/admin/roles`, `DELETE /api/admin/users/{userId}` riallineato a hard delete controllato e nuovo `PATCH /api/admin/users/{userId}/deactivate` per disattivazione logica; test backend completi verdi e patch frontend minima allineata. |
 | 2.18 | 2026-05-11 | TASK-054 completato: introdotta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar visibile ma frozen senza permessi CRUD, guard route `view/create/update`, applicazione ai moduli `/master-data`, `/admin/roles`, `/admin/permissions`, `/admin/users`, test frontend verdi e nessuna modifica backend. |

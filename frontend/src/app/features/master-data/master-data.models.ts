@@ -165,6 +165,21 @@ const SYSTEM_PERMISSION_COLUMN: MasterDataColumn = {
   type: 'boolean'
 };
 
+function describeConfirmationTarget(row: MasterDataRow): string | null {
+  const name = row['name'];
+  if (typeof name === 'string' && name.trim().length > 0) {
+    return name;
+  }
+
+  const code = row['code'];
+  if (typeof code === 'string' && code.trim().length > 0) {
+    return code;
+  }
+
+  const id = row['id'];
+  return typeof id === 'string' && id.trim().length > 0 ? id : null;
+}
+
 const STANDARD_CRUD_ROW_ACTIONS: readonly MasterDataRowAction[] = [
   {
     id: 'view',
@@ -177,7 +192,16 @@ const STANDARD_CRUD_ROW_ACTIONS: readonly MasterDataRowAction[] = [
   {
     id: 'deactivate',
     labelKey: 'masterData.actions.delete',
-    tone: 'danger'
+    tone: 'danger',
+    confirmation: {
+      titleKey: 'masterData.delete.confirmTitle',
+      messageKey: 'masterData.delete.confirmMessage',
+      confirmLabelKey: 'masterData.delete.confirmAction',
+      cancelLabelKey: 'masterData.form.cancel',
+      severity: 'warning',
+      targetLabelKey: 'confirmDialog.target.selectedEntity',
+      targetValue: (row) => describeConfirmationTarget(row)
+    }
   }
 ] as const;
 
@@ -185,7 +209,16 @@ const PHYSICAL_DELETE_ROW_ACTION: readonly MasterDataRowAction[] = [
   {
     id: 'deletePhysical',
     labelKey: 'masterData.actions.deletePhysical',
-    tone: 'danger'
+    tone: 'danger',
+    confirmation: {
+      titleKey: 'masterData.deletePhysical.confirmTitle',
+      messageKey: 'masterData.deletePhysical.confirmMessage',
+      confirmLabelKey: 'masterData.deletePhysical.confirmAction',
+      cancelLabelKey: 'masterData.form.cancel',
+      severity: 'danger',
+      targetLabelKey: 'confirmDialog.target.selectedEntity',
+      targetValue: (row) => describeConfirmationTarget(row)
+    }
   } as const
 ];
 
