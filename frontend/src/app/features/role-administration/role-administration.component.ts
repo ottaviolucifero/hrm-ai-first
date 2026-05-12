@@ -2,6 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, finalize, switchMap, take } from 'rxjs';
 
+import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
+import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -32,6 +34,7 @@ import { RoleAdministrationService } from './role-administration.service';
 })
 export class RoleAdministrationComponent implements OnDestroy {
   private readonly authService = inject(AuthService);
+  private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly roleAdministrationService = inject(RoleAdministrationService);
   private readonly notificationService = inject(NotificationService);
   protected readonly i18n = inject(I18nService);
@@ -93,6 +96,7 @@ export class RoleAdministrationComponent implements OnDestroy {
   protected readonly appliedSearch = signal('');
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
+  protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly saving = signal(false);
   protected readonly deleting = signal(false);
   protected readonly actingRoleId = signal<string | null>(null);
@@ -116,13 +120,13 @@ export class RoleAdministrationComponent implements OnDestroy {
     {
       id: 'view',
       labelKey: 'masterData.actions.view',
-      disabled: (row) => this.isBusy(this.toRoleRow(row))
+      disabled: (row) => !this.modulePermissions().canView || this.isBusy(this.toRoleRow(row))
     },
     {
       id: 'edit',
       labelKey: 'masterData.actions.edit',
       visible: (row) => this.toRoleRow(row).systemRole !== true,
-      disabled: (row) => this.isBusy(this.toRoleRow(row))
+      disabled: (row) => !this.modulePermissions().canUpdate || this.isBusy(this.toRoleRow(row))
     },
     {
       id: 'activate',
@@ -131,7 +135,7 @@ export class RoleAdministrationComponent implements OnDestroy {
         const role = this.toRoleRow(row);
         return role.systemRole !== true && role.active !== true;
       },
-      disabled: (row) => this.isBusy(this.toRoleRow(row))
+      disabled: (row) => !this.modulePermissions().canUpdate || this.isBusy(this.toRoleRow(row))
     },
     {
       id: 'deactivate',
@@ -141,14 +145,14 @@ export class RoleAdministrationComponent implements OnDestroy {
         const role = this.toRoleRow(row);
         return role.systemRole !== true && role.active === true;
       },
-      disabled: (row) => this.isBusy(this.toRoleRow(row))
+      disabled: (row) => !this.modulePermissions().canUpdate || this.isBusy(this.toRoleRow(row))
     },
     {
       id: 'deletePhysical',
       labelKey: 'masterData.actions.deletePhysical',
       tone: 'danger',
       visible: (row) => this.toRoleRow(row).systemRole !== true,
-      disabled: (row) => this.isBusy(this.toRoleRow(row))
+      disabled: (row) => !this.modulePermissions().canDelete || this.isBusy(this.toRoleRow(row))
     }
   ]);
 
@@ -175,11 +179,19 @@ export class RoleAdministrationComponent implements OnDestroy {
   }
 
   protected openCreateForm(): void {
+    if (!this.modulePermissions().canCreate) {
+      return;
+    }
+
     this.formRole.set(null);
     this.formMode.set('create');
   }
 
   protected handleRowAction(event: RoleAdministrationRowActionEvent): void {
+    if (!this.isActionAllowed(event.action.id)) {
+      return;
+    }
+
     const role = this.toRoleRow(event.row);
 
     if (event.action.id === 'view') {
@@ -338,12 +350,16 @@ export class RoleAdministrationComponent implements OnDestroy {
     this.loadSubscription = this.authService.loadAuthenticatedUser()
       .pipe(
         take(1),
-        switchMap((user) => this.roleAdministrationService.findRoles(user.tenantId, this.buildQuery())),
+        switchMap((user) => {
+          this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'roles'));
+          return this.roleAdministrationService.findRoles(user.tenantId, this.buildQuery());
+        }),
         finalize(() => this.loading.set(false))
       )
       .subscribe({
         next: (pageData) => this.pageData.set(pageData),
         error: () => {
+          this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY);
           this.pageData.set(this.emptyPage());
           this.hasError.set(true);
         }
@@ -476,6 +492,23 @@ export class RoleAdministrationComponent implements OnDestroy {
 
   private isBusy(role: RoleAdministrationRoleListItem): boolean {
     return this.deleting() || this.saving() || this.actingRoleId() === role.id;
+  }
+
+  private isActionAllowed(actionId: string): boolean {
+    const permissions = this.modulePermissions();
+
+    switch (actionId) {
+      case 'view':
+        return permissions.canView;
+      case 'edit':
+      case 'activate':
+      case 'deactivate':
+        return permissions.canUpdate;
+      case 'deletePhysical':
+        return permissions.canDelete;
+      default:
+        return true;
+    }
   }
 
   private formatSystemRole(value: unknown): string {

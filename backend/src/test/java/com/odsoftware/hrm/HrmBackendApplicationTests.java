@@ -265,7 +265,9 @@ class HrmBackendApplicationTests {
 		assertThat(auditActionTypeRepository.count()).isEqualTo(6);
 		assertThat(disciplinaryActionTypeRepository.count()).isEqualTo(3);
 		assertThat(smtpEncryptionTypeRepository.count()).isEqualTo(3);
-		assertThat(roleRepository.count()).isEqualTo(3);
+		assertThat(roleRepository.findAll())
+				.extracting(role -> role.getCode())
+				.contains("TENANT_ADMIN", "HR_MANAGER", "SUPERVISOR");
 		assertThat(permissionRepository.count()).isEqualTo(100);
 		assertThat(companyProfileTypeRepository.count()).isEqualTo(2);
 		assertThat(officeLocationTypeRepository.count()).isEqualTo(3);
@@ -315,6 +317,28 @@ class HrmBackendApplicationTests {
 		assertThatCode(() -> userRoleRepository.count()).doesNotThrowAnyException();
 		assertThatCode(() -> rolePermissionRepository.count()).doesNotThrowAnyException();
 		assertThatCode(() -> userTenantAccessRepository.count()).doesNotThrowAnyException();
+	}
+
+	@Test
+	void flywayMigrationBootstrapsTenantAdminCrudPermissionsForProtectedModules() {
+		assertThat(rolePermissionRepository.findPermissionCodesByTenantIdAndRoleId(FOUNDATION_TENANT_ID, TENANT_ADMIN_ROLE_ID))
+				.contains(
+						"TENANT.MASTER_DATA.READ",
+						"TENANT.MASTER_DATA.CREATE",
+						"TENANT.MASTER_DATA.UPDATE",
+						"TENANT.MASTER_DATA.DELETE",
+						"TENANT.USER.READ",
+						"TENANT.USER.CREATE",
+						"TENANT.USER.UPDATE",
+						"TENANT.USER.DELETE",
+						"TENANT.ROLE.READ",
+						"TENANT.ROLE.CREATE",
+						"TENANT.ROLE.UPDATE",
+						"TENANT.ROLE.DELETE",
+						"TENANT.PERMISSION.READ",
+						"TENANT.PERMISSION.CREATE",
+						"TENANT.PERMISSION.UPDATE",
+						"TENANT.PERMISSION.DELETE");
 	}
 
 	@Test
@@ -455,7 +479,9 @@ class HrmBackendApplicationTests {
 		assertThat(userTenantAccess.getCreatedAt()).isNotNull();
 		assertThat(userTenantAccess.getUpdatedAt()).isNotNull();
 		assertThat(userRoleRepository.findByTenant_IdAndUserAccount_Id(FOUNDATION_TENANT_ID, userAccount.getId())).hasSize(1);
-		assertThat(rolePermissionRepository.findByTenant_IdAndRole_Id(FOUNDATION_TENANT_ID, TENANT_ADMIN_ROLE_ID)).hasSize(1);
+		assertThat(rolePermissionRepository.findByTenant_IdAndRole_Id(FOUNDATION_TENANT_ID, TENANT_ADMIN_ROLE_ID))
+				.extracting((RolePermission assignment) -> assignment.getPermission().getId())
+				.contains(EMPLOYEE_READ_PERMISSION_ID);
 		assertThat(userTenantAccessRepository.findByUserAccount_IdAndTenant_Id(userAccount.getId(), FOUNDATION_TENANT_ID)).isPresent();
 	}
 

@@ -166,6 +166,24 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Francia');
   });
 
+  it('keeps the new action visible but disabled without create permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createMasterDataService({}), ['TENANT.MASTER_DATA.READ']);
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const newButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Nuovo')) as HTMLButtonElement;
+
+    expect(newButton).toBeTruthy();
+    expect(newButton.disabled).toBe(true);
+  });
+
   it('reloads from the first page when page size changes', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -1021,7 +1039,13 @@ describe('MasterDataAdminComponent', () => {
 });
 
 async function createFixture(
-  masterDataService: Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow' | 'deletePhysicalRow'>
+  masterDataService: Pick<MasterDataService, 'fetchRows' | 'createRow' | 'updateRow' | 'deleteRow' | 'deletePhysicalRow'>,
+  permissions: readonly string[] = [
+    'TENANT.MASTER_DATA.READ',
+    'TENANT.MASTER_DATA.CREATE',
+    'TENANT.MASTER_DATA.UPDATE',
+    'TENANT.MASTER_DATA.DELETE'
+  ]
 ) {
   await TestBed.configureTestingModule({
     imports: [MasterDataAdminComponent],
@@ -1030,7 +1054,13 @@ async function createFixture(
       {
         provide: AuthService,
         useValue: {
-          loadAuthenticatedUser: () => of({ id: 'user-1', tenantId: 'tenant-1', email: 'qa@example.com', userType: 'TENANT_ADMIN' })
+          loadAuthenticatedUser: () => of({
+            id: 'user-1',
+            tenantId: 'tenant-1',
+            email: 'qa@example.com',
+            userType: 'TENANT_ADMIN',
+            permissions
+          })
         }
       }
     ]

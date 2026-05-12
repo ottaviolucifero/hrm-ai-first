@@ -25,7 +25,7 @@ describe('RolePermissionMatrixComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Amministratore');
     expect(fixture.nativeElement.textContent).toContain('Ruoli tenant');
     expect(fixture.nativeElement.textContent).toContain('Personalizzato');
-    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Ruoli']);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Utenti', 'Ruoli']);
   });
 
   it('keeps system roles read-only in the permission matrix', async () => {
@@ -76,6 +76,27 @@ describe('RolePermissionMatrixComponent', () => {
     expect(checkbox.disabled).toBe(true);
   });
 
+  it('keeps the matrix readable but blocks mutations without update permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), ['TENANT.PERMISSION.READ']);
+    const component = fixture.componentInstance as RolePermissionMatrixComponent & {
+      canReset: () => boolean;
+      canSave: () => boolean;
+    };
+    fixture.detectChanges();
+
+    const saveButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Salva modifiche')) as HTMLButtonElement;
+    const checkbox = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+
+    expect(component.canReset()).toBe(false);
+    expect(component.canSave()).toBe(false);
+    expect(saveButton.disabled).toBe(true);
+    expect(checkbox.disabled).toBe(true);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Utenti', 'Ruoli']);
+  });
+
   it('tracks unsaved changes and restores the initial snapshot', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -90,7 +111,7 @@ describe('RolePermissionMatrixComponent', () => {
     const inputs = fixture.nativeElement.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
     expect(component.canReset()).toBe(false);
     expect(component.canSave()).toBe(false);
-    expect(inputs.length).toBe(4);
+    expect(inputs.length).toBe(8);
     expect(Array.from(inputs).every((input) => input.disabled === false)).toBe(true);
 
     inputs[1].click();
@@ -149,16 +170,15 @@ describe('RolePermissionMatrixComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Impossibile caricare ruoli e catalogo permessi.');
   });
 
-  it('shows only master data and role modules even when other tenant resources exist', async () => {
+  it('shows user administration together with master data and role modules', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const fixture = await createFixture(createService());
     fixture.detectChanges();
 
-    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Ruoli']);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Utenti', 'Ruoli']);
     expect(fixture.nativeElement.textContent).not.toContain('Dipendenti');
     expect(fixture.nativeElement.textContent).not.toContain('Permessi');
-    expect(fixture.nativeElement.textContent).not.toContain('Utenti');
   });
 
   it('shows an empty state when no allowed role-permission modules are available', async () => {
@@ -167,10 +187,10 @@ describe('RolePermissionMatrixComponent', () => {
     const service = createService({
       findPermissionCatalog: vi.fn(() => of([
         {
-          id: 'permission-user-read',
+          id: 'permission-employee-read',
           tenantId: 'tenant-1',
-          code: 'TENANT.USER.READ',
-          name: 'User read',
+          code: 'TENANT.EMPLOYEE.READ',
+          name: 'Employee read',
           systemPermission: true,
           active: true
         }
@@ -184,7 +204,10 @@ describe('RolePermissionMatrixComponent', () => {
   });
 });
 
-async function createFixture(serviceOverrides: Partial<RolePermissionMatrixService>) {
+async function createFixture(
+  serviceOverrides: Partial<RolePermissionMatrixService>,
+  permissions: readonly string[] = ['TENANT.PERMISSION.READ', 'TENANT.PERMISSION.UPDATE']
+) {
   await TestBed.configureTestingModule({
     imports: [RolePermissionMatrixComponent],
     providers: [
@@ -195,7 +218,8 @@ async function createFixture(serviceOverrides: Partial<RolePermissionMatrixServi
             id: 'user-1',
             tenantId: 'tenant-1',
             email: 'qa@example.com',
-            userType: 'TENANT_ADMIN'
+            userType: 'TENANT_ADMIN',
+            permissions
           })
         }
       },
@@ -294,6 +318,30 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
         tenantId: 'tenant-1',
         code: 'TENANT.USER.READ',
         name: 'User read',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-user-create',
+        tenantId: 'tenant-1',
+        code: 'TENANT.USER.CREATE',
+        name: 'User create',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-user-update',
+        tenantId: 'tenant-1',
+        code: 'TENANT.USER.UPDATE',
+        name: 'User update',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-user-delete',
+        tenantId: 'tenant-1',
+        code: 'TENANT.USER.DELETE',
+        name: 'User delete',
         systemPermission: true,
         active: true
       }

@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 
+import { AuthService } from '../../core/auth/auth.service';
 import { AppSidebarComponent } from './app-sidebar.component';
 
 @Component({
@@ -16,6 +18,23 @@ describe('AppSidebarComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppSidebarComponent],
       providers: [
+        {
+          provide: AuthService,
+          useValue: {
+            loadAuthenticatedUser: () => of({
+              id: 'user-1',
+              tenantId: 'tenant-1',
+              email: 'qa@example.com',
+              userType: 'TENANT_ADMIN',
+              permissions: [
+                'TENANT.MASTER_DATA.READ',
+                'TENANT.ROLE.READ',
+                'TENANT.USER.READ',
+                'TENANT.PERMISSION.READ'
+              ]
+            })
+          }
+        },
         provideRouter([
           { path: '', component: DummyRouteComponent },
           { path: 'master-data', component: DummyRouteComponent },
@@ -106,6 +125,51 @@ describe('AppSidebarComponent', () => {
 
     expect(masterDataLink).toBeTruthy();
     expect(masterDataLink?.classList.contains('app-sidebar-link--active')).toBe(true);
+  });
+
+  it('keeps protected menu entries visible but frozen when no CRUD permissions are available', async () => {
+    TestBed.resetTestingModule();
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    await TestBed.configureTestingModule({
+      imports: [AppSidebarComponent],
+      providers: [
+        {
+          provide: AuthService,
+          useValue: {
+            loadAuthenticatedUser: () => of({
+              id: 'user-1',
+              tenantId: 'tenant-1',
+              email: 'qa@example.com',
+              userType: 'TENANT_ADMIN',
+              permissions: []
+            })
+          }
+        },
+        provideRouter([
+          { path: '', component: DummyRouteComponent },
+          { path: 'master-data', component: DummyRouteComponent },
+          {
+            path: 'admin',
+            children: [
+              { path: 'roles', component: DummyRouteComponent },
+              { path: 'users', component: DummyRouteComponent },
+              { path: 'permissions', component: DummyRouteComponent }
+            ]
+          }
+        ])
+      ]
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppSidebarComponent);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Dati di base');
+    expect(compiled.querySelector('a[href="/master-data"]')).toBeNull();
+    const frozenButtons = Array.from(compiled.querySelectorAll('button[disabled]')) as HTMLButtonElement[];
+    expect(frozenButtons.some((button) => button.textContent?.includes('Dati di base'))).toBe(true);
+    expect(frozenButtons.some((button) => button.title.includes('Accesso non disponibile'))).toBe(true);
   });
 
   it('keeps roles users and permissions as sibling links when roles is active', async () => {

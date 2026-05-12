@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.30
+Versione: 1.31
 Ultimo aggiornamento: 2026-05-11
 Stato: Attivo
 
@@ -1398,10 +1398,39 @@ Le API amministrative utenti espongono lo stato del link in modo esplicito trami
 
 ---
 
+### DEC-036 - Frontend permission visibility uses centralized CRUD summary with frozen modules by default
+
+Data: 2026-05-11
+Stato: Approvata
+
+Decisione:
+
+Il frontend HRM usa una foundation centralizzata di visibility UX basata solo sui quattro permessi CRUD standard `view`, `create`, `update`, `delete`, derivati dai codici backend `SCOPE.RESOURCE.ACTION`.
+
+Le entry sidebar dei moduli applicativi restano visibili anche quando l utente non ha alcun permesso CRUD sul modulo. In quel caso devono apparire disabled/frozen. Le route principali dei moduli richiedono `view`; le route di create/edit richiedono rispettivamente `create` e `update`. Se il frontend non riceve alcun permission summary utilizzabile da `/api/auth/me` o dal payload auth disponibile, il modulo viene trattato come frozen per default.
+
+Motivazione:
+
+Uniformare menu, route e azioni CRUD senza introdurre enforcement backend, evitare logiche sparse nei componenti e rendere esplicito che l assenza di dati autorizzativi completi non deve produrre una UX permissiva implicita.
+
+Alternative escluse:
+
+- nascondere completamente le voci sidebar senza permessi;
+- dedurre permessi CRUD da `userType` o da `USER_TYPE_*`;
+- lasciare i moduli navigabili in assenza di permission summary reale;
+- introdurre enforcement di sicurezza reale lato frontend.
+
+Impatto:
+
+Il frontend introduce un servizio centralizzato di summary autorizzativo, una guard dedicata per le route protette e uno stato sidebar frozen per i moduli senza permessi CRUD. L esperienza resta UX-only: il backend continua a essere la fonte autorevole dell autorizzazione. Finche `/api/auth/me` non espone permission codes reali, i moduli protetti restano frozen e richiedono follow-up backend in TASK-055 o task dedicato.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.31 | 2026-05-11 | Aggiunta DEC-036 per formalizzare la visibility frontend centralizzata su summary CRUD, sidebar visibile ma frozen senza permessi, route guardate su `view/create/update` e default frozen quando `/api/auth/me` non espone permission summary reale. |
 | 1.30 | 2026-05-11 | Aggiunta DEC-035 per formalizzare il link opzionale `UserAccount.employee`, account validi senza Employee, fallback email/tipo account e divieto di duplicare dati anagrafici su `UserAccount`. |
 | 1.29 | 2026-05-11 | Aggiunta DEC-034 per chiarire che nei form amministrazione utenti tenant si mostra un solo campo `Tenant`; `primaryTenant` resta dettaglio backend e la distinzione tenant/default tenant e rinviata agli scenari platform o multi-tenant futuri. |
 | 1.28 | 2026-05-10 | Raffinata DEC-033: aggiunto TASK-053.3 dedicato al CRUD ruoli custom tenant, rinumerato TASK-053.4 per la tenant user administration e riallineato il principio di aggiornare il prossimo subtask operativo non completato. |

@@ -194,7 +194,15 @@ describe('UserAdministrationFormComponent', () => {
 
 async function createFixture(
   serviceOverrides: Partial<UserAdministrationService>,
-  authenticatedUser: { userType: string; tenantId: string } = { userType: 'TENANT_ADMIN', tenantId: 'tenant-1' },
+  authenticatedUser: {
+    userType: string;
+    tenantId: string;
+    permissions?: readonly string[];
+  } = {
+    userType: 'TENANT_ADMIN',
+    tenantId: 'tenant-1',
+    permissions: ['TENANT.USER.READ', 'TENANT.USER.CREATE', 'TENANT.USER.UPDATE', 'TENANT.USER.DELETE']
+  },
   userId: string | null = null
 ) {
   await TestBed.configureTestingModule({
@@ -218,7 +226,8 @@ async function createFixture(
             id: 'current-user',
             tenantId: authenticatedUser.tenantId,
             email: 'current@example.com',
-            userType: authenticatedUser.userType
+            userType: authenticatedUser.userType,
+            permissions: authenticatedUser.permissions
           })
         }
       },

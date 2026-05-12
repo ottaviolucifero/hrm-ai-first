@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.17
+Versione: 2.18
 Ultimo aggiornamento: 2026-05-11
 Stato: In avanzamento
 
@@ -3821,22 +3821,33 @@ Validazione:
 
 ### TASK-054 - Frontend permission summary and visibility UX foundation
 
-Stato: TODO
+Stato: COMPLETATO
 
 Tipo: Frontend authorization UX
 
 Obiettivo:
 
-- Introdurre una foundation frontend centralizzata per permission summary e visibility UX.
+- Introdurre una foundation frontend centralizzata per permission summary e visibility UX basata sui quattro permessi CRUD standard `view/create/update/delete`.
 
 Scope:
 
 - recupero/sintesi permessi utente lato frontend;
 - modello centralizzato per visibility UX;
-- nascondere/disabilitare menu, route e bottoni in base ai permessi disponibili;
+- menu/sidebar visibili ma frozen quando il modulo non ha alcun permesso CRUD disponibile;
+- route protette lato frontend con guard su `view/create/update`;
+- bottoni e azioni CRUD abilitati/disabilitati in modo uniforme in base ai permessi del modulo;
 - nessuna sicurezza reale lato frontend;
 - nessuna modifica enforcement backend;
 - preparazione al TASK-055.
+
+Implementazione completata:
+
+- aggiunti `PermissionSummaryService`, modello centralizzato `ModulePermissionSummary` e parsing frontend dei codici `SCOPE.RESOURCE.ACTION`;
+- aggiunta guard frontend dedicata per route protette con redirect a `/` e warning UX quando manca il permesso richiesto;
+- sidebar aggiornata per mantenere visibili le entry dei moduli applicativi e congelarle in stato disabled/frozen quando manca qualsiasi permesso CRUD;
+- foundation applicata ai moduli attivi `/master-data`, `/admin/roles`, `/admin/permissions`, `/admin/users`;
+- aggiunti test frontend dedicati per summary service, guard e casi CRUD/sidebar frozen;
+- nessuna modifica backend; in assenza di permission summary reale in `/api/auth/me`, i moduli protetti restano frozen per design e richiedono follow-up backend in TASK-055 o task dedicato.
 
 Fuori scope:
 
@@ -3984,6 +3995,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.18 | 2026-05-11 | TASK-054 completato: introdotta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar visibile ma frozen senza permessi CRUD, guard route `view/create/update`, applicazione ai moduli `/master-data`, `/admin/roles`, `/admin/permissions`, `/admin/users`, test frontend verdi e nessuna modifica backend. |
 | 2.17 | 2026-05-11 | TASK-053.9 completato: chiarito e applicato il link opzionale `UserAccount.employee`, con account validi senza Employee, fallback email/tipo account, DTO admin espliciti `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato, nessuna migration e nessuna duplicazione `firstName`/`lastName` su `UserAccount`. |
 | 2.16 | 2026-05-11 | TASK-053.8 esteso con patch minima UX login: codici errore backend stabili per account inactive/locked solo dopo validazione password corretta, messaggi login i18n `Account disattivato` / `Account bloccato`, mantenuto errore generico per email inesistente o password errata, test backend/frontend completi verdi. |
 | 2.15 | 2026-05-11 | TASK-053.8 completato: aggiunta foundation lifecycle utenti tenant con endpoint `activate/deactivate/lock/unlock` su `/api/admin/users/{userId}`, sezione lifecycle nel dettaglio Angular `/admin/users/:id`, conferma per azioni distruttive, i18n `it/fr/en`, test backend/frontend completi verdi e limite esplicito sulla revoca `tenant access` per mancanza di distinzione sicura tra accesso primario e bridge nel contratto corrente. |

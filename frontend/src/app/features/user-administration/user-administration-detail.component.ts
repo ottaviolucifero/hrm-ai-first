@@ -2,8 +2,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subscription, forkJoin, finalize } from 'rxjs';
+import { Observable, Subscription, forkJoin, finalize, take } from 'rxjs';
 
+import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
+import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
@@ -37,7 +40,9 @@ type UserLifecycleAction = 'activate' | 'deactivate' | 'lock' | 'unlock';
   styleUrl: './user-administration-detail.component.scss'
 })
 export class UserAdministrationDetailComponent implements OnDestroy {
+  private readonly authService = inject(AuthService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
+  private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly userAdministrationService = inject(UserAdministrationService);
@@ -52,6 +57,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
 
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
+  protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly user = signal<UserAdministrationUserDetail | null>(null);
   protected readonly selectedTenantId = signal<string | null>(null);
   protected readonly selectedRoleId = signal('');
@@ -110,6 +116,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
   }
 
   constructor() {
+    this.loadPermissionSummary();
     this.loadUser();
   }
 
@@ -127,7 +134,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
 
   protected editUser(): void {
     const user = this.user();
-    if (!user) {
+    if (!user || !this.modulePermissions().canUpdate) {
       return;
     }
 
@@ -443,6 +450,15 @@ export class UserAdministrationDetailComponent implements OnDestroy {
           this.availableRoles.set([]);
           this.hasError.set(true);
         }
+      });
+  }
+
+  private loadPermissionSummary(): void {
+    this.authService.loadAuthenticatedUser()
+      .pipe(take(1))
+      .subscribe({
+        next: (user) => this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'users')),
+        error: () => this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY)
       });
   }
 

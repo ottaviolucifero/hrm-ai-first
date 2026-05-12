@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { UserAdministrationDetailComponent } from './user-administration-detail.component';
 import { UserAdministrationService } from './user-administration.service';
@@ -149,6 +150,19 @@ describe('UserAdministrationDetailComponent', () => {
     const identitySection = fixture.nativeElement.querySelector('[aria-labelledby="user-detail-identity"]') as HTMLElement;
     expect(identitySection.textContent).toContain('Nessun dipendente associato');
     expect(identitySection.textContent).not.toContain('EMP-001');
+  });
+
+  it('disables the edit action without update permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), ['TENANT.USER.READ']);
+    fixture.detectChanges();
+
+    const editButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Modifica')) as HTMLButtonElement;
+
+    expect(editButton).toBeTruthy();
+    expect(editButton.disabled).toBe(true);
   });
 
   it('shows the tenant selector when multiple tenant options are available', async () => {
@@ -483,11 +497,26 @@ describe('UserAdministrationDetailComponent', () => {
   });
 });
 
-async function createFixture(serviceOverrides: Partial<UserAdministrationService>) {
+async function createFixture(
+  serviceOverrides: Partial<UserAdministrationService>,
+  permissions: readonly string[] = ['TENANT.USER.READ', 'TENANT.USER.UPDATE']
+) {
   await TestBed.configureTestingModule({
     imports: [UserAdministrationDetailComponent],
     providers: [
       provideRouter([]),
+      {
+        provide: AuthService,
+        useValue: {
+          loadAuthenticatedUser: () => of({
+            id: 'current-user',
+            tenantId: 'tenant-1',
+            email: 'qa@example.com',
+            userType: 'TENANT_ADMIN',
+            permissions
+          })
+        }
+      },
       {
         provide: ActivatedRoute,
         useValue: {

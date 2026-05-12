@@ -54,4 +54,22 @@ public interface UserRoleRepository extends JpaRepository<UserRole, UUID> {
 			order by role.code asc
 			""")
 	List<UserRole> findWithRoleAndTenantByUserAccountId(@Param("userAccountId") UUID userAccountId);
+
+	@Query("""
+			select distinct permission.code
+			from UserRole userRole
+			join userRole.role role
+			join RolePermission rolePermission
+				on rolePermission.tenant = userRole.tenant
+				and rolePermission.role = role
+			join rolePermission.permission permission
+			where userRole.userAccount.id = :userAccountId
+			and userRole.tenant.id = :tenantId
+			and role.active = true
+			and permission.active = true
+			order by permission.code asc
+			""")
+	List<String> findGrantedPermissionCodesByUserAccountIdAndTenantId(
+			@Param("userAccountId") UUID userAccountId,
+			@Param("tenantId") UUID tenantId);
 }

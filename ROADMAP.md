@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.21
+Versione: 2.22
 Ultimo aggiornamento: 2026-05-11
 Stato: In avanzamento
 
@@ -230,7 +230,6 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 
 Prossimo passo:
 
-- TASK-054 Frontend permission summary and visibility UX foundation
 - TASK-055 Backend RBAC enforcement foundation
 - TASK-055.1 Tenant/caller authorization hardening for admin role endpoints
 - TASK-056 Finalize ZIP import foundation and test isolation
@@ -252,7 +251,7 @@ Sequenza funzionale prevista per il blocco Super Admin / permessi:
 - TASK-053.7: tenant user create/edit foundation completata;
 - TASK-053.8: tenant user lifecycle foundation completata;
 - TASK-053.9: UserAccount Employee link foundation completata con link opzionale, fallback email e nessuna duplicazione anagrafica su `UserAccount`;
-- TASK-054: permission summary frontend e visibility UX foundation (solo UX, non sicurezza reale);
+- TASK-054: permission summary frontend e visibility UX foundation completata (solo UX, non sicurezza reale);
 - TASK-055: enforcement RBAC reale lato backend con default deny e mapping endpoint/permesso/azione;
 - TASK-055.1: hardening tenant/caller authorization sugli endpoint admin `/api/admin/roles`.
 - TASK-056: debito tecnico dedicato alla finalizzazione della foundation import ZIP e all isolamento dei side effect in test.
@@ -390,6 +389,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.22 | 2026-05-11 | TASK-054 completato: aggiunta foundation frontend centralizzata per permission summary e visibility UX, con parsing `SCOPE.RESOURCE.ACTION`, sidebar dei moduli sempre visibile ma frozen senza permessi CRUD, guard frontend sulle route protette e applicazione ai moduli amministrativi attivi; prossimo passo riallineato a TASK-055. |
 | 2.21 | 2026-05-11 | TASK-053.9 completato: formalizzato link opzionale `UserAccount` -> `Employee`, DTO admin espliciti per `employeeId`/`employeeDisplayName`/`hasEmployeeLink`, UI lista/dettaglio con stato collegato/non collegato e nessuna migration o duplicazione anagrafica su `UserAccount`; prossimo passo riallineato a TASK-054. |
 | 2.20 | 2026-05-11 | TASK-053.8 esteso con patch minima UX login: backend auth con codici errore stabili per account inactive/locked solo dopo credenziali corrette, login Angular con messaggi i18n specifici `Account disattivato` / `Account bloccato`, errore generico mantenuto per email inesistente o password errata, test completi verdi. |
 | 2.19 | 2026-05-11 | TASK-053.8 completato: aggiunta foundation lifecycle utenti tenant con endpoint `PUT /api/admin/users/{userId}/activate|deactivate|lock|unlock`, UI Angular nel dettaglio utente con conferma per `disattiva`/`blocca`, i18n `it/fr/en`, test backend/frontend completi verdi; revoca `tenant access` rinviata per assenza di distinzione sicura tra accesso primario e bridge nel contratto corrente. |

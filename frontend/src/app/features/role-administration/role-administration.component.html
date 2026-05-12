@@ -13,7 +13,7 @@
           size="sm"
           icon="ki-filled ki-plus"
           [label]="i18n.t('roleAdministration.actions.new')"
-          [disabled]="loading() || deleting()"
+          [disabled]="loading() || deleting() || !modulePermissions().canCreate"
           (pressed)="openCreateForm()" />
       </div>
     </header>

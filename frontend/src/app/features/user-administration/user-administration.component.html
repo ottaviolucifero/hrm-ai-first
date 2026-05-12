@@ -13,7 +13,7 @@
           size="sm"
           icon="ki-filled ki-plus"
           [label]="i18n.t('userAdministration.actions.create')"
-          [disabled]="loading()"
+          [disabled]="loading() || !modulePermissions().canCreate"
           (pressed)="createUser()" />
       </div>
     </header>
