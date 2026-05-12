@@ -20,6 +20,7 @@ import {
   MasterDataDeleteMode,
   MasterDataFormConfig,
   MasterDataFormMode,
+  MasterDataColumn,
   MasterDataMutationRequest,
   MasterDataPage,
   MasterDataQuery,
@@ -75,6 +76,9 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly formConfig = computed<MasterDataFormConfig | null>(() => this.selectedResource().form ?? null);
   protected readonly formFields = computed(() => this.formConfig()?.fields ?? []);
+  protected readonly visibleColumns = computed<readonly MasterDataColumn[]>(() =>
+    this.selectedResource().columns.filter((column) => !this.isTechnicalColumn(column.key))
+  );
   protected readonly openFormMode = computed<MasterDataFormMode>(() => this.formMode() ?? 'view');
   protected readonly supportsCreate = computed(
     () => this.formConfig()?.modes.includes('create') === true
@@ -196,7 +200,7 @@ export class MasterDataAdminComponent implements OnDestroy {
           const payload = this.buildMutationPayload(
             resource,
             formValue,
-            typeof this.formValue()?.['tenantId'] === 'string' ? this.formValue()?.['tenantId'] as string : user.tenantId
+            this.resolveTenantIdForMutation(user.tenantId)
           );
           return event.mode === 'create'
             ? this.masterDataService.createRow(resource, payload)
@@ -332,20 +336,38 @@ export class MasterDataAdminComponent implements OnDestroy {
     formValue: Record<string, unknown>,
     tenantId: string
   ): MasterDataMutationRequest {
-    const basePayload: MasterDataMutationRequest = {
-      tenantId,
-      name: String(formValue['name'] ?? '').trim(),
-      active: formValue['active'] === undefined ? true : Boolean(formValue['active'])
-    };
+    const payload: MasterDataMutationRequest = {};
 
-    if (resource.autoCode) {
-      return basePayload;
+    for (const [key, value] of Object.entries(formValue)) {
+      payload[key] = typeof value === 'string' ? value.trim() : value;
     }
 
-    return {
-      ...basePayload,
-      code: String(formValue['code'] ?? '').trim()
-    };
+    if (payload['active'] === undefined) {
+      payload['active'] = true;
+    }
+
+    if (resource.mutationScope !== 'global') {
+      payload['tenantId'] = tenantId;
+    }
+
+    if (resource.autoCode) {
+      delete payload['code'];
+    }
+
+    return payload;
+  }
+
+  private isTechnicalColumn(key: string): boolean {
+    return key === 'tenant' || key === 'tenantId' || key === 'tenantName';
+  }
+
+  private resolveTenantIdForMutation(userTenantId: string): string {
+    const currentRowTenantId = this.formValue()?.['tenantId'];
+    if (typeof currentRowTenantId === 'string' && currentRowTenantId.length > 0) {
+      return currentRowTenantId;
+    }
+
+    return userTenantId;
   }
 
   private resolveSaveError(error: unknown): string {

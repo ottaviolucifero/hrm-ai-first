@@ -4166,7 +4166,7 @@ Decisione attesa:
 
 ### TASK-059.4 - Razionalizzazione Governance/security Master Data UI e auto-code selettivo
 
-Stato: TODO
+Stato: DONE
 
 Include:
 
@@ -4198,6 +4198,29 @@ Note:
 - `Permission` resta gestito solo tramite matrice/catalogo permessi sotto Sicurezza;
 - `AuditActionType` resta tecnico per audit log;
 - eventuali viste Platform Admin / Owner Platform con filtro tenant saranno gestite in task separato.
+
+Completato:
+
+- verificata la configurazione reale della Master Data UI generica Governance/security, confermando che `Role`, `Permission` e `AuditActionType` erano ancora esposti nel selettore generico mentre `UserType`, `AuthenticationMethod`, `SmtpEncryptionType`, `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType` restavano disponibili;
+- verificato il pattern auto-code gia introdotto in `TASK-059.1` e `TASK-059.2` e riusato lo stesso approccio backend senza architetture parallele, con generazione `prefisso + progressivo 3 cifre` e preservazione del `code` in update;
+- verificato lo scope reale delle entita: `CompanyProfileType` e `OfficeLocationType` tenant-scoped, `DisciplinaryActionType` global-scoped;
+- rimossi dalla Master Data UI generica `Role`, `Permission` e `AuditActionType`, lasciando visibili senza auto-code `UserType`, `AuthenticationMethod` e `SmtpEncryptionType`;
+- applicato auto-code backend a `CompanyProfileType` (`CP`), `OfficeLocationType` (`OL`) e `DisciplinaryActionType` (`DA`) per i nuovi record, preservando sempre il `code` in update e senza riscrivere seed tecnici fuori scope;
+- aggiornato il contratto create/update backend per le tre entita auto-code usando DTO senza `code`, con `code` sempre preservato in update;
+- aggiunta la migration `V23` PostgreSQL/H2 per riallineare in modo deterministico i record gia esistenti di `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType` ai formati `CPNNN`, `OLNNN` e `DANNN`, ordinando per `created_at`, poi `id` e lasciando invariati gli altri codici Governance/security fuori scope;
+- completata la cancellazione fisica backend per `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType` con endpoint `/physical`, controlli di referenza coerenti con scope e FKs esistenti e conflitto `409` quando il record e referenziato;
+- resa non editabile da UI la proprieta `code` solo per `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, riusando i metadata form condivisi;
+- nascosta in modo generale dalla tabella Master Data generica la visualizzazione delle colonne `tenant`, `tenantId` e `tenantName`, senza modificare il componente tabellare shared;
+- aggiunta nella Master Data UI generica l icona delete con conferma e refresh tabella per `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, riusando il pattern gia adottato per i Master Data HR/business;
+- aggiornati test backend/frontend mirati per auto-code Governance/security, riallineamento dati, visibilita entita, payload UI, colonne tecniche e cancellazione fisica.
+
+Validazione:
+
+- backend test mirato `cd backend && .\mvnw.cmd "-Dtest=MasterDataGovernanceSecurityControllerTests,HrmBackendApplicationTests" test` OK, 70 test, 0 failure, 0 error, 0 skipped;
+- backend test regressione HR/business `cd backend && .\mvnw.cmd "-Dtest=MasterDataHrBusinessControllerTests" test` OK, 16 test, 0 failure, 0 error, 0 skipped;
+- backend test completo `cd backend && .\mvnw.cmd test` OK, 196 test, 0 failure, 0 error, 0 skipped;
+- frontend build `cd frontend && npm.cmd run build` OK;
+- frontend test completo `cd frontend && npm.cmd test -- --watch=false` OK, 30 file test, 211 test passed.
 
 ### TASK-061 - i18n alert/messages consistency check
 
@@ -4278,6 +4301,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.30 | 2026-05-12 | TASK-059.4 completato: razionalizzata la Master Data UI Governance/security rimuovendo `Role`, `Permission` e `AuditActionType` dal selettore generico, mantenendo visibili `UserType`/`AuthenticationMethod`/`SmtpEncryptionType`, estendendo auto-code backend/UI a `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, nascondendo le colonne tecniche tenant e confermando test backend/frontend reali verdi. |
 | 2.29 | 2026-05-12 | Inseriti `TASK-059.3` e `TASK-059.4` tra `TASK-059.2` e `TASK-061` per ripristinare continuita del backlog senza rinumerare i task successivi; `TASK-060` resta assente come sezione attiva e va ricostruito in task documentale separato. |
 | 2.28 | 2026-05-12 | TASK-059.2 completato: esteso auto-code backend/UI a `Department`, `JobTitle`, `ContractType`, `WorkMode`, aggiunta migration V22 PostgreSQL/H2 con aggiornamento condizionale di `employees.department/job_title/contract_type/work_mode` solo quando allineati a `old_code` reali per tenant, test backend/frontend reali verdi. |
 | 2.27 | 2026-05-12 | Inserito TASK-059.2 `Estendere code automatico ai restanti Master Data` e rinumerato il backlog successivo da TASK-060..TASK-072 a TASK-061..TASK-073 in coerenza con la pianificazione. |

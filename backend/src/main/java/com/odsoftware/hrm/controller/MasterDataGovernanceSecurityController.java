@@ -9,8 +9,10 @@ import com.odsoftware.hrm.dto.masterdata.governancesecurity.PermissionRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.PermissionResponse;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.RoleRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.RoleResponse;
+import com.odsoftware.hrm.dto.masterdata.governancesecurity.SeverityMasterDataAutoCodeRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.SeverityMasterDataRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.SeverityMasterDataResponse;
+import com.odsoftware.hrm.dto.masterdata.governancesecurity.TenantGovernanceMasterDataAutoCodeRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.TenantGovernanceMasterDataRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.TenantGovernanceMasterDataResponse;
 import com.odsoftware.hrm.service.MasterDataGovernanceSecurityService;
@@ -167,13 +169,13 @@ public class MasterDataGovernanceSecurityController {
 	@PostMapping("/disciplinary-action-types")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create disciplinary action type")
-	public SeverityMasterDataResponse createDisciplinaryActionType(@Valid @RequestBody SeverityMasterDataRequest request) {
+	public SeverityMasterDataResponse createDisciplinaryActionType(@Valid @RequestBody SeverityMasterDataAutoCodeRequest request) {
 		return masterDataGovernanceSecurityService.createDisciplinaryActionType(request);
 	}
 
 	@PutMapping("/disciplinary-action-types/{id}")
 	@Operation(summary = "Update disciplinary action type")
-	public SeverityMasterDataResponse updateDisciplinaryActionType(@PathVariable UUID id, @Valid @RequestBody SeverityMasterDataRequest request) {
+	public SeverityMasterDataResponse updateDisciplinaryActionType(@PathVariable UUID id, @Valid @RequestBody SeverityMasterDataAutoCodeRequest request) {
 		return masterDataGovernanceSecurityService.updateDisciplinaryActionType(id, request);
 	}
 
@@ -182,6 +184,13 @@ public class MasterDataGovernanceSecurityController {
 	@Operation(summary = "Disable disciplinary action type")
 	public void disableDisciplinaryActionType(@PathVariable UUID id) {
 		masterDataGovernanceSecurityService.disableDisciplinaryActionType(id);
+	}
+
+	@DeleteMapping("/disciplinary-action-types/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete disciplinary action type")
+	public void deletePhysicalDisciplinaryActionType(@PathVariable UUID id) {
+		masterDataGovernanceSecurityService.deletePhysicalDisciplinaryActionType(id);
 	}
 
 	@GetMapping("/smtp-encryption-types")
@@ -307,13 +316,13 @@ public class MasterDataGovernanceSecurityController {
 	@PostMapping("/company-profile-types")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create company profile type")
-	public TenantGovernanceMasterDataResponse createCompanyProfileType(@Valid @RequestBody TenantGovernanceMasterDataRequest request) {
+	public TenantGovernanceMasterDataResponse createCompanyProfileType(@Valid @RequestBody TenantGovernanceMasterDataAutoCodeRequest request) {
 		return masterDataGovernanceSecurityService.createCompanyProfileType(request);
 	}
 
 	@PutMapping("/company-profile-types/{id}")
 	@Operation(summary = "Update company profile type")
-	public TenantGovernanceMasterDataResponse updateCompanyProfileType(@PathVariable UUID id, @Valid @RequestBody TenantGovernanceMasterDataRequest request) {
+	public TenantGovernanceMasterDataResponse updateCompanyProfileType(@PathVariable UUID id, @Valid @RequestBody TenantGovernanceMasterDataAutoCodeRequest request) {
 		return masterDataGovernanceSecurityService.updateCompanyProfileType(id, request);
 	}
 
@@ -322,6 +331,13 @@ public class MasterDataGovernanceSecurityController {
 	@Operation(summary = "Disable company profile type")
 	public void disableCompanyProfileType(@PathVariable UUID id) {
 		masterDataGovernanceSecurityService.disableCompanyProfileType(id);
+	}
+
+	@DeleteMapping("/company-profile-types/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete company profile type")
+	public void deletePhysicalCompanyProfileType(@PathVariable UUID id) {
+		masterDataGovernanceSecurityService.deletePhysicalCompanyProfileType(id);
 	}
 
 	@GetMapping("/office-location-types")
@@ -342,13 +358,13 @@ public class MasterDataGovernanceSecurityController {
 	@PostMapping("/office-location-types")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create office location type")
-	public TenantGovernanceMasterDataResponse createOfficeLocationType(@Valid @RequestBody TenantGovernanceMasterDataRequest request) {
+	public TenantGovernanceMasterDataResponse createOfficeLocationType(@Valid @RequestBody TenantGovernanceMasterDataAutoCodeRequest request) {
 		return masterDataGovernanceSecurityService.createOfficeLocationType(request);
 	}
 
 	@PutMapping("/office-location-types/{id}")
 	@Operation(summary = "Update office location type")
-	public TenantGovernanceMasterDataResponse updateOfficeLocationType(@PathVariable UUID id, @Valid @RequestBody TenantGovernanceMasterDataRequest request) {
+	public TenantGovernanceMasterDataResponse updateOfficeLocationType(@PathVariable UUID id, @Valid @RequestBody TenantGovernanceMasterDataAutoCodeRequest request) {
 		return masterDataGovernanceSecurityService.updateOfficeLocationType(id, request);
 	}
 
@@ -357,5 +373,12 @@ public class MasterDataGovernanceSecurityController {
 	@Operation(summary = "Disable office location type")
 	public void disableOfficeLocationType(@PathVariable UUID id) {
 		masterDataGovernanceSecurityService.disableOfficeLocationType(id);
+	}
+
+	@DeleteMapping("/office-location-types/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete office location type")
+	public void deletePhysicalOfficeLocationType(@PathVariable UUID id) {
+		masterDataGovernanceSecurityService.deletePhysicalOfficeLocationType(id);
 	}
 }

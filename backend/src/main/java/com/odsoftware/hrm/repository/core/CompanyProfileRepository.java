@@ -5,4 +5,6 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CompanyProfileRepository extends JpaRepository<CompanyProfile, UUID> {
+
+	boolean existsByTenant_IdAndCompanyProfileType_Id(UUID tenantId, UUID companyProfileTypeId);
 }
