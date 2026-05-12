@@ -194,6 +194,7 @@ export class MasterDataAdminComponent implements OnDestroy {
         take(1),
         switchMap((user) => {
           const payload = this.buildMutationPayload(
+            resource,
             formValue,
             typeof this.formValue()?.['tenantId'] === 'string' ? this.formValue()?.['tenantId'] as string : user.tenantId
           );
@@ -326,12 +327,24 @@ export class MasterDataAdminComponent implements OnDestroy {
     this.formValue.set(row);
   }
 
-  private buildMutationPayload(formValue: Record<string, unknown>, tenantId: string): MasterDataMutationRequest {
-    return {
+  private buildMutationPayload(
+    resource: MasterDataResource,
+    formValue: Record<string, unknown>,
+    tenantId: string
+  ): MasterDataMutationRequest {
+    const basePayload: MasterDataMutationRequest = {
       tenantId,
-      code: String(formValue['code'] ?? '').trim(),
       name: String(formValue['name'] ?? '').trim(),
       active: formValue['active'] === undefined ? true : Boolean(formValue['active'])
+    };
+
+    if (resource.autoCode) {
+      return basePayload;
+    }
+
+    return {
+      ...basePayload,
+      code: String(formValue['code'] ?? '').trim()
     };
   }
 

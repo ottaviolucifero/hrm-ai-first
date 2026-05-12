@@ -23,6 +23,7 @@ export interface MasterDataFormField {
   readonly type?: MasterDataFormFieldType;
   readonly required?: boolean;
   readonly readOnly?: boolean;
+  readonly modes?: readonly MasterDataFormMode[];
 }
 
 export interface MasterDataFormConfig {
@@ -37,6 +38,7 @@ export interface MasterDataResource {
   readonly columns: readonly MasterDataColumn[];
   readonly rowActions?: readonly MasterDataRowAction[];
   readonly form?: MasterDataFormConfig;
+  readonly autoCode?: boolean;
 }
 
 export interface MasterDataCategory {
@@ -65,7 +67,7 @@ export interface MasterDataPage<T> {
 
 export interface MasterDataMutationRequest {
   readonly tenantId: string;
-  readonly code: string;
+  readonly code?: string;
   readonly name: string;
   readonly active?: boolean;
 }
@@ -248,6 +250,28 @@ const STANDARD_CRUD_FORM: MasterDataFormConfig = {
   ]
 } as const;
 
+const STANDARD_CRUD_AUTO_CODE_FORM: MasterDataFormConfig = {
+  modes: ['create', 'edit', 'view'],
+  fields: [
+    {
+      key: 'code',
+      labelKey: 'masterData.columns.code',
+      readOnly: true,
+      modes: ['edit', 'view']
+    },
+    {
+      key: 'name',
+      labelKey: 'masterData.columns.name',
+      required: true
+    },
+    {
+      key: 'active',
+      labelKey: 'masterData.columns.active',
+      type: 'boolean'
+    }
+  ]
+} as const;
+
 export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
   {
     id: 'global',
@@ -348,7 +372,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/employment-statuses',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'work-modes',
@@ -364,7 +389,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/leave-request-types',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'document-types',
@@ -372,7 +398,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/document-types',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'device-types',
@@ -380,7 +407,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/device-types',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'device-brands',
@@ -388,7 +416,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/device-brands',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       },
       {
         id: 'device-statuses',
@@ -396,7 +425,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         endpoint: '/api/master-data/hr-business/device-statuses',
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
-        form: STANDARD_CRUD_FORM
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true
       }
     ]
   },

@@ -105,6 +105,9 @@ export class MasterDataFormComponent implements OnChanges, OnInit {
       if (!key) {
         continue;
       }
+      if (field.modes && !field.modes.includes(this.mode)) {
+        continue;
+      }
 
       const rawValue = this.value?.[key];
       const nextValue = rawValue ?? (this.fieldType(field) === 'boolean' ? false : '');

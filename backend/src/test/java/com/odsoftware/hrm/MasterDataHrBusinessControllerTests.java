@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -164,13 +165,21 @@ class MasterDataHrBusinessControllerTests {
 			String path = RESOURCE_PATHS[index];
 			String code = "task031_resource_" + index;
 			String expectedCode = "TASK031_RESOURCE_" + index;
-			MvcResult result = mockMvc.perform(postJson(path, tenantMasterRequest(code, " Task 031 Resource " + index + " ")))
+			MvcResult result = mockMvc.perform(postJson(path, tenantMasterRequestForResource(path, code, " Task 031 Resource " + index + " ")))
 					.andExpect(status().isCreated())
 					.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
-					.andExpect(jsonPath("$.code").value(expectedCode))
 					.andExpect(jsonPath("$.name").value("Task 031 Resource " + index))
 					.andExpect(jsonPath("$.active").value(true))
 					.andReturn();
+
+			String createdCode = responseCode(result);
+			if (isAutoCodeResource(path)) {
+				String prefix = expectedAutoCodePrefix(path);
+				assertThat(Pattern.matches("^" + prefix + "\\d{3}$", createdCode)).isTrue();
+			}
+			else {
+				assertThat(createdCode).isEqualTo(expectedCode);
+			}
 
 			UUID id = responseId(result);
 			if (index == 0) {
@@ -182,9 +191,10 @@ class MasterDataHrBusinessControllerTests {
 					.andExpect(jsonPath("$.content").isArray());
 			mockMvc.perform(get(path + "/{id}", id))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$.code").value(expectedCode));
-			mockMvc.perform(putJson(path + "/" + id, tenantMasterRequest(expectedCode, "Task 031 Resource Updated " + index)))
+					.andExpect(jsonPath("$.code").value(createdCode));
+			mockMvc.perform(putJson(path + "/" + id, tenantMasterRequestForResource(path, createdCode, "Task 031 Resource Updated " + index)))
 					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.code").value(createdCode))
 					.andExpect(jsonPath("$.name").value("Task 031 Resource Updated " + index));
 			mockMvc.perform(delete(path + "/{id}", id).with(csrf()))
 					.andExpect(status().isNoContent());
@@ -207,16 +217,15 @@ class MasterDataHrBusinessControllerTests {
 
 		for (int index = 0; index < task059ResourcePaths.length; index++) {
 			String path = task059ResourcePaths[index];
-			String code = "task059_resource_" + index;
-			String expectedCode = "TASK059_RESOURCE_" + index;
-
-			MvcResult result = mockMvc.perform(postJson(path, tenantMasterRequest(code, " Task 059 Resource " + index + " ")))
+			MvcResult result = mockMvc.perform(postJson(path, tenantMasterRequestForResource(path, "task059_resource_" + index, " Task 059 Resource " + index + " ")))
 					.andExpect(status().isCreated())
 					.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
-					.andExpect(jsonPath("$.code").value(expectedCode))
 					.andExpect(jsonPath("$.name").value("Task 059 Resource " + index))
 					.andExpect(jsonPath("$.active").value(true))
 					.andReturn();
+
+			String createdCode = responseCode(result);
+			assertThat(Pattern.matches("^" + expectedAutoCodePrefix(path) + "\\d{3}$", createdCode)).isTrue();
 
 			UUID id = responseId(result);
 
@@ -225,9 +234,10 @@ class MasterDataHrBusinessControllerTests {
 					.andExpect(jsonPath("$.content").isArray());
 			mockMvc.perform(get(path + "/{id}", id))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$.code").value(expectedCode));
-			mockMvc.perform(putJson(path + "/" + id, tenantMasterRequest(expectedCode, "Task 059 Resource Updated " + index)))
+					.andExpect(jsonPath("$.code").value(createdCode));
+			mockMvc.perform(putJson(path + "/" + id, tenantMasterRequestForResource(path, "IGNORED", "Task 059 Resource Updated " + index)))
 					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.code").value(createdCode))
 					.andExpect(jsonPath("$.name").value("Task 059 Resource Updated " + index));
 			mockMvc.perform(delete(path + "/{id}", id).with(csrf()))
 					.andExpect(status().isNoContent());
@@ -427,6 +437,12 @@ class MasterDataHrBusinessControllerTests {
 				"/api/master-data/hr-business/employment-statuses",
 				"TASK059_REFERENCED_EMPLOYMENT_STATUS",
 				"Task 059 Referenced Employment Status");
+		String referencedEmploymentStatusCode = employmentStatusRepository.findById(employmentStatusId).orElseThrow().getCode();
+		String defaultEmploymentStatusCode = employmentStatusRepository.findAll().stream()
+				.filter(status -> FOUNDATION_TENANT_ID.equals(status.getTenantId()))
+				.map(status -> status.getCode())
+				.findFirst()
+				.orElse(referencedEmploymentStatusCode);
 		employeeRepository.saveAndFlush(newEmployee(
 				tenant,
 				company,
@@ -434,7 +450,7 @@ class MasterDataHrBusinessControllerTests {
 				"HR",
 				"HR_SPECIALIST",
 				"FULL_TIME",
-				"TASK059_REFERENCED_EMPLOYMENT_STATUS",
+				referencedEmploymentStatusCode,
 				"HYBRID"));
 
 		UUID leaveRequestTypeId = createTenantMaster(
@@ -448,7 +464,7 @@ class MasterDataHrBusinessControllerTests {
 				"HR",
 				"HR_SPECIALIST",
 				"FULL_TIME",
-				"ACTIVE",
+				defaultEmploymentStatusCode,
 				"HYBRID"));
 		LeaveRequestType leaveRequestType = leaveRequestTypeRepository.findById(leaveRequestTypeId).orElseThrow();
 		leaveRequestRepository.saveAndFlush(newLeaveRequest(leaveEmployee, leaveRequestType));
@@ -468,7 +484,7 @@ class MasterDataHrBusinessControllerTests {
 				"FINANCE",
 				"PAYROLL_SPECIALIST",
 				"TASK059_REFERENCED_CONTRACT_TYPE",
-				"ACTIVE",
+				defaultEmploymentStatusCode,
 				"ONSITE"));
 		Contract payrollContract = contractRepository.saveAndFlush(newContract(
 				payrollEmployee,
@@ -604,10 +620,17 @@ class MasterDataHrBusinessControllerTests {
 	}
 
 	private UUID createTenantMaster(String path, String code, String name) throws Exception {
-		MvcResult result = mockMvc.perform(postJson(path, tenantMasterRequest(code, name)))
+		MvcResult result = mockMvc.perform(postJson(path, tenantMasterRequestForResource(path, code, name)))
 				.andExpect(status().isCreated())
 				.andReturn();
 		return responseId(result);
+	}
+
+	private Map<String, Object> tenantMasterRequestForResource(String path, String code, String name) {
+		if (isAutoCodeResource(path)) {
+			return tenantMasterAutoCodeRequest(FOUNDATION_TENANT_ID, name);
+		}
+		return tenantMasterRequest(code, name);
 	}
 
 	private Map<String, Object> tenantMasterRequest(String code, String name) {
@@ -618,6 +641,13 @@ class MasterDataHrBusinessControllerTests {
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("tenantId", tenantId);
 		request.put("code", code);
+		request.put("name", name);
+		return request;
+	}
+
+	private Map<String, Object> tenantMasterAutoCodeRequest(UUID tenantId, String name) {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("tenantId", tenantId);
 		request.put("name", name);
 		return request;
 	}
@@ -638,6 +668,26 @@ class MasterDataHrBusinessControllerTests {
 
 	private UUID responseId(MvcResult result) throws Exception {
 		return UUID.fromString(objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText());
+	}
+
+	private String responseCode(MvcResult result) throws Exception {
+		return objectMapper.readTree(result.getResponse().getContentAsString()).get("code").asText();
+	}
+
+	private boolean isAutoCodeResource(String path) {
+		return expectedAutoCodePrefix(path) != null;
+	}
+
+	private String expectedAutoCodePrefix(String path) {
+		return switch (path) {
+			case "/api/master-data/hr-business/employment-statuses" -> "ES";
+			case "/api/master-data/hr-business/leave-request-types" -> "LR";
+			case "/api/master-data/hr-business/document-types" -> "DT";
+			case "/api/master-data/hr-business/device-types" -> "DV";
+			case "/api/master-data/hr-business/device-brands" -> "DB";
+			case "/api/master-data/hr-business/device-statuses" -> "DS";
+			default -> null;
+		};
 	}
 
 	private void assertTask059PhysicalDeleteConflict(String path, UUID id, String label) throws Exception {
