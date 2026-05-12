@@ -278,6 +278,31 @@ describe('MasterDataAdminComponent', () => {
     expect(toolbarButtons).toHaveLength(0);
   });
 
+  it('keeps only allowed governance/security resources selectable in generic master data UI', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createMasterDataService({}));
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'governanceSecurity';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const resourceSelect = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
+    const resourceValues = Array.from(resourceSelect.options).map((option) => option.value);
+
+    expect(resourceValues).toContain('user-types');
+    expect(resourceValues).toContain('authentication-methods');
+    expect(resourceValues).toContain('smtp-encryption-types');
+    expect(resourceValues).toContain('disciplinary-action-types');
+    expect(resourceValues).toContain('company-profile-types');
+    expect(resourceValues).toContain('office-location-types');
+    expect(resourceValues).not.toContain('roles');
+    expect(resourceValues).not.toContain('permissions');
+    expect(resourceValues).not.toContain('audit-action-types');
+  });
+
   it('receives row action events for CRUD candidate resources', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -326,6 +351,143 @@ describe('MasterDataAdminComponent', () => {
       })
     );
     expect(fixture.nativeElement.textContent).toContain('Visualizza');
+  });
+
+  it('enables CRUD actions for governance/security auto-code resources', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const companyProfileTypesPage = createPage([
+      {
+        id: 'company-profile-type-1',
+        tenantId: 'tenant-1',
+        code: 'CP001',
+        name: 'Branch company',
+        active: true,
+        updatedAt: '2026-05-12T09:00:00Z'
+      }
+    ]);
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValue(of(companyProfileTypesPage))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const selects = fixture.nativeElement.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+    selects[0].value = 'governanceSecurity';
+    selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    selects[1].value = 'company-profile-types';
+    selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const newButton = fixture.nativeElement.querySelector('.master-data-toolbar-actions .kt-btn-primary') as HTMLButtonElement | null;
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+
+    expect(newButton).not.toBeNull();
+    expect(actionButtons).toHaveLength(4);
+  });
+
+  it('shows readonly code for governance/security auto-code resources', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValue(of(createPage([])))
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'company-profile-type-1',
+                tenantId: 'tenant-1',
+                code: 'CP001',
+                name: 'Branch company',
+                active: true
+              }
+            ])
+          )
+        )
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+      openCreateForm: () => void;
+      closeForm: () => void;
+    };
+    fixture.detectChanges();
+
+    const selects = fixture.nativeElement.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+    selects[0].value = 'governanceSecurity';
+    selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    selects[1].value = 'company-profile-types';
+    selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.handleRowAction({
+      action: { id: 'edit' },
+      row: {
+        id: 'company-profile-type-1',
+        tenantId: 'tenant-1',
+        code: 'CP001',
+        name: 'Branch company',
+        active: true
+      }
+    });
+    fixture.detectChanges();
+
+    const autoCodeInput = fixture.nativeElement.querySelector('.app-input-control') as HTMLInputElement;
+    expect(autoCodeInput.value).toBe('CP001');
+    expect(autoCodeInput.disabled).toBe(true);
+  });
+
+  it('hides technical tenant columns from the generic master data table', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const departmentsPage = createPage([
+      {
+        id: 'department-1',
+        tenantId: 'tenant-1',
+        tenantName: 'Tenant One',
+        code: 'DE001',
+        name: 'Human Resources',
+        active: true,
+        updatedAt: '2026-05-12T09:00:00Z'
+      }
+    ]);
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValue(of(departmentsPage))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const categorySelect = fixture.nativeElement.querySelectorAll('select')[0] as HTMLSelectElement;
+    categorySelect.value = 'hrBusiness';
+    categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const headers = Array.from(
+      fixture.nativeElement.querySelectorAll('thead th')
+    ).map((header) => ((header as HTMLTableCellElement).textContent ?? '').trim());
+
+    expect(headers).not.toContain('Tenant');
+    expect(headers).toContain('Codice');
+    expect(headers).toContain('Nome');
   });
 
   it('keeps deactivate distinct and executes physical delete for TASK-059 resources', async () => {
@@ -787,6 +949,106 @@ describe('MasterDataAdminComponent', () => {
     );
   });
 
+  it('omits code and keeps tenantId for tenant-scoped governance/security auto-code resources', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fetchRows = vi
+      .fn()
+      .mockReturnValue(of(createPage([])))
+      .mockReturnValueOnce(of(createPage([])))
+      .mockReturnValueOnce(of(createPage([])))
+      .mockReturnValueOnce(of(createPage([])));
+
+    const masterDataService = createMasterDataService({
+      fetchRows,
+      createRow: vi.fn(() => of({ id: 'company-profile-type-1', code: 'CP001' }))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      openCreateForm: () => void;
+      handleFormSave: (event: { mode: 'create'; value: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const selects = fixture.nativeElement.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+    selects[0].value = 'governanceSecurity';
+    selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    selects[1].value = 'company-profile-types';
+    selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.openCreateForm();
+    fixture.detectChanges();
+
+    component.handleFormSave({
+      mode: 'create',
+      value: { name: 'Branch company', active: true }
+    });
+    fixture.detectChanges();
+
+    expect(masterDataService.createRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/governance-security/company-profile-types' }),
+      {
+        tenantId: 'tenant-1',
+        name: 'Branch company',
+        active: true
+      }
+    );
+  });
+
+  it('omits code and tenantId for global auto-code governance/security resources', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fetchRows = vi
+      .fn()
+      .mockReturnValue(of(createPage([])))
+      .mockReturnValueOnce(of(createPage([])))
+      .mockReturnValueOnce(of(createPage([])))
+      .mockReturnValueOnce(of(createPage([])));
+
+    const masterDataService = createMasterDataService({
+      fetchRows,
+      createRow: vi.fn(() => of({ id: 'disciplinary-action-type-1', code: 'DA001' }))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      openCreateForm: () => void;
+      handleFormSave: (event: { mode: 'create'; value: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const selects = fixture.nativeElement.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+    selects[0].value = 'governanceSecurity';
+    selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    selects[1].value = 'disciplinary-action-types';
+    selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.openCreateForm();
+    fixture.detectChanges();
+
+    component.handleFormSave({
+      mode: 'create',
+      value: { name: 'Warning', severityLevel: 'LOW', active: true }
+    });
+    fixture.detectChanges();
+
+    expect(masterDataService.createRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/governance-security/disciplinary-action-types' }),
+      {
+        name: 'Warning',
+        severityLevel: 'LOW',
+        active: true
+      }
+    );
+  });
+
   it('opens a confirmation modal before deactivation and allows cancel', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -907,6 +1169,94 @@ describe('MasterDataAdminComponent', () => {
       expect.stringContaining('Record eliminato correttamente.'),
       expect.objectContaining({ titleKey: 'alert.title.success' })
     );
+  });
+
+  it('opens governance/security physical delete confirmation and refreshes after delete', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValue(
+          of(
+            createPage([
+              {
+                id: 'company-profile-type-2',
+                tenantId: 'tenant-1',
+                code: 'CP002',
+                name: 'Operative entity',
+                active: true
+              }
+            ])
+          )
+        )
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'company-profile-type-1',
+                tenantId: 'tenant-1',
+                code: 'CP001',
+                name: 'Branch company',
+                active: true
+              }
+            ])
+          )
+        )
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'company-profile-type-1',
+                tenantId: 'tenant-1',
+                code: 'CP001',
+                name: 'Branch company',
+                active: true
+              }
+            ])
+          )
+        ),
+      deletePhysicalRow: vi.fn(() => of(void 0))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    fixture.detectChanges();
+
+    const selects = fixture.nativeElement.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+    selects[0].value = 'governanceSecurity';
+    selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    selects[1].value = 'company-profile-types';
+    selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    const actionButtons = fixture.nativeElement.querySelectorAll('.data-table-action') as NodeListOf<HTMLButtonElement>;
+    expect(actionButtons).toHaveLength(4);
+
+    actionButtons[3].click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Conferma eliminazione');
+    expect(fixture.nativeElement.textContent).toContain('Branch company');
+
+    const confirmButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.confirm-dialog button')
+    ).find((button) => (button as HTMLButtonElement).textContent?.includes('Elimina')) as HTMLButtonElement;
+
+    confirmButton.click();
+    fixture.detectChanges();
+
+    expect(masterDataService.deletePhysicalRow).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/governance-security/company-profile-types' }),
+      'company-profile-type-1'
+    );
+    expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/governance-security/company-profile-types' }),
+      { page: 0, size: 20 }
+    );
+    expect(fixture.nativeElement.textContent).toContain('Operative entity');
   });
 
   it('moves to previous page when deleting the last row on a later page', async () => {

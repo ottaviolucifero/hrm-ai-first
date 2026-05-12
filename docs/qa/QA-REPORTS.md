@@ -6,6 +6,72 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-059.4 - Razionalizzazione Governance/security Master Data UI e auto-code selettivo
+
+- Data: 2026-05-12
+- Branch: `task-059-4-governance-security-master-data-ui-autocode`
+- Task: TASK-059.4 - Razionalizzazione Governance/security Master Data UI e auto-code selettivo
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/MasterDataGovernanceSecurityController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataGovernanceSecurityService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/masterdata/governancesecurity/TenantGovernanceMasterDataAutoCodeRequest.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/masterdata/governancesecurity/SeverityMasterDataAutoCodeRequest.java`
+  - `backend/src/main/resources/db/vendor/postgresql/V23__standardize_governance_security_master_data_codes.sql`
+  - `backend/src/main/resources/db/vendor/h2/V23__standardize_governance_security_master_data_codes.sql`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/core/CompanyProfileRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/core/OfficeLocationRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/disciplinary/EmployeeDisciplinaryActionRepository.java`
+  - `backend/src/test/java/com/odsoftware/hrm/HrmBackendApplicationTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataGovernanceSecurityControllerTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataHrBusinessControllerTests.java`
+  - `frontend/src/app/features/master-data/master-data.models.ts`
+  - `frontend/src/app/features/master-data/master-data-admin.component.ts`
+  - `frontend/src/app/features/master-data/master-data-admin.component.html`
+  - `frontend/src/app/features/master-data/master-data-admin.component.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificata la configurazione reale della categoria Governance/security nella Master Data UI generica, confermando l esposizione di `Role`, `Permission` e `AuditActionType` insieme alle altre entita di anagrafica;
+  - verificato il pattern auto-code dei task `TASK-059.1` e `TASK-059.2`, gia basato su prefisso esplicito + progressivo a 3 cifre, preservazione del `code` in update e payload UI senza `code`;
+  - verificata l assenza di una regola generale gia esistente per nascondere `tenant`, `tenantId`, `tenantName` nella tabella Master Data generica, pur essendo gia supportato il filtro su colonne `visible !== false`;
+  - verificato lo scope reale delle entita richieste senza assunzioni: `CompanyProfileType` e `OfficeLocationType` tenant-scoped, `DisciplinaryActionType` global-scoped;
+  - verificati i test backend/frontend gia esistenti relativi a Master Data, Governance/security e auto-code prima di estendere la copertura;
+  - dopo il primo completamento e stato registrato un test manuale parziale/fallito: i record esistenti delle tre entita non erano stati riallineati a `CPNNN`/`OLNNN`/`DANNN` e la UI generica non esponeva ancora la cancellazione fisica con icona delete.
+- Patch applicata:
+  - rimossi `Role`, `Permission` e `AuditActionType` dal selettore Governance/security della Master Data UI generica, lasciando visibili `UserType`, `AuthenticationMethod` e `SmtpEncryptionType`;
+  - applicato auto-code backend `CP/OL/DA + NNN` a `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, riusando il pattern esistente e preservando sempre il `code` in update;
+  - aggiornati controller e service Governance/security per usare DTO create/update senza `code` sulle tre entita auto-code e per preservare sempre il `code` in update;
+  - aggiunta la migration Flyway `V23` PostgreSQL/H2 per riallineare in modo deterministico i record gia esistenti di `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, ordinando per `created_at`, poi `id`, con progressivi stabili `CPNNN`/`OLNNN`/`DANNN`;
+  - mantenuti invariati fuori scope i codici di `Role`, `Permission`, `UserType`, `AuthenticationMethod`, `SmtpEncryptionType` e `AuditActionType`;
+  - completata la cancellazione fisica backend per `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType` con endpoint `/physical` e controlli di referenza coerenti con tenant scope/FK esistenti;
+  - resa non editabile da UI la proprieta `code` solo per `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`;
+  - nascosta in modo generale la visualizzazione delle colonne `tenant`, `tenantId` e `tenantName` nella tabella Master Data generica, senza cambiare il componente shared della tabella;
+  - aggiunta nella UI generica l icona delete per le tre entita auto-code Governance/security, riusando il pattern shared di conferma e refresh tabella gia presente nei task HR/business;
+  - aggiornati test backend/frontend per coprire auto-code selettivo, riallineamento dati esistenti, visibilita delle entita Governance/security, payload UI, filtro delle colonne tecniche e cancellazione fisica;
+  - corretta una regressione nel test `MasterDataHrBusinessControllerTests.masterDataHrBusinessPhysicalDeleteIgnoresSameCodeReferencesFromAnotherTenant`, emersa solo con la suite backend completa dopo la patch, riallineando il setup al comportamento auto-code tenant-scoped.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=MasterDataGovernanceSecurityControllerTests,HrmBackendApplicationTests" test`
+  - `cd backend && .\mvnw.cmd "-Dtest=MasterDataHrBusinessControllerTests" test`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+- Esiti reali:
+  - backend test mirato Governance/security + migration: `BUILD SUCCESS`, 70 test, 0 failure, 0 error, 0 skipped;
+  - backend test regressione HR/business: `BUILD SUCCESS`, 16 test, 0 failure, 0 error, 0 skipped;
+  - backend test completo: `BUILD SUCCESS`, 196 test, 0 failure, 0 error, 0 skipped;
+  - frontend build: OK;
+  - frontend test completo: OK, 30 file test passed, 211 test passed.
+- QA manuale:
+  - non eseguita in browser in questa sessione CLI; la patch nasce da un test manuale precedente con esito parziale/fallito sui due gap descritti sopra.
+- Regressioni trovate:
+  - durante il primo run di `cd backend && .\mvnw.cmd test` la suite completa ha rilevato una regressione di test su `MasterDataHrBusinessControllerTests.masterDataHrBusinessPhysicalDeleteIgnoresSameCodeReferencesFromAnotherTenant` (status atteso `204`, ottenuto `409`), poi corretta riallineando il setup del test al comportamento auto-code tenant-scoped;
+  - nessuna regressione residua dopo la correzione e il rerun completo di backend/frontend.
+- Limiti/note:
+  - warning non bloccanti Maven/JVM gia noti (Mockito self-attach / ByteBuddy dynamic agent);
+  - nei log Maven resta un messaggio shell residuale `'D' n est pas reconnu...` senza impatto sull esito (`BUILD SUCCESS`).
+- Stato finale: PASS WITH NOTES
+
 ### TASK-059.2 - Estendere code automatico ai restanti Master Data
 
 - Data: 2026-05-12

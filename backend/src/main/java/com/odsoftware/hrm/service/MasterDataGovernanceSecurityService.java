@@ -9,8 +9,10 @@ import com.odsoftware.hrm.dto.masterdata.governancesecurity.PermissionRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.PermissionResponse;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.RoleRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.RoleResponse;
+import com.odsoftware.hrm.dto.masterdata.governancesecurity.SeverityMasterDataAutoCodeRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.SeverityMasterDataRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.SeverityMasterDataResponse;
+import com.odsoftware.hrm.dto.masterdata.governancesecurity.TenantGovernanceMasterDataAutoCodeRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.TenantGovernanceMasterDataRequest;
 import com.odsoftware.hrm.dto.masterdata.governancesecurity.TenantGovernanceMasterDataResponse;
 import com.odsoftware.hrm.entity.common.BaseTenantMasterEntity;
@@ -26,7 +28,10 @@ import com.odsoftware.hrm.entity.master.UserType;
 import com.odsoftware.hrm.exception.InvalidRequestException;
 import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
+import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
+import com.odsoftware.hrm.repository.core.OfficeLocationRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.repository.disciplinary.EmployeeDisciplinaryActionRepository;
 import com.odsoftware.hrm.repository.master.AuditActionTypeRepository;
 import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.CompanyProfileTypeRepository;
@@ -36,6 +41,7 @@ import com.odsoftware.hrm.repository.master.PermissionRepository;
 import com.odsoftware.hrm.repository.master.RoleRepository;
 import com.odsoftware.hrm.repository.master.SmtpEncryptionTypeRepository;
 import com.odsoftware.hrm.repository.master.UserTypeRepository;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Function;
@@ -58,6 +64,9 @@ public class MasterDataGovernanceSecurityService {
 	private final PermissionRepository permissionRepository;
 	private final CompanyProfileTypeRepository companyProfileTypeRepository;
 	private final OfficeLocationTypeRepository officeLocationTypeRepository;
+	private final CompanyProfileRepository companyProfileRepository;
+	private final OfficeLocationRepository officeLocationRepository;
+	private final EmployeeDisciplinaryActionRepository employeeDisciplinaryActionRepository;
 
 	public MasterDataGovernanceSecurityService(
 			TenantRepository tenantRepository,
@@ -69,7 +78,10 @@ public class MasterDataGovernanceSecurityService {
 			RoleRepository roleRepository,
 			PermissionRepository permissionRepository,
 			CompanyProfileTypeRepository companyProfileTypeRepository,
-			OfficeLocationTypeRepository officeLocationTypeRepository) {
+			OfficeLocationTypeRepository officeLocationTypeRepository,
+			CompanyProfileRepository companyProfileRepository,
+			OfficeLocationRepository officeLocationRepository,
+			EmployeeDisciplinaryActionRepository employeeDisciplinaryActionRepository) {
 		this.tenantRepository = tenantRepository;
 		this.userTypeRepository = userTypeRepository;
 		this.authenticationMethodRepository = authenticationMethodRepository;
@@ -80,6 +92,9 @@ public class MasterDataGovernanceSecurityService {
 		this.permissionRepository = permissionRepository;
 		this.companyProfileTypeRepository = companyProfileTypeRepository;
 		this.officeLocationTypeRepository = officeLocationTypeRepository;
+		this.companyProfileRepository = companyProfileRepository;
+		this.officeLocationRepository = officeLocationRepository;
+		this.employeeDisciplinaryActionRepository = employeeDisciplinaryActionRepository;
 	}
 
 	public MasterDataPageResponse<GlobalGovernanceMasterDataResponse> findUserTypes(Integer page, Integer size, String search) {
@@ -226,24 +241,27 @@ public class MasterDataGovernanceSecurityService {
 	}
 
 	@Transactional
-	public SeverityMasterDataResponse createDisciplinaryActionType(SeverityMasterDataRequest request) {
-		String code = cleanUpper(request.code());
-		if (disciplinaryActionTypeRepository.existsByCode(code)) {
-			throw new ResourceConflictException("Disciplinary action type code already exists: " + code);
-		}
+	public SeverityMasterDataResponse createDisciplinaryActionType(SeverityMasterDataAutoCodeRequest request) {
+		String code = generateNextGlobalCode("DA", disciplinaryActionTypeRepository, "Disciplinary action type");
 		DisciplinaryActionType disciplinaryActionType = new DisciplinaryActionType();
-		applyDisciplinaryActionType(disciplinaryActionType, request, code);
-		return toDisciplinaryActionTypeResponse(disciplinaryActionTypeRepository.save(disciplinaryActionType));
+		applyDisciplinaryActionType(disciplinaryActionType, request.name(), request.severityLevel(), request.active(), code);
+		try {
+			return toDisciplinaryActionTypeResponse(disciplinaryActionTypeRepository.save(disciplinaryActionType));
+		}
+		catch (org.springframework.dao.DataIntegrityViolationException exception) {
+			throw new ResourceConflictException(
+					"Disciplinary action type code generation collision. Retry create operation.");
+		}
 	}
 
 	@Transactional
-	public SeverityMasterDataResponse updateDisciplinaryActionType(UUID id, SeverityMasterDataRequest request) {
+	public SeverityMasterDataResponse updateDisciplinaryActionType(UUID id, SeverityMasterDataAutoCodeRequest request) {
 		DisciplinaryActionType disciplinaryActionType = findDisciplinaryActionType(id);
-		String code = cleanUpper(request.code());
+		String code = cleanUpper(disciplinaryActionType.getCode());
 		if (disciplinaryActionTypeRepository.existsByCodeAndIdNot(code, id)) {
 			throw new ResourceConflictException("Disciplinary action type code already exists: " + code);
 		}
-		applyDisciplinaryActionType(disciplinaryActionType, request, code);
+		applyDisciplinaryActionType(disciplinaryActionType, request.name(), request.severityLevel(), request.active(), code);
 		return toDisciplinaryActionTypeResponse(disciplinaryActionTypeRepository.save(disciplinaryActionType));
 	}
 
@@ -252,6 +270,15 @@ public class MasterDataGovernanceSecurityService {
 		DisciplinaryActionType disciplinaryActionType = findDisciplinaryActionType(id);
 		disciplinaryActionType.setActive(false);
 		disciplinaryActionTypeRepository.save(disciplinaryActionType);
+	}
+
+	@Transactional
+	public void deletePhysicalDisciplinaryActionType(UUID id) {
+		deletePhysicalGlobalMasterData(
+				id,
+				disciplinaryActionTypeRepository,
+				this::isDisciplinaryActionTypeReferenced,
+				"Disciplinary action type");
 	}
 
 	public MasterDataPageResponse<GlobalGovernanceMasterDataResponse> findSmtpEncryptionTypes(Integer page, Integer size, String search) {
@@ -380,18 +407,27 @@ public class MasterDataGovernanceSecurityService {
 	}
 
 	@Transactional
-	public TenantGovernanceMasterDataResponse createCompanyProfileType(TenantGovernanceMasterDataRequest request) {
-		return createTenantMasterData(request, CompanyProfileType::new, companyProfileTypeRepository, companyProfileTypeRepository::existsByTenantIdAndCode, "Company profile type");
+	public TenantGovernanceMasterDataResponse createCompanyProfileType(TenantGovernanceMasterDataAutoCodeRequest request) {
+		return createTenantAutoCodeMasterData(request, CompanyProfileType::new, companyProfileTypeRepository, "Company profile type", "CP");
 	}
 
 	@Transactional
-	public TenantGovernanceMasterDataResponse updateCompanyProfileType(UUID id, TenantGovernanceMasterDataRequest request) {
-		return updateTenantMasterData(id, request, companyProfileTypeRepository, companyProfileTypeRepository::existsByTenantIdAndCodeAndIdNot, "Company profile type");
+	public TenantGovernanceMasterDataResponse updateCompanyProfileType(UUID id, TenantGovernanceMasterDataAutoCodeRequest request) {
+		return updateTenantAutoCodeMasterData(id, request, companyProfileTypeRepository, companyProfileTypeRepository::existsByTenantIdAndCodeAndIdNot, "Company profile type");
 	}
 
 	@Transactional
 	public void disableCompanyProfileType(UUID id) {
 		disableTenantMasterData(id, companyProfileTypeRepository, "Company profile type");
+	}
+
+	@Transactional
+	public void deletePhysicalCompanyProfileType(UUID id) {
+		deletePhysicalTenantMasterData(
+				id,
+				companyProfileTypeRepository,
+				this::isCompanyProfileTypeReferenced,
+				"Company profile type");
 	}
 
 	public MasterDataPageResponse<TenantGovernanceMasterDataResponse> findOfficeLocationTypes(Integer page, Integer size, String search) {
@@ -403,18 +439,27 @@ public class MasterDataGovernanceSecurityService {
 	}
 
 	@Transactional
-	public TenantGovernanceMasterDataResponse createOfficeLocationType(TenantGovernanceMasterDataRequest request) {
-		return createTenantMasterData(request, OfficeLocationType::new, officeLocationTypeRepository, officeLocationTypeRepository::existsByTenantIdAndCode, "Office location type");
+	public TenantGovernanceMasterDataResponse createOfficeLocationType(TenantGovernanceMasterDataAutoCodeRequest request) {
+		return createTenantAutoCodeMasterData(request, OfficeLocationType::new, officeLocationTypeRepository, "Office location type", "OL");
 	}
 
 	@Transactional
-	public TenantGovernanceMasterDataResponse updateOfficeLocationType(UUID id, TenantGovernanceMasterDataRequest request) {
-		return updateTenantMasterData(id, request, officeLocationTypeRepository, officeLocationTypeRepository::existsByTenantIdAndCodeAndIdNot, "Office location type");
+	public TenantGovernanceMasterDataResponse updateOfficeLocationType(UUID id, TenantGovernanceMasterDataAutoCodeRequest request) {
+		return updateTenantAutoCodeMasterData(id, request, officeLocationTypeRepository, officeLocationTypeRepository::existsByTenantIdAndCodeAndIdNot, "Office location type");
 	}
 
 	@Transactional
 	public void disableOfficeLocationType(UUID id) {
 		disableTenantMasterData(id, officeLocationTypeRepository, "Office location type");
+	}
+
+	@Transactional
+	public void deletePhysicalOfficeLocationType(UUID id) {
+		deletePhysicalTenantMasterData(
+				id,
+				officeLocationTypeRepository,
+				this::isOfficeLocationTypeReferenced,
+				"Office location type");
 	}
 
 	private UserType findUserType(UUID id) {
@@ -487,6 +532,24 @@ public class MasterDataGovernanceSecurityService {
 		return toTenantGovernanceMasterDataResponse(repository.save(entity));
 	}
 
+	private <T extends BaseTenantMasterEntity> TenantGovernanceMasterDataResponse createTenantAutoCodeMasterData(
+			TenantGovernanceMasterDataAutoCodeRequest request,
+			Supplier<T> factory,
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			String label,
+			String codePrefix) {
+		validateTenant(request.tenantId());
+		String code = generateNextTenantCode(request.tenantId(), codePrefix, repository, label);
+		T entity = factory.get();
+		applyTenantMasterData(entity, request.tenantId(), code, request.name(), request.active());
+		try {
+			return toTenantGovernanceMasterDataResponse(repository.save(entity));
+		}
+		catch (org.springframework.dao.DataIntegrityViolationException exception) {
+			throw new ResourceConflictException(label + " code generation collision for tenant. Retry create operation.");
+		}
+	}
+
 	private <T extends BaseTenantMasterEntity> TenantGovernanceMasterDataResponse updateTenantMasterData(
 			UUID id,
 			TenantGovernanceMasterDataRequest request,
@@ -503,6 +566,27 @@ public class MasterDataGovernanceSecurityService {
 		return toTenantGovernanceMasterDataResponse(repository.save(entity));
 	}
 
+	private <T extends BaseTenantMasterEntity> TenantGovernanceMasterDataResponse updateTenantAutoCodeMasterData(
+			UUID id,
+			TenantGovernanceMasterDataAutoCodeRequest request,
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			TenantCodeExcludingIdExists existsByTenantIdAndCodeAndIdNot,
+			String label) {
+		T entity = findEntity(id, repository, label);
+		validateTenant(request.tenantId());
+		String code = cleanUpper(entity.getCode());
+		if (existsByTenantIdAndCodeAndIdNot.exists(request.tenantId(), code, id)) {
+			throw new ResourceConflictException(label + " code already exists for tenant: " + code);
+		}
+		applyTenantMasterData(entity, request.tenantId(), code, request.name(), request.active());
+		try {
+			return toTenantGovernanceMasterDataResponse(repository.save(entity));
+		}
+		catch (org.springframework.dao.DataIntegrityViolationException exception) {
+			throw new ResourceConflictException(label + " code already exists for tenant: " + code);
+		}
+	}
+
 	private <T extends BaseTenantMasterEntity> void disableTenantMasterData(
 			UUID id,
 			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
@@ -510,6 +594,42 @@ public class MasterDataGovernanceSecurityService {
 		T entity = findEntity(id, repository, label);
 		entity.setActive(false);
 		repository.save(entity);
+	}
+
+	private <T extends BaseTenantMasterEntity> void deletePhysicalTenantMasterData(
+			UUID id,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
+			TenantEntityReferenceChecker referenceChecker,
+			String label) {
+		T entity = findEntity(id, repository, label);
+		if (referenceChecker.isReferenced(entity)) {
+			throw physicalDeleteConflict(label);
+		}
+		try {
+			repository.delete(entity);
+			repository.flush();
+		}
+		catch (org.springframework.dao.DataIntegrityViolationException exception) {
+			throw physicalDeleteConflict(label);
+		}
+	}
+
+	private <T> void deletePhysicalGlobalMasterData(
+			UUID id,
+			org.springframework.data.jpa.repository.JpaRepository<T, UUID> repository,
+			java.util.function.Predicate<UUID> referenceChecker,
+			String label) {
+		T entity = findEntity(id, repository, label);
+		if (referenceChecker.test(id)) {
+			throw physicalDeleteConflict(label);
+		}
+		try {
+			repository.delete(entity);
+			repository.flush();
+		}
+		catch (org.springframework.dao.DataIntegrityViolationException exception) {
+			throw physicalDeleteConflict(label);
+		}
 	}
 
 	private void validateTenant(UUID tenantId) {
@@ -538,11 +658,16 @@ public class MasterDataGovernanceSecurityService {
 		auditActionType.setActive(activeOrDefault(request.active()));
 	}
 
-	private void applyDisciplinaryActionType(DisciplinaryActionType disciplinaryActionType, SeverityMasterDataRequest request, String code) {
+	private void applyDisciplinaryActionType(
+			DisciplinaryActionType disciplinaryActionType,
+			String name,
+			String severityLevel,
+			Boolean active,
+			String code) {
 		disciplinaryActionType.setCode(code);
-		disciplinaryActionType.setName(clean(request.name()));
-		disciplinaryActionType.setSeverityLevel(cleanUpper(request.severityLevel()));
-		disciplinaryActionType.setActive(activeOrDefault(request.active()));
+		disciplinaryActionType.setName(clean(name));
+		disciplinaryActionType.setSeverityLevel(cleanUpper(severityLevel));
+		disciplinaryActionType.setActive(activeOrDefault(active));
 	}
 
 	private void applySmtpEncryptionType(SmtpEncryptionType smtpEncryptionType, GlobalGovernanceMasterDataRequest request, String code) {
@@ -569,10 +694,19 @@ public class MasterDataGovernanceSecurityService {
 	}
 
 	private void applyTenantMasterData(BaseTenantMasterEntity entity, TenantGovernanceMasterDataRequest request, String code) {
-		entity.setTenantId(request.tenantId());
+		applyTenantMasterData(entity, request.tenantId(), code, request.name(), request.active());
+	}
+
+	private void applyTenantMasterData(
+			BaseTenantMasterEntity entity,
+			UUID tenantId,
+			String code,
+			String name,
+			Boolean active) {
+		entity.setTenantId(tenantId);
 		entity.setCode(code);
-		entity.setName(clean(request.name()));
-		entity.setActive(activeOrDefault(request.active()));
+		entity.setName(clean(name));
+		entity.setActive(activeOrDefault(active));
 	}
 
 	private GlobalGovernanceMasterDataResponse toUserTypeResponse(UserType userType) {
@@ -680,8 +814,86 @@ public class MasterDataGovernanceSecurityService {
 						MasterDataQuerySupport.buildPageable(
 								page,
 								size,
-								MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")))),
+						MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")))),
 				mapper);
+	}
+
+	private <T extends BaseTenantMasterEntity> String generateNextTenantCode(
+			UUID tenantId,
+			String codePrefix,
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			String label) {
+		List<T> tenantEntities = repository.findAll(
+				(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("tenantId"), tenantId),
+				Sort.by(Sort.Order.desc("code")));
+		return nextProgressiveCode(codePrefix, tenantEntities, BaseTenantMasterEntity::getCode, label, true);
+	}
+
+	private String generateNextGlobalCode(
+			String codePrefix,
+			com.odsoftware.hrm.repository.master.MasterDataRepository<DisciplinaryActionType> repository,
+			String label) {
+		return nextProgressiveCode(
+				codePrefix,
+				repository.findAll(Sort.by(Sort.Order.desc("code"))),
+				DisciplinaryActionType::getCode,
+				label,
+				false);
+	}
+
+	private boolean isCompanyProfileTypeReferenced(BaseTenantMasterEntity entity) {
+		return companyProfileRepository.existsByTenant_IdAndCompanyProfileType_Id(entity.getTenantId(), entity.getId());
+	}
+
+	private boolean isOfficeLocationTypeReferenced(BaseTenantMasterEntity entity) {
+		return officeLocationRepository.existsByTenant_IdAndOfficeLocationType_Id(entity.getTenantId(), entity.getId());
+	}
+
+	private boolean isDisciplinaryActionTypeReferenced(UUID id) {
+		return employeeDisciplinaryActionRepository.existsByDisciplinaryActionType_Id(id);
+	}
+
+	private <T> String nextProgressiveCode(
+			String codePrefix,
+			List<T> entities,
+			Function<T, String> codeExtractor,
+			String label,
+			boolean tenantScoped) {
+		int maxProgressive = 0;
+		for (T entity : entities) {
+			int parsedProgressive = parseProgressiveCode(codeExtractor.apply(entity), codePrefix);
+			if (parsedProgressive > maxProgressive) {
+				maxProgressive = parsedProgressive;
+			}
+		}
+
+		if (maxProgressive >= 999) {
+			String exhaustedScope = tenantScoped ? " for tenant" : "";
+			throw new ResourceConflictException(label + " code progressive exhausted" + exhaustedScope);
+		}
+
+		return codePrefix + String.format(Locale.ROOT, "%03d", maxProgressive + 1);
+	}
+
+	private int parseProgressiveCode(String code, String prefix) {
+		String normalizedCode = cleanUpper(code);
+		if (normalizedCode == null || !normalizedCode.startsWith(prefix)) {
+			return -1;
+		}
+		if (normalizedCode.length() != prefix.length() + 3) {
+			return -1;
+		}
+		String progressive = normalizedCode.substring(prefix.length());
+		for (int index = 0; index < progressive.length(); index++) {
+			if (!Character.isDigit(progressive.charAt(index))) {
+				return -1;
+			}
+		}
+		return Integer.parseInt(progressive);
+	}
+
+	private ResourceConflictException physicalDeleteConflict(String label) {
+		return new ResourceConflictException(label + " cannot be physically deleted because it is referenced by other data");
 	}
 
 	@FunctionalInterface
@@ -692,5 +904,10 @@ public class MasterDataGovernanceSecurityService {
 	@FunctionalInterface
 	private interface TenantCodeExcludingIdExists {
 		boolean exists(UUID tenantId, String code, UUID id);
+	}
+
+	@FunctionalInterface
+	private interface TenantEntityReferenceChecker {
+		boolean isReferenced(BaseTenantMasterEntity entity);
 	}
 }

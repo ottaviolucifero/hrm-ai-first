@@ -16,6 +16,7 @@ export type MasterDataRowActionEvent = DataTableRowActionEvent<MasterDataRow>;
 export type MasterDataFormMode = 'create' | 'edit' | 'view';
 export type MasterDataDeleteMode = 'deactivate' | 'physical';
 export type MasterDataFormFieldType = 'text' | 'number' | 'email' | 'boolean';
+export type MasterDataMutationScope = 'tenant' | 'global';
 
 export interface MasterDataFormField {
   readonly key: string;
@@ -39,6 +40,7 @@ export interface MasterDataResource {
   readonly rowActions?: readonly MasterDataRowAction[];
   readonly form?: MasterDataFormConfig;
   readonly autoCode?: boolean;
+  readonly mutationScope?: MasterDataMutationScope;
 }
 
 export interface MasterDataCategory {
@@ -65,12 +67,7 @@ export interface MasterDataPage<T> {
   readonly last: boolean;
 }
 
-export interface MasterDataMutationRequest {
-  readonly tenantId: string;
-  readonly code?: string;
-  readonly name: string;
-  readonly active?: boolean;
-}
+export type MasterDataMutationRequest = Record<string, unknown>;
 
 export const EMPTY_MASTER_DATA_PAGE: MasterDataPage<MasterDataRow> = {
   content: [],
@@ -272,6 +269,33 @@ const STANDARD_CRUD_AUTO_CODE_FORM: MasterDataFormConfig = {
   ]
 } as const;
 
+const STANDARD_CRUD_AUTO_CODE_SEVERITY_FORM: MasterDataFormConfig = {
+  modes: ['create', 'edit', 'view'],
+  fields: [
+    {
+      key: 'code',
+      labelKey: 'masterData.columns.code',
+      readOnly: true,
+      modes: ['edit', 'view']
+    },
+    {
+      key: 'name',
+      labelKey: 'masterData.columns.name',
+      required: true
+    },
+    {
+      key: 'severityLevel',
+      labelKey: 'masterData.columns.severityLevel',
+      required: true
+    },
+    {
+      key: 'active',
+      labelKey: 'masterData.columns.active',
+      type: 'boolean'
+    }
+  ]
+} as const;
+
 export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
   {
     id: 'global',
@@ -349,7 +373,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'job-titles',
@@ -358,7 +383,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'contract-types',
@@ -367,7 +393,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'employment-statuses',
@@ -376,7 +403,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'work-modes',
@@ -385,7 +413,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'leave-request-types',
@@ -394,7 +423,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'document-types',
@@ -403,7 +433,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'device-types',
@@ -412,7 +443,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'device-brands',
@@ -421,7 +453,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'device-statuses',
@@ -430,7 +463,8 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
         rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
         form: STANDARD_CRUD_AUTO_CODE_FORM,
-        autoCode: true
+        autoCode: true,
+        mutationScope: 'tenant'
       }
     ]
   },
@@ -451,16 +485,14 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [CODE_COLUMN, NAME_COLUMN, STRONG_AUTH_REQUIRED_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
       },
       {
-        id: 'audit-action-types',
-        titleKey: 'masterData.entities.auditActionTypes',
-        endpoint: '/api/master-data/governance-security/audit-action-types',
-        columns: [CODE_COLUMN, NAME_COLUMN, SEVERITY_LEVEL_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
-      },
-      {
         id: 'disciplinary-action-types',
         titleKey: 'masterData.entities.disciplinaryActionTypes',
         endpoint: '/api/master-data/governance-security/disciplinary-action-types',
-        columns: [CODE_COLUMN, NAME_COLUMN, SEVERITY_LEVEL_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [CODE_COLUMN, NAME_COLUMN, SEVERITY_LEVEL_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_AUTO_CODE_SEVERITY_FORM,
+        autoCode: true,
+        mutationScope: 'global'
       },
       {
         id: 'smtp-encryption-types',
@@ -469,28 +501,24 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         columns: [CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
       },
       {
-        id: 'roles',
-        titleKey: 'masterData.entities.roles',
-        endpoint: '/api/master-data/governance-security/roles',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, SYSTEM_ROLE_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
-      },
-      {
-        id: 'permissions',
-        titleKey: 'masterData.entities.permissions',
-        endpoint: '/api/master-data/governance-security/permissions',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, SYSTEM_PERMISSION_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
-      },
-      {
         id: 'company-profile-types',
         titleKey: 'masterData.entities.companyProfileTypes',
         endpoint: '/api/master-data/governance-security/company-profile-types',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'office-location-types',
         titleKey: 'masterData.entities.officeLocationTypes',
         endpoint: '/api/master-data/governance-security/office-location-types',
-        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [TENANT_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: STANDARD_CRUD_AUTO_CODE_FORM,
+        autoCode: true,
+        mutationScope: 'tenant'
       }
     ]
   }

@@ -71,7 +71,7 @@
       </div>
 
       <app-data-table
-        [columns]="selectedResource().columns"
+        [columns]="visibleColumns()"
         [rows]="rows()"
         [rowActions]="rowActions()"
         [pageData]="pageData()"

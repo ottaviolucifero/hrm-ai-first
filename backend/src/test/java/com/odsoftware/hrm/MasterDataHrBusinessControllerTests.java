@@ -556,28 +556,28 @@ class MasterDataHrBusinessControllerTests {
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataHrBusinessPhysicalDeleteIgnoresSameCodeReferencesFromAnotherTenant() throws Exception {
 		Tenant secondaryTenant = ensureSecondaryTenant();
-		CompanyProfile secondaryCompany = ensureSecondaryCompany(secondaryTenant);
+		CompanyProfile foundationCompany = companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow();
 
-		CreatedTenantMaster department = createTenantMasterWithCode(
+		CreatedTenantMaster department = createTenantMasterWithTenant(
 				"/api/master-data/hr-business/departments",
-				"TASK0471_MULTI_DEPARTMENT",
+				secondaryTenant.getId(),
 				"Task 047.1 Multi Department");
-		CreatedTenantMaster jobTitle = createTenantMasterWithCode(
+		CreatedTenantMaster jobTitle = createTenantMasterWithTenant(
 				"/api/master-data/hr-business/job-titles",
-				"TASK0471_MULTI_JOB_TITLE",
+				secondaryTenant.getId(),
 				"Task 047.1 Multi Job Title");
-		CreatedTenantMaster contractType = createTenantMasterWithCode(
+		CreatedTenantMaster contractType = createTenantMasterWithTenant(
 				"/api/master-data/hr-business/contract-types",
-				"TASK0471_MULTI_CONTRACT_TYPE",
+				secondaryTenant.getId(),
 				"Task 047.1 Multi Contract Type");
-		CreatedTenantMaster workMode = createTenantMasterWithCode(
+		CreatedTenantMaster workMode = createTenantMasterWithTenant(
 				"/api/master-data/hr-business/work-modes",
-				"TASK0471_MULTI_WORK_MODE",
+				secondaryTenant.getId(),
 				"Task 047.1 Multi Work Mode");
 
 		employeeRepository.saveAndFlush(newEmployee(
-				secondaryTenant,
-				secondaryCompany,
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				foundationCompany,
 				"EMP-T0471-201",
 				department.code(),
 				jobTitle.code(),
@@ -652,6 +652,13 @@ class MasterDataHrBusinessControllerTests {
 
 	private CreatedTenantMaster createTenantMasterWithCode(String path, String code, String name) throws Exception {
 		MvcResult result = mockMvc.perform(postJson(path, tenantMasterRequestForResource(path, code, name)))
+				.andExpect(status().isCreated())
+				.andReturn();
+		return new CreatedTenantMaster(responseId(result), responseCode(result));
+	}
+
+	private CreatedTenantMaster createTenantMasterWithTenant(String path, UUID tenantId, String name) throws Exception {
+		MvcResult result = mockMvc.perform(postJson(path, tenantMasterAutoCodeRequest(tenantId, name)))
 				.andExpect(status().isCreated())
 				.andReturn();
 		return new CreatedTenantMaster(responseId(result), responseCode(result));

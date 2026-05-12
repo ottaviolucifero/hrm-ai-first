@@ -237,6 +237,7 @@ Global, HR/business and governance/security master data CRUD APIs are available;
 TASK-059 completed the physical delete completion for the requested HR/business master data, keeping logical deactivation distinct and reusing the existing DELETE permission model.
 TASK-059.1 completed the code standardization for the 6 requested HR/business master data entities with backend auto-code generation (`PPNNN`), UI non-editable code, and data migration of existing records (including employee employment status mapping).
 TASK-059.2 completed the automatic code extension to `Department`, `JobTitle`, `ContractType` and `WorkMode`, reusing the existing backend/UI pattern and applying V22 data normalization with conditional employee-field remapping only when tenant-scoped `old_code` references actually existed.
+TASK-059.4 completed the Governance/security Master Data rationalization by removing `Role`, `Permission` and `AuditActionType` from the generic UI, keeping `UserType`, `AuthenticationMethod` and `SmtpEncryptionType` visible without auto-code, adding selective auto-code to `CompanyProfileType`, `OfficeLocationType` and `DisciplinaryActionType`, normalizing existing records with Flyway `V23`, enabling physical delete for the three selective auto-code resources in backend/UI, and hiding generic technical tenant columns in the shared Master Data table flow.
 
 Prossimo passo:
 
@@ -400,6 +401,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.33 | 2026-05-12 | TASK-059.4 completato e rifinito dopo test manuale: razionalizzata la Master Data UI Governance/security rimuovendo `Role`, `Permission` e `AuditActionType` dal selettore generico, mantenendo visibili `UserType`/`AuthenticationMethod`/`SmtpEncryptionType`, estendendo auto-code backend/UI a `CompanyProfileType`, `OfficeLocationType` e `DisciplinaryActionType`, aggiungendo migration `V23` per il riallineamento deterministico dei record esistenti, abilitando la cancellazione fisica con icona delete UI per le tre entita e nascondendo le colonne tecniche tenant; test backend/frontend reali verdi, prossimo passo invariato su TASK-061. |
 | 2.32 | 2026-05-12 | TASK-059.2 completato: auto-code esteso a `Department`, `JobTitle`, `ContractType` e `WorkMode`, aggiunta migration V22 PostgreSQL/H2 con remapping condizionale dei campi `employees.*` solo su match reali `old_code` per tenant, prossimo passo aggiornato a TASK-061. |
 | 2.31 | 2026-05-12 | Inserito TASK-059.2 `Estendere code automatico ai restanti Master Data`; prossimo passo riallineato a TASK-059.2 e backlog successivo rinumerato da TASK-060..TASK-072 a TASK-061..TASK-073, con range fasi aggiornati (`2H: 036-069`, `2I: 070-071`, `3: 072-073`). |
 | 2.30 | 2026-05-12 | TASK-059.1 completato: standardizzati i code delle 6 entita HR/business con auto-generazione backend `prefisso+progressivo`, `code` non editabile da UI, migration V21 su PostgreSQL/H2 con aggiornamento dati esistenti e mapping `employees.employment_status`; test backend/frontend reali completati con esito verde. |

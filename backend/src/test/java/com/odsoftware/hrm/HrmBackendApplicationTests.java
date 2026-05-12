@@ -227,6 +227,13 @@ class HrmBackendApplicationTests {
 	private static final UUID UPDATE_AUDIT_ACTION_TYPE_ID = UUID.fromString("72000000-0000-0000-0000-000000000002");
 	private static final UUID WARNING_DISCIPLINARY_ACTION_TYPE_ID = UUID.fromString("73000000-0000-0000-0000-000000000001");
 	private static final UUID SUSPENSION_DISCIPLINARY_ACTION_TYPE_ID = UUID.fromString("73000000-0000-0000-0000-000000000002");
+	private static final UUID TERMINATION_DISCIPLINARY_ACTION_TYPE_ID = UUID.fromString("73000000-0000-0000-0000-000000000003");
+	private static final UUID STARTTLS_SMTP_ENCRYPTION_TYPE_ID = UUID.fromString("74000000-0000-0000-0000-000000000003");
+	private static final UUID FOUNDATION_COMPANY_PROFILE_TYPE_ID = UUID.fromString("77000000-0000-0000-0000-000000000001");
+	private static final UUID FOUNDATION_OPERATIVE_COMPANY_PROFILE_TYPE_ID = UUID.fromString("77000000-0000-0000-0000-000000000002");
+	private static final UUID FOUNDATION_HEADQUARTER_OFFICE_LOCATION_TYPE_ID = UUID.fromString("78000000-0000-0000-0000-000000000001");
+	private static final UUID FOUNDATION_BRANCH_OFFICE_LOCATION_TYPE_ID = UUID.fromString("78000000-0000-0000-0000-000000000002");
+	private static final UUID FOUNDATION_REMOTE_HUB_OFFICE_LOCATION_TYPE_ID = UUID.fromString("78000000-0000-0000-0000-000000000003");
 	private static final UUID TENANT_ADMIN_ROLE_ID = UUID.fromString("75000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_READ_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_WRITE_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000002");
@@ -287,6 +294,72 @@ class HrmBackendApplicationTests {
 		assertThat(permissionRepository.count()).isEqualTo(100);
 		assertThat(companyProfileTypeRepository.count()).isEqualTo(2);
 		assertThat(officeLocationTypeRepository.count()).isEqualTo(3);
+	}
+
+	@Test
+	void flywayMigrationStandardizesGovernanceSecuritySelectiveAutoCodeSeeds() {
+		assertThat(companyProfileTypeRepository.findById(FOUNDATION_COMPANY_PROFILE_TYPE_ID))
+				.get()
+				.extracting(companyProfileType -> companyProfileType.getCode())
+				.isEqualTo("CP001");
+		assertThat(companyProfileTypeRepository.findById(FOUNDATION_OPERATIVE_COMPANY_PROFILE_TYPE_ID))
+				.get()
+				.extracting(companyProfileType -> companyProfileType.getCode())
+				.isEqualTo("CP002");
+		assertThat(officeLocationTypeRepository.findById(FOUNDATION_HEADQUARTER_OFFICE_LOCATION_TYPE_ID))
+				.get()
+				.extracting(officeLocationType -> officeLocationType.getCode())
+				.isEqualTo("OL001");
+		assertThat(officeLocationTypeRepository.findById(FOUNDATION_BRANCH_OFFICE_LOCATION_TYPE_ID))
+				.get()
+				.extracting(officeLocationType -> officeLocationType.getCode())
+				.isEqualTo("OL002");
+		assertThat(officeLocationTypeRepository.findById(FOUNDATION_REMOTE_HUB_OFFICE_LOCATION_TYPE_ID))
+				.get()
+				.extracting(officeLocationType -> officeLocationType.getCode())
+				.isEqualTo("OL003");
+		assertThat(disciplinaryActionTypeRepository.findById(WARNING_DISCIPLINARY_ACTION_TYPE_ID))
+				.get()
+				.extracting(disciplinaryActionType -> disciplinaryActionType.getCode())
+				.isEqualTo("DA001");
+		assertThat(disciplinaryActionTypeRepository.findById(SUSPENSION_DISCIPLINARY_ACTION_TYPE_ID))
+				.get()
+				.extracting(disciplinaryActionType -> disciplinaryActionType.getCode())
+				.isEqualTo("DA002");
+		assertThat(disciplinaryActionTypeRepository.findById(TERMINATION_DISCIPLINARY_ACTION_TYPE_ID))
+				.get()
+				.extracting(disciplinaryActionType -> disciplinaryActionType.getCode())
+				.isEqualTo("DA003");
+	}
+
+	@Test
+	void flywayMigrationKeepsTechnicalGovernanceSecurityCodesStableOutsideSelectiveAutoCode() {
+		assertThat(userTypeRepository.findById(TENANT_ADMIN_USER_TYPE_ID))
+				.get()
+				.extracting(userType -> userType.getCode())
+				.isEqualTo("TENANT_ADMIN");
+		assertThat(authenticationMethodRepository.findById(PASSWORD_ONLY_AUTHENTICATION_METHOD_ID))
+				.get()
+				.extracting(authenticationMethod -> authenticationMethod.getCode())
+				.isEqualTo("PASSWORD_ONLY");
+		assertThat(auditActionTypeRepository.findById(CREATE_AUDIT_ACTION_TYPE_ID))
+				.get()
+				.extracting(auditActionType -> auditActionType.getCode())
+				.isEqualTo("CREATE");
+		assertThat(auditActionTypeRepository.findById(UPDATE_AUDIT_ACTION_TYPE_ID))
+				.get()
+				.extracting(auditActionType -> auditActionType.getCode())
+				.isEqualTo("UPDATE");
+		assertThat(smtpEncryptionTypeRepository.findById(STARTTLS_SMTP_ENCRYPTION_TYPE_ID))
+				.get()
+				.extracting(smtpEncryptionType -> smtpEncryptionType.getCode())
+				.isEqualTo("STARTTLS");
+		assertThat(roleRepository.findAll())
+				.extracting(role -> role.getCode())
+				.contains("TENANT_ADMIN", "HR_MANAGER", "SUPERVISOR");
+		assertThat(permissionRepository.findAll())
+				.extracting(Permission::getCode)
+				.contains("TENANT.MASTER_DATA.READ", "TENANT.MASTER_DATA.CREATE", "TENANT.MASTER_DATA.UPDATE", "TENANT.MASTER_DATA.DELETE");
 	}
 
 	@Test
