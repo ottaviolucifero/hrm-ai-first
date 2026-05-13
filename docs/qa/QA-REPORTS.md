@@ -2193,5 +2193,18 @@ Nota operativa:
   - QA manuale browser non eseguita in questa sessione CLI.
 - Stato finale: PASS
 
+### TASK-064 - Follow-up subtask planning update (documentale)
+
+- Data: 2026-05-13
+- Branch: `task-064-tenant-crud-administration`
+- Task: TASK-064 - Tenant CRUD Administration and backlog reorganization
+- Agente/Modello usato: GPT-5
+- Area verificata: aggiornamento documentale di `TASKS.md` e `ROADMAP.md` con sezione follow-up subtask `TASK-064.1`..`TASK-064.5`
+- Comandi eseguiti: nessun comando di test/build; aggiornamento solo documentale
+- Esiti reali: documentazione allineata; nessuna modifica runtime/backend/frontend applicativa
+- QA manuale browser eseguita/non eseguita: non eseguita (non richiesta per update documentale)
+- Limiti/note: test automatici non rieseguiti in questo passaggio perche non sono stati modificati file applicativi
+- Stato finale: PASS WITH NOTES
+
 
 

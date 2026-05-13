@@ -1518,7 +1518,7 @@ TASK-062 resta il task documentale/decisionale dedicato a questa scelta.
 
 TASK-063 dovra implementare la foundation backend con migration DB, aggiornamento entity/repository/service/API, tenant scope per `Region` e `Area`, eventuale `tenant_id` nullable sui CAP se viene confermata la tabella ibrida, test backend e verifica impatti su Employee, OfficeLocation, HolidayCalendar e Master Data globali.
 
-TASK-064 Employee UI potra partire solo dopo TASK-062 e TASK-063, in modo da usare select, readonly/freeze fields e riuso dati geografici su un contratto backend stabilizzato.
+TASK-065 Employee UI potra partire solo dopo TASK-062, TASK-063 e TASK-064, in modo da usare select, readonly/freeze fields e riuso dati geografici su un contratto backend stabilizzato.
 
 La decisione non introduce codice, migration o test in questa fase.
 
@@ -1528,7 +1528,7 @@ La decisione non introduce codice, migration o test in questa fase.
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 1.33 | 2026-05-13 | Aggiunta DEC-038 per formalizzare il modello geografico indirizzi tenant-aware: Country globale, Region/Area tenant-scoped, ZIP/CAP ibrido globale Italia e tenant per altri paesi, City come attributo ZIP/CAP e prerequisito per TASK-063/TASK-064. |
+| 1.33 | 2026-05-13 | Aggiunta DEC-038 per formalizzare il modello geografico indirizzi tenant-aware: Country globale, Region/Area tenant-scoped, ZIP/CAP ibrido globale Italia e tenant per altri paesi, City come attributo ZIP/CAP e prerequisito per TASK-063/TASK-065. |
 | 1.32 | 2026-05-12 | Aggiunta DEC-037 per formalizzare il pattern shared di conferma per azioni UI critiche/distruttive, con riuso obbligatorio, coerenza UX, i18n e integrazione attesa con il shared DataTable. |
 | 1.31 | 2026-05-11 | Aggiunta DEC-036 per formalizzare la visibility frontend centralizzata su summary CRUD, sidebar visibile ma frozen senza permessi, route guardate su `view/create/update` e default frozen quando `/api/auth/me` non espone permission summary reale. |
 | 1.30 | 2026-05-11 | Aggiunta DEC-035 per formalizzare il link opzionale `UserAccount.employee`, account validi senza Employee, fallback email/tipo account e divieto di duplicare dati anagrafici su `UserAccount`. |

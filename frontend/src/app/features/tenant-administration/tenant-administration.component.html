@@ -1,0 +1,148 @@
+<section class="kt-container-fixed py-4 tenant-admin-page" aria-labelledby="tenant-admin-title">
+  <div class="tenant-admin-layout">
+    <header class="tenant-admin-page-header">
+      <div class="tenant-admin-heading">
+        <span class="tenant-admin-eyebrow">{{ i18n.t('nav.governanceSecurity') }}</span>
+        <h1 id="tenant-admin-title" class="text-xl font-semibold text-mono">{{ i18n.t('nav.tenants') }}</h1>
+        <p class="tenant-admin-subtitle">{{ i18n.t('tenantAdministration.subtitle') }}</p>
+      </div>
+
+      <div class="tenant-admin-page-actions" role="group" [attr.aria-label]="i18n.t('tenantAdministration.actions.toolbar')">
+        <app-button
+          variant="primary"
+          size="sm"
+          icon="ki-filled ki-plus"
+          [label]="i18n.t('tenantAdministration.actions.new')"
+          [disabled]="loading() || deleting() || !modulePermissions().canCreate"
+          (pressed)="openCreateForm()" />
+      </div>
+    </header>
+
+    <section class="kt-card tenant-admin-list-card" aria-labelledby="tenant-admin-list-title">
+      <div class="tenant-admin-list-toolbar">
+        <div class="tenant-admin-list-heading">
+          <h2 id="tenant-admin-list-title" class="tenant-admin-list-title">{{ i18n.t('tenantAdministration.list.title') }}</h2>
+          <div class="tenant-admin-list-meta-row">
+            <p class="tenant-admin-list-meta">{{ i18n.t('tenantAdministration.list.subtitle') }}</p>
+            <span class="tenant-admin-record-count">{{ pageData().totalElements }} {{ i18n.t('dataTable.pagination.results') }}</span>
+          </div>
+        </div>
+
+        <label class="tenant-admin-table-search">
+          <span class="tenant-admin-search-label">{{ i18n.t('tenantAdministration.searchLabel') }}</span>
+          <input
+            class="kt-input tenant-admin-search-input"
+            type="search"
+            [disabled]="deleting()"
+            [value]="searchInput()"
+            [placeholder]="i18n.t('tenantAdministration.searchPlaceholder')"
+            (input)="updateSearch($event)" />
+        </label>
+      </div>
+
+      <div class="tenant-admin-note" aria-live="polite">
+        <p>{{ i18n.t('tenantAdministration.notes.platformOnly') }}</p>
+        <p>{{ i18n.t('tenantAdministration.notes.deletePolicy') }}</p>
+      </div>
+
+      <app-data-table
+        [columns]="columns()"
+        [rows]="rows()"
+        [rowActions]="rowActions()"
+        [pageData]="pageData()"
+        [pageSizeOptions]="pageSizeOptions"
+        [loading]="loading()"
+        [hasError]="hasError()"
+        [errorMessageKey]="'tenantAdministration.errors.load'"
+        [emptyMessageKey]="tableEmptyMessageKey()"
+        (rowAction)="handleRowAction($event)"
+        (previousPage)="goToPreviousPage()"
+        (nextPage)="goToNextPage()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="updatePageSize($event)" />
+    </section>
+
+    @if (isModalOpen()) {
+      <div class="tenant-admin-modal-overlay" role="presentation">
+        <div class="kt-card tenant-admin-modal" role="dialog" aria-modal="true" aria-labelledby="tenant-admin-modal-title">
+          @if (modalLoading()) {
+            <section class="tenant-admin-state" role="status">{{ i18n.t('tenantAdministration.form.loading') }}</section>
+          } @else {
+            <form class="tenant-admin-form" [formGroup]="form" (ngSubmit)="submitModal()">
+              <div class="tenant-admin-modal-header">
+                <div>
+                  <h2 id="tenant-admin-modal-title" class="tenant-admin-modal-title">{{ i18n.t(modalTitleKey()) }}</h2>
+                  <p class="tenant-admin-modal-subtitle">{{ i18n.t('tenantAdministration.form.subtitle') }}</p>
+                </div>
+              </div>
+
+              <div class="tenant-admin-form-grid">
+                <label class="tenant-admin-field">
+                  <span>{{ i18n.t('masterData.columns.code') }}</span>
+                  <input class="kt-input" type="text" formControlName="code" [readonly]="modalReadOnly()" />
+                </label>
+
+                <label class="tenant-admin-field">
+                  <span>{{ i18n.t('masterData.columns.name') }}</span>
+                  <input class="kt-input" type="text" formControlName="name" [readonly]="modalReadOnly()" />
+                </label>
+
+                <label class="tenant-admin-field tenant-admin-field-wide">
+                  <span>{{ i18n.t('tenantAdministration.columns.legalName') }}</span>
+                  <input class="kt-input" type="text" formControlName="legalName" [readonly]="modalReadOnly()" />
+                </label>
+
+                <label class="tenant-admin-field">
+                  <span>{{ i18n.t('tenantAdministration.columns.defaultCountry') }}</span>
+                  <select class="kt-input" formControlName="defaultCountryId" [disabled]="modalReadOnly()">
+                    <option value="">{{ i18n.t('tenantAdministration.form.selectCountry') }}</option>
+                    @for (country of formOptions()?.countries ?? []; track country.id) {
+                      <option [value]="country.id">{{ country.name }} ({{ country.code }})</option>
+                    }
+                  </select>
+                </label>
+
+                <label class="tenant-admin-field">
+                  <span>{{ i18n.t('tenantAdministration.columns.defaultCurrency') }}</span>
+                  <select class="kt-input" formControlName="defaultCurrencyId" [disabled]="modalReadOnly()">
+                    <option value="">{{ i18n.t('tenantAdministration.form.selectCurrency') }}</option>
+                    @for (currency of formOptions()?.currencies ?? []; track currency.id) {
+                      <option [value]="currency.id">{{ currency.name }} ({{ currency.code }})</option>
+                    }
+                  </select>
+                </label>
+              </div>
+
+              <div class="tenant-admin-form-summary">
+                <app-checkbox
+                  [label]="i18n.t('masterData.columns.active')"
+                  [checked]="form.controls.active.getRawValue()"
+                  [disabled]="true"
+                  [helpText]="i18n.t('tenantAdministration.form.activeHelp')" />
+              </div>
+
+              <div class="tenant-admin-form-actions">
+                <app-button
+                  variant="secondary"
+                  type="button"
+                  [label]="i18n.t(modalReadOnly() ? 'confirmDialog.actions.close' : 'masterData.form.cancel')"
+                  [disabled]="saving()"
+                  (pressed)="closeModal()" />
+                @if (!modalReadOnly()) {
+                  <app-button
+                    type="submit"
+                    variant="primary"
+                    icon="ki-filled ki-check"
+                    [label]="i18n.t(modalSubmitLabelKey())"
+                    [loadingLabel]="i18n.t(modalSubmitLoadingLabelKey())"
+                    [loading]="saving()"
+                    [disabled]="saving()" />
+                }
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>

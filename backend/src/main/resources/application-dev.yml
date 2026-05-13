@@ -7,6 +7,13 @@ spring:
   jpa:
     show-sql: true
 
+hrm:
+  dev:
+    platform-admin:
+      enabled: ${HRM_DEV_PLATFORM_ADMIN_ENABLED:false}
+      email: ${HRM_DEV_PLATFORM_ADMIN_EMAIL:ottavio.lucifero@igesa.it}
+      password: ${HRM_DEV_PLATFORM_ADMIN_PASSWORD:}
+
 management:
   endpoint:
     health:

@@ -7,6 +7,7 @@ import { LoginComponent } from './features/login/login.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
 import { RoleAdministrationComponent } from './features/role-administration/role-administration.component';
 import { RolePermissionMatrixComponent } from './features/role-permissions/role-permission-matrix.component';
+import { TenantAdministrationComponent } from './features/tenant-administration/tenant-administration.component';
 import { UserAdministrationComponent } from './features/user-administration/user-administration.component';
 import { UserAdministrationDetailComponent } from './features/user-administration/user-administration-detail.component';
 import { UserAdministrationFormComponent } from './features/user-administration/user-administration-form.component';
@@ -39,6 +40,15 @@ export const routes: Routes = [
       {
         path: 'admin',
         children: [
+          {
+            path: 'tenants',
+            component: TenantAdministrationComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'tenants',
+              requiredAction: 'view'
+            }
+          },
           {
             path: 'roles',
             component: RoleAdministrationComponent,
