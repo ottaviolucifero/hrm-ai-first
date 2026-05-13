@@ -1,0 +1,189 @@
+.tenant-admin-page {
+  display: block;
+}
+
+.tenant-admin-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.tenant-admin-page-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.tenant-admin-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.tenant-admin-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tenant-admin-subtitle,
+.tenant-admin-list-meta,
+.tenant-admin-note {
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-admin-list-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.tenant-admin-list-toolbar {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.tenant-admin-list-heading {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tenant-admin-list-meta-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.tenant-admin-record-count {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+}
+
+.tenant-admin-table-search {
+  display: grid;
+  gap: 0.35rem;
+  min-width: min(100%, 18rem);
+}
+
+.tenant-admin-search-label {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tenant-admin-search-input {
+  min-height: 2.375rem;
+}
+
+.tenant-admin-note {
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 0.5rem;
+  display: grid;
+  font-size: 0.875rem;
+  gap: 0.25rem;
+  padding: 0.75rem 0.875rem;
+}
+
+.tenant-admin-note p {
+  margin: 0;
+}
+
+.tenant-admin-page-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.tenant-admin-modal-overlay {
+  align-items: center;
+  background: rgb(15 23 42 / 44%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 1100;
+}
+
+.tenant-admin-modal {
+  max-height: calc(100vh - 2rem);
+  max-width: 52rem;
+  overflow: auto;
+  padding: 1.25rem;
+  width: min(100%, 52rem);
+}
+
+.tenant-admin-modal-header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tenant-admin-modal-title {
+  margin: 0;
+}
+
+.tenant-admin-modal-subtitle,
+.tenant-admin-state {
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-admin-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.tenant-admin-form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tenant-admin-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tenant-admin-field span {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tenant-admin-field-wide {
+  grid-column: 1 / -1;
+}
+
+.tenant-admin-form-summary {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1rem;
+}
+
+.tenant-admin-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 960px) {
+  .tenant-admin-page-header,
+  .tenant-admin-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tenant-admin-table-search,
+  .tenant-admin-form-grid {
+    min-width: 0;
+  }
+
+  .tenant-admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

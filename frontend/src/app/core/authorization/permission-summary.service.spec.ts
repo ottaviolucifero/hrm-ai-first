@@ -63,6 +63,23 @@ describe('PermissionSummaryService', () => {
     expect(summary.isFrozen).toBe(false);
   });
 
+  it('supports platform tenant administration permissions', () => {
+    const summary = service.summaryForModule({
+      id: 'user-1',
+      tenantId: 'tenant-1',
+      email: 'qa@example.com',
+      userType: 'PLATFORM_SUPER_ADMIN',
+      permissions: ['PLATFORM.TENANT.READ', 'PLATFORM.TENANT.UPDATE', 'PLATFORM.TENANT.DELETE']
+    }, 'tenants');
+
+    expect(summary.canView).toBe(true);
+    expect(summary.canCreate).toBe(false);
+    expect(summary.canUpdate).toBe(true);
+    expect(summary.canDelete).toBe(true);
+    expect(summary.hasAnyPermission).toBe(true);
+    expect(summary.isFrozen).toBe(false);
+  });
+
   it('ignores USER_TYPE authorities and invalid codes', () => {
     const summary = service.summaryForModule({
       id: 'user-1',

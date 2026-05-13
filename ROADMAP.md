@@ -135,8 +135,14 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-064 Implementare UI Employee management enterprise
+- TASK-064 Tenant CRUD Administration and backlog reorganization
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
+- Follow-up subtask pianificati post TASK-064:
+- TASK-064.1 Tenant UI naming and layout refinement
+- TASK-064.2 Tenant automatic code generation
+- TASK-064.3 Automatic code standard for future entities
+- TASK-064.4 Company Profile fiscal fields
+- TASK-064.5 Company Profile Administration UI foundation
 
 ---
 
@@ -246,14 +252,20 @@ TASK-060 completed the role custom-code decision and implementation by confirmin
 
 Prossimo passo:
 
-- TASK-064 Implementare UI Employee management enterprise
+- TASK-065 Implementare UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
+- Follow-up subtask post chiusura TASK-064:
+- TASK-064.1 Tenant UI naming and layout refinement
+- TASK-064.2 Tenant automatic code generation
+- TASK-064.3 Automatic code standard for future entities
+- TASK-064.4 Company Profile fiscal fields
+- TASK-064.5 Company Profile Administration UI foundation
 
 Sequenza immediata Employee/geography:
 
 - TASK-062: decisione documentale sul modello geografico indirizzi completata tramite `DEC-038`;
 - TASK-063: foundation backend geography con tenant scope Region/Area e modello ZIP/CAP ibrido completata;
-- TASK-064: UI Employee management enterprise, prossimo step dopo TASK-063.
+- TASK-065: UI Employee management enterprise, prossimo step dopo TASK-064.
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -388,15 +400,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Geography / Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-071
+- TASK-036 -> TASK-072
 
 ### Fase 2I - Platform Operations
 
-- TASK-072 -> TASK-073
+- TASK-073 -> TASK-074
 
 ### Fase 3 - Stabilization
 
-- TASK-074 -> TASK-075
+- TASK-075 -> TASK-076
 
 ---
 
@@ -412,9 +424,10 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 2.40 | 2026-05-13 | TASK-063 completato: foundation backend geography chiusa in coerenza con `DEC-038` tramite migration `V24`/`V25`, tenant scope su `Region`/`Area`, modello ZIP/CAP ibrido e test backend completi verdi; prossimo passo aggiornato a `TASK-064` Employee UI. |
-| 2.39 | 2026-05-13 | TASK-062 chiuso come decisione documentale completata tramite `DEC-038`; prossimo passo riallineato a `TASK-063 Address geography backend foundation`, `TASK-062` aggiunto tra i completati e confermata la sequenza `TASK-063` -> `TASK-064`. |
-| 2.38 | 2026-05-13 | Inseriti TASK-062 Address geography model decision e TASK-063 Address geography backend foundation prima della UI Employee; Employee UI slitta a TASK-064, il prossimo passo passa a TASK-062 e i range fase vengono riallineati (`2H: 036-071`, `2I: 072-073`, `3: 074-075`). |
+| 2.41 | 2026-05-13 | Aggiornato TASK-064 in roadmap con follow-up subtask pianificati `TASK-064.1`..`TASK-064.5` (Tenant UI naming/layout, auto-code Tenant, standard auto-code futuro, campi fiscali `CompanyProfile`, foundation UI `CompanyProfile`) mantenendo TASK-064 corrente focalizzato sul CRUD Tenant. |
+| 2.40 | 2026-05-13 | TASK-063 completato: foundation backend geography chiusa in coerenza con `DEC-038` tramite migration `V24`/`V25`, tenant scope su `Region`/`Area`, modello ZIP/CAP ibrido e test backend completi verdi; prossimo passo aggiornato a `TASK-065` Employee UI. |
+| 2.39 | 2026-05-13 | TASK-062 chiuso come decisione documentale completata tramite `DEC-038`; prossimo passo riallineato a `TASK-063 Address geography backend foundation`, `TASK-062` aggiunto tra i completati e confermata la sequenza `TASK-063` -> `TASK-065`. |
+| 2.38 | 2026-05-13 | Inseriti TASK-062 Address geography model decision e TASK-063 Address geography backend foundation prima della UI Employee; l Employee UI slitta a `TASK-065`, viene introdotto il nuovo `TASK-064` Tenant CRUD Administration and backlog reorganization e i range fase vengono riallineati (`2H: 036-072`, `2I: 073-074`, `3: 075-076`). |
 | 2.37 | 2026-05-12 | TASK-060 completato: confermato che le autorizzazioni runtime dipendono da `permission.code`, mantenuti i codici semantici dei ruoli seed, introdotto auto-code tenant-scoped `RO###` per i ruoli custom con create senza `code` e edit/view read-only; prossimo passo riallineato a `TASK-062`. |
 | 2.36 | 2026-05-12 | Ricostruito `TASK-060` come task documentale separato tra `TASK-059.4` e `TASK-061`, dedicato alla verifica cross-stack dell'uso tecnico di `Role.code` e alla scelta tra codice tecnico, auto-code business/UI o separazione dei due concetti; prossimo passo riallineato a `TASK-060` senza modifiche runtime. |
 | 2.35 | 2026-05-12 | TASK-061 completato: consolidata la consistenza i18n di alert/messages frontend con build/test OK, frontend locale avviato OK, QA manuale browser completata con cambio lingua `it/fr/en` e nessuna regressione rilevata; prossimo passo aggiornato a TASK-062. |

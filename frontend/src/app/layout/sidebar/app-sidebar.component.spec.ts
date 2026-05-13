@@ -28,6 +28,7 @@ describe('AppSidebarComponent', () => {
               userType: 'TENANT_ADMIN',
               permissions: [
                 'TENANT.MASTER_DATA.READ',
+                'PLATFORM.TENANT.READ',
                 'TENANT.ROLE.READ',
                 'TENANT.USER.READ',
                 'TENANT.PERMISSION.READ'
@@ -41,6 +42,7 @@ describe('AppSidebarComponent', () => {
           {
             path: 'admin',
             children: [
+              { path: 'tenants', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },
               { path: 'users', component: DummyRouteComponent },
               { path: 'permissions', component: DummyRouteComponent }
@@ -66,6 +68,7 @@ describe('AppSidebarComponent', () => {
     expect(compiled.textContent).toContain('Persone');
     expect(compiled.textContent).toContain('Dati di base');
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]')).toBeTruthy();
+    expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/tenants"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/roles"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/users"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/permissions"]')).toBeTruthy();
@@ -152,6 +155,7 @@ describe('AppSidebarComponent', () => {
           {
             path: 'admin',
             children: [
+              { path: 'tenants', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },
               { path: 'users', component: DummyRouteComponent },
               { path: 'permissions', component: DummyRouteComponent }

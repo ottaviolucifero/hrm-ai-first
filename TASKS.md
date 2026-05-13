@@ -4335,7 +4335,7 @@ Vincoli:
 Output atteso:
 
 - decisione architetturale tracciata in `DECISIONS.md`;
-- backlog aggiornato con TASK-063 backend foundation e TASK-064 Employee UI;
+- backlog aggiornato con TASK-063 backend foundation e TASK-065 Employee UI;
 - eventuali impatti su `ARCHITECTURE.md` demandati al task tecnico/documentale successivo se il backend foundation richiede dettaglio strutturale aggiuntivo.
 
 Completato:
@@ -4343,7 +4343,7 @@ Completato:
 - decisione architetturale formalizzata in `DECISIONS.md` tramite `DEC-038`;
 - confermata la sequenza corretta:
   - `TASK-063` backend geography foundation;
-  - `TASK-064` Employee UI;
+  - `TASK-065` Employee UI;
 - nessun codice introdotto;
 - nessuna migration introdotta;
 - nessun test modificato;
@@ -4405,7 +4405,118 @@ Nota architetturale:
 
 `DEC-038` resta invariata. Il task consolida il backend geography tenant-aware senza introdurre `City`, senza frontend e senza cambiare il modello Employee oltre alla compatibilita con i riferimenti geography esistenti.
 
-### TASK-064 - Implementare UI Employee management enterprise
+### TASK-064 - Tenant CRUD Administration and backlog reorganization
+
+Stato: IN_PROGRESS
+
+Tipo: Full-stack administration CRUD + backlog governance
+
+Obiettivo:
+
+Implementare la gestione CRUD dei Tenant nella piattaforma HRM, riusando il modello tenant-aware esistente e aggiornando la documentazione di backlog con la nuova numerazione.
+
+Include:
+
+- riorganizzazione numerazione task in `TASKS.md`;
+- aggiornamento coerente `ROADMAP.md`;
+- analisi del modello `Tenant` esistente;
+- backend CRUD Tenant Administration platform-only;
+- DTO request/response coerenti con i pattern esistenti;
+- validazioni minime su `code`, `name`, `legalName`, `defaultCountry`, `defaultCurrency`;
+- gestione `active/inactive` coerente con il modello esistente;
+- API REST tenant administration sotto `/api/admin/tenants`;
+- frontend Angular per lista Tenant;
+- frontend Angular per creazione/modifica/dettaglio Tenant;
+- azioni activate/deactivate/delete coerenti con i pattern esistenti;
+- riuso di `DataTableComponent`, dialog conferma e pattern CRUD administration esistenti;
+- i18n `it`/`fr`/`en` per tutti i testi UI;
+- aggiornamento catalogo permissions/authorities e matrice ruoli se necessario;
+- test backend;
+- build/test frontend;
+- aggiornamento `docs/qa/QA-REPORTS.md`.
+
+Vincoli:
+
+- non introdurre un modello `Tenant` parallelo;
+- non modificare la governance tenant-aware fuori scope;
+- non modificare `SecurityConfig` o login salvo reale necessità documentata per il nuovo endpoint mapping;
+- non introdurre billing, subscription, piani commerciali o onboarding tenant completo;
+- non duplicare componenti tabellari frontend;
+- non introdurre redesign UI;
+- rispettare i pattern CRUD già presenti;
+- rispettare i18n frontend;
+- rispettare il principio tenant-aware già esistente;
+- il CRUD Tenant resta platform-only;
+- il delete fisico segue la policy già documentata: hard delete controllato separato da activate/deactivate, con blocco su tenant referenziati;
+- non fare commit.
+
+Prerequisiti:
+
+- TASK-055 completato per enforcement RBAC backend sugli endpoint admin;
+- TASK-056 completato per riuso del confirmation dialog frontend.
+
+Follow-up subtask pianificati (post TASK-064):
+
+### TASK-064.1 - Tenant UI naming and layout refinement
+
+Stato: TODO
+
+Obiettivo:
+
+- mostrare `legalName` come `Nome gruppo` / `Group name` / `Nom du groupe`;
+- valutare se modificare solo label/i18n frontend o anche DTO;
+- correggere layout tabella Tenant spostata a destra;
+- allineare layout a Master Data, Ruoli e Utenti;
+- eseguire test/build frontend.
+
+### TASK-064.2 - Tenant automatic code generation
+
+Stato: TODO
+
+Obiettivo:
+
+- rendere `code` Tenant automatico e non editabile;
+- formato `TE001`, `TE002`, `TE003`;
+- generazione codice lato backend;
+- UI senza editing manuale del codice;
+- test backend/frontend.
+
+### TASK-064.3 - Automatic code standard for future entities
+
+Stato: TODO
+
+Obiettivo:
+
+- documentare lo standard: ogni nuova entita con campo `code` deve usare codice automatico;
+- formato: prime due lettere entita + progressivo a 3 cifre;
+- eccezioni ammesse solo se documentate.
+
+### TASK-064.4 - Company Profile fiscal fields
+
+Stato: TODO
+
+Obiettivo:
+
+- aggiungere `taxNumber` su `CompanyProfile`;
+- usare label/traduzioni generiche per `it`/`fr`/`en`;
+- aggiungere campi Italia-specifici `pecEmail` e `sdiCode`;
+- copertura migration/entity/DTO/test;
+- non inserire questi dati su `Tenant`.
+
+### TASK-064.5 - Company Profile Administration UI foundation
+
+Stato: TODO
+
+Obiettivo:
+
+- creare UI amministrativa `CompanyProfile`;
+- lista/dettaglio/modifica;
+- relazione con `Tenant`;
+- gestione campi esistenti e predisposizione campi fiscali;
+- i18n `it`/`fr`/`en`;
+- riuso componenti shared.
+
+### TASK-065 - Implementare UI Employee management enterprise
 
 Stato: TODO
 
@@ -4418,7 +4529,7 @@ Nota:
 
 La UI Employee deve usare il modello geografico indirizzi stabilizzato prima di implementare form, select, readonly/freeze fields e riuso dei dati geografici per Employee.
 
-### TASK-065 - Implementare Security Admin UI
+### TASK-066 - Implementare Security Admin UI
 
 Stato: TODO
 
@@ -4430,47 +4541,47 @@ Include:
 - ruoli;
 - permessi.
 
-### TASK-066 - Implementare UI Device governance
+### TASK-067 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-067 - Implementare UI PayrollDocument
+### TASK-068 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-068 - Implementare UI LeaveRequest
+### TASK-069 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-069 - Implementare UI HolidayCalendar
+### TASK-070 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-070 - Implementare Audit UI / compliance explorer
+### TASK-071 - Implementare Audit UI / compliance explorer
 
 Stato: TODO
 
-### TASK-071 - Implementare UI disciplinary governance
+### TASK-072 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-072 - Implementare Platform Operator / Super Admin governance
+### TASK-073 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-073 - Implementare Cross-tenant admin UI
+### TASK-074 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-074 - Configurare logging, monitoring e observability enterprise
+### TASK-075 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-075 - Test integrato MVP enterprise completo
+### TASK-076 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -4480,9 +4591,10 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 2.37 | 2026-05-13 | TASK-063 completato: introdotta la foundation backend geography tenant-aware conforme a `DEC-038` con migration Flyway `V24`/`V25`, `Region` e `Area` tenant-scoped, modello ZIP/CAP ibrido su `global_zip_codes`, test backend reali verdi e prossimo passo riallineato a `TASK-064` Employee UI. |
-| 2.36 | 2026-05-13 | TASK-062 chiuso come DONE documentale: formalizzata la decisione architetturale sul modello geografico tramite `DEC-038`, confermato che il task non introduce codice, migration, test o UI e mantenuta la sequenza `TASK-063` backend foundation -> `TASK-064` Employee UI. |
-| 2.35 | 2026-05-13 | Inseriti TASK-062 Address geography model decision e TASK-063 Address geography backend foundation prima della UI Employee; l'ex TASK-062 Employee UI slitta a TASK-064 con prerequisiti espliciti TASK-062/TASK-063 e il backlog applicativo successivo viene rinumerato fino a TASK-075. |
+| 2.38 | 2026-05-13 | TASK-064 aggiornato con sezione follow-up subtask pianificati (`TASK-064.1`..`TASK-064.5`) per naming/layout Tenant UI, auto-code Tenant, standard auto-code futuro, campi fiscali `CompanyProfile` e foundation UI CompanyProfile; nessuna modifica runtime in questo passaggio. |
+| 2.37 | 2026-05-13 | TASK-063 completato: introdotta la foundation backend geography tenant-aware conforme a `DEC-038` con migration Flyway `V24`/`V25`, `Region` e `Area` tenant-scoped, modello ZIP/CAP ibrido su `global_zip_codes`, test backend reali verdi e prossimo passo riallineato a `TASK-065` Employee UI. |
+| 2.36 | 2026-05-13 | TASK-062 chiuso come DONE documentale: formalizzata la decisione architetturale sul modello geografico tramite `DEC-038`, confermato che il task non introduce codice, migration, test o UI e mantenuta la sequenza `TASK-063` backend foundation -> `TASK-065` Employee UI. |
+| 2.35 | 2026-05-13 | Inseriti TASK-062 Address geography model decision e TASK-063 Address geography backend foundation prima della UI Employee; l'ex TASK-062 Employee UI slitta a `TASK-065`, poi il nuovo `TASK-064` Tenant CRUD Administration and backlog reorganization anticipa il blocco applicativo successivo e la numerazione viene riallineata fino a `TASK-076`. |
 | 2.34 | 2026-05-12 | TASK-060 completato: `Role.code` resta semantico solo per i ruoli seed di sistema, mentre i ruoli custom tenant usano auto-code `RO###` generato lato backend; create senza campo `code`, edit/view read-only, test backend/frontend reali verdi e nessun `businessCode` introdotto. |
 | 2.33 | 2026-05-12 | Ricostruito `TASK-060` come task documentale separato prima di `TASK-061` per analizzare l'uso tecnico di `Role.code` e definire la strategia corretta tra codice tecnico, auto-code business/UI o separazione dei due concetti, senza modifiche runtime in questa fase. |
 | 2.32 | 2026-05-12 | TASK-061 completato: confermata coerenza i18n dei messaggi alert/error/success/warning con rimozione dei fallback raw backend e degli `aria-label` hardcoded residui nel login, build/test frontend OK, frontend locale avviato OK, QA manuale browser completata con cambio lingua `it/fr/en` e nessuna regressione rilevata. |

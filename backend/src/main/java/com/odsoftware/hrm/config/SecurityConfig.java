@@ -66,6 +66,22 @@ public class SecurityConfig {
 						.permitAll()
 						.requestMatchers("/api/auth/me", "/actuator/**")
 						.authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/admin/tenants/**")
+						.access(hasAnyAuthority(
+								"PLATFORM.TENANT.READ",
+								"PLATFORM.TENANT.MANAGE"))
+						.requestMatchers(HttpMethod.POST, "/api/admin/tenants/**")
+						.access(hasAnyAuthority(
+								"PLATFORM.TENANT.CREATE",
+								"PLATFORM.TENANT.MANAGE"))
+						.requestMatchers(HttpMethod.PUT, "/api/admin/tenants/**")
+						.access(hasAnyAuthority(
+								"PLATFORM.TENANT.UPDATE",
+								"PLATFORM.TENANT.MANAGE"))
+						.requestMatchers(HttpMethod.DELETE, "/api/admin/tenants/**")
+						.access(hasAnyAuthority(
+								"PLATFORM.TENANT.DELETE",
+								"PLATFORM.TENANT.MANAGE"))
 						.requestMatchers(HttpMethod.GET, "/api/admin/users/**")
 						.access(hasAnyAuthority(
 								"TENANT.USER.READ",
