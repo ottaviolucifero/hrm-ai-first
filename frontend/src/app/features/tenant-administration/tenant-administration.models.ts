@@ -35,7 +35,6 @@ export interface TenantAdministrationQuery {
 }
 
 export interface TenantAdministrationCreateRequest {
-  readonly code: string;
   readonly name: string;
   readonly legalName: string;
   readonly defaultCountryId: string;
@@ -44,7 +43,6 @@ export interface TenantAdministrationCreateRequest {
 }
 
 export interface TenantAdministrationUpdateRequest {
-  readonly code: string;
   readonly name: string;
   readonly legalName: string;
   readonly defaultCountryId: string;

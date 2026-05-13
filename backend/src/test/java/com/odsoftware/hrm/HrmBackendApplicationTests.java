@@ -266,6 +266,14 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
+	void flywayMigrationNormalizesFoundationTenantCodeToFirstAvailableTenantAutoCode() {
+		assertThat(tenantRepository.findById(FOUNDATION_TENANT_ID))
+				.get()
+				.extracting(tenant -> tenant.getCode())
+				.isEqualTo("TE001");
+	}
+
+	@Test
 	void flywayMigrationStandardizesSeededWorkModeCodes() {
 		assertThat(workModeRepository.findById(UUID.fromString("60000000-0000-0000-0000-000000000001")))
 				.get()
