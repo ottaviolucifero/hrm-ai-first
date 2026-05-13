@@ -32,6 +32,19 @@ describe('TenantAdministrationComponent', () => {
     expect(fixture.nativeElement.querySelector('form.tenant-admin-form')).toBeTruthy();
   }, 15000);
 
+  it.each([
+    ['it', 'Nome gruppo'],
+    ['en', 'Group name'],
+    ['fr', 'Nom du groupe']
+  ])('renders the legalName label with %s translation', async (language, expectedLabel) => {
+    window.localStorage.setItem('hrflow.language', language);
+
+    const fixture = await createFixture(createService());
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(expectedLabel);
+  });
+
   it('creates a tenant with the expected payload', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
