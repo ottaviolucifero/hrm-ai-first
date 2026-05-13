@@ -1298,6 +1298,7 @@ class HrmBackendApplicationTests {
 
 	private Region newRegion(Country country, String code) {
 		Region region = new Region();
+		region.setTenantId(FOUNDATION_TENANT_ID);
 		region.setCountry(country);
 		region.setCode(code);
 		region.setName("Task 025 Region");
@@ -1306,6 +1307,7 @@ class HrmBackendApplicationTests {
 
 	private Area newArea(Country country, Region region, String code) {
 		Area area = new Area();
+		area.setTenantId(FOUNDATION_TENANT_ID);
 		area.setCountry(country);
 		area.setRegion(region);
 		area.setCode(code);

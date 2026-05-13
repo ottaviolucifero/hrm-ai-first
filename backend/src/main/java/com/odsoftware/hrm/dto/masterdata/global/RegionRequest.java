@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 public record RegionRequest(
+		@NotNull UUID tenantId,
 		@NotNull UUID countryId,
 		@NotBlank @Size(max = 100) String name,
 		@NotBlank @Size(max = 50) String code,

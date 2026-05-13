@@ -2,11 +2,10 @@ package com.odsoftware.hrm.repository.master;
 
 import com.odsoftware.hrm.entity.master.Area;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AreaRepository extends MasterDataRepository<Area> {
 
-	boolean existsByRegion_IdAndCode(UUID regionId, String code);
+	boolean existsByTenantIdAndRegion_IdAndCode(UUID tenantId, UUID regionId, String code);
 
-	boolean existsByRegion_IdAndCodeAndIdNot(UUID regionId, String code, UUID id);
+	boolean existsByTenantIdAndRegion_IdAndCodeAndIdNot(UUID tenantId, UUID regionId, String code, UUID id);
 }

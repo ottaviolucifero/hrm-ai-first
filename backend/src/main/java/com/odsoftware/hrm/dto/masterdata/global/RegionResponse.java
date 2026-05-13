@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public record RegionResponse(
 		UUID id,
+		UUID tenantId,
 		GlobalMasterReferenceResponse country,
 		String name,
 		String code,

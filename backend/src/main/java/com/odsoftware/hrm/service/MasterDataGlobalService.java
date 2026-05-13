@@ -30,6 +30,7 @@ import com.odsoftware.hrm.entity.master.Region;
 import com.odsoftware.hrm.exception.InvalidRequestException;
 import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
+import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.repository.master.AreaRepository;
 import com.odsoftware.hrm.repository.master.CountryRepository;
 import com.odsoftware.hrm.repository.master.CurrencyRepository;
@@ -40,6 +41,7 @@ import com.odsoftware.hrm.repository.master.NationalIdentifierTypeRepository;
 import com.odsoftware.hrm.repository.master.RegionRepository;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import org.springframework.data.domain.Sort;
@@ -52,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MasterDataGlobalService {
 
 	private final CountryRepository countryRepository;
+	private final TenantRepository tenantRepository;
 	private final RegionRepository regionRepository;
 	private final AreaRepository areaRepository;
 	private final GlobalZipCodeRepository globalZipCodeRepository;
@@ -63,6 +66,7 @@ public class MasterDataGlobalService {
 
 	public MasterDataGlobalService(
 			CountryRepository countryRepository,
+			TenantRepository tenantRepository,
 			RegionRepository regionRepository,
 			AreaRepository areaRepository,
 			GlobalZipCodeRepository globalZipCodeRepository,
@@ -72,6 +76,7 @@ public class MasterDataGlobalService {
 			NationalIdentifierTypeRepository nationalIdentifierTypeRepository,
 			ItalianZipCodeImportService italianZipCodeImportService) {
 		this.countryRepository = countryRepository;
+		this.tenantRepository = tenantRepository;
 		this.regionRepository = regionRepository;
 		this.areaRepository = areaRepository;
 		this.globalZipCodeRepository = globalZipCodeRepository;
@@ -126,14 +131,16 @@ public class MasterDataGlobalService {
 		countryRepository.save(country);
 	}
 
-	public MasterDataPageResponse<RegionResponse> findRegions(Integer page, Integer size, String search) {
+	public MasterDataPageResponse<RegionResponse> findRegions(Integer page, Integer size, String search, UUID tenantId) {
 		return findPage(
 				regionRepository,
 				page,
 				size,
 				search,
 				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
-				MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name"),
+				tenantScopedSpecification(
+						tenantId,
+						MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name")),
 				this::toRegionResponse);
 	}
 
@@ -143,9 +150,10 @@ public class MasterDataGlobalService {
 
 	@Transactional
 	public RegionResponse createRegion(RegionRequest request) {
+		validateTenant(request.tenantId());
 		Country country = findCountry(request.countryId());
 		String code = cleanUpper(request.code());
-		if (regionRepository.existsByCountry_IdAndCode(country.getId(), code)) {
+		if (regionRepository.existsByTenantIdAndCountry_IdAndCode(request.tenantId(), country.getId(), code)) {
 			throw new ResourceConflictException("Region code already exists for country: " + code);
 		}
 		Region region = new Region();
@@ -156,9 +164,10 @@ public class MasterDataGlobalService {
 	@Transactional
 	public RegionResponse updateRegion(UUID id, RegionRequest request) {
 		Region region = findRegion(id);
+		validateTenant(request.tenantId());
 		Country country = findCountry(request.countryId());
 		String code = cleanUpper(request.code());
-		if (regionRepository.existsByCountry_IdAndCodeAndIdNot(country.getId(), code, id)) {
+		if (regionRepository.existsByTenantIdAndCountry_IdAndCodeAndIdNot(request.tenantId(), country.getId(), code, id)) {
 			throw new ResourceConflictException("Region code already exists for country: " + code);
 		}
 		applyRegion(region, request, country, code);
@@ -172,14 +181,16 @@ public class MasterDataGlobalService {
 		regionRepository.save(region);
 	}
 
-	public MasterDataPageResponse<AreaResponse> findAreas(Integer page, Integer size, String search) {
+	public MasterDataPageResponse<AreaResponse> findAreas(Integer page, Integer size, String search, UUID tenantId) {
 		return findPage(
 				areaRepository,
 				page,
 				size,
 				search,
 				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
-				MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name", "region.code", "region.name"),
+				tenantScopedSpecification(
+						tenantId,
+						MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name", "region.code", "region.name")),
 				this::toAreaResponse);
 	}
 
@@ -189,11 +200,13 @@ public class MasterDataGlobalService {
 
 	@Transactional
 	public AreaResponse createArea(AreaRequest request) {
+		validateTenant(request.tenantId());
 		Country country = findCountry(request.countryId());
 		Region region = findRegion(request.regionId());
 		validateRegionCountry(region, country);
+		validateRegionTenant(region, request.tenantId());
 		String code = cleanUpper(request.code());
-		if (areaRepository.existsByRegion_IdAndCode(region.getId(), code)) {
+		if (areaRepository.existsByTenantIdAndRegion_IdAndCode(request.tenantId(), region.getId(), code)) {
 			throw new ResourceConflictException("Area code already exists for region: " + code);
 		}
 		Area area = new Area();
@@ -204,11 +217,13 @@ public class MasterDataGlobalService {
 	@Transactional
 	public AreaResponse updateArea(UUID id, AreaRequest request) {
 		Area area = findArea(id);
+		validateTenant(request.tenantId());
 		Country country = findCountry(request.countryId());
 		Region region = findRegion(request.regionId());
 		validateRegionCountry(region, country);
+		validateRegionTenant(region, request.tenantId());
 		String code = cleanUpper(request.code());
-		if (areaRepository.existsByRegion_IdAndCodeAndIdNot(region.getId(), code, id)) {
+		if (areaRepository.existsByTenantIdAndRegion_IdAndCodeAndIdNot(request.tenantId(), region.getId(), code, id)) {
 			throw new ResourceConflictException("Area code already exists for region: " + code);
 		}
 		applyArea(area, request, country, region, code);
@@ -222,25 +237,27 @@ public class MasterDataGlobalService {
 		areaRepository.save(area);
 	}
 
-	public MasterDataPageResponse<GlobalZipCodeResponse> findGlobalZipCodes(Integer page, Integer size, String search) {
+	public MasterDataPageResponse<GlobalZipCodeResponse> findGlobalZipCodes(Integer page, Integer size, String search, UUID tenantId) {
 		return findPage(
 				globalZipCodeRepository,
 				page,
 				size,
 				search,
 				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("postalCode").ascending().and(Sort.by("city"))),
-				MasterDataQuerySupport.searchSpecification(
-						search,
-						"postalCode",
-						"city",
-						"provinceCode",
-						"provinceName",
-						"country.isoCode",
-						"country.name",
-						"region.code",
-						"region.name",
-						"area.code",
-						"area.name"),
+				zipCodeSpecification(
+						tenantId,
+						MasterDataQuerySupport.searchSpecification(
+								search,
+								"postalCode",
+								"city",
+								"provinceCode",
+								"provinceName",
+								"country.isoCode",
+								"country.name",
+								"region.code",
+								"region.name",
+								"area.code",
+								"area.name")),
 				this::toGlobalZipCodeResponse);
 	}
 
@@ -253,7 +270,7 @@ public class MasterDataGlobalService {
 		ZipCodeRelations relations = resolveZipCodeRelations(request);
 		String postalCode = cleanUpper(request.postalCode());
 		String city = clean(request.city());
-		if (globalZipCodeRepository.existsByCountry_IdAndPostalCodeAndCity(relations.country().getId(), postalCode, city)) {
+		if (globalZipCodeExists(relations.tenantId(), relations.country().getId(), postalCode, city, null)) {
 			throw new ResourceConflictException("Zip code already exists for country/postalCode/city");
 		}
 		GlobalZipCode globalZipCode = new GlobalZipCode();
@@ -267,7 +284,7 @@ public class MasterDataGlobalService {
 		ZipCodeRelations relations = resolveZipCodeRelations(request);
 		String postalCode = cleanUpper(request.postalCode());
 		String city = clean(request.city());
-		if (globalZipCodeRepository.existsByCountry_IdAndPostalCodeAndCityAndIdNot(relations.country().getId(), postalCode, city, id)) {
+		if (globalZipCodeExists(relations.tenantId(), relations.country().getId(), postalCode, city, id)) {
 			throw new ResourceConflictException("Zip code already exists for country/postalCode/city");
 		}
 		applyGlobalZipCode(globalZipCode, request, relations, postalCode, city);
@@ -477,6 +494,7 @@ public class MasterDataGlobalService {
 	}
 
 	private void applyRegion(Region region, RegionRequest request, Country country, String code) {
+		region.setTenantId(request.tenantId());
 		region.setCountry(country);
 		region.setName(clean(request.name()));
 		region.setCode(code);
@@ -484,6 +502,7 @@ public class MasterDataGlobalService {
 	}
 
 	private void applyArea(Area area, AreaRequest request, Country country, Region region, String code) {
+		area.setTenantId(request.tenantId());
 		area.setCountry(country);
 		area.setRegion(region);
 		area.setName(clean(request.name()));
@@ -492,6 +511,8 @@ public class MasterDataGlobalService {
 	}
 
 	private void applyGlobalZipCode(GlobalZipCode globalZipCode, GlobalZipCodeRequest request, ZipCodeRelations relations, String postalCode, String city) {
+		globalZipCode.setTenantId(relations.tenantId());
+		globalZipCode.setTenantScopeKey(resolveTenantScopeKey(relations.tenantId()));
 		globalZipCode.setCountry(relations.country());
 		globalZipCode.setRegion(relations.region());
 		globalZipCode.setArea(relations.area());
@@ -534,23 +555,48 @@ public class MasterDataGlobalService {
 
 	private ZipCodeRelations resolveZipCodeRelations(GlobalZipCodeRequest request) {
 		Country country = findCountry(request.countryId());
+		UUID tenantId = request.tenantId();
+		if (isItaly(country)) {
+			if (tenantId != null) {
+				throw new InvalidRequestException("Italian zip codes must remain global");
+			}
+		} else if (tenantId == null) {
+			throw new InvalidRequestException("tenantId is required for non-Italian zip codes");
+		}
+		if (tenantId != null) {
+			validateTenant(tenantId);
+		}
 		Region region = request.regionId() == null ? null : findRegion(request.regionId());
 		Area area = request.areaId() == null ? null : findArea(request.areaId());
+		if (!isItaly(country) && region == null) {
+			throw new InvalidRequestException("regionId is required for non-Italian zip codes");
+		}
+		if (!isItaly(country) && area == null) {
+			throw new InvalidRequestException("areaId is required for non-Italian zip codes");
+		}
 		if (region != null) {
 			validateRegionCountry(region, country);
+			validateRegionTenant(region, tenantId);
 		}
 		if (area != null) {
 			if (region == null) {
 				throw new InvalidRequestException("areaId requires regionId");
 			}
 			validateAreaRelations(area, country, region);
+			validateAreaTenant(area, tenantId);
 		}
-		return new ZipCodeRelations(country, region, area);
+		return new ZipCodeRelations(tenantId, country, region, area);
 	}
 
 	private void validateRegionCountry(Region region, Country country) {
 		if (!region.getCountry().getId().equals(country.getId())) {
 			throw new InvalidRequestException("Region does not belong to the selected country");
+		}
+	}
+
+	private void validateRegionTenant(Region region, UUID tenantId) {
+		if (!Objects.equals(region.getTenantId(), tenantId)) {
+			throw new InvalidRequestException("Region does not belong to the selected tenant");
 		}
 	}
 
@@ -560,6 +606,18 @@ public class MasterDataGlobalService {
 		}
 		if (!area.getRegion().getId().equals(region.getId())) {
 			throw new InvalidRequestException("Area does not belong to the selected region");
+		}
+	}
+
+	private void validateAreaTenant(Area area, UUID tenantId) {
+		if (!Objects.equals(area.getTenantId(), tenantId)) {
+			throw new InvalidRequestException("Area does not belong to the selected tenant");
+		}
+	}
+
+	private void validateTenant(UUID tenantId) {
+		if (!tenantRepository.existsById(tenantId)) {
+			throw new ResourceNotFoundException("Tenant not found: " + tenantId);
 		}
 	}
 
@@ -618,6 +676,7 @@ public class MasterDataGlobalService {
 	private RegionResponse toRegionResponse(Region region) {
 		return new RegionResponse(
 				region.getId(),
+				region.getTenantId(),
 				toCountryReference(region.getCountry()),
 				region.getName(),
 				region.getCode(),
@@ -629,6 +688,7 @@ public class MasterDataGlobalService {
 	private AreaResponse toAreaResponse(Area area) {
 		return new AreaResponse(
 				area.getId(),
+				area.getTenantId(),
 				toCountryReference(area.getCountry()),
 				toRegionReference(area.getRegion()),
 				area.getName(),
@@ -641,6 +701,7 @@ public class MasterDataGlobalService {
 	private GlobalZipCodeResponse toGlobalZipCodeResponse(GlobalZipCode globalZipCode) {
 		return new GlobalZipCodeResponse(
 				globalZipCode.getId(),
+				globalZipCode.getTenantId(),
 				toCountryReference(globalZipCode.getCountry()),
 				toRegionReference(globalZipCode.getRegion()),
 				toAreaReference(globalZipCode.getArea()),
@@ -719,6 +780,46 @@ public class MasterDataGlobalService {
 		return new GlobalMasterReferenceResponse(id, code, name);
 	}
 
+	private boolean globalZipCodeExists(UUID tenantId, UUID countryId, String postalCode, String city, UUID id) {
+		if (tenantId == null) {
+			return id == null
+					? globalZipCodeRepository.existsByTenantIdIsNullAndCountry_IdAndPostalCodeAndCity(countryId, postalCode, city)
+					: globalZipCodeRepository.existsByTenantIdIsNullAndCountry_IdAndPostalCodeAndCityAndIdNot(countryId, postalCode, city, id);
+		}
+		return id == null
+				? globalZipCodeRepository.existsByTenantIdAndCountry_IdAndPostalCodeAndCity(tenantId, countryId, postalCode, city)
+				: globalZipCodeRepository.existsByTenantIdAndCountry_IdAndPostalCodeAndCityAndIdNot(tenantId, countryId, postalCode, city, id);
+	}
+
+	private <T> Specification<T> tenantScopedSpecification(UUID tenantId, Specification<T> searchSpecification) {
+		if (tenantId == null) {
+			return searchSpecification;
+		}
+		Specification<T> tenantSpecification =
+				(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("tenantId"), tenantId);
+		return searchSpecification == null ? tenantSpecification : tenantSpecification.and(searchSpecification);
+	}
+
+	private Specification<GlobalZipCode> zipCodeSpecification(UUID tenantId, Specification<GlobalZipCode> searchSpecification) {
+		if (tenantId == null) {
+			return searchSpecification;
+		}
+		Specification<GlobalZipCode> tenantSpecification = (root, query, criteriaBuilder) -> criteriaBuilder.or(
+				criteriaBuilder.isNull(root.get("tenantId")),
+				criteriaBuilder.equal(root.get("tenantId"), tenantId));
+		return searchSpecification == null ? tenantSpecification : tenantSpecification.and(searchSpecification);
+	}
+
+	private boolean isItaly(Country country) {
+		return "IT".equalsIgnoreCase(country.getIsoCode());
+	}
+
+	private UUID resolveTenantScopeKey(UUID tenantId) {
+		return tenantId == null
+				? UUID.fromString("00000000-0000-0000-0000-000000000000")
+				: tenantId;
+	}
+
 	private Boolean activeOrDefault(Boolean active) {
 		return active == null ? Boolean.TRUE : active;
 	}
@@ -749,6 +850,6 @@ public class MasterDataGlobalService {
 				mapper);
 	}
 
-	private record ZipCodeRelations(Country country, Region region, Area area) {
+	private record ZipCodeRelations(UUID tenantId, Country country, Region region, Area area) {
 	}
 }

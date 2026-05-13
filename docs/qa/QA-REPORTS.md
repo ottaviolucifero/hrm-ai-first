@@ -420,6 +420,46 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-063 - Address geography backend foundation
+
+- Data: 2026-05-13
+- Branch: `task-063-address-geography-backend-foundation`
+- Task: TASK-063 - Address geography backend foundation
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/resources/db/migration/V24__make_address_geography_tenant_aware.sql`
+  - `backend/src/main/resources/db/vendor/postgresql/V25__add_address_geography_tenant_unique_indexes.sql`
+  - `backend/src/main/resources/db/vendor/h2/V25__add_address_geography_tenant_unique_indexes.sql`
+  - `backend/src/main/java/com/odsoftware/hrm/entity/master/Region.java`
+  - `backend/src/main/java/com/odsoftware/hrm/entity/master/Area.java`
+  - `backend/src/main/java/com/odsoftware/hrm/entity/master/GlobalZipCode.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataGlobalService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/controller/MasterDataGlobalController.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataGlobalControllerTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/service/ItalianZipCodeImportServiceTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/HrmBackendApplicationTests.java`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=ItalianZipCodeImportServiceTests,MasterDataGlobalControllerTests test`
+  - `cd backend && .\mvnw.cmd -Dtest=HrmBackendApplicationTests test`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - suite geography mirata: `BUILD SUCCESS`;
+  - `HrmBackendApplicationTests`: primo pass `KO` con `3` errori dovuti a fixture legacy che creavano `Region`/`Area` senza `tenantId`; helper riallineati al `FOUNDATION_TENANT`, rerun `BUILD SUCCESS`, `57` test, `0` failure, `0` error, `0` skipped;
+  - suite backend completa: `BUILD SUCCESS`, `201` test, `0` failure, `0` error, `0` skipped.
+- Verifiche funzionali confermate:
+  - `Region` e `Area` sono tenant-scoped con `tenantId` esplicito e unique coerenti;
+  - `global_zip_codes` mantiene il modello ibrido DEC-038 con record globali (`tenantId = null`) e record tenant-specific;
+  - i CAP italiani importati restano globali;
+  - le API global master data supportano filtro tenant per geography e validazioni cross-tenant coerenti;
+  - nessuna tabella `City` o modello geography parallelo introdotto.
+- Limiti/note:
+  - per chiudere la suite completa e risolvere le dipendenze Maven e stato necessario eseguire `cd backend && .\mvnw.cmd test` fuori sandbox;
+  - warning non bloccanti Maven/JVM gia noti: Mockito self-attach / ByteBuddy dynamic agent;
+  - nei log Maven compare ancora il messaggio shell residuale `'D' n est pas reconnu...` senza impatto sull esito finale.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-057 - Finalize ZIP import foundation and test isolation
 
 - Data: 2026-05-12

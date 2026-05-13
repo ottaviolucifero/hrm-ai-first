@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record GlobalZipCodeResponse(
 		UUID id,
+		UUID tenantId,
 		GlobalMasterReferenceResponse country,
 		GlobalMasterReferenceResponse region,
 		GlobalMasterReferenceResponse area,
