@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.32
-Ultimo aggiornamento: 2026-05-12
+Versione: 1.33
+Ultimo aggiornamento: 2026-05-13
 Stato: Attivo
 
 ---
@@ -1455,10 +1455,80 @@ Il componente dovra rispettare i18n e linee guida UX gia documentate.
 
 ---
 
+### DEC-038 - Tenant-aware address geography model with hybrid ZIP/CAP governance
+
+Data: 2026-05-13
+Stato: Approvata
+
+Decisione:
+
+Il modello geografico indirizzi viene raffinato prima della UI Employee e della nuova foundation backend geography.
+
+Il modello approvato e:
+
+- `Country` resta globale;
+- `Region` e `Area` restano due tabelle distinte;
+- `Area` continua a dipendere da `Region`;
+- `Region` diventa tenant-scoped e collegata a `Country`;
+- `Area` diventa tenant-scoped e collegata a `Country` + `Region`;
+- ZIP/CAP usa un modello ibrido:
+  - Italia: record globali/importati con `tenant_id` NULL;
+  - Paesi diversi da Italia: record creati manualmente dal tenant con `tenant_id` valorizzato;
+- `City` non diventa tabella separata per ora;
+- `City` resta attributo del record ZIP/CAP;
+- deve essere possibile avere piu city per lo stesso CAP;
+- la chiave unica non deve essere solo `postal_code`;
+- unique suggerite:
+  - record globali: `country_id + postal_code + city` con `tenant_id` NULL;
+  - record tenant: `tenant_id + country_id + postal_code + city`.
+
+Per l'Italia:
+
+- l'utente seleziona il CAP dal dataset globale;
+- city, area/provincia e region/regione sono ricavate dal CAP;
+- i campi derivati vengono visualizzati readonly/freeze nella UI.
+
+Per paesi diversi da Italia:
+
+- il tenant crea manualmente `Region`, `Area` e ZIP/CAP;
+- ZIP/CAP contiene city e riferimenti a `Country`, `Region` e `Area`;
+- i dati sono riutilizzabili nei successivi Employee e OfficeLocation.
+
+Motivazione:
+
+- preservare il dataset italiano globale gia importato;
+- evitare una tabella `City` prematura;
+- supportare indirizzi multi-country senza obbligare la piattaforma a mantenere dataset globali completi per ogni paese;
+- consentire ai tenant di creare dati geografici locali riusabili;
+- evitare vincoli univoci errati su solo `postal_code`, dato che un CAP puo riferirsi a piu city;
+- mantenere coerenza con DEC-018 sulla gerarchia geografica query-friendly e con validation applicativa.
+
+Alternative escluse:
+
+- rendere `Region` e `Area` globali per tutti i paesi;
+- fondere `Region` e `Area` in una sola tabella;
+- introdurre subito `City` come tabella separata;
+- usare `postal_code` come chiave unica autonoma;
+- imporre dataset globali/importati per tutti i paesi nel MVP;
+- rendere i CAP italiani tenant-scoped duplicandoli per ogni tenant.
+
+Impatto:
+
+TASK-062 resta il task documentale/decisionale dedicato a questa scelta.
+
+TASK-063 dovra implementare la foundation backend con migration DB, aggiornamento entity/repository/service/API, tenant scope per `Region` e `Area`, eventuale `tenant_id` nullable sui CAP se viene confermata la tabella ibrida, test backend e verifica impatti su Employee, OfficeLocation, HolidayCalendar e Master Data globali.
+
+TASK-064 Employee UI potra partire solo dopo TASK-062 e TASK-063, in modo da usare select, readonly/freeze fields e riuso dati geografici su un contratto backend stabilizzato.
+
+La decisione non introduce codice, migration o test in questa fase.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.33 | 2026-05-13 | Aggiunta DEC-038 per formalizzare il modello geografico indirizzi tenant-aware: Country globale, Region/Area tenant-scoped, ZIP/CAP ibrido globale Italia e tenant per altri paesi, City come attributo ZIP/CAP e prerequisito per TASK-063/TASK-064. |
 | 1.32 | 2026-05-12 | Aggiunta DEC-037 per formalizzare il pattern shared di conferma per azioni UI critiche/distruttive, con riuso obbligatorio, coerenza UX, i18n e integrazione attesa con il shared DataTable. |
 | 1.31 | 2026-05-11 | Aggiunta DEC-036 per formalizzare la visibility frontend centralizzata su summary CRUD, sidebar visibile ma frozen senza permessi, route guardate su `view/create/update` e default frozen quando `/api/auth/me` non espone permission summary reale. |
 | 1.30 | 2026-05-11 | Aggiunta DEC-035 per formalizzare il link opzionale `UserAccount.employee`, account validi senza Employee, fallback email/tipo account e divieto di duplicare dati anagrafici su `UserAccount`. |

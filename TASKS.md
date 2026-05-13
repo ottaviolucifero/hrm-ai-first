@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.35
+Versione: 2.36
 Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
@@ -4290,7 +4290,7 @@ Nota avanzamento:
 
 ### TASK-062 - Address geography model decision
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Documentale / decisionale
 
@@ -4337,6 +4337,17 @@ Output atteso:
 - decisione architetturale tracciata in `DECISIONS.md`;
 - backlog aggiornato con TASK-063 backend foundation e TASK-064 Employee UI;
 - eventuali impatti su `ARCHITECTURE.md` demandati al task tecnico/documentale successivo se il backend foundation richiede dettaglio strutturale aggiuntivo.
+
+Completato:
+
+- decisione architetturale formalizzata in `DECISIONS.md` tramite `DEC-038`;
+- confermata la sequenza corretta:
+  - `TASK-063` backend geography foundation;
+  - `TASK-064` Employee UI;
+- nessun codice introdotto;
+- nessuna migration introdotta;
+- nessun test modificato;
+- nessuna UI Employee implementata.
 
 ### TASK-063 - Address geography backend foundation
 
@@ -4448,6 +4459,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.36 | 2026-05-13 | TASK-062 chiuso come DONE documentale: formalizzata la decisione architetturale sul modello geografico tramite `DEC-038`, confermato che il task non introduce codice, migration, test o UI e mantenuta la sequenza `TASK-063` backend foundation -> `TASK-064` Employee UI. |
 | 2.35 | 2026-05-13 | Inseriti TASK-062 Address geography model decision e TASK-063 Address geography backend foundation prima della UI Employee; l'ex TASK-062 Employee UI slitta a TASK-064 con prerequisiti espliciti TASK-062/TASK-063 e il backlog applicativo successivo viene rinumerato fino a TASK-075. |
 | 2.34 | 2026-05-12 | TASK-060 completato: `Role.code` resta semantico solo per i ruoli seed di sistema, mentre i ruoli custom tenant usano auto-code `RO###` generato lato backend; create senza campo `code`, edit/view read-only, test backend/frontend reali verdi e nessun `businessCode` introdotto. |
 | 2.33 | 2026-05-12 | Ricostruito `TASK-060` come task documentale separato prima di `TASK-061` per analizzare l'uso tecnico di `Role.code` e definire la strategia corretta tra codice tecnico, auto-code business/UI o separazione dei due concetti, senza modifiche runtime in questa fase. |
