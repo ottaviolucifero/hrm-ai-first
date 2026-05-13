@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.41
+Versione: 2.42
 Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
@@ -4519,7 +4519,7 @@ Validazione:
 
 ### TASK-064.4 - Company Profile fiscal fields
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -4528,6 +4528,15 @@ Obiettivo:
 - aggiungere campi Italia-specifici `pecEmail` e `sdiCode`;
 - copertura migration/entity/DTO/test;
 - non inserire questi dati su `Tenant`.
+
+Output implementato:
+
+- aggiunte migration Flyway vendor-specific `V27` per PostgreSQL e H2 con colonne nullable `tax_number`, `pec_email`, `sdi_code` sulla sola tabella `company_profiles`;
+- estesa l entity `CompanyProfile` con `taxNumber`, `pecEmail`, `sdiCode`, mantenendo invariati `taxIdentifier` e `vatNumber`;
+- esteso il payload `CompanyProfileResponse` e il mapping `FoundationReadService` per esporre i nuovi campi senza introdurre nuove CRUD API o request DTO;
+- aggiunte chiavi i18n catalog-only `companyProfile.fields.taxNumber`, `companyProfile.fields.pecEmail`, `companyProfile.fields.sdiCode` in `it`/`fr`/`en`, senza introdurre UI `CompanyProfile`;
+- test backend aggiornati per verificare seed nullable e mapping response dei nuovi campi; documentazione e QA report allineati;
+- nota tecnica: `taxIdentifier` resta presente e invariato; possibile sovrapposizione semantica con `taxNumber` da chiarire nel futuro task UI/API dedicato, fuori scope di questa patch.
 
 ### TASK-064.5 - Company Profile Administration UI foundation
 
@@ -4617,6 +4626,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.42 | 2026-05-13 | TASK-064.4 chiuso come DONE: aggiunti i campi nullable `taxNumber`, `pecEmail` e `sdiCode` su `CompanyProfile` con Flyway `V27` PostgreSQL/H2, mapping foundation response, test backend reali verdi, chiavi i18n catalog-only `it/fr/en` e QA report aggiornato senza toccare `Tenant`, security/RBAC o CRUD/UI `CompanyProfile`. |
 | 2.41 | 2026-05-13 | TASK-064.3 chiuso come DONE: formalizzata in `DEC-039` la regola durevole per i nuovi campi `code` con auto-code `prime due lettere + progressivo 3 cifre`, UI non editabile quando automatico, nota operativa minima in `AGENTS.md` e QA documentale registrato senza modifiche codice. |
 | 2.40 | 2026-05-13 | TASK-064.2 completato: `Tenant.code` ora viene autogenerato lato backend come `TE###`, la UI Tenant non consente piu editing manuale del codice, test backend/frontend reali rieseguiti e QA report aggiornato. |
 | 2.39 | 2026-05-13 | TASK-064.1 completato: label utente `legalName` riallineata a `Nome gruppo` / `Group name` / `Nom du groupe`, layout Tenant Administration allineato a Master Data/Ruoli/Utenti con patch frontend-only, test/build frontend e QA report aggiornati. |

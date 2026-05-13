@@ -66,6 +66,7 @@ import com.odsoftware.hrm.security.permission.PermissionAction;
 import com.odsoftware.hrm.security.permission.PermissionCode;
 import com.odsoftware.hrm.security.permission.PermissionResource;
 import com.odsoftware.hrm.security.permission.PermissionScope;
+import com.odsoftware.hrm.service.FoundationReadService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -215,6 +216,9 @@ class HrmBackendApplicationTests {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@Autowired
+	private FoundationReadService foundationReadService;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COMPANY_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
@@ -392,6 +396,33 @@ class HrmBackendApplicationTests {
 		assertThat(companyProfileRepository.count()).isEqualTo(1);
 		assertThat(officeLocationRepository.count()).isEqualTo(1);
 		assertThat(smtpConfigurationRepository.count()).isEqualTo(1);
+		assertThat(companyProfileRepository.findById(FOUNDATION_COMPANY_ID))
+				.get()
+				.satisfies(companyProfile -> {
+					assertThat(companyProfile.getTaxIdentifier()).isNull();
+					assertThat(companyProfile.getTaxNumber()).isNull();
+					assertThat(companyProfile.getPecEmail()).isNull();
+					assertThat(companyProfile.getSdiCode()).isNull();
+				});
+	}
+
+	@Test
+	void foundationReadServiceMapsCompanyProfileFiscalFields() {
+		var companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow();
+		companyProfile.setTaxIdentifier("LEGACY-TAX-ID");
+		companyProfile.setTaxNumber("NEW-TAX-NUMBER");
+		companyProfile.setPecEmail("pec@example.it");
+		companyProfile.setSdiCode("SDI1234");
+		companyProfileRepository.saveAndFlush(companyProfile);
+
+		assertThat(foundationReadService.findCompanyProfiles())
+				.singleElement()
+				.satisfies(response -> {
+					assertThat(response.taxIdentifier()).isEqualTo("LEGACY-TAX-ID");
+					assertThat(response.taxNumber()).isEqualTo("NEW-TAX-NUMBER");
+					assertThat(response.pecEmail()).isEqualTo("pec@example.it");
+					assertThat(response.sdiCode()).isEqualTo("SDI1234");
+				});
 	}
 
 	@Test
