@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.34
-Ultimo aggiornamento: 2026-05-12
+Versione: 2.35
+Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
 ---
@@ -4288,63 +4288,157 @@ Nota avanzamento:
 - nessuna regressione rilevata;
 - TASK-061 completato.
 
-### TASK-062 - Implementare UI Employee management enterprise
+### TASK-062 - Address geography model decision
 
 Stato: TODO
 
-### TASK-063 - Implementare Security Admin UI
+Tipo: Documentale / decisionale
+
+Obiettivo:
+
+Formalizzare la decisione sul modello geografico indirizzi prima di procedere con il backend geography e prima della UI Employee management.
+
+Decisione da documentare:
+
+- `Country` resta globale.
+- `Region` e `Area` restano due tabelle distinte.
+- `Area` continua a dipendere da `Region`.
+- `Region` diventa tenant-scoped e collegata a `Country`.
+- `Area` diventa tenant-scoped e collegata a `Country` + `Region`.
+- ZIP/CAP usa un modello ibrido:
+  - Italia: record globali/importati, `tenant_id` NULL;
+  - Paesi diversi da Italia: record creati manualmente dal tenant, `tenant_id` valorizzato.
+- `City` non diventa tabella separata per ora.
+- `City` resta attributo del record ZIP/CAP.
+- Deve essere possibile avere piu city per lo stesso CAP.
+- La chiave unica non deve essere solo `postal_code`.
+- Unique suggerite:
+  - record globali: `country_id + postal_code + city` con `tenant_id` NULL;
+  - record tenant: `tenant_id + country_id + postal_code + city`.
+- Per Italia:
+  - l'utente seleziona il CAP da dataset globale;
+  - city, area/provincia e region/regione sono ricavate dal CAP;
+  - i campi derivati vengono visualizzati readonly/freeze nella UI.
+- Per paesi diversi da Italia:
+  - il tenant crea manualmente Region, Area e ZIP/CAP;
+  - ZIP/CAP contiene city e riferimenti a Country, Region e Area;
+  - i dati sono riutilizzabili nei successivi Employee e OfficeLocation.
+
+Vincoli:
+
+- solo documentazione e decisione;
+- nessuna migration;
+- nessuna modifica backend/frontend;
+- nessun test modificato;
+- nessuna implementazione UI Employee.
+
+Output atteso:
+
+- decisione architetturale tracciata in `DECISIONS.md`;
+- backlog aggiornato con TASK-063 backend foundation e TASK-064 Employee UI;
+- eventuali impatti su `ARCHITECTURE.md` demandati al task tecnico/documentale successivo se il backend foundation richiede dettaglio strutturale aggiuntivo.
+
+### TASK-063 - Address geography backend foundation
+
+Stato: TODO
+
+Tipo: Backend foundation futuro
+
+Prerequisiti:
+
+- TASK-062 completato.
+
+Obiettivo:
+
+Implementare la foundation backend del modello geografico indirizzi approvato in TASK-062.
+
+Include:
+
+- migration DB;
+- aggiornamento entity `Region` / `Area` / `GlobalZipCode` o eventuale `ZipCode`;
+- tenant scope per `Region` e `Area`;
+- supporto `tenant_id` nullable sui CAP se si conferma la tabella ibrida;
+- aggiornamento repository/service/API;
+- aggiornamento test backend;
+- verifica impatto su:
+  - `Employee`;
+  - `OfficeLocation`;
+  - `HolidayCalendar`;
+  - Master Data globali.
+
+Vincoli:
+
+- non introdurre `City` come tabella separata;
+- non implementare UI Employee;
+- non introdurre modelli geografici paralleli;
+- mantenere coerenza con `DECISIONS.md` e con la governance tenant-aware esistente.
+
+### TASK-064 - Implementare UI Employee management enterprise
+
+Stato: TODO
+
+Prerequisiti:
+
+- TASK-062 completato;
+- TASK-063 completato.
+
+Nota:
+
+La UI Employee deve usare il modello geografico indirizzi stabilizzato prima di implementare form, select, readonly/freeze fields e riuso dei dati geografici per Employee.
+
+### TASK-065 - Implementare Security Admin UI
 
 Stato: TODO
 
 Include:
 
-- utenti
-- MFA
-- tenant access
-- ruoli
-- permessi
+- utenti;
+- MFA;
+- tenant access;
+- ruoli;
+- permessi.
 
-### TASK-064 - Implementare UI Device governance
-
-Stato: TODO
-
-### TASK-065 - Implementare UI PayrollDocument
+### TASK-066 - Implementare UI Device governance
 
 Stato: TODO
 
-### TASK-066 - Implementare UI LeaveRequest
+### TASK-067 - Implementare UI PayrollDocument
 
 Stato: TODO
 
-### TASK-067 - Implementare UI HolidayCalendar
+### TASK-068 - Implementare UI LeaveRequest
 
 Stato: TODO
 
-### TASK-068 - Implementare Audit UI / compliance explorer
+### TASK-069 - Implementare UI HolidayCalendar
 
 Stato: TODO
 
-### TASK-069 - Implementare UI disciplinary governance
+### TASK-070 - Implementare Audit UI / compliance explorer
+
+Stato: TODO
+
+### TASK-071 - Implementare UI disciplinary governance
 
 Stato: TODO
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-070 - Implementare Platform Operator / Super Admin governance
+### TASK-072 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-071 - Implementare Cross-tenant admin UI
+### TASK-073 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-072 - Configurare logging, monitoring e observability enterprise
+### TASK-074 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-073 - Test integrato MVP enterprise completo
+### TASK-075 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -4354,6 +4448,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.35 | 2026-05-13 | Inseriti TASK-062 Address geography model decision e TASK-063 Address geography backend foundation prima della UI Employee; l'ex TASK-062 Employee UI slitta a TASK-064 con prerequisiti espliciti TASK-062/TASK-063 e il backlog applicativo successivo viene rinumerato fino a TASK-075. |
 | 2.34 | 2026-05-12 | TASK-060 completato: `Role.code` resta semantico solo per i ruoli seed di sistema, mentre i ruoli custom tenant usano auto-code `RO###` generato lato backend; create senza campo `code`, edit/view read-only, test backend/frontend reali verdi e nessun `businessCode` introdotto. |
 | 2.33 | 2026-05-12 | Ricostruito `TASK-060` come task documentale separato prima di `TASK-061` per analizzare l'uso tecnico di `Role.code` e definire la strategia corretta tra codice tecnico, auto-code business/UI o separazione dei due concetti, senza modifiche runtime in questa fase. |
 | 2.32 | 2026-05-12 | TASK-061 completato: confermata coerenza i18n dei messaggi alert/error/success/warning con rimozione dei fallback raw backend e degli `aria-label` hardcoded residui nel login, build/test frontend OK, frontend locale avviato OK, QA manuale browser completata con cambio lingua `it/fr/en` e nessuna regressione rilevata. |

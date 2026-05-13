@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.37
-Ultimo aggiornamento: 2026-05-12
+Versione: 2.38
+Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
 ---
@@ -133,7 +133,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-062 Implementare UI Employee management enterprise
+- TASK-062 Address geography model decision
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -244,8 +244,14 @@ TASK-060 completed the role custom-code decision and implementation by confirmin
 
 Prossimo passo:
 
-- TASK-062 Implementare UI Employee management enterprise
+- TASK-062 Address geography model decision
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
+
+Sequenza immediata Employee/geography:
+
+- TASK-062: decisione documentale sul modello geografico indirizzi;
+- TASK-063: foundation backend geography con tenant scope Region/Area e modello ZIP/CAP ibrido;
+- TASK-064: UI Employee management enterprise, solo dopo TASK-062 e TASK-063.
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -378,17 +384,17 @@ Profili Spring Boot configurati:
 
 - TASK-034 -> TASK-035
 
-### Fase 2H - Frontend Shell / UI Admin / Operations
+### Fase 2H - Geography / Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-069
+- TASK-036 -> TASK-071
 
 ### Fase 2I - Platform Operations
 
-- TASK-070 -> TASK-071
+- TASK-072 -> TASK-073
 
 ### Fase 3 - Stabilization
 
-- TASK-072 -> TASK-073
+- TASK-074 -> TASK-075
 
 ---
 
@@ -404,6 +410,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.38 | 2026-05-13 | Inseriti TASK-062 Address geography model decision e TASK-063 Address geography backend foundation prima della UI Employee; Employee UI slitta a TASK-064, il prossimo passo passa a TASK-062 e i range fase vengono riallineati (`2H: 036-071`, `2I: 072-073`, `3: 074-075`). |
 | 2.37 | 2026-05-12 | TASK-060 completato: confermato che le autorizzazioni runtime dipendono da `permission.code`, mantenuti i codici semantici dei ruoli seed, introdotto auto-code tenant-scoped `RO###` per i ruoli custom con create senza `code` e edit/view read-only; prossimo passo riallineato a `TASK-062`. |
 | 2.36 | 2026-05-12 | Ricostruito `TASK-060` come task documentale separato tra `TASK-059.4` e `TASK-061`, dedicato alla verifica cross-stack dell'uso tecnico di `Role.code` e alla scelta tra codice tecnico, auto-code business/UI o separazione dei due concetti; prossimo passo riallineato a `TASK-060` senza modifiche runtime. |
 | 2.35 | 2026-05-12 | TASK-061 completato: consolidata la consistenza i18n di alert/messages frontend con build/test OK, frontend locale avviato OK, QA manuale browser completata con cambio lingua `it/fr/en` e nessuna regressione rilevata; prossimo passo aggiornato a TASK-062. |
