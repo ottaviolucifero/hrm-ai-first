@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.40
+Versione: 2.41
 Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
@@ -4499,13 +4499,23 @@ Validazione:
 
 ### TASK-064.3 - Automatic code standard for future entities
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
 - documentare lo standard: ogni nuova entita con campo `code` deve usare codice automatico;
 - formato: prime due lettere entita + progressivo a 3 cifre;
 - eccezioni ammesse solo se documentate.
+
+Validazione:
+
+- aggiunta `DEC-039` in `DECISIONS.md` come regola durevole per le future entita con campo `code`;
+- formalizzato lo standard `prefisso 2 lettere + progressivo 3 cifre`, con esempio `Tenant` -> `TE001`;
+- formalizzato che il `code` deve essere generato lato backend e non editabile da UI quando gestito automaticamente;
+- chiarito che le eccezioni sono ammesse solo se motivate e documentate in `DECISIONS.md` o nel task dedicato;
+- aggiornata una nota operativa minima in `AGENTS.md` per guidare i futuri task;
+- nessuna modifica a backend/frontend o codice applicativo;
+- controlli documentali e coerenza finale registrati in `docs/qa/QA-REPORTS.md`.
 
 ### TASK-064.4 - Company Profile fiscal fields
 
@@ -4607,6 +4617,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.41 | 2026-05-13 | TASK-064.3 chiuso come DONE: formalizzata in `DEC-039` la regola durevole per i nuovi campi `code` con auto-code `prime due lettere + progressivo 3 cifre`, UI non editabile quando automatico, nota operativa minima in `AGENTS.md` e QA documentale registrato senza modifiche codice. |
 | 2.40 | 2026-05-13 | TASK-064.2 completato: `Tenant.code` ora viene autogenerato lato backend come `TE###`, la UI Tenant non consente piu editing manuale del codice, test backend/frontend reali rieseguiti e QA report aggiornato. |
 | 2.39 | 2026-05-13 | TASK-064.1 completato: label utente `legalName` riallineata a `Nome gruppo` / `Group name` / `Nom du groupe`, layout Tenant Administration allineato a Master Data/Ruoli/Utenti con patch frontend-only, test/build frontend e QA report aggiornati. |
 | 2.38 | 2026-05-13 | TASK-064 aggiornato con sezione follow-up subtask pianificati (`TASK-064.1`..`TASK-064.5`) per naming/layout Tenant UI, auto-code Tenant, standard auto-code futuro, campi fiscali `CompanyProfile` e foundation UI CompanyProfile; nessuna modifica runtime in questo passaggio. |

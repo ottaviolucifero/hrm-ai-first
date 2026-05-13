@@ -6,6 +6,43 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-064.3 - Automatic code standard for future entities
+
+- Data: 2026-05-13
+- Branch: `task-064-3-automatic-code-standard`
+- Task: TASK-064.3 - Automatic code standard for future entities
+- Modello consigliato nel prompt operativo: GPT-5.4
+- Area verificata:
+  - `DECISIONS.md`
+  - `AGENTS.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificato che lo standard auto-code fosse gia presente in forma frammentata nei task `TASK-059.1`, `TASK-059.2`, `TASK-059.4`, `TASK-060` e `TASK-064.2`, ma non ancora fissato come decisione durevole di governance;
+  - verificato che il punto corretto per la regola permanente fosse `DECISIONS.md`, con nota operativa sintetica in `AGENTS.md` e chiusura task/roadmap nei documenti di pianificazione;
+  - verificato che il task richiedesse solo aggiornamenti documentali, senza modifica di backend o frontend.
+- Patch applicata:
+  - aggiunta `DEC-039` in `DECISIONS.md` per formalizzare il default auto-code su ogni nuova entita con campo `code`;
+  - formalizzato lo standard `prime due lettere + progressivo 3 cifre`, con esempio `Tenant -> TE001`, generazione backend e `code` non editabile da UI quando automatico;
+  - chiarito che le eccezioni sono ammesse solo se motivate e documentate in `DECISIONS.md` o nel task dedicato;
+  - aggiunta una nota operativa minima in `AGENTS.md`;
+  - chiuso `TASK-064.3` in `TASKS.md` e aggiornato `ROADMAP.md`.
+- Comandi eseguiti:
+  - `git diff -- DECISIONS.md AGENTS.md TASKS.md ROADMAP.md docs/qa/QA-REPORTS.md`
+  - `git status --short --branch`
+- Esiti reali:
+  - controlli documentali completati;
+  - nessuna modifica applicativa backend/frontend rilevata nel perimetro del task.
+- QA manuale:
+  - non applicabile per task solo documentale.
+- Regressioni trovate:
+  - nessuna regressione applicativa rilevata; task limitato a documentazione e governance.
+- Limiti/note:
+  - non sono stati eseguiti test backend/frontend perche non sono stati modificati file applicativi;
+  - il task non introduce migrazioni, API, UI o cambiamenti runtime.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-064.2 - Tenant automatic code generation
 
 - Data: 2026-05-13

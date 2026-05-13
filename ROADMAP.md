@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.43
+Versione: 2.44
 Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
@@ -134,14 +134,13 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-063 Address geography backend foundation
 - TASK-064.1 Tenant UI naming and layout refinement
 - TASK-064.2 Tenant automatic code generation
+- TASK-064.3 Automatic code standard for future entities
 
 ### Prossimo passo
 
-- TASK-064 Tenant CRUD Administration and backlog reorganization
+- TASK-064.4 Company Profile fiscal fields
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 - Follow-up subtask pianificati post TASK-064:
-- TASK-064.3 Automatic code standard for future entities
-- TASK-064.4 Company Profile fiscal fields
 - TASK-064.5 Company Profile Administration UI foundation
 
 ---
@@ -249,13 +248,13 @@ TASK-059.1 completed the code standardization for the 6 requested HR/business ma
 TASK-059.2 completed the automatic code extension to `Department`, `JobTitle`, `ContractType` and `WorkMode`, reusing the existing backend/UI pattern and applying V22 data normalization with conditional employee-field remapping only when tenant-scoped `old_code` references actually existed.
 TASK-059.4 completed the Governance/security Master Data rationalization by removing `Role`, `Permission` and `AuditActionType` from the generic UI, keeping `UserType`, `AuthenticationMethod` and `SmtpEncryptionType` visible without auto-code, adding selective auto-code to `CompanyProfileType`, `OfficeLocationType` and `DisciplinaryActionType`, normalizing existing records with Flyway `V23`, enabling physical delete for the three selective auto-code resources in backend/UI, and hiding generic technical tenant columns in the shared Master Data table flow.
 TASK-060 completed the role custom-code decision and implementation by confirming that runtime authorization depends on `permission.code`, keeping semantic seeded system role codes unchanged, generating tenant-scoped custom role codes as `RO###`, removing `code` from create payload/UI, and keeping `code` visible but read-only in edit/view.
+TASK-064.3 completed the durable governance standard for future entities with `code`, formalizing in `DEC-039` the default auto-code rule `prime due lettere + progressivo 3 cifre`, backend generation, UI non-editable code and documented exceptions only.
 
 Prossimo passo:
 
 - TASK-065 Implementare UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 - Follow-up subtask post chiusura TASK-064:
-- TASK-064.3 Automatic code standard for future entities
 - TASK-064.4 Company Profile fiscal fields
 - TASK-064.5 Company Profile Administration UI foundation
 
@@ -422,6 +421,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.44 | 2026-05-13 | TASK-064.3 completato in roadmap: formalizzata in `DEC-039` la regola durevole per i nuovi campi `code` con auto-code `prime due lettere + progressivo 3 cifre`, UI non editabile quando automatico e prossimi follow-up portati a `TASK-064.4` e `TASK-064.5`. |
 | 2.43 | 2026-05-13 | TASK-064.2 completato in roadmap: `Tenant.code` autogenerato lato backend con formato `TE###`, UI Tenant senza editing manuale del codice, test backend/frontend reali verdi e prossimo follow-up operativo portato a `TASK-064.3`. |
 | 2.42 | 2026-05-13 | TASK-064.1 completato in roadmap: naming utente `legalName` riallineato lato frontend/i18n e layout Tenant Administration allineato ai pattern amministrativi esistenti; prossimo follow-up operativo portato a `TASK-064.2`. |
 | 2.41 | 2026-05-13 | Aggiornato TASK-064 in roadmap con follow-up subtask pianificati `TASK-064.1`..`TASK-064.5` (Tenant UI naming/layout, auto-code Tenant, standard auto-code futuro, campi fiscali `CompanyProfile`, foundation UI `CompanyProfile`) mantenendo TASK-064 corrente focalizzato sul CRUD Tenant. |

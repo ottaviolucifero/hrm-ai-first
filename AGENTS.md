@@ -172,6 +172,7 @@ La scelta concreta deve sempre essere adattata al task e motivata nella sezione 
 - Validate continuously
 - Reuse before creating
 - Respect MVP
+- Quando un task introduce una nuova entita con campo `code`, il default e auto-code `PPNNN` (`prime due lettere + progressivo 3 cifre`) con `code` non editabile da UI; eventuali eccezioni devono essere documentate in `DECISIONS.md` o nel task dedicato.
 
 ---
 
