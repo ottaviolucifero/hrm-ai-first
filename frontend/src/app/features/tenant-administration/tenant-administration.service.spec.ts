@@ -63,7 +63,6 @@ describe('TenantAdministrationService', () => {
 
   it('creates updates toggles and deletes tenants', () => {
     service.createTenant({
-      code: 'TENANT_A',
       name: 'Tenant A',
       legalName: 'Tenant A Legal',
       defaultCountryId: 'country-1',
@@ -71,7 +70,6 @@ describe('TenantAdministrationService', () => {
       active: true
     }).subscribe();
     service.updateTenant('tenant-1', {
-      code: 'TENANT_B',
       name: 'Tenant B',
       legalName: 'Tenant B Legal',
       defaultCountryId: 'country-2',

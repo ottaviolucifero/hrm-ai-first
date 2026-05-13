@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.39
+Versione: 2.40
 Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
@@ -4478,7 +4478,7 @@ Validazione:
 
 ### TASK-064.2 - Tenant automatic code generation
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -4487,6 +4487,15 @@ Obiettivo:
 - generazione codice lato backend;
 - UI senza editing manuale del codice;
 - test backend/frontend.
+
+Validazione:
+
+- `Tenant.code` viene generato lato backend in create con prefisso globale `TE` e progressivo a 3 cifre;
+- il payload create non richiede piu `code` e un eventuale `code` manuale extra viene ignorato coerentemente con i pattern gia adottati;
+- l update Tenant preserva sempre il `code` esistente senza rigenerarlo o accettarne la modifica manuale;
+- la UI Tenant non permette piu l editing del `code`: il campo e nascosto in create e mostrato read-only in edit/view;
+- test backend dedicati Tenant Administration aggiornati per create auto-code, progressivo corretto, update stabile e payload manuale ignorato;
+- build/test frontend e test backend reali eseguiti con esito registrato in `docs/qa/QA-REPORTS.md`.
 
 ### TASK-064.3 - Automatic code standard for future entities
 
@@ -4598,6 +4607,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.40 | 2026-05-13 | TASK-064.2 completato: `Tenant.code` ora viene autogenerato lato backend come `TE###`, la UI Tenant non consente piu editing manuale del codice, test backend/frontend reali rieseguiti e QA report aggiornato. |
 | 2.39 | 2026-05-13 | TASK-064.1 completato: label utente `legalName` riallineata a `Nome gruppo` / `Group name` / `Nom du groupe`, layout Tenant Administration allineato a Master Data/Ruoli/Utenti con patch frontend-only, test/build frontend e QA report aggiornati. |
 | 2.38 | 2026-05-13 | TASK-064 aggiornato con sezione follow-up subtask pianificati (`TASK-064.1`..`TASK-064.5`) per naming/layout Tenant UI, auto-code Tenant, standard auto-code futuro, campi fiscali `CompanyProfile` e foundation UI CompanyProfile; nessuna modifica runtime in questo passaggio. |
 | 2.37 | 2026-05-13 | TASK-063 completato: introdotta la foundation backend geography tenant-aware conforme a `DEC-038` con migration Flyway `V24`/`V25`, `Region` e `Area` tenant-scoped, modello ZIP/CAP ibrido su `global_zip_codes`, test backend reali verdi e prossimo passo riallineato a `TASK-065` Employee UI. |

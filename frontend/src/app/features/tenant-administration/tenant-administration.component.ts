@@ -138,7 +138,7 @@ export class TenantAdministrationComponent implements OnDestroy {
   );
 
   protected readonly form = this.formBuilder.group({
-    code: ['', [Validators.required, Validators.maxLength(50)]],
+    code: [''],
     name: ['', [Validators.required, Validators.maxLength(100)]],
     legalName: ['', [Validators.required, Validators.maxLength(150)]],
     defaultCountryId: ['', [Validators.required]],
@@ -379,13 +379,15 @@ export class TenantAdministrationComponent implements OnDestroy {
     }
 
     this.form.enable();
+    if (mode !== 'create') {
+      this.form.controls.code.disable();
+    }
     this.form.controls.active.disable();
   }
 
   private buildPayload(): TenantAdministrationCreateRequest | TenantAdministrationUpdateRequest {
     const value = this.form.getRawValue();
     return {
-      code: value.code.trim(),
       name: value.name.trim(),
       legalName: value.legalName.trim(),
       defaultCountryId: value.defaultCountryId,

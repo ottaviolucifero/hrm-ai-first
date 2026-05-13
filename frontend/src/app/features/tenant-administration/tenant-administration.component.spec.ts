@@ -64,7 +64,7 @@ describe('TenantAdministrationComponent', () => {
     fixture.detectChanges();
 
     component.form.setValue({
-      code: 'TENANT_A',
+      code: '',
       name: 'Tenant A',
       legalName: 'Tenant A Legal',
       defaultCountryId: 'country-1',
@@ -74,13 +74,40 @@ describe('TenantAdministrationComponent', () => {
     component.submitModal();
 
     expect(service.createTenant).toHaveBeenCalledWith({
-      code: 'TENANT_A',
       name: 'Tenant A',
       legalName: 'Tenant A Legal',
       defaultCountryId: 'country-1',
       defaultCurrencyId: 'currency-1',
       active: true
     });
+  });
+
+  it('hides the code field in create and keeps it read-only in edit', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as TenantAdministrationComponent & {
+      openCreateForm: () => void;
+      handleRowAction: (event: { action: { id: string }; row: { id: string } }) => void;
+    };
+
+    component.openCreateForm();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('input[formControlName="code"]')).toBeNull();
+
+    component.handleRowAction({
+      action: { id: 'edit' },
+      row: { id: 'tenant-foundation' }
+    });
+    fixture.detectChanges();
+
+    const codeInput = fixture.nativeElement.querySelector('input[formControlName="code"]') as HTMLInputElement;
+    expect(codeInput).toBeTruthy();
+    expect(codeInput.readOnly).toBe(true);
   });
 
   it('opens the shared confirmation dialog before deleting a tenant', async () => {
@@ -168,7 +195,7 @@ async function createFixture(
 function createService(overrides: Partial<TenantAdministrationService> = {}): TenantAdministrationService {
   const tenant = {
     id: 'tenant-foundation',
-    code: 'FOUNDATION_TENANT',
+    code: 'TE001',
     name: 'Foundation Tenant',
     legalName: 'Foundation Tenant Legal',
     defaultCountry: { id: 'country-1', code: 'IT', name: 'Italia' },

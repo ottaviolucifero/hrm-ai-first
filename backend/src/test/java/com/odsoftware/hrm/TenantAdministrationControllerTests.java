@@ -111,8 +111,8 @@ class TenantAdministrationControllerTests {
 	@Test
 	@WithMockUser
 	void tenantAdministrationCreatesTenant() throws Exception {
+		String expectedCode = nextTenantAutoCode();
 		Map<String, Object> request = new LinkedHashMap<>();
-		request.put("code", " task064_create ");
 		request.put("name", " Task 064 Create ");
 		request.put("legalName", " Task 064 Create Legal ");
 		request.put("defaultCountryId", FOUNDATION_COUNTRY_ID);
@@ -121,22 +121,40 @@ class TenantAdministrationControllerTests {
 
 		mockMvc.perform(postJson("/api/admin/tenants", request).with(platformTenantAdminCaller()))
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.code").value("TASK064_CREATE"))
+				.andExpect(jsonPath("$.code").value(expectedCode))
 				.andExpect(jsonPath("$.name").value("Task 064 Create"))
 				.andExpect(jsonPath("$.legalName").value("Task 064 Create Legal"))
 				.andExpect(jsonPath("$.active").value(true));
 
-		assertThat(tenantRepository.existsByCode("TASK064_CREATE")).isTrue();
+		assertThat(tenantRepository.existsByCode(expectedCode)).isTrue();
 	}
 
 	@Test
 	@WithMockUser
-	void tenantAdministrationRejectsDuplicateCodeOnCreate() throws Exception {
-		saveTenant("TASK064_DUPLICATE", "Task 064 Duplicate");
+	void tenantAdministrationCreatesTenantUsingNextProgressiveCode() throws Exception {
+		int currentMaxProgressive = currentTenantAutoCodeProgressive();
+		saveTenant(tenantAutoCode(currentMaxProgressive + 1), "Task 064 Existing 1");
 
-		mockMvc.perform(postJson("/api/admin/tenants", tenantRequest("TASK064_DUPLICATE", "Task 064 Duplicate 2")).with(platformTenantAdminCaller()))
-				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.message").value("Tenant code already exists: TASK064_DUPLICATE"));
+		mockMvc.perform(postJson("/api/admin/tenants", tenantRequest("Task 064 Progressive 2")).with(platformTenantAdminCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.code").value(tenantAutoCode(currentMaxProgressive + 2)));
+	}
+
+	@Test
+	@WithMockUser
+	void tenantAdministrationCreateIgnoresManualCodePayload() throws Exception {
+		String expectedCode = nextTenantAutoCode();
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("code", "MANUAL_TENANT_CODE");
+		request.put("name", "Task 064 Manual Code Ignored");
+		request.put("legalName", "Task 064 Manual Code Ignored Legal");
+		request.put("defaultCountryId", FOUNDATION_COUNTRY_ID);
+		request.put("defaultCurrencyId", FOUNDATION_CURRENCY_ID);
+		request.put("active", true);
+
+		mockMvc.perform(postJson("/api/admin/tenants", request).with(platformTenantAdminCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.code").value(expectedCode));
 	}
 
 	@Test
@@ -145,7 +163,6 @@ class TenantAdministrationControllerTests {
 		Tenant tenant = saveTenant("TASK064_UPDATE", "Task 064 Update");
 
 		Map<String, Object> request = new LinkedHashMap<>();
-		request.put("code", " task064_update_new ");
 		request.put("name", " Task 064 Updated ");
 		request.put("legalName", " Task 064 Updated Legal ");
 		request.put("defaultCountryId", FOUNDATION_COUNTRY_ID);
@@ -153,9 +170,27 @@ class TenantAdministrationControllerTests {
 
 		mockMvc.perform(putJson("/api/admin/tenants/" + tenant.getId(), request).with(platformTenantAdminCaller()))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.code").value("TASK064_UPDATE_NEW"))
+				.andExpect(jsonPath("$.code").value("TASK064_UPDATE"))
 				.andExpect(jsonPath("$.name").value("Task 064 Updated"))
 				.andExpect(jsonPath("$.legalName").value("Task 064 Updated Legal"));
+	}
+
+	@Test
+	@WithMockUser
+	void tenantAdministrationUpdateIgnoresManualCodePayload() throws Exception {
+		Tenant tenant = saveTenant("TASK064_UPDATE_IGNORE", "Task 064 Update Ignore Code");
+
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("code", "TE999");
+		request.put("name", "Task 064 Updated Without Code Change");
+		request.put("legalName", "Task 064 Updated Without Code Change Legal");
+		request.put("defaultCountryId", FOUNDATION_COUNTRY_ID);
+		request.put("defaultCurrencyId", FOUNDATION_CURRENCY_ID);
+
+		mockMvc.perform(putJson("/api/admin/tenants/" + tenant.getId(), request).with(platformTenantAdminCaller()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.code").value("TASK064_UPDATE_IGNORE"))
+				.andExpect(jsonPath("$.name").value("Task 064 Updated Without Code Change"));
 	}
 
 	@Test
@@ -272,15 +307,38 @@ class TenantAdministrationControllerTests {
 		return companyProfileRepository.saveAndFlush(companyProfile);
 	}
 
-	private Map<String, Object> tenantRequest(String code, String name) {
+	private Map<String, Object> tenantRequest(String name) {
 		Map<String, Object> request = new LinkedHashMap<>();
-		request.put("code", code);
 		request.put("name", name);
 		request.put("legalName", name + " Legal");
 		request.put("defaultCountryId", FOUNDATION_COUNTRY_ID);
 		request.put("defaultCurrencyId", FOUNDATION_CURRENCY_ID);
 		request.put("active", true);
 		return request;
+	}
+
+	private String nextTenantAutoCode() {
+		return tenantAutoCode(currentTenantAutoCodeProgressive() + 1);
+	}
+
+	private int currentTenantAutoCodeProgressive() {
+		int maxProgressive = 0;
+		for (Tenant tenant : tenantRepository.findAll()) {
+			String code = tenant.getCode();
+			if (code == null || !code.startsWith("TE") || code.length() != 5) {
+				continue;
+			}
+			String progressive = code.substring(2);
+			if (!progressive.chars().allMatch(Character::isDigit)) {
+				continue;
+			}
+			maxProgressive = Math.max(maxProgressive, Integer.parseInt(progressive));
+		}
+		return maxProgressive;
+	}
+
+	private String tenantAutoCode(int progressive) {
+		return "TE" + String.format("%03d", progressive);
 	}
 
 	private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder postJson(String path, Object request) throws Exception {

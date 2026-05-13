@@ -6,6 +6,96 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-064.2 - Tenant automatic code generation
+
+- Data: 2026-05-13
+- Branch: `task-064-2-tenant-auto-code`
+- Task: TASK-064.2 - Tenant automatic code generation
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/service/TenantAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/tenantadministration/TenantAdministrationTenantCreateRequest.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/tenantadministration/TenantAdministrationTenantUpdateRequest.java`
+  - `backend/src/test/java/com/odsoftware/hrm/TenantAdministrationControllerTests.java`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.ts`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.html`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.models.ts`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.spec.ts`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.service.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificato il modello Tenant corrente su entity, repository, service, controller, DTO e test dedicati;
+  - verificata la UI `tenant-administration` su component/service/models/spec esistenti;
+  - verificati i pattern auto-code gia approvati in `TASK-059.x` e `TASK-060`: prefisso esplicito + progressivo a 3 cifre, calcolo dal massimo esistente, nessuna tabella contatori, collisione demandata al vincolo DB, `code` preservato in update e UI senza editing manuale in create;
+  - verificata l assenza di una utility shared gia centralizzata per il progressivo, evitando refactor fuori scope.
+- Patch applicata:
+  - rimosso `code` dai DTO backend create/update Tenant Administration;
+  - aggiornato `TenantAdministrationService` per generare automaticamente `TE###` in create, preservare sempre il `code` in update e gestire eventuale collisione con `DataIntegrityViolationException -> 409`;
+  - aggiornati i test backend Tenant Administration per create auto-code, progressivo corretto, update senza modifica del codice e payload manuale ignorato;
+  - aggiornati modelli e test frontend Tenant Administration per non inviare piu `code` nei payload create/update;
+  - aggiornata la UI Tenant per nascondere `code` in create e mostrarlo read-only in edit/view.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=TenantAdministrationControllerTests test`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+- Esiti reali:
+  - backend test mirato Tenant Administration: `BUILD SUCCESS`, 16 test, 0 failure, 0 error, 0 skipped;
+  - backend test completo: `BUILD SUCCESS`, 219 test, 0 failure, 0 error, 0 skipped;
+  - frontend build: OK; warning non bloccante sul budget iniziale (`2.02 MB`, sforamento `18.57 kB`);
+  - frontend test completo: OK, 32 file test passed, 225 test passed.
+- QA manuale:
+  - non eseguita in browser in questa sessione CLI.
+- Regressioni trovate:
+  - il primo pass backend completo ha evidenziato 4 failure/error in `TenantAdministrationControllerTests` dovuti a aspettative fragili su `TE001` in database condiviso tra test; corretti rendendo le aspettative dinamiche sul progressivo reale e rieseguendo suite mirata e completa con esito verde;
+  - un rerun backend mirato in sandbox ha fallito per permessi di rete Maven (`Permission denied: getsockopt`), non per regressione applicativa; il rerun fuori sandbox e poi la suite completa hanno confermato esito verde.
+- Limiti/note:
+  - nei log Maven resta il messaggio shell residuale `'D' n est pas reconnu...` gia osservato in task precedenti, senza impatto sul `BUILD SUCCESS`;
+  - warning non bloccanti Maven/JVM gia noti (Mockito self-attach / ByteBuddy dynamic agent);
+  - QA manuale visuale finale Tenant Administration resta consigliata per confermare la resa del campo `code` nascosto in create e readonly in edit/view.
+- Stato finale: PASS WITH NOTES
+
+### TASK-064.2 - Follow-up foundation tenant legacy code alignment
+
+- Data: 2026-05-13
+- Branch: `task-064-2-tenant-auto-code`
+- Task: TASK-064.2 - Tenant automatic code generation
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/resources/db/vendor/postgresql/V26__normalize_foundation_tenant_code.sql`
+  - `backend/src/main/resources/db/vendor/h2/V26__normalize_foundation_tenant_code.sql`
+  - `backend/src/test/java/com/odsoftware/hrm/HrmBackendApplicationTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/RoleAdministrationControllerTests.java`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.spec.ts`
+- Analisi eseguita:
+  - verificato che il residuo `FOUNDATION_TENANT` non era piu lato service/UI ma nel seed storico `V4`;
+  - esclusa la modifica di `V4` per evitare checksum mismatch Flyway su database gia esistenti;
+  - verificato che il fix corretto doveva essere una migrazione incrementale compatibile con H2 e PostgreSQL.
+- Patch applicata:
+  - aggiunta `V26` vendor-specific per convertire il tenant foundation legacy al primo codice `TE###` libero disponibile;
+  - lasciata invariata la migration storica `V4` per non invalidare installazioni gia migrate;
+  - riallineati i test/backend mock frontend che assumevano ancora il valore `FOUNDATION_TENANT`;
+  - aggiunto un test backend esplicito sul codice foundation normalizzato a `TE001` in database pulito.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=HrmBackendApplicationTests,RoleAdministrationControllerTests test`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd test -- --watch=false`
+- Esiti reali:
+  - backend test mirato migrazione + ruoli: `BUILD SUCCESS`, 80 test, 0 failure, 0 error, 0 skipped;
+  - backend test completo: `BUILD SUCCESS`, 220 test, 0 failure, 0 error, 0 skipped;
+  - frontend test completo: OK, 32 file test passed, 225 test passed.
+- QA manuale:
+  - non eseguita in browser in questa sessione CLI.
+- Regressioni trovate:
+  - nessuna regressione funzionale emersa dopo il riallineamento del tenant foundation legacy;
+  - un primo pass backend mirato in sandbox ha fallito per permessi di rete Maven (`Permission denied: getsockopt`); il rerun fuori sandbox ha confermato esito verde.
+- Limiti/note:
+  - la migrazione `H2` e stata eseguita realmente dalla suite locale; la variante `PostgreSQL` e stata mantenuta speculare ma non e stata eseguita in questa sessione CLI;
+  - nei log Maven resta il messaggio shell residuale `'D' n est pas reconnu...` gia noto e non bloccante;
+  - warning JVM/Mockito self-attach / ByteBuddy dynamic agent non bloccanti ancora presenti.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-060 - Autogenerazione codice ruolo custom
 
 - Data: 2026-05-12

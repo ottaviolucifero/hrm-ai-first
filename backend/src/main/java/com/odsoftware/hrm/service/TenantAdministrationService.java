@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TenantAdministrationService {
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+	private static final String TENANT_CODE_PREFIX = "TE";
 
 	private final TenantRepository tenantRepository;
 	private final CountryRepository countryRepository;
@@ -86,31 +88,25 @@ public class TenantAdministrationService {
 	@Transactional
 	public TenantAdministrationTenantDetailResponse createTenant(TenantAdministrationTenantCreateRequest request) {
 		assertPlatformCaller();
-		String code = normalizeCode(request.code());
-		if (tenantRepository.existsByCode(code)) {
-			throw new ResourceConflictException("Tenant code already exists: " + code);
-		}
-
 		Tenant tenant = new Tenant();
-		tenant.setCode(code);
+		tenant.setCode(generateNextTenantCode());
 		tenant.setName(clean(request.name()));
 		tenant.setLegalName(clean(request.legalName()));
 		tenant.setDefaultCountry(findCountry(request.defaultCountryId()));
 		tenant.setDefaultCurrency(findCurrency(request.defaultCurrencyId()));
 		tenant.setActive(activeOrDefault(request.active()));
-		return toTenantDetailResponse(tenantRepository.saveAndFlush(tenant));
+		try {
+			return toTenantDetailResponse(tenantRepository.saveAndFlush(tenant));
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw new ResourceConflictException("Tenant code generation collision. Retry create operation.");
+		}
 	}
 
 	@Transactional
 	public TenantAdministrationTenantDetailResponse updateTenant(UUID tenantId, TenantAdministrationTenantUpdateRequest request) {
 		assertPlatformCaller();
 		Tenant tenant = findTenant(tenantId);
-		String code = normalizeCode(request.code());
-		if (tenantRepository.existsByCodeAndIdNot(code, tenantId)) {
-			throw new ResourceConflictException("Tenant code already exists: " + code);
-		}
-
-		tenant.setCode(code);
 		tenant.setName(clean(request.name()));
 		tenant.setLegalName(clean(request.legalName()));
 		tenant.setDefaultCountry(findCountry(request.defaultCountryId()));
@@ -274,7 +270,41 @@ public class TenantAdministrationService {
 		return active == null ? Boolean.TRUE : active;
 	}
 
-	private String normalizeCode(String value) {
+	private String generateNextTenantCode() {
+		List<Tenant> tenants = tenantRepository.findAll(Sort.by(Sort.Order.desc("code")));
+		int maxProgressive = 0;
+		for (Tenant tenant : tenants) {
+			int parsedProgressive = parseProgressiveCode(tenant.getCode(), TENANT_CODE_PREFIX);
+			if (parsedProgressive > maxProgressive) {
+				maxProgressive = parsedProgressive;
+			}
+		}
+
+		if (maxProgressive >= 999) {
+			throw new ResourceConflictException("Tenant code progressive exhausted");
+		}
+
+		return TENANT_CODE_PREFIX + String.format(Locale.ROOT, "%03d", maxProgressive + 1);
+	}
+
+	private int parseProgressiveCode(String code, String prefix) {
+		String normalizedCode = cleanUpper(code);
+		if (normalizedCode == null || !normalizedCode.startsWith(prefix)) {
+			return -1;
+		}
+		if (normalizedCode.length() != prefix.length() + 3) {
+			return -1;
+		}
+		String progressive = normalizedCode.substring(prefix.length());
+		for (int index = 0; index < progressive.length(); index++) {
+			if (!Character.isDigit(progressive.charAt(index))) {
+				return -1;
+			}
+		}
+		return Integer.parseInt(progressive);
+	}
+
+	private String cleanUpper(String value) {
 		String cleaned = clean(value);
 		return cleaned == null ? null : cleaned.toUpperCase(Locale.ROOT);
 	}

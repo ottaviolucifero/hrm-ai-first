@@ -114,7 +114,7 @@ class RoleAdministrationControllerTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(role.getId().toString()))
 				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
-				.andExpect(jsonPath("$.tenant.code").value("FOUNDATION_TENANT"))
+				.andExpect(jsonPath("$.tenant.code").value("TE001"))
 				.andExpect(jsonPath("$.code").value("TASK0531_DETAIL_ROLE"))
 				.andExpect(jsonPath("$.description").value("Task 053.1 Detail Description"))
 				.andExpect(jsonPath("$.systemRole").value(false))
