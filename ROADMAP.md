@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.39
+Versione: 2.42
 Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
@@ -132,13 +132,13 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-061 i18n alert/messages consistency check
 - TASK-062 Address geography model decision
 - TASK-063 Address geography backend foundation
+- TASK-064.1 Tenant UI naming and layout refinement
 
 ### Prossimo passo
 
 - TASK-064 Tenant CRUD Administration and backlog reorganization
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 - Follow-up subtask pianificati post TASK-064:
-- TASK-064.1 Tenant UI naming and layout refinement
 - TASK-064.2 Tenant automatic code generation
 - TASK-064.3 Automatic code standard for future entities
 - TASK-064.4 Company Profile fiscal fields
@@ -255,7 +255,6 @@ Prossimo passo:
 - TASK-065 Implementare UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 - Follow-up subtask post chiusura TASK-064:
-- TASK-064.1 Tenant UI naming and layout refinement
 - TASK-064.2 Tenant automatic code generation
 - TASK-064.3 Automatic code standard for future entities
 - TASK-064.4 Company Profile fiscal fields
@@ -424,6 +423,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.42 | 2026-05-13 | TASK-064.1 completato in roadmap: naming utente `legalName` riallineato lato frontend/i18n e layout Tenant Administration allineato ai pattern amministrativi esistenti; prossimo follow-up operativo portato a `TASK-064.2`. |
 | 2.41 | 2026-05-13 | Aggiornato TASK-064 in roadmap con follow-up subtask pianificati `TASK-064.1`..`TASK-064.5` (Tenant UI naming/layout, auto-code Tenant, standard auto-code futuro, campi fiscali `CompanyProfile`, foundation UI `CompanyProfile`) mantenendo TASK-064 corrente focalizzato sul CRUD Tenant. |
 | 2.40 | 2026-05-13 | TASK-063 completato: foundation backend geography chiusa in coerenza con `DEC-038` tramite migration `V24`/`V25`, tenant scope su `Region`/`Area`, modello ZIP/CAP ibrido e test backend completi verdi; prossimo passo aggiornato a `TASK-065` Employee UI. |
 | 2.39 | 2026-05-13 | TASK-062 chiuso come decisione documentale completata tramite `DEC-038`; prossimo passo riallineato a `TASK-063 Address geography backend foundation`, `TASK-062` aggiunto tra i completati e confermata la sequenza `TASK-063` -> `TASK-065`. |

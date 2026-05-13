@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.36
+Versione: 2.39
 Ultimo aggiornamento: 2026-05-13
 Stato: In avanzamento
 
@@ -4459,7 +4459,7 @@ Follow-up subtask pianificati (post TASK-064):
 
 ### TASK-064.1 - Tenant UI naming and layout refinement
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -4468,6 +4468,13 @@ Obiettivo:
 - correggere layout tabella Tenant spostata a destra;
 - allineare layout a Master Data, Ruoli e Utenti;
 - eseguire test/build frontend.
+
+Validazione:
+
+- label `legalName` riallineata lato frontend/i18n come `Nome gruppo` / `Group name` / `Nom du groupe`, mantenendo invariati DTO e API;
+- layout pagina Tenant Administration riallineato ai pattern lista gia usati in Master Data, Ruoli e Utenti;
+- causa del disallineamento identificata nel layout locale della card lista Tenant, che applicava padding attorno alla tabella shared;
+- test e build frontend eseguiti con esito reale registrato in `docs/qa/QA-REPORTS.md`.
 
 ### TASK-064.2 - Tenant automatic code generation
 
@@ -4591,6 +4598,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.39 | 2026-05-13 | TASK-064.1 completato: label utente `legalName` riallineata a `Nome gruppo` / `Group name` / `Nom du groupe`, layout Tenant Administration allineato a Master Data/Ruoli/Utenti con patch frontend-only, test/build frontend e QA report aggiornati. |
 | 2.38 | 2026-05-13 | TASK-064 aggiornato con sezione follow-up subtask pianificati (`TASK-064.1`..`TASK-064.5`) per naming/layout Tenant UI, auto-code Tenant, standard auto-code futuro, campi fiscali `CompanyProfile` e foundation UI CompanyProfile; nessuna modifica runtime in questo passaggio. |
 | 2.37 | 2026-05-13 | TASK-063 completato: introdotta la foundation backend geography tenant-aware conforme a `DEC-038` con migration Flyway `V24`/`V25`, `Region` e `Area` tenant-scoped, modello ZIP/CAP ibrido su `global_zip_codes`, test backend reali verdi e prossimo passo riallineato a `TASK-065` Employee UI. |
 | 2.36 | 2026-05-13 | TASK-062 chiuso come DONE documentale: formalizzata la decisione architetturale sul modello geografico tramite `DEC-038`, confermato che il task non introduce codice, migration, test o UI e mantenuta la sequenza `TASK-063` backend foundation -> `TASK-065` Employee UI. |

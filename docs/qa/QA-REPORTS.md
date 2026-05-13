@@ -970,6 +970,47 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-064.1 - Tenant UI naming and layout refinement
+
+- Data: 2026-05-13
+- Branch: `task-064-1-tenant-ui-naming-layout`
+- Task: TASK-064.1 - Tenant UI naming and layout refinement
+- Modello consigliato nel prompt operativo: GPT-5.4
+- Area verificata:
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.html`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.scss`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.spec.ts`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificato che `legalName` e gia il nome tecnico corretto del campo nei modelli frontend e nei payload Tenant API;
+  - verificato che il requisito riguarda la resa utente della label e non richiede cambio DTO/backend;
+  - confrontata la card Tenant con Master Data, Ruoli e Utenti: la pagina Tenant usava una `kt-card` con padding interno locale attorno alla tabella, diversamente dai pattern lista amministrativi gia consolidati;
+  - identificata come causa principale del disallineamento la struttura della card Tenant (padding locale sulla card lista) combinata con la tabella shared gia incorniciata internamente.
+- Patch applicata:
+  - aggiornate le label i18n utente `tenantAdministration.columns.legalName` in `it/en/fr` a `Nome gruppo` / `Group name` / `Nom du groupe`;
+  - aggiornati i placeholder di ricerca correlati per usare la stessa terminologia utente;
+  - riallineata la card lista Tenant al pattern amministrativo esistente (card senza padding interno, toolbar con padding/border coerenti, nota interna con margini coerenti);
+  - resa sticky a destra la colonna azioni della tabella Tenant, in linea con la pagina Utenti;
+  - aggiunti test frontend minimi sulle traduzioni `it/en/fr` della label.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `cd frontend && npm.cmd start -- --host 127.0.0.1 --port 4200` (smoke start foreground, senza QA browser completa)
+- Esiti reali:
+  - frontend build: OK; warning non bloccante sul budget iniziale (`2.02 MB`, sforamento `18.50 kB`);
+  - frontend test: OK, 32 file test passed, 224 test passed;
+  - frontend dev server: `ng serve` avviato correttamente in foreground con URL locale `http://127.0.0.1:4200/`, ma non mantenuto in background da questa sessione CLI.
+- QA manuale:
+  - non eseguita in browser in questa sessione CLI.
+- Regressioni trovate:
+  - nessuna regressione automatica rilevata.
+- Limiti/note:
+  - la verifica visuale finale della pagina Tenant Administration su browser resta consigliata per confermare il riallineamento percepito rispetto a Master Data, Ruoli e Utenti;
+  - nessuna modifica backend, DTO o API eseguita.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-061 - i18n alert/messages consistency check
 
 - Data: 2026-05-12
