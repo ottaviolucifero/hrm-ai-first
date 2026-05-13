@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record GlobalZipCodeRequest(
+		UUID tenantId,
 		@NotNull UUID countryId,
 		UUID regionId,
 		UUID areaId,

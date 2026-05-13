@@ -9,17 +9,23 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
-@Table(name = "global_zip_codes", uniqueConstraints = @UniqueConstraint(name = "uk_global_zip_codes_country_postal_city", columnNames = {"country_id", "postal_code", "city"}))
+@Table(name = "global_zip_codes")
 public class GlobalZipCode extends BaseMasterEntity {
+
+	@Column(name = "tenant_id")
+	private UUID tenantId;
+
+	@Column(name = "tenant_scope_key", nullable = false)
+	private UUID tenantScopeKey;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -66,6 +72,22 @@ public class GlobalZipCode extends BaseMasterEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "source_type", nullable = false, length = 30)
 	private GlobalZipCodeSourceType sourceType;
+
+	public UUID getTenantId() {
+		return tenantId;
+	}
+
+	public void setTenantId(UUID tenantId) {
+		this.tenantId = tenantId;
+	}
+
+	public UUID getTenantScopeKey() {
+		return tenantScopeKey;
+	}
+
+	public void setTenantScopeKey(UUID tenantScopeKey) {
+		this.tenantScopeKey = tenantScopeKey;
+	}
 
 	public Country getCountry() {
 		return country;

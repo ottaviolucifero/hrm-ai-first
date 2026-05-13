@@ -62,6 +62,8 @@ class ItalianZipCodeImportServiceTests {
 				.map(zipCode -> zipCode.getPostalCode())
 				.collect(Collectors.toSet());
 		assertThat(torinoCaps).containsExactlyInAnyOrder("10121", "10122");
+		assertThat(globalZipCodeRepository.findByCountry_IdAndCity(italy.getId(), "Task 044 Torino"))
+				.allMatch(zipCode -> zipCode.getTenantId() == null);
 	}
 
 	@Test

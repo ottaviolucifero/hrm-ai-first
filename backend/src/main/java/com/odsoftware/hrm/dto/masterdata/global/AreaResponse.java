@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public record AreaResponse(
 		UUID id,
+		UUID tenantId,
 		GlobalMasterReferenceResponse country,
 		GlobalMasterReferenceResponse region,
 		String name,

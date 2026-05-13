@@ -4351,9 +4351,9 @@ Completato:
 
 ### TASK-063 - Address geography backend foundation
 
-Stato: TODO
+Stato: DONE
 
-Tipo: Backend foundation futuro
+Tipo: Backend foundation completato
 
 Prerequisiti:
 
@@ -4383,6 +4383,27 @@ Vincoli:
 - non implementare UI Employee;
 - non introdurre modelli geografici paralleli;
 - mantenere coerenza con `DECISIONS.md` e con la governance tenant-aware esistente.
+
+Completato:
+
+- migration Flyway `V24__make_address_geography_tenant_aware.sql` aggiunta per rendere tenant-aware `Region` e `Area`, aggiungere `tenant_id` nullable e `tenant_scope_key` a `global_zip_codes`, preservando il modello ibrido DEC-038;
+- migration vendor-specific `V25__add_address_geography_tenant_unique_indexes.sql` aggiunta per PostgreSQL e H2 con unique index coerenti su `Region`, `Area` e ZIP/CAP ibridi senza introdurre tabelle parallele;
+- entity `Region` e `Area` allineate a `BaseTenantMasterEntity` con `tenantId` obbligatorio e unique tenant-scoped;
+- entity `GlobalZipCode` estesa con `tenantId` nullable e chiave di scope tecnica per garantire univocita cross-db del modello globale/tenant-specific;
+- repository, service, DTO e API global master data aggiornati con `tenantId` esplicito per `Region`/`Area`, filtro opzionale per liste geography e supporto ZIP/CAP ibridi globali + tenant-specific;
+- import ZIP italiani mantenuto globale (`tenantId = null`) e reso coerente con il nuovo modello;
+- verificato l impatto su `Employee`, `OfficeLocation`, `HolidayCalendar` e Master Data globali senza introdurre refactor o UI fuori scope;
+- test backend aggiornati per migration/model, tenant scope geography, ZIP/CAP ibridi e regressioni foundation.
+
+Test eseguiti:
+
+- `cd backend && .\mvnw.cmd -Dtest=ItalianZipCodeImportServiceTests,MasterDataGlobalControllerTests test` -> `BUILD SUCCESS`;
+- `cd backend && .\mvnw.cmd -Dtest=HrmBackendApplicationTests test` -> `BUILD SUCCESS`, dopo riallineamento dei fixture foundation a `tenantId`;
+- `cd backend && .\mvnw.cmd test` -> `BUILD SUCCESS`, `201` test, `0` failure, `0` error, `0` skipped.
+
+Nota architetturale:
+
+`DEC-038` resta invariata. Il task consolida il backend geography tenant-aware senza introdurre `City`, senza frontend e senza cambiare il modello Employee oltre alla compatibilita con i riferimenti geography esistenti.
 
 ### TASK-064 - Implementare UI Employee management enterprise
 
@@ -4459,6 +4480,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.37 | 2026-05-13 | TASK-063 completato: introdotta la foundation backend geography tenant-aware conforme a `DEC-038` con migration Flyway `V24`/`V25`, `Region` e `Area` tenant-scoped, modello ZIP/CAP ibrido su `global_zip_codes`, test backend reali verdi e prossimo passo riallineato a `TASK-064` Employee UI. |
 | 2.36 | 2026-05-13 | TASK-062 chiuso come DONE documentale: formalizzata la decisione architetturale sul modello geografico tramite `DEC-038`, confermato che il task non introduce codice, migration, test o UI e mantenuta la sequenza `TASK-063` backend foundation -> `TASK-064` Employee UI. |
 | 2.35 | 2026-05-13 | Inseriti TASK-062 Address geography model decision e TASK-063 Address geography backend foundation prima della UI Employee; l'ex TASK-062 Employee UI slitta a TASK-064 con prerequisiti espliciti TASK-062/TASK-063 e il backlog applicativo successivo viene rinumerato fino a TASK-075. |
 | 2.34 | 2026-05-12 | TASK-060 completato: `Role.code` resta semantico solo per i ruoli seed di sistema, mentre i ruoli custom tenant usano auto-code `RO###` generato lato backend; create senza campo `code`, edit/view read-only, test backend/frontend reali verdi e nessun `businessCode` introdotto. |

@@ -9,6 +9,8 @@ import com.odsoftware.hrm.repository.master.GlobalZipCodeRepository;
 import com.odsoftware.hrm.repository.master.MaritalStatusRepository;
 import com.odsoftware.hrm.repository.master.NationalIdentifierTypeRepository;
 import com.odsoftware.hrm.repository.master.RegionRepository;
+import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.entity.core.Tenant;
 import com.odsoftware.hrm.service.ItalianZipCodeImportService;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -43,6 +46,7 @@ class MasterDataGlobalControllerTests {
 
 	private static final UUID EUR_CURRENCY_ID = UUID.fromString("10000000-0000-0000-0000-000000000001");
 	private static final UUID ITALY_COUNTRY_ID = UUID.fromString("20000000-0000-0000-0000-000000000001");
+	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID MISSING_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");
 
 	@Autowired
@@ -78,6 +82,9 @@ class MasterDataGlobalControllerTests {
 	@Autowired
 	private NationalIdentifierTypeRepository nationalIdentifierTypeRepository;
 
+	@Autowired
+	private TenantRepository tenantRepository;
+
 	@Test
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalGeoCrudFlowSupportsListGetCreateUpdateAndDisable() throws Exception {
@@ -92,37 +99,40 @@ class MasterDataGlobalControllerTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Task 030 Country Updated"));
 
-		UUID regionId = createRegion(countryId, "Task 030 Region", "qa-r1");
+		UUID regionId = createRegion(FOUNDATION_TENANT_ID, countryId, "Task 030 Region", "qa-r1");
 		mockMvc.perform(get("/api/master-data/global/regions"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/regions/{id}", regionId))
 				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.code").value("QA-R1"));
-		mockMvc.perform(putJson("/api/master-data/global/regions/" + regionId, regionRequest(countryId, "Task 030 Region Updated", "QA-R1")))
+		mockMvc.perform(putJson("/api/master-data/global/regions/" + regionId, regionRequest(FOUNDATION_TENANT_ID, countryId, "Task 030 Region Updated", "QA-R1")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Task 030 Region Updated"));
 
-		UUID areaId = createArea(countryId, regionId, "Task 030 Area", "qa-a1");
+		UUID areaId = createArea(FOUNDATION_TENANT_ID, countryId, regionId, "Task 030 Area", "qa-a1");
 		mockMvc.perform(get("/api/master-data/global/areas"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/areas/{id}", areaId))
 				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.code").value("QA-A1"));
-		mockMvc.perform(putJson("/api/master-data/global/areas/" + areaId, areaRequest(countryId, regionId, "Task 030 Area Updated", "QA-A1")))
+		mockMvc.perform(putJson("/api/master-data/global/areas/" + areaId, areaRequest(FOUNDATION_TENANT_ID, countryId, regionId, "Task 030 Area Updated", "QA-A1")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Task 030 Area Updated"));
 
-		UUID zipCodeId = createZipCode(countryId, regionId, areaId, "Task City", "30100");
+		UUID zipCodeId = createZipCode(FOUNDATION_TENANT_ID, countryId, regionId, areaId, "Task City", "30100");
 		mockMvc.perform(get("/api/master-data/global/zip-codes"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/zip-codes/{id}", zipCodeId))
 				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.postalCode").value("30100"))
 				.andExpect(jsonPath("$.sourceType").value("MANUAL"));
-		mockMvc.perform(putJson("/api/master-data/global/zip-codes/" + zipCodeId, zipCodeRequest(countryId, regionId, areaId, "Task City Updated", "30100")))
+		mockMvc.perform(putJson("/api/master-data/global/zip-codes/" + zipCodeId, zipCodeRequest(FOUNDATION_TENANT_ID, countryId, regionId, areaId, "Task City Updated", "30100")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.city").value("Task City Updated"));
 
@@ -321,12 +331,119 @@ class MasterDataGlobalControllerTests {
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiValidatesGeographicRelationshipConsistency() throws Exception {
 		UUID countryId = createCountry("Task 030 Mismatch Country", "QB");
-		UUID italyRegionId = createRegion(ITALY_COUNTRY_ID, "Task 030 Italy Region", "IT-T030");
+		UUID italyRegionId = createRegion(FOUNDATION_TENANT_ID, ITALY_COUNTRY_ID, "Task 030 Italy Region", "IT-T030");
 
-		mockMvc.perform(postJson("/api/master-data/global/areas", areaRequest(countryId, italyRegionId, "Task 030 Invalid Area", "QA-BAD")))
+		mockMvc.perform(postJson("/api/master-data/global/areas", areaRequest(FOUNDATION_TENANT_ID, countryId, italyRegionId, "Task 030 Invalid Area", "QA-BAD")))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.status").value(400))
 				.andExpect(jsonPath("$.message").value("Region does not belong to the selected country"));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalApiSupportsTenantScopedGeographyDuplicatesAcrossTenants() throws Exception {
+		UUID secondaryTenantId = ensureSecondaryTenant().getId();
+		UUID countryId = createCountry("Task 063 Country", "T6");
+
+		UUID firstRegionId = createRegion(FOUNDATION_TENANT_ID, countryId, "Task 063 Region", "R-063");
+		UUID secondRegionId = createRegion(secondaryTenantId, countryId, "Task 063 Region", "R-063");
+
+		UUID firstAreaId = createArea(FOUNDATION_TENANT_ID, countryId, firstRegionId, "Task 063 Area", "A-063");
+		UUID secondAreaId = createArea(secondaryTenantId, countryId, secondRegionId, "Task 063 Area", "A-063");
+
+		assertThat(regionRepository.findById(firstRegionId).orElseThrow().getTenantId()).isEqualTo(FOUNDATION_TENANT_ID);
+		assertThat(regionRepository.findById(secondRegionId).orElseThrow().getTenantId()).isEqualTo(secondaryTenantId);
+		assertThat(areaRepository.findById(firstAreaId).orElseThrow().getTenantId()).isEqualTo(FOUNDATION_TENANT_ID);
+		assertThat(areaRepository.findById(secondAreaId).orElseThrow().getTenantId()).isEqualTo(secondaryTenantId);
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalApiRejectsCrossTenantGeographyRelations() throws Exception {
+		UUID secondaryTenantId = ensureSecondaryTenant().getId();
+		UUID countryId = createCountry("Task 063 Tenant Country", "T7");
+		UUID secondaryRegionId = createRegion(secondaryTenantId, countryId, "Task 063 Tenant Region", "R-SECOND");
+
+		mockMvc.perform(postJson("/api/master-data/global/areas", areaRequest(FOUNDATION_TENANT_ID, countryId, secondaryRegionId, "Task 063 Invalid Area", "A-BAD")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.message").value("Region does not belong to the selected tenant"));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalApiSupportsHybridZipCodeTenantScope() throws Exception {
+		UUID secondaryTenantId = ensureSecondaryTenant().getId();
+		UUID franceId = createCountry("Task 063 France", "ZX");
+		UUID foundationRegionId = createRegion(FOUNDATION_TENANT_ID, franceId, "Task 063 FR Region", "FR-063");
+		UUID foundationAreaId = createArea(FOUNDATION_TENANT_ID, franceId, foundationRegionId, "Task 063 FR Area", "FR-A063");
+		UUID secondaryRegionId = createRegion(secondaryTenantId, franceId, "Task 063 FR Region", "FR-063");
+		UUID secondaryAreaId = createArea(secondaryTenantId, franceId, secondaryRegionId, "Task 063 FR Area", "FR-A063");
+
+		UUID tenantZipId = createZipCode(FOUNDATION_TENANT_ID, franceId, foundationRegionId, foundationAreaId, "Task Paris", "75063");
+		UUID secondaryTenantZipId = createZipCode(secondaryTenantId, franceId, secondaryRegionId, secondaryAreaId, "Task Paris", "75063");
+		mockMvc.perform(get("/api/master-data/global/zip-codes/{id}", tenantZipId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()));
+		assertThat(globalZipCodeRepository.findById(secondaryTenantZipId).orElseThrow().getTenantId()).isEqualTo(secondaryTenantId);
+
+		mockMvc.perform(postJson(
+				"/api/master-data/global/zip-codes",
+				Map.of(
+						"countryId", franceId,
+						"regionId", foundationRegionId,
+						"areaId", foundationAreaId,
+						"city", "Task Paris Missing Tenant",
+						"postalCode", "75064",
+						"sourceType", "MANUAL")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.message").value("tenantId is required for non-Italian zip codes"));
+
+		mockMvc.perform(postJson(
+				"/api/master-data/global/zip-codes",
+				Map.of(
+						"tenantId", FOUNDATION_TENANT_ID,
+						"countryId", ITALY_COUNTRY_ID,
+						"city", "Task Rome",
+						"postalCode", "00163",
+						"sourceType", "MANUAL")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.message").value("Italian zip codes must remain global"));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalApiFiltersTenantScopedGeographyLists() throws Exception {
+		UUID secondaryTenantId = ensureSecondaryTenant().getId();
+		UUID countryId = createCountry("Task 063 Filter Country", "T8");
+
+		UUID foundationRegionId = createRegion(FOUNDATION_TENANT_ID, countryId, "Task 063 Filter Region A", "F-A");
+		UUID secondaryRegionId = createRegion(secondaryTenantId, countryId, "Task 063 Filter Region B", "F-B");
+		UUID foundationAreaId = createArea(FOUNDATION_TENANT_ID, countryId, foundationRegionId, "Task 063 Filter Area A", "FA-A");
+		createArea(secondaryTenantId, countryId, secondaryRegionId, "Task 063 Filter Area B", "FA-B");
+
+		UUID italianGlobalZipId = createItalianGlobalZip("Task 063 Filter Global Rome", "00164");
+		UUID tenantZipId = createZipCode(FOUNDATION_TENANT_ID, countryId, foundationRegionId, foundationAreaId, "Task 063 Filter Lyon", "69063");
+		createZipCode(secondaryTenantId, countryId, secondaryRegionId, createArea(secondaryTenantId, countryId, secondaryRegionId, "Task 063 Filter Area C", "FA-C"), "Task 063 Filter Marseille", "13063");
+
+		mockMvc.perform(get("/api/master-data/global/regions?tenantId=" + FOUNDATION_TENANT_ID + "&search=Task 063 Filter Region"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].id").value(foundationRegionId.toString()));
+
+		mockMvc.perform(get("/api/master-data/global/areas?tenantId=" + FOUNDATION_TENANT_ID + "&search=Task 063 Filter Area"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].id").value(foundationAreaId.toString()));
+
+		mockMvc.perform(get("/api/master-data/global/zip-codes?tenantId=" + FOUNDATION_TENANT_ID + "&search=Task 063 Filter"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(2))
+				.andExpect(jsonPath("$.content[*].id").value(containsInAnyOrder(
+						italianGlobalZipId.toString(),
+						tenantZipId.toString())));
 	}
 
 	@Test
@@ -360,26 +477,46 @@ class MasterDataGlobalControllerTests {
 		return responseId(result);
 	}
 
-	private UUID createRegion(UUID countryId, String name, String code) throws Exception {
-		MvcResult result = mockMvc.perform(postJson("/api/master-data/global/regions", regionRequest(countryId, name, code)))
+	private UUID createRegion(UUID tenantId, UUID countryId, String name, String code) throws Exception {
+		MvcResult result = mockMvc.perform(postJson("/api/master-data/global/regions", regionRequest(tenantId, countryId, name, code)))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.active").value(true))
+				.andExpect(jsonPath("$.tenantId").value(tenantId.toString()))
 				.andReturn();
 		return responseId(result);
 	}
 
-	private UUID createArea(UUID countryId, UUID regionId, String name, String code) throws Exception {
-		MvcResult result = mockMvc.perform(postJson("/api/master-data/global/areas", areaRequest(countryId, regionId, name, code)))
+	private UUID createArea(UUID tenantId, UUID countryId, UUID regionId, String name, String code) throws Exception {
+		MvcResult result = mockMvc.perform(postJson("/api/master-data/global/areas", areaRequest(tenantId, countryId, regionId, name, code)))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.active").value(true))
+				.andExpect(jsonPath("$.tenantId").value(tenantId.toString()))
 				.andReturn();
 		return responseId(result);
 	}
 
-	private UUID createZipCode(UUID countryId, UUID regionId, UUID areaId, String city, String postalCode) throws Exception {
-		MvcResult result = mockMvc.perform(postJson("/api/master-data/global/zip-codes", zipCodeRequest(countryId, regionId, areaId, city, postalCode)))
+	private UUID createZipCode(UUID tenantId, UUID countryId, UUID regionId, UUID areaId, String city, String postalCode) throws Exception {
+		MvcResult result = mockMvc.perform(postJson("/api/master-data/global/zip-codes", zipCodeRequest(tenantId, countryId, regionId, areaId, city, postalCode)))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.active").value(true))
+				.andExpect(jsonPath("$.tenantId").value(tenantId.toString()))
+				.andReturn();
+		return responseId(result);
+	}
+
+	private UUID createItalianGlobalZip(String city, String postalCode) throws Exception {
+		MvcResult result = mockMvc.perform(postJson(
+				"/api/master-data/global/zip-codes",
+				Map.of(
+						"countryId", ITALY_COUNTRY_ID,
+						"city", city,
+						"postalCode", postalCode,
+						"provinceCode", "RM",
+						"provinceName", "Rome",
+						"sourceType", "MANUAL")))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.active").value(true))
+				.andExpect(jsonPath("$.tenantId").isEmpty())
 				.andReturn();
 		return responseId(result);
 	}
@@ -431,21 +568,24 @@ class MasterDataGlobalControllerTests {
 		return request;
 	}
 
-	private Map<String, Object> regionRequest(UUID countryId, String name, String code) {
+	private Map<String, Object> regionRequest(UUID tenantId, UUID countryId, String name, String code) {
 		Map<String, Object> request = codeNameRequest(code, name);
+		request.put("tenantId", tenantId);
 		request.put("countryId", countryId);
 		return request;
 	}
 
-	private Map<String, Object> areaRequest(UUID countryId, UUID regionId, String name, String code) {
+	private Map<String, Object> areaRequest(UUID tenantId, UUID countryId, UUID regionId, String name, String code) {
 		Map<String, Object> request = codeNameRequest(code, name);
+		request.put("tenantId", tenantId);
 		request.put("countryId", countryId);
 		request.put("regionId", regionId);
 		return request;
 	}
 
-	private Map<String, Object> zipCodeRequest(UUID countryId, UUID regionId, UUID areaId, String city, String postalCode) {
+	private Map<String, Object> zipCodeRequest(UUID tenantId, UUID countryId, UUID regionId, UUID areaId, String city, String postalCode) {
 		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("tenantId", tenantId);
 		request.put("countryId", countryId);
 		request.put("regionId", regionId);
 		request.put("areaId", areaId);
@@ -495,5 +635,20 @@ class MasterDataGlobalControllerTests {
 
 	private UUID responseId(MvcResult result) throws Exception {
 		return UUID.fromString(objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText());
+	}
+
+	private Tenant ensureSecondaryTenant() {
+		return tenantRepository.findAll().stream()
+				.filter(existing -> "TASK063_TENANT_2".equals(existing.getCode()))
+				.findFirst()
+				.orElseGet(() -> {
+			Tenant tenant = new Tenant();
+			tenant.setCode("TASK063_TENANT_2");
+			tenant.setName("Task 063 Tenant 2");
+			tenant.setLegalName("Task 063 Tenant 2 Legal");
+			tenant.setDefaultCountry(countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow());
+			tenant.setDefaultCurrency(currencyRepository.findById(EUR_CURRENCY_ID).orElseThrow());
+			return tenantRepository.saveAndFlush(tenant);
+		});
 	}
 }

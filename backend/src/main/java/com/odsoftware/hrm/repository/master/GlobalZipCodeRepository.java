@@ -7,11 +7,17 @@ import java.util.UUID;
 
 public interface GlobalZipCodeRepository extends MasterDataRepository<GlobalZipCode> {
 
-	boolean existsByCountry_IdAndPostalCodeAndCity(UUID countryId, String postalCode, String city);
+	boolean existsByTenantIdIsNullAndCountry_IdAndPostalCodeAndCity(UUID countryId, String postalCode, String city);
 
-	boolean existsByCountry_IdAndPostalCodeAndCityAndIdNot(UUID countryId, String postalCode, String city, UUID id);
+	boolean existsByTenantIdIsNullAndCountry_IdAndPostalCodeAndCityAndIdNot(UUID countryId, String postalCode, String city, UUID id);
 
-	Optional<GlobalZipCode> findByCountry_IdAndPostalCodeAndCity(UUID countryId, String postalCode, String city);
+	boolean existsByTenantIdAndCountry_IdAndPostalCodeAndCity(UUID tenantId, UUID countryId, String postalCode, String city);
+
+	boolean existsByTenantIdAndCountry_IdAndPostalCodeAndCityAndIdNot(UUID tenantId, UUID countryId, String postalCode, String city, UUID id);
+
+	Optional<GlobalZipCode> findByTenantIdIsNullAndCountry_IdAndPostalCodeAndCity(UUID countryId, String postalCode, String city);
+
+	Optional<GlobalZipCode> findByTenantIdAndCountry_IdAndPostalCodeAndCity(UUID tenantId, UUID countryId, String postalCode, String city);
 
 	long countByCountry_Id(UUID countryId);
 

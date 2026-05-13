@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ItalianZipCodeImportService {
 
 	static final String DEFAULT_CSV_PATH = "master-data/italy-zip-codes.csv";
+	private static final UUID GLOBAL_SCOPE_KEY = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
 	private final CountryRepository countryRepository;
 	private final GlobalZipCodeRepository globalZipCodeRepository;
@@ -64,10 +65,12 @@ public class ItalianZipCodeImportService {
 				String postalCode = normalize(row.cap());
 				String provinceCode = normalizeUpper(row.provinciaSigla());
 				GlobalZipCode existing = globalZipCodeRepository
-						.findByCountry_IdAndPostalCodeAndCity(italy.getId(), postalCode, city)
+						.findByTenantIdIsNullAndCountry_IdAndPostalCodeAndCity(italy.getId(), postalCode, city)
 						.orElse(null);
 				if (existing == null) {
 					GlobalZipCode globalZipCode = new GlobalZipCode();
+					globalZipCode.setTenantId(null);
+					globalZipCode.setTenantScopeKey(GLOBAL_SCOPE_KEY);
 					globalZipCode.setCountry(italy);
 					globalZipCode.setRegion(null);
 					globalZipCode.setArea(null);

@@ -89,8 +89,9 @@ public class MasterDataGlobalController {
 	public MasterDataPageResponse<RegionResponse> findRegions(
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "25") Integer size,
-			@RequestParam(required = false) String search) {
-		return masterDataGlobalService.findRegions(page, size, search);
+			@RequestParam(required = false) String search,
+			@RequestParam(required = false) UUID tenantId) {
+		return masterDataGlobalService.findRegions(page, size, search, tenantId);
 	}
 
 	@GetMapping("/regions/{id}")
@@ -124,8 +125,9 @@ public class MasterDataGlobalController {
 	public MasterDataPageResponse<AreaResponse> findAreas(
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "25") Integer size,
-			@RequestParam(required = false) String search) {
-		return masterDataGlobalService.findAreas(page, size, search);
+			@RequestParam(required = false) String search,
+			@RequestParam(required = false) UUID tenantId) {
+		return masterDataGlobalService.findAreas(page, size, search, tenantId);
 	}
 
 	@GetMapping("/areas/{id}")
@@ -159,8 +161,9 @@ public class MasterDataGlobalController {
 	public MasterDataPageResponse<GlobalZipCodeResponse> findGlobalZipCodes(
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "25") Integer size,
-			@RequestParam(required = false) String search) {
-		return masterDataGlobalService.findGlobalZipCodes(page, size, search);
+			@RequestParam(required = false) String search,
+			@RequestParam(required = false) UUID tenantId) {
+		return masterDataGlobalService.findGlobalZipCodes(page, size, search, tenantId);
 	}
 
 	@GetMapping("/zip-codes/{id}")
