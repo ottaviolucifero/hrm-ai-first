@@ -2374,5 +2374,37 @@ Nota operativa:
 - Limiti/note: test automatici non rieseguiti in questo passaggio perche non sono stati modificati file applicativi
 - Stato finale: PASS WITH NOTES
 
+### TASK-064.4 - Company Profile fiscal fields
+
+- Data: 2026-05-13
+- Branch: `task-064-tenant-crud-administration`
+- Task: TASK-064.4 - Company Profile fiscal fields
+- Agente/Modello usato: GPT-5.5
+- Aree/file verificati:
+  - `backend/src/main/resources/db/vendor/postgresql/V27__add_company_profile_fiscal_fields.sql`
+  - `backend/src/main/resources/db/vendor/h2/V27__add_company_profile_fiscal_fields.sql`
+  - `backend/src/main/java/com/odsoftware/hrm/entity/core/CompanyProfile.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/foundation/CompanyProfileResponse.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/FoundationReadService.java`
+  - `backend/src/test/java/com/odsoftware/hrm/HrmBackendApplicationTests.java`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Comandi eseguiti:
+  - `cd backend && mvnw.cmd test` -> OK
+  - `cd backend && mvnw.cmd clean test` -> KO per file bloccato durante `maven-clean-plugin` su `backend/target/iso3166-source/.git/objects/pack/...`
+  - `cd backend && mvnw.cmd test` -> OK, ricompilazione forzata rilevata (`Recompiling the module because of changed source code`), 221 test passed, 0 failure, 0 error, 0 skipped
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget bundle iniziale superato di `19.02 kB` (`2.02 MB` totali)
+  - `cd frontend && npm.cmd test` -> OK, 32 file test passed, 225 test passed
+- Verifiche funzionali:
+  - aggiunte le sole colonne nullable `tax_number`, `pec_email`, `sdi_code` su `company_profiles`;
+  - nessuna modifica a `tenants`, security/RBAC, CRUD API `CompanyProfile`, request DTO o DTO `UserAdministrationCompanyProfile*`;
+  - `CompanyProfileResponse` e `FoundationReadService` estesi per esporre i nuovi campi;
+  - chiavi i18n catalog-only `companyProfile.fields.taxNumber`, `companyProfile.fields.pecEmail`, `companyProfile.fields.sdiCode` aggiunte in `it/fr/en` senza introdurre UI nuova.
+- Nota tecnica:
+  - `taxIdentifier` era gia presente sul modello `CompanyProfile` ed e rimasto invariato; `taxNumber` e stato aggiunto come campo separato per rispettare lo scope del task.
+  - Esiste una possibile sovrapposizione semantica tra `taxIdentifier` e `taxNumber`; la chiarificazione di dominio e l eventuale razionalizzazione futura restano fuori scope e vanno trattate in task UI/API dedicato, senza migrazioni o rename in questa patch.
+- Stato finale: PASS WITH NOTES
+
 
 

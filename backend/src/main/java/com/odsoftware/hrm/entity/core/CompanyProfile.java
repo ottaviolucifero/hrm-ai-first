@@ -55,14 +55,27 @@ public class CompanyProfile extends BaseMasterEntity {
 	@Column(name = "tax_identifier", length = 50)
 	private String taxIdentifier;
 
+	@Size(max = 50)
+	@Column(name = "tax_number", length = 50)
+	private String taxNumber;
+
 	@Email
 	@Size(max = 150)
 	@Column(name = "email", length = 150)
 	private String email;
 
+	@Email
+	@Size(max = 150)
+	@Column(name = "pec_email", length = 150)
+	private String pecEmail;
+
 	@Size(max = 50)
 	@Column(name = "phone", length = 50)
 	private String phone;
+
+	@Size(max = 50)
+	@Column(name = "sdi_code", length = 50)
+	private String sdiCode;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -147,6 +160,14 @@ public class CompanyProfile extends BaseMasterEntity {
 		this.taxIdentifier = taxIdentifier;
 	}
 
+	public String getTaxNumber() {
+		return taxNumber;
+	}
+
+	public void setTaxNumber(String taxNumber) {
+		this.taxNumber = taxNumber;
+	}
+
 	public String getEmail() {
 		return email;
 	}
@@ -155,12 +176,28 @@ public class CompanyProfile extends BaseMasterEntity {
 		this.email = email;
 	}
 
+	public String getPecEmail() {
+		return pecEmail;
+	}
+
+	public void setPecEmail(String pecEmail) {
+		this.pecEmail = pecEmail;
+	}
+
 	public String getPhone() {
 		return phone;
 	}
 
 	public void setPhone(String phone) {
 		this.phone = phone;
+	}
+
+	public String getSdiCode() {
+		return sdiCode;
+	}
+
+	public void setSdiCode(String sdiCode) {
+		this.sdiCode = sdiCode;
 	}
 
 	public Country getCountry() {
