@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.33
+Versione: 1.34
 Ultimo aggiornamento: 2026-05-13
 Stato: Attivo
 
@@ -1524,10 +1524,52 @@ La decisione non introduce codice, migration o test in questa fase.
 
 ---
 
+### DEC-039 - Automatic code standard for future entities with `code` field
+
+Data: 2026-05-13
+Stato: Approvata
+
+Decisione:
+
+Ogni nuova entita che introduce un campo `code` deve adottare, come regola di default, un codice generato automaticamente.
+
+Lo standard approvato e:
+
+- prefisso composto dalle prime due lettere del nome entita;
+- progressivo numerico a 3 cifre;
+- formato finale `PPNNN`;
+- esempio: `Tenant` -> `TE001`;
+- il `code` deve essere generato lato backend quando la gestione e automatica;
+- il `code` non deve essere editabile da UI quando e gestito automaticamente.
+
+Le eccezioni sono ammesse solo se motivate e documentate esplicitamente in `DECISIONS.md` o nel task dedicato che introduce l entita.
+
+La decisione vale per nuove entita o nuovi task che introducono un campo `code`; non forza la riscrittura retroattiva delle entita esistenti gia governate da decisioni e task precedenti.
+
+Motivazione:
+
+- rendere durevole e coerente il pattern gia introdotto nei task `TASK-059.1`, `TASK-059.2`, `TASK-059.4`, `TASK-060` e `TASK-064.2`;
+- evitare nuovi `code` manuali incoerenti tra backend, UI e dati seed;
+- ridurre ambiguita nei futuri task documentali e implementativi;
+- mantenere centralizzata la governance delle eccezioni.
+
+Alternative escluse:
+
+- lasciare la scelta manuale task per task senza regola durevole;
+- consentire per default `code` editabile da UI anche quando il codice e automatico;
+- imporre una migrazione retroattiva immediata di tutte le entita esistenti fuori dallo scope del task.
+
+Impatto:
+
+I futuri task che introducono nuove entita con campo `code` devono partire da questo standard come default. `AGENTS.md`, `TASKS.md` e `ROADMAP.md` possono richiamare la regola in forma sintetica per guidare l esecuzione operativa. Eventuali eccezioni devono essere motivate e tracciate, evitando regole implicite o differenze non documentate tra backend e frontend.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.34 | 2026-05-13 | Aggiunta DEC-039 per rendere durevole lo standard dei nuovi campi `code`: auto-code `prime due lettere + progressivo 3 cifre`, generazione backend, UI non editabile ed eccezioni solo se documentate. |
 | 1.33 | 2026-05-13 | Aggiunta DEC-038 per formalizzare il modello geografico indirizzi tenant-aware: Country globale, Region/Area tenant-scoped, ZIP/CAP ibrido globale Italia e tenant per altri paesi, City come attributo ZIP/CAP e prerequisito per TASK-063/TASK-065. |
 | 1.32 | 2026-05-12 | Aggiunta DEC-037 per formalizzare il pattern shared di conferma per azioni UI critiche/distruttive, con riuso obbligatorio, coerenza UX, i18n e integrazione attesa con il shared DataTable. |
 | 1.31 | 2026-05-11 | Aggiunta DEC-036 per formalizzare la visibility frontend centralizzata su summary CRUD, sidebar visibile ma frozen senza permessi, route guardate su `view/create/update` e default frozen quando `/api/auth/me` non espone permission summary reale. |
