@@ -79,6 +79,58 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
     expect(textContent).not.toContain('Codice fiscale');
   });
 
+  it('shows province fallback from zip code when area is missing', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService({
+      findCompanyProfileById: vi.fn(() => of({
+        id: 'company-3',
+        tenant: { id: 'tenant-1', code: 'TENANT', name: 'Tenant' },
+        companyProfileType: { id: 'type-1', code: 'CP001', name: 'Legal entity' },
+        code: 'CP003',
+        legalName: 'Legal Three',
+        tradeName: 'Trade Three',
+        vatNumber: 'VAT-3',
+        taxIdentifier: null,
+        taxNumber: 'TAX-3',
+        email: 'info3@example.com',
+        pecEmail: null,
+        phone: '+39 123456',
+        sdiCode: null,
+        country: { id: 'country-1', code: 'IT', name: 'Italy' },
+        region: null,
+        area: null,
+        globalZipCode: { id: 'zip-area-null', code: '00018', name: 'Palombara Sabina' },
+        street: 'Street',
+        streetNumber: '10',
+        active: true,
+        createdAt: '2026-05-13T09:00:00Z',
+        updatedAt: '2026-05-13T10:00:00Z'
+      })),
+      findFormOptions: vi.fn(() => of({
+        tenants: [{ id: 'tenant-1', code: 'TENANT', name: 'Tenant' }],
+        companyProfileTypes: [{ id: 'type-1', tenantId: 'tenant-1', code: 'CP001', name: 'Legal entity' }],
+        countries: [{ id: 'country-1', code: 'IT', name: 'Italy' }],
+        regions: [],
+        areas: [],
+        globalZipCodes: [{
+          id: 'zip-area-null',
+          tenantId: null,
+          countryId: 'country-1',
+          regionId: null,
+          areaId: null,
+          code: '00018',
+          name: 'Palombara Sabina',
+          provinceName: 'Roma',
+          provinceCode: 'RM'
+        }]
+      }))
+    }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Roma (RM)');
+  });
+
   it('navigates back and edit', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 

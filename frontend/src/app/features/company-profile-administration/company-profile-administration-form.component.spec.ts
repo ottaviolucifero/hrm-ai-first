@@ -7,6 +7,7 @@ import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { PhoneFieldComponent } from '../../shared/form-fields/phone-field.component';
+import { LookupOption } from '../../shared/lookup/lookup.models';
 import { LookupService } from '../../shared/lookup/lookup.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { CompanyProfileAdministrationFormComponent } from './company-profile-administration-form.component';
@@ -30,6 +31,8 @@ interface CompanyProfileFormHandle {
       taxNumber: { setValue: (value: string) => void };
       email: { setValue: (value: string) => void };
       countryId: { setValue: (value: string) => void };
+      regionId: { setValue: (value: string) => void };
+      areaId: { setValue: (value: string) => void };
       globalZipCodeId: { setValue: (value: string) => void };
       cityLabel: { value: string };
       provinceLabel: { value: string };
@@ -41,6 +44,7 @@ interface CompanyProfileFormHandle {
   submit: () => void;
   selectTenant: (event: Event) => void;
   selectCountry: (event: Event) => void;
+  selectGlobalZipCodeOption: (option: LookupOption | null) => void;
 }
 
 describe('CompanyProfileAdministrationFormComponent', () => {
@@ -155,9 +159,18 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     component.selectCountry({ target: { value: 'country-1' } } as unknown as Event);
     fixture.detectChanges();
 
-    const zipSelect = fixture.nativeElement.querySelector('select[formcontrolname="globalZipCodeId"]') as HTMLSelectElement;
-    zipSelect.value = 'zip-1';
-    zipSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    component.selectGlobalZipCodeOption({
+      id: 'zip-1',
+      code: '00100',
+      name: 'Roma',
+      metadata: {
+        countryId: 'country-1',
+        regionId: 'region-1',
+        areaId: 'area-1',
+        provinceName: 'Rome',
+        provinceCode: 'RM'
+      }
+    });
     fixture.detectChanges();
 
     expect(component.form.controls.provinceLabel.value).toBe('Rome (RM)');
@@ -173,13 +186,45 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     component.selectCountry({ target: { value: 'country-1' } } as unknown as Event);
     fixture.detectChanges();
 
-    const zipSelect = fixture.nativeElement.querySelector('select[formcontrolname="globalZipCodeId"]') as HTMLSelectElement;
-    zipSelect.value = 'zip-2';
-    zipSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    component.selectGlobalZipCodeOption({
+      id: 'zip-2',
+      code: '00018',
+      name: 'Palombara Sabina',
+      metadata: {
+        countryId: 'country-1',
+        regionId: 'region-1',
+        provinceName: 'Roma',
+        provinceCode: 'RM'
+      }
+    });
     fixture.detectChanges();
 
     expect(component.form.controls.cityLabel.value).toBe('Palombara Sabina');
     expect(component.form.controls.provinceLabel.value).toBe('Roma (RM)');
+  });
+
+  it('loads zip code lookup with tenant and address filters', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService());
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as CompanyProfileFormHandle & {
+      zipCodeLookup: (query: { page: number; size: number; search?: string }) => unknown;
+    };
+    const lookupService = TestBed.inject(LookupService);
+
+    component.selectCountry({ target: { value: 'country-1' } } as unknown as Event);
+    component.form.controls.regionId.setValue('region-1');
+    component.form.controls.areaId.setValue('area-1');
+    (component as any).selectedRegionIdSignal.set('region-1');
+    (component as any).selectedAreaIdSignal.set('area-1');
+    (component.zipCodeLookup({ page: 0, size: 25, search: '00100' }) as any).subscribe();
+
+    expect(lookupService.findZipCodeLookups).toHaveBeenCalledWith(
+      { page: 0, size: 25, search: '00100' },
+      'tenant-1',
+      { countryId: 'country-1', regionId: 'region-1', areaId: 'area-1' }
+    );
   });
 
   it('submits create payload with backend-compatible phone string and without code or active', async () => {
@@ -403,6 +448,29 @@ async function createFixture(
             page: 0,
             size: 25,
             totalElements: 3,
+            totalPages: 1,
+            first: true,
+            last: true
+          })),
+          findZipCodeLookups: vi.fn(() => of({
+            content: [
+              {
+                id: 'zip-1',
+                code: '00100',
+                name: 'Roma',
+                extraLabel: 'Rome (RM)',
+                metadata: {
+                  countryId: 'country-1',
+                  regionId: 'region-1',
+                  areaId: 'area-1',
+                  provinceName: 'Rome',
+                  provinceCode: 'RM'
+                }
+              }
+            ],
+            page: 0,
+            size: 25,
+            totalElements: 1,
             totalPages: 1,
             first: true,
             last: true

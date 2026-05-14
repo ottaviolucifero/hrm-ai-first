@@ -202,8 +202,11 @@ public class MasterDataGlobalController {
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "25") Integer size,
 			@RequestParam(required = false) String search,
-			@RequestParam(required = false) UUID tenantId) {
-		return masterDataGlobalService.findGlobalZipCodeLookups(page, size, search, tenantId);
+			@RequestParam(required = false) UUID tenantId,
+			@RequestParam(required = false) UUID countryId,
+			@RequestParam(required = false) UUID regionId,
+			@RequestParam(required = false) UUID areaId) {
+		return masterDataGlobalService.findGlobalZipCodeLookups(page, size, search, tenantId, countryId, regionId, areaId);
 	}
 
 	@GetMapping("/zip-codes/{id}")

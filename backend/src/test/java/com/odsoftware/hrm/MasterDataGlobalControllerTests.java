@@ -483,12 +483,56 @@ class MasterDataGlobalControllerTests {
 
 		mockMvc.perform(get("/api/master-data/global/zip-codes/lookup")
 						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("countryId", lookupCountryId.toString())
 						.param("search", "Task 0646 Lookup"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content[*].id").value(org.hamcrest.Matchers.hasItem(lookupZipId.toString())))
 				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].code").value(org.hamcrest.Matchers.hasItem("64046")))
 				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].name").value(org.hamcrest.Matchers.hasItem("Task 0646 Lookup City")))
-				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].metadata.areaId").value(org.hamcrest.Matchers.hasItem(lookupAreaId.toString())));
+				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].metadata.countryName").value(org.hamcrest.Matchers.hasItem("Task 0646 Lookup Country")))
+				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].metadata.regionName").value(org.hamcrest.Matchers.hasItem("Task 0646 Lookup Region")))
+				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].metadata.areaId").value(org.hamcrest.Matchers.hasItem(lookupAreaId.toString())))
+				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].metadata.areaName").value(org.hamcrest.Matchers.hasItem("Task 0646 Lookup Area")));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalZipLookupSupportsImportedAndManualAreaNullableRecords() throws Exception {
+		UUID countryId = createCountry("Task 0647 Lookup Country", "M7");
+		UUID regionId = createRegion(FOUNDATION_TENANT_ID, countryId, "Task 0647 Lookup Region", "M7-R1");
+		UUID areaId = createArea(FOUNDATION_TENANT_ID, countryId, regionId, "Task 0647 Lookup Area", "M7-A1");
+		UUID importedZipId = createZipCode(FOUNDATION_TENANT_ID, countryId, regionId, areaId, "Task 0647 Area City", "64701");
+		UUID manualZipId = createZipCode(FOUNDATION_TENANT_ID, countryId, regionId, null, "Task 0647 Manual City", "64702");
+
+		mockMvc.perform(get("/api/master-data/global/zip-codes/lookup")
+						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("countryId", countryId.toString())
+						.param("regionId", regionId.toString())
+						.param("areaId", areaId.toString())
+						.param("search", "Task 0647"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[*].id").value(containsInAnyOrder(
+						importedZipId.toString(),
+						manualZipId.toString())))
+				.andExpect(jsonPath("$.content[?(@.id=='" + importedZipId + "')].metadata.areaId").value(hasItem(areaId.toString())))
+				.andExpect(jsonPath("$.content[?(@.id=='" + importedZipId + "')].metadata.areaName").value(hasItem("Task 0647 Lookup Area")))
+				.andExpect(jsonPath("$.content[?(@.id=='" + manualZipId + "')].extraLabel").value(hasItem("Task 030 Province (T30)")))
+				.andExpect(jsonPath("$.content[?(@.id=='" + manualZipId + "')].metadata.provinceName").value(hasItem("Task 030 Province")))
+				.andExpect(jsonPath("$.content[?(@.id=='" + manualZipId + "')].metadata.provinceCode").value(hasItem("T30")));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalZipCrudRequiresProvinceFallbackWhenNonItalianAreaIsMissing() throws Exception {
+		UUID countryId = createCountry("Task 0647 No Province Country", "N7");
+		UUID regionId = createRegion(FOUNDATION_TENANT_ID, countryId, "Task 0647 No Province Region", "N7-R1");
+		Map<String, Object> request = zipCodeRequest(FOUNDATION_TENANT_ID, countryId, regionId, null, "Task 0647 No Province City", "64703");
+		request.put("provinceName", null);
+		request.put("provinceCode", null);
+
+		mockMvc.perform(postJson("/api/master-data/global/zip-codes", request))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("provinceName or provinceCode is required when areaId is not provided"));
 	}
 
 	@Test

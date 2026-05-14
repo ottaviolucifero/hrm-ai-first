@@ -333,10 +333,12 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
       : 'companyProfileAdministration.fields.area';
   }
 
-  private provinceValue(detail: CompanyProfileAdministrationCompanyProfileDetail): string {
-    if (!this.isItalianCountryCode(detail.country.code)) {
-      return this.referenceValue(detail.area);
-    }
+	private provinceValue(detail: CompanyProfileAdministrationCompanyProfileDetail): string {
+		if (!this.isItalianCountryCode(detail.country.code)) {
+			return detail.area
+				? this.referenceValue(detail.area)
+				: this.provinceFromZipCode(detail.globalZipCode?.id ?? '') ?? this.referenceValue(null);
+		}
 
     const zipCodeId = detail.globalZipCode?.id ?? '';
     const provinceFromZipCode = this.provinceFromZipCode(zipCodeId);
@@ -353,16 +355,28 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
     }
 
     const zipCodeOption = this.formOptions()?.globalZipCodes.find((option) => option.id === globalZipCodeId);
-    if (!zipCodeOption?.areaId) {
+    if (!zipCodeOption) {
       return null;
     }
 
-    const provinceOption = this.formOptions()?.areas.find((option) => option.id === zipCodeOption.areaId);
-    if (!provinceOption) {
-      return null;
+    if (zipCodeOption.areaId) {
+      const provinceOption = this.formOptions()?.areas.find((option) => option.id === zipCodeOption.areaId);
+      if (provinceOption) {
+        return this.referenceValue(provinceOption as CompanyProfileAdministrationAreaOption);
+      }
     }
 
-    return this.referenceValue(provinceOption as CompanyProfileAdministrationAreaOption);
+    return this.provinceLabelForZipOption(zipCodeOption);
+  }
+
+  private provinceLabelForZipOption(zipCodeOption: { provinceName?: string | null; provinceCode?: string | null }): string | null {
+    const provinceName = zipCodeOption.provinceName?.trim() ?? '';
+    const provinceCode = zipCodeOption.provinceCode?.trim() ?? '';
+    if (provinceName && provinceCode) {
+      return `${provinceName} (${provinceCode})`;
+    }
+
+    return provinceName || provinceCode || null;
   }
 
   private isItalianCountryCode(countryCode: string | null | undefined): boolean {

@@ -6,6 +6,60 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-064.7 - Supporto CAP manuali nei form indirizzo
+
+- Data: 2026-05-14
+- Branch: `main`
+- Task: TASK-064.7 - Supporto CAP manuali nei form indirizzo
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/MasterDataGlobalController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataGlobalService.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataGlobalControllerTests.java`
+  - `frontend/src/app/shared/lookup/lookup.service.ts`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-form.component.*`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-detail.component.*`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration.models.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificato che `GlobalZipCode.area`/`areaId` sia gia nullable e che `provinceName`/`provinceCode` siano campi disponibili nel modello approvato TASK-062/TASK-063;
+  - verificato che il lookup ZIP/CAP esistente fosse estendibile senza nuovi endpoint e senza architetture parallele;
+  - individuato `CompanyProfileAdministrationForm` come form indirizzo operativo attuale da aggiornare; Employee UI e OfficeLocation UI restano fuori perimetro per task successivi.
+- Patch applicata:
+  - esteso `GET /api/master-data/global/zip-codes/lookup` con filtri opzionali `countryId`, `regionId`, `areaId`;
+  - arricchito il metadata lookup ZIP/CAP con `countryName`, `regionName`, `areaName`, `provinceName`, `provinceCode`;
+  - consentiti CAP manuali tenant-scoped non italiani con `areaId = null` quando e valorizzato almeno un fallback provincia;
+  - migrato il CAP del form `CompanyProfileAdministrationForm` a `app-lookup-select`, filtrato da tenant/country/region/area;
+  - aggiornato il dettaglio Company Profile per usare `provinceName/provinceCode` quando `areaId` non e disponibile.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=MasterDataGlobalControllerTests,CompanyProfileAdministrationControllerTests" test`
+  - `cd frontend && npm.cmd test -- --watch=false --include src/app/features/company-profile-administration/company-profile-administration-form.component.spec.ts --include src/app/features/company-profile-administration/company-profile-administration-detail.component.spec.ts`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `git diff --check`
+- Esiti reali:
+  - backend targeted: `BUILD SUCCESS`, 39 test, 0 failure, 0 error, 0 skipped;
+  - frontend targeted: OK, 2 file test, 20 test passed;
+  - backend completo: `BUILD SUCCESS`, 244 test, 0 failure, 0 error, 0 skipped;
+  - frontend build: OK con warning budget iniziale gia noto (`2.15 MB`, sforamento `147.58 kB`);
+  - frontend test completo: OK, 37 file test passed, 273 test passed;
+  - `git diff --check`: OK, soli warning CRLF.
+- Regressioni trovate:
+  - una prima esecuzione frontend targeted ha evidenziato un null-check TypeScript mancante nel dettaglio Company Profile; corretto nella patch;
+  - una prima esecuzione Maven targeted ha richiesto quoting del parametro `-Dtest` in PowerShell; nessuna regressione applicativa collegata.
+- QA manuale consigliata:
+  1. Company Profile con paese Italia e CAP importato con `areaId` valorizzato: verificare selezione lookup, provincia/area e salvataggio.
+  2. Company Profile con CAP manuale gia presente in tabella e `areaId = null`: verificare selezione lookup e fallback `provinceName/provinceCode`.
+  3. Paese diverso da Italia con CAP digitato/manuale non presente in tabella: verificare il comportamento atteso del form operativo disponibile; la persistenza libera fuori tabella non e introdotta da questa patch.
+  4. Paese diverso da Italia con CAP presente in lookup e `areaId = null`: verificare selezione e fallback provincia.
+- Limiti/note:
+  - QA browser manuale non eseguita in questa sessione CLI;
+  - la patch copre CAP manuali gia inseriti in `global_zip_codes`; l'inserimento libero e persistito di CAP non presenti in tabella resta fuori scope perche `CompanyProfile` non espone campi liberi `postalCode/city`;
+  - nessuna modifica a tenant, security, RBAC o modello geografico approvato.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-064.9 - Apply shared lookup select to existing administration forms
 
 - Data: 2026-05-14
