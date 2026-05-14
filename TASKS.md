@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.46
+Versione: 2.47
 Ultimo aggiornamento: 2026-05-14
 Stato: In avanzamento
 
@@ -4673,7 +4673,53 @@ Note:
 
 - l'inserimento libero di un CAP non ancora presente nella tabella CAP resta fuori da questa patch perche `CompanyProfile` non persiste campi liberi `postalCode/city`; il comportamento coperto e coerente con lo scope scritto: CAP manuali gia inseriti in `global_zip_codes` e selezionabili nei form indirizzo.
 
-### TASK-064.8 - Normalize phone fields for Company Profile and future contact entities
+### TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo
+
+Stato: TODO
+
+Obiettivo:
+
+Permettere, nei form indirizzo, la creazione guidata di dati geografici per paesi diversi dall'Italia, mantenendo il modello geografico strutturato approvato in `TASK-062`/`TASK-063`.
+
+Include:
+
+- estendere il componente generico `app-lookup-select` con supporto opzionale a pulsante add (`+`);
+- il componente generico deve solo mostrare il pulsante e generare un evento `createRequested`, senza conoscere la logica di creazione;
+- aggiungere popup dedicato per creazione `Region`;
+- aggiungere popup dedicato per creazione `Area`/Provincia/District collegata a `Region`;
+- aggiungere popup dedicato per creazione `GlobalZipCode` collegato a `Country`, `Region` e `Area`;
+- per Italia mantenere il comportamento attuale: CAP selezionato da lookup/import;
+- per paesi diversi dall'Italia permettere:
+  - selezione `Region` esistente oppure creazione con `+`;
+  - selezione `Area` esistente oppure creazione con `+`;
+  - selezione CAP/ZIP esistente oppure creazione con `+`;
+- dopo la creazione, il valore appena creato deve essere selezionato automaticamente nel form;
+- la citta resta campo del CAP/ZIP, senza introdurre tabella `City`;
+- non introdurre campi liberi scollegati dal modello geografico;
+- aggiornare test backend/frontend;
+- aggiornare `docs/qa/QA-REPORTS.md`.
+
+Flusso funzionale consigliato:
+
+1. scelgo Paese;
+2. scelgo Regione oppure la creo con `+`;
+3. scelgo Area/Provincia/District oppure la creo con `+`;
+4. scelgo CAP/ZIP oppure lo creo con `+`;
+5. il CAP creato contiene citta e viene collegato a Paese, Regione e Area.
+
+Nota:
+
+`Area` non e sempre "Provincia". Per l'Italia puo corrispondere alla Provincia; per altri paesi rappresenta il livello amministrativo sotto la Regione, ad esempio provincia, district, governorate, delegation o equivalente locale.
+
+Esclusioni:
+
+- non creare una nuova tabella `City`;
+- non introdurre campi address liberi fuori dal modello `Country`/`Region`/`Area`/`GlobalZipCode`;
+- non modificare tenant/security/RBAC;
+- non introdurre nuova architettura o endpoint paralleli se le API esistenti sono estendibili;
+- non modificare il modello geografico approvato in `TASK-062`/`TASK-063`.
+
+### TASK-064.9 - Normalize phone fields for Company Profile and future contact entities
 
 Stato: TODO
 
@@ -4701,7 +4747,7 @@ Scope:
 - aggiornare `docs/qa/QA-REPORTS.md`;
 - aggiornare `DECISIONS.md` se il modello telefono normalizzato diventa uno standard durevole di progetto.
 
-### TASK-064.9 - Apply shared lookup select to existing administration forms
+### TASK-064.10 - Apply shared lookup select to existing administration forms
 
 Stato: DONE
 
@@ -4726,7 +4772,7 @@ Completato:
     - `defaultCountryId` (lookup paginato remoto `Country`)
 - mantenuti invariati e rimandati con motivazione:
   - `CompanyProfileAdministrationForm` select geografiche (`countryId`, `regionId`, `globalZipCodeId`) per evitare regressioni sul flusso address pilot gia validato in `TASK-064.6`; richiedono un follow-up dedicato per orchestrare lookup remoto + dipendenze country/region/zip senza duplicare logiche;
-  - `TenantAdministration.defaultCurrencyId` per assenza di endpoint lookup dedicato currency in scope `TASK-064.9`;
+  - `TenantAdministration.defaultCurrencyId` per assenza di endpoint lookup dedicato currency in scope `TASK-064.10`;
   - select statiche o a basso valore immediato (`Login` lingua, filtri locali `MasterDataAdmin`) non migrate per evitare sostituzione massiva non necessaria;
 - nessuna modifica backend/security/RBAC e nessuna nuova API lookup introdotta;
 - test frontend aggiornati ed eseguiti con esito reale verde (`npm test`, `npm run build`).
@@ -4806,9 +4852,10 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.47 | 2026-05-14 | Inserito `TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo` come nuovo follow-up documentale dopo `TASK-064.7`, con rinumerazione coerente dei successivi task telefono e lookup (`TASK-064.9` e `TASK-064.10`) e aggiornamento dei riferimenti interni. |
 | 2.46 | 2026-05-14 | TASK-064.7 chiuso come DONE: supporto CAP manuali con `areaId` nullable su lookup ZIP/CAP esistente, fallback `provinceName/provinceCode`, filtri lookup `countryId/regionId/areaId`, migrazione del CAP Company Profile a `app-lookup-select`, test backend/frontend reali verdi e nessuna nuova tabella geografica. |
-| 2.45 | 2026-05-14 | TASK-064.9 chiuso come DONE con migrazione progressiva di select amministrative a `app-lookup-select`: `UserAdministrationForm` (`tenantId`, `companyProfileId`) e `TenantAdministration` (`defaultCountryId` lookup paginato), mantenendo invariati backend/security e documentando i campi rimandati a follow-up per evitare regressioni sui flussi geografici complessi. |
-| 2.44 | 2026-05-14 | TASK-064.6 chiuso come DONE: introdotta la foundation shared lookup/phone con endpoint backend paginati `Country/Region/Area/GlobalZipCode`, DTO `LookupOptionResponse`, componenti Angular `app-lookup-select` e `app-phone-field`, pilot limitato a `CompanyProfile` con compatibilita `phone: string | null`, test backend/frontend reali verdi e nuovo follow-up `TASK-064.8` per la futura normalizzazione strutturata dei telefoni. |
+| 2.45 | 2026-05-14 | TASK-064.10 chiuso come DONE con migrazione progressiva di select amministrative a `app-lookup-select`: `UserAdministrationForm` (`tenantId`, `companyProfileId`) e `TenantAdministration` (`defaultCountryId` lookup paginato), mantenendo invariati backend/security e documentando i campi rimandati a follow-up per evitare regressioni sui flussi geografici complessi. |
+| 2.44 | 2026-05-14 | TASK-064.6 chiuso come DONE: introdotta la foundation shared lookup/phone con endpoint backend paginati `Country/Region/Area/GlobalZipCode`, DTO `LookupOptionResponse`, componenti Angular `app-lookup-select` e `app-phone-field`, pilot limitato a `CompanyProfile` con compatibilita `phone: string | null`, test backend/frontend reali verdi e nuovo follow-up `TASK-064.9` per la futura normalizzazione strutturata dei telefoni. |
 | 2.43 | 2026-05-14 | Aggiunto `TASK-064.7 - Supporto CAP manuali nei form indirizzo` come follow-up documentale generale per i lookup CAP/ZIP manuali con `areaId` nullable e fallback `provinceName/provinceCode`, includendo scope, test attesi ed esclusioni fuori perimetro (nessun codice/migration in questo passaggio). |
 | 2.42 | 2026-05-13 | TASK-064.4 chiuso come DONE: aggiunti i campi nullable `taxNumber`, `pecEmail` e `sdiCode` su `CompanyProfile` con Flyway `V27` PostgreSQL/H2, mapping foundation response, test backend reali verdi, chiavi i18n catalog-only `it/fr/en` e QA report aggiornato senza toccare `Tenant`, security/RBAC o CRUD/UI `CompanyProfile`. |
 | 2.41 | 2026-05-13 | TASK-064.3 chiuso come DONE: formalizzata in `DEC-039` la regola durevole per i nuovi campi `code` con auto-code `prime due lettere + progressivo 3 cifre`, UI non editabile quando automatico, nota operativa minima in `AGENTS.md` e QA documentale registrato senza modifiche codice. |

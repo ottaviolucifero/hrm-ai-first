@@ -6,6 +6,42 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo (pianificazione documentale)
+
+- Data: 2026-05-14
+- Branch: `main`
+- Task: TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo
+- Modello consigliato nel prompt operativo: GPT-5.4
+- Area verificata:
+  - `AGENTS.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificata la coerenza del nuovo follow-up con il modello geografico approvato in `TASK-062`/`TASK-063` e con il completamento di `TASK-064.7`;
+  - verificato che il nuovo task richieda solo pianificazione documentale, senza modifica di backend/frontend o del modello geografico;
+  - censiti i riferimenti esistenti a `TASK-064.8` e `TASK-064.9` per applicare la rinumerazione coerente a `TASK-064.9` e `TASK-064.10`.
+- Patch applicata:
+  - aggiunto `TASK-064.8` in `TASKS.md` con obiettivo, scope, flusso funzionale consigliato, nota sul significato di `Area` e relative esclusioni;
+  - rinumerati gli attuali task successivi: telefono -> `TASK-064.9`, adozione progressiva `app-lookup-select` -> `TASK-064.10`;
+  - aggiornati i riferimenti interni in `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` e nel presente report QA.
+- Comandi eseguiti:
+  - `rg -n "TASK-064\\.(7|8|9|10)|Versione:|Follow-up gia pianificati" TASKS.md ROADMAP.md docs/qa/QA-REPORTS.md DECISIONS.md AGENTS.md`
+  - `git diff -- TASKS.md ROADMAP.md DECISIONS.md docs/qa/QA-REPORTS.md`
+  - `git status --short --branch`
+- Esiti reali:
+  - aggiornamento documentale completato;
+  - nessuna modifica runtime/backend/frontend introdotta.
+- QA manuale:
+  - non applicabile per task esclusivamente documentale.
+- Regressioni trovate:
+  - nessuna regressione applicativa rilevata nel perimetro documentale.
+- Limiti/note:
+  - nessun test backend/frontend eseguito in questo passaggio perche non sono stati modificati file applicativi;
+  - nessuna nuova decisione durevole introdotta; `DECISIONS.md` e stato aggiornato solo per riallineare un riferimento backlog gia esistente.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-064.7 - Supporto CAP manuali nei form indirizzo
 
 - Data: 2026-05-14
@@ -60,11 +96,11 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
   - nessuna modifica a tenant, security, RBAC o modello geografico approvato.
 - Stato finale: PASS WITH NOTES
 
-### TASK-064.9 - Apply shared lookup select to existing administration forms
+### TASK-064.10 - Apply shared lookup select to existing administration forms
 
 - Data: 2026-05-14
 - Branch: `task-064-6-shared-lookup-phone-foundation`
-- Task: TASK-064.9 - Apply shared lookup select to existing administration forms
+- Task: TASK-064.10 - Apply shared lookup select to existing administration forms
 - Modello consigliato nel prompt operativo: GPT-5.5
 - Area verificata:
   - `frontend/src/app/features/user-administration/user-administration-form.component.ts`
@@ -2667,7 +2703,7 @@ Nota operativa:
   - nessuna sostituzione massiva delle select esistenti
 - Limiti/note:
   - il pilot frontend continua a usare le options geografiche locali gia caricate per i select indirizzo; la nuova foundation lookup non sostituisce ancora in massa quei campi
-  - la persistenza telefono resta compatibile con la stringa unica esistente; la normalizzazione DB/API e rinviata al follow-up `TASK-064.8`
+  - la persistenza telefono resta compatibile con la stringa unica esistente; la normalizzazione DB/API e rinviata al follow-up `TASK-064.9`
   - il warning budget frontend resta non bloccante e preesistente come vincolo di bundle
   - nel follow-up backend/data del 2026-05-14 il fallback minimo iniziale `IT/TN` e stato rimosso; `metadata.phoneCode` e `extraLabel` ora derivano dal DB, dopo enrichment esplicito di `countries.phone_code`
 - Revalidazione bugfix manual QA:
