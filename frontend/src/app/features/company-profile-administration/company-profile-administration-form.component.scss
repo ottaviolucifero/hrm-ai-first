@@ -97,12 +97,6 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.company-profile-form-phone-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: minmax(11rem, 0.9fr) minmax(0, 1.1fr);
-}
-
 .company-profile-form-actions {
   justify-content: flex-end;
 }
@@ -123,8 +117,7 @@
   }
 
   .company-profile-form-grid,
-  .company-profile-form-address-grid,
-  .company-profile-form-phone-grid {
+  .company-profile-form-address-grid {
     grid-template-columns: 1fr;
   }
 

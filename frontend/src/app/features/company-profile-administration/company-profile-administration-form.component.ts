@@ -1,7 +1,7 @@
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, forkJoin, finalize } from 'rxjs';
+import { Subscription, forkJoin, finalize, map } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
@@ -11,6 +11,9 @@ import { AppButtonComponent } from '../../shared/components/button/app-button.co
 import { AppCheckboxComponent } from '../../shared/components/checkbox/app-checkbox.component';
 import { AppInputComponent } from '../../shared/components/input/app-input.component';
 import { EmailFieldComponent } from '../../shared/form-fields/email-field.component';
+import { PhoneFieldComponent } from '../../shared/form-fields/phone-field.component';
+import { LookupOption, LookupPage, LookupQuery } from '../../shared/lookup/lookup.models';
+import { LookupService } from '../../shared/lookup/lookup.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import {
   CompanyProfileAdministrationAreaOption,
@@ -26,21 +29,6 @@ import { CompanyProfileAdministrationService } from './company-profile-administr
 
 type CompanyProfileAdministrationFormMode = 'create' | 'edit';
 
-interface PhoneDialCodeOption {
-  readonly code: string;
-  readonly countryCode: string;
-}
-
-const PHONE_DIAL_CODE_OPTIONS: readonly PhoneDialCodeOption[] = [
-  { code: '+39', countryCode: 'IT' },
-  { code: '+216', countryCode: 'TN' },
-  { code: '+33', countryCode: 'FR' },
-  { code: '+49', countryCode: 'DE' },
-  { code: '+34', countryCode: 'ES' },
-  { code: '+44', countryCode: 'GB' },
-  { code: '+1', countryCode: 'US' }
-];
-
 @Component({
   selector: 'app-company-profile-administration-form',
   imports: [
@@ -48,6 +36,7 @@ const PHONE_DIAL_CODE_OPTIONS: readonly PhoneDialCodeOption[] = [
     AppCheckboxComponent,
     AppInputComponent,
     EmailFieldComponent,
+    PhoneFieldComponent,
     ReactiveFormsModule
   ],
   templateUrl: './company-profile-administration-form.component.html',
@@ -59,6 +48,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly companyProfileAdministrationService = inject(CompanyProfileAdministrationService);
+  private readonly lookupService = inject(LookupService);
   private readonly notificationService = inject(NotificationService);
   protected readonly i18n = inject(I18nService);
 
@@ -73,13 +63,13 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
   protected readonly formOptions = signal<CompanyProfileAdministrationFormOptions | null>(null);
   protected readonly companyProfile = signal<CompanyProfileAdministrationCompanyProfileDetail | null>(null);
   protected readonly platformScope = signal(false);
-  protected readonly phoneDialCodeOptions = PHONE_DIAL_CODE_OPTIONS;
   private readonly selectedTenantIdSignal = signal('');
   private readonly selectedCountryIdSignal = signal('');
   private readonly selectedRegionIdSignal = signal('');
   private readonly selectedAreaIdSignal = signal('');
   private readonly selectedGlobalZipCodeIdSignal = signal('');
-  private readonly phonePrefixManuallyChanged = signal(false);
+  protected readonly countryPhoneLookup = (query: LookupQuery) =>
+    this.lookupService.findCountryLookups(query).pipe(map((page) => this.toCountryPhoneLookupPage(page)));
 
   protected readonly form = this.formBuilder.group({
     codeLabel: [{ value: '', disabled: true }],
@@ -93,8 +83,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     taxNumber: ['', [Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(150)]],
     pecEmail: ['', [Validators.email, Validators.maxLength(150)]],
-    phonePrefix: [''],
-    phoneNumber: ['', [Validators.required, Validators.maxLength(40)]],
+    phone: ['', [Validators.required]],
     sdiCode: ['', [Validators.maxLength(50)]],
     countryId: ['', [Validators.required]],
     regionId: [''],
@@ -250,7 +239,6 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.selectedAreaIdSignal.set('');
     this.selectedGlobalZipCodeIdSignal.set('');
     this.applyCountryDependentValidators(countryId);
-    this.applyDefaultPhonePrefixForCountry(countryId);
   }
 
   protected selectRegion(event: Event): void {
@@ -278,16 +266,6 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.form.controls.globalZipCodeId.setValue(globalZipCodeId);
     this.selectedGlobalZipCodeIdSignal.set(globalZipCodeId);
     this.syncAddressFromGlobalZipCode(globalZipCodeId);
-  }
-
-  protected selectPhonePrefix(event: Event): void {
-    const phonePrefix = (event.target as HTMLSelectElement).value;
-    this.form.controls.phonePrefix.setValue(phonePrefix);
-    this.phonePrefixManuallyChanged.set(phonePrefix.trim().length > 0);
-  }
-
-  protected dialCodeLabel(option: PhoneDialCodeOption): string {
-    return `${option.code} - ${this.countryNameByIsoCode(option.countryCode)}`;
   }
 
   protected submit(): void {
@@ -345,7 +323,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     | 'countryId'
     | 'vatNumber'
     | 'taxIdentifier'
-    | 'phoneNumber'
+    | 'phone'
     | 'globalZipCodeId'
     | 'street'
     | 'streetNumber'
@@ -355,6 +333,10 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     }
 
     const control = this.form.controls[controlName];
+    if (controlName === 'phone' && control.hasError('phoneFormat')) {
+      return this.i18n.t('companyProfileAdministration.form.validation.phoneFormat');
+    }
+
     if (!control.hasError('required')) {
       return '';
     }
@@ -367,7 +349,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       countryId: 'companyProfileAdministration.form.validation.countryRequired',
       vatNumber: 'companyProfileAdministration.form.validation.vatNumberRequired',
       taxIdentifier: 'companyProfileAdministration.form.validation.taxIdentifierRequired',
-      phoneNumber: 'companyProfileAdministration.form.validation.phoneNumberRequired',
+      phone: 'companyProfileAdministration.form.validation.phoneNumberRequired',
       globalZipCodeId: 'companyProfileAdministration.form.validation.globalZipCodeRequired',
       street: 'companyProfileAdministration.form.validation.streetRequired',
       streetNumber: 'companyProfileAdministration.form.validation.streetNumberRequired'
@@ -438,8 +420,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       taxNumber: '',
       email: '',
       pecEmail: '',
-      phonePrefix: '',
-      phoneNumber: '',
+      phone: '',
       sdiCode: '',
       countryId: '',
       regionId: '',
@@ -455,7 +436,6 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.selectedRegionIdSignal.set('');
     this.selectedAreaIdSignal.set('');
     this.selectedGlobalZipCodeIdSignal.set('');
-    this.phonePrefixManuallyChanged.set(false);
     this.applyCountryDependentValidators('');
 
     if (this.platformScope()) {
@@ -471,8 +451,6 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       return;
     }
 
-    const phone = this.splitPhone(detail.phone);
-
     this.form.reset({
       codeLabel: detail.code,
       tenantId: detail.tenant.id,
@@ -485,8 +463,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       taxNumber: detail.taxNumber ?? '',
       email: detail.email ?? '',
       pecEmail: detail.pecEmail ?? '',
-      phonePrefix: phone.phonePrefix,
-      phoneNumber: phone.phoneNumber,
+      phone: detail.phone ?? '',
       sdiCode: detail.sdiCode ?? '',
       countryId: detail.country.id,
       regionId: detail.region?.id ?? '',
@@ -502,7 +479,6 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.selectedRegionIdSignal.set(detail.region?.id ?? '');
     this.selectedAreaIdSignal.set(detail.area?.id ?? '');
     this.selectedGlobalZipCodeIdSignal.set(detail.globalZipCode?.id ?? '');
-    this.phonePrefixManuallyChanged.set(phone.phonePrefix.length > 0);
     this.applyCountryDependentValidators(detail.country.id);
 
     this.form.controls.tenantId.disable();
@@ -543,7 +519,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       ...fiscalValues,
       email: this.optionalValue(value.email),
       pecEmail: this.optionalValue(value.pecEmail),
-      phone: this.combinedPhoneValue(),
+      phone: this.optionalValue(value.phone),
       sdiCode: this.optionalValue(value.sdiCode),
       countryId: value.countryId,
       regionId: this.optionalValue(value.regionId),
@@ -565,7 +541,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       ...fiscalValues,
       email: this.optionalValue(value.email),
       pecEmail: this.optionalValue(value.pecEmail),
-      phone: this.combinedPhoneValue(),
+      phone: this.optionalValue(value.phone),
       sdiCode: this.optionalValue(value.sdiCode),
       countryId: value.countryId,
       regionId: this.optionalValue(value.regionId),
@@ -581,34 +557,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     return normalized ? normalized : null;
   }
 
-  private combinedPhoneValue(): string | null {
-    const prefix = this.optionalValue(this.form.controls.phonePrefix.getRawValue());
-    const number = this.optionalValue(this.form.controls.phoneNumber.getRawValue());
-    if (!number) {
-      return null;
-    }
-
-    return prefix ? `${prefix} ${number}` : number;
-  }
-
-  private splitPhone(phone: string | null): { phonePrefix: string; phoneNumber: string } {
-    const normalized = phone?.trim();
-    if (!normalized) {
-      return { phonePrefix: '', phoneNumber: '' };
-    }
-
-    const match = normalized.match(/^(\+\d+)\s*(.*)$/);
-    if (!match) {
-      return { phonePrefix: '', phoneNumber: normalized };
-    }
-
-    return {
-      phonePrefix: match[1] ?? '',
-      phoneNumber: (match[2] ?? '').trim()
-    };
-  }
-
-  private selectedCountryCode(): string {
+  protected selectedCountryCode(): string {
     const countryId = this.selectedCountryIdSignal();
     return this.formOptions()?.countries.find((country) => country.id === countryId)?.code ?? '';
   }
@@ -714,16 +663,6 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     return 2;
   }
 
-  private applyDefaultPhonePrefixForCountry(countryId: string): void {
-    if (this.phonePrefixManuallyChanged()) {
-      return;
-    }
-
-    const countryCode = this.formOptions()?.countries.find((country) => country.id === countryId)?.code ?? '';
-    const dialCode = PHONE_DIAL_CODE_OPTIONS.find((option) => option.countryCode === countryCode)?.code ?? '';
-    this.form.controls.phonePrefix.setValue(dialCode);
-  }
-
   private applyCountryDependentValidators(countryId: string): void {
     const countryCode = this.formOptions()?.countries.find((country) => country.id === countryId)?.code ?? '';
     if (!countryCode.trim()) {
@@ -748,10 +687,6 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.form.controls.taxIdentifier.updateValueAndValidity({ emitEvent: false });
   }
 
-  private countryNameByIsoCode(countryCode: string): string {
-    return this.formOptions()?.countries.find((country) => country.code === countryCode)?.name ?? countryCode;
-  }
-
   private notifyApiError(error: unknown, fallbackKey: I18nKey): void {
     this.notificationService.error(this.resolveApiMessage(error, fallbackKey), {
       titleKey: 'alert.title.danger',
@@ -761,5 +696,34 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
 
   private resolveApiMessage(error: unknown, fallbackKey: I18nKey): string {
     return resolveApiErrorMessage(this.i18n, error, { fallbackKey });
+  }
+
+  private toCountryPhoneLookupPage(page: LookupPage<LookupOption>): LookupPage<LookupOption> {
+    return {
+      ...page,
+      content: page.content
+        .map((option) => this.toCountryPhoneLookupOption(option))
+        .filter((option): option is LookupOption => option !== null)
+    };
+  }
+
+  private toCountryPhoneLookupOption(option: LookupOption): LookupOption | null {
+    const phoneCode = option.metadata?.['phoneCode']?.trim() ?? '';
+    if (!phoneCode) {
+      return null;
+    }
+
+    return {
+      id: phoneCode,
+      code: phoneCode,
+      name: option.name,
+      extraLabel: option.code,
+      metadata: {
+        ...(option.metadata ?? {}),
+        countryId: option.id,
+        countryCode: option.code,
+        phoneCode
+      }
+    };
   }
 }

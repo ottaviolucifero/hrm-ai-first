@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { PhoneFieldComponent } from '../../shared/form-fields/phone-field.component';
+import { LookupService } from '../../shared/lookup/lookup.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { CompanyProfileAdministrationFormComponent } from './company-profile-administration-form.component';
 import { CompanyProfileAdministrationService } from './company-profile-administration.service';
@@ -30,8 +33,7 @@ interface CompanyProfileFormHandle {
       globalZipCodeId: { setValue: (value: string) => void };
       cityLabel: { value: string };
       provinceLabel: { value: string };
-      phonePrefix: { value: string; setValue: (value: string) => void };
-      phoneNumber: { setValue: (value: string) => void };
+      phone: { setValue: (value: string) => void; value: string };
       street: { setValue: (value: string) => void };
       streetNumber: { setValue: (value: string) => void };
     };
@@ -39,7 +41,6 @@ interface CompanyProfileFormHandle {
   submit: () => void;
   selectTenant: (event: Event) => void;
   selectCountry: (event: Event) => void;
-  selectPhonePrefix: (event: Event) => void;
 }
 
 describe('CompanyProfileAdministrationFormComponent', () => {
@@ -93,13 +94,17 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     const fixture = await createFixture(createService());
     fixture.detectChanges();
     const component = fixture.componentInstance as unknown as CompanyProfileFormHandle;
+    const phoneField = getPhoneFieldComponent(fixture);
 
     component.selectCountry({ target: { value: 'country-1' } } as unknown as Event);
-    expect(component.form.controls.phonePrefix.value).toBe('+39');
+    fixture.detectChanges();
+    expect(phoneField.structuredValue.dialCode).toBe('+39');
 
-    component.selectPhonePrefix({ target: { value: '+216' } } as unknown as Event);
-    component.selectCountry({ target: { value: 'country-1' } } as unknown as Event);
-    expect(component.form.controls.phonePrefix.value).toBe('+216');
+    (phoneField as any).handleDialCodeChange('+216');
+    component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
+    fixture.detectChanges();
+
+    expect(phoneField.structuredValue.dialCode).toBe('+216');
   });
 
   it('switches fiscal fields by country', async () => {
@@ -186,6 +191,7 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate');
     const component = fixture.componentInstance as unknown as CompanyProfileFormHandle;
+    const phoneField = getPhoneFieldComponent(fixture);
 
     component.form.controls.companyProfileTypeId.setValue('type-1');
     component.form.controls.legalName.setValue('Legal');
@@ -194,9 +200,10 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     component.form.controls.taxIdentifier.setValue('IT-TID-1');
     component.form.controls.taxNumber.setValue('IT-CF-1');
     component.selectCountry({ target: { value: 'country-1' } } as unknown as Event);
+    fixture.detectChanges();
     component.form.controls.globalZipCodeId.setValue('zip-1');
     component.form.controls.email.setValue('legal@example.com');
-    component.form.controls.phoneNumber.setValue('0941123456');
+    (phoneField as any).handleNationalNumberInput(makeInputEvent('0941123456'));
     component.form.controls.street.setValue('Street');
     component.form.controls.streetNumber.setValue('1');
     component.submit();
@@ -230,6 +237,7 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     const fixture = await createFixture(service);
     fixture.detectChanges();
     const component = fixture.componentInstance as unknown as CompanyProfileFormHandle;
+    const phoneField = getPhoneFieldComponent(fixture);
 
     component.form.controls.companyProfileTypeId.setValue('type-1');
     component.form.controls.legalName.setValue('Legal');
@@ -240,7 +248,7 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
     component.form.controls.globalZipCodeId.setValue('zip-fr-1');
     component.form.controls.email.setValue('foreign@example.com');
-    component.form.controls.phoneNumber.setValue('1234567');
+    (phoneField as any).handleNationalNumberInput(makeInputEvent('1234567'));
     component.form.controls.street.setValue('Street');
     component.form.controls.streetNumber.setValue('1');
     component.submit();
@@ -262,6 +270,7 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate');
     const component = fixture.componentInstance as unknown as CompanyProfileFormHandle;
+    const phoneField = getPhoneFieldComponent(fixture);
 
     const codeInput = fixture.nativeElement.querySelector('app-input[formcontrolname="codeLabel"] input') as HTMLInputElement;
     expect(codeInput.value).toBe('CP001');
@@ -273,8 +282,8 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     component.form.controls.email.setValue('updated@example.com');
     component.form.controls.countryId.setValue('country-1');
     component.form.controls.globalZipCodeId.setValue('zip-1');
-    component.form.controls.phonePrefix.setValue('+39');
-    component.form.controls.phoneNumber.setValue('123456');
+    (phoneField as any).handleDialCodeChange('+39');
+    (phoneField as any).handleNationalNumberInput(makeInputEvent('123456'));
     component.form.controls.street.setValue('Updated Street');
     component.form.controls.streetNumber.setValue('2');
     component.submit();
@@ -314,6 +323,7 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
     const component = fixture.componentInstance as unknown as CompanyProfileFormHandle;
+    const phoneField = getPhoneFieldComponent(fixture);
 
     component.form.controls.companyProfileTypeId.setValue('type-1');
     component.form.controls.legalName.setValue('Legal');
@@ -322,7 +332,7 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     component.form.controls.vatNumber.setValue('IT-VAT-3');
     component.form.controls.globalZipCodeId.setValue('zip-1');
     component.form.controls.email.setValue('notify@example.com');
-    component.form.controls.phoneNumber.setValue('111222333');
+    (phoneField as any).handleNationalNumberInput(makeInputEvent('111222333'));
     component.form.controls.street.setValue('Street');
     component.form.controls.streetNumber.setValue('1');
     component.submit();
@@ -379,6 +389,24 @@ async function createFixture(
             userType: authenticatedUser.userType,
             permissions: authenticatedUser.permissions
           })
+        }
+      },
+      {
+        provide: LookupService,
+        useValue: {
+          findCountryLookups: vi.fn(() => of({
+            content: [
+              { id: 'country-1', code: 'IT', name: 'Italy', extraLabel: '+39', metadata: { phoneCode: '+39' } },
+              { id: 'country-2', code: 'FR', name: 'France', extraLabel: '+33', metadata: { phoneCode: '+33' } },
+              { id: 'country-3', code: 'TN', name: 'Tunisia', extraLabel: '+216', metadata: { phoneCode: '+216' } }
+            ],
+            page: 0,
+            size: 25,
+            totalElements: 3,
+            totalPages: 1,
+            first: true,
+            last: true
+          }))
         }
       },
       {
@@ -461,4 +489,12 @@ function createService(overrides: Partial<CompanyProfileAdministrationService> =
     deleteCompanyProfile: vi.fn(),
     ...overrides
   } as CompanyProfileAdministrationService;
+}
+
+function getPhoneFieldComponent(fixture: ComponentFixture<CompanyProfileAdministrationFormComponent>): PhoneFieldComponent {
+  return fixture.debugElement.query(By.directive(PhoneFieldComponent)).componentInstance as PhoneFieldComponent;
+}
+
+function makeInputEvent(value: string): Event {
+  return { target: { value } } as unknown as Event;
 }

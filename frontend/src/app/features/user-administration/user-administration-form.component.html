@@ -95,35 +95,31 @@
           <h2 id="user-form-context" class="user-form-card-title">{{ i18n.t('userAdministration.form.context.title') }}</h2>
 
           @if (canEditTenant()) {
-            <label class="user-form-field">
-              <span>{{ i18n.t('userAdministration.form.tenant.label') }}</span>
-              <select class="kt-input" formControlName="tenantId" (change)="selectTenant($event)" [attr.aria-invalid]="form.controls.tenantId.invalid && submitted()">
-                <option value="">{{ i18n.t('userAdministration.form.tenant.placeholder') }}</option>
-                @for (tenant of formOptions()?.tenants ?? []; track tenant.id) {
-                  <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.code }})</option>
-                }
-              </select>
-              @if (form.controls.tenantId.hasError('required') && submitted()) {
-                <small>{{ i18n.t('userAdministration.form.validation.tenantRequired') }}</small>
-              }
-            </label>
+            <app-lookup-select
+              formControlName="tenantId"
+              [label]="i18n.t('userAdministration.form.tenant.label')"
+              [placeholder]="i18n.t('userAdministration.form.tenant.placeholder')"
+              [required]="true"
+              [labelRequired]="true"
+              [options]="tenantLookupOptions()"
+              [closedLabelBuilder]="tenantClosedLabelBuilder"
+              [optionLabelBuilder]="tenantOptionLabelBuilder"
+              [errorText]="form.controls.tenantId.hasError('required') && submitted() ? i18n.t('userAdministration.form.validation.tenantRequired') : ''"
+              (valueChange)="selectTenant($event)" />
           } @else {
             <app-input
               formControlName="tenantLabel"
               [label]="i18n.t('userAdministration.form.tenant.label')" />
           }
 
-          <label class="user-form-field">
-            <span>{{ i18n.t('userAdministration.form.companyProfile.label') }}</span>
-            <select class="kt-input" formControlName="companyProfileId">
-              <option value="">{{ i18n.t('userAdministration.form.companyProfile.none') }}</option>
-              @for (companyProfile of filteredCompanyProfiles(); track companyProfile.id) {
-                <option [value]="companyProfile.id">
-                  {{ companyProfile.tradeName || companyProfile.legalName }} ({{ companyProfile.code }})
-                </option>
-              }
-            </select>
-          </label>
+          <app-lookup-select
+            formControlName="companyProfileId"
+            [label]="i18n.t('userAdministration.form.companyProfile.label')"
+            [placeholder]="i18n.t('userAdministration.form.companyProfile.none')"
+            [options]="companyProfileLookupOptions()"
+            [closedLabelBuilder]="companyProfileClosedLabelBuilder"
+            [optionLabelBuilder]="companyProfileOptionLabelBuilder"
+            [clearable]="true" />
         </section>
 
         <section class="kt-card user-form-card user-form-card-wide" aria-labelledby="user-form-summary">

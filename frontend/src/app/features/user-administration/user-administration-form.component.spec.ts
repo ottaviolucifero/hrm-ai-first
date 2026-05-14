@@ -21,7 +21,7 @@ interface UserAdministrationFormComponentTestHandle {
     getRawValue: () => Record<string, unknown>;
   };
   submit: () => void;
-  selectTenant: (event: Event) => void;
+  selectTenant: (value: string | Event) => void;
 }
 
 describe('UserAdministrationFormComponent', () => {
@@ -71,15 +71,16 @@ describe('UserAdministrationFormComponent', () => {
     const component = fixture.componentInstance as unknown as UserAdministrationFormComponentTestHandle;
 
     expect(component.form.controls.tenantId.disabled).toBe(false);
-    expect(fixture.nativeElement.querySelector('select[formcontrolname="tenantId"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-lookup-select[formcontrolname="tenantId"]')).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Azienda / societa');
     expect(fixture.nativeElement.textContent).not.toContain('Tenant predefinito');
-    component.selectTenant({ target: { value: 'tenant-2' } } as unknown as Event);
+    component.selectTenant('tenant-2');
     fixture.detectChanges();
 
-    const contextCard = fixture.nativeElement.querySelector('[aria-labelledby="user-form-context"]') as HTMLElement;
-    expect(contextCard.textContent).toContain('Company Two');
-    expect(contextCard.textContent).not.toContain('Company One');
+    const filteredCompanyProfiles = (fixture.componentInstance as unknown as { filteredCompanyProfiles: () => readonly { tradeName: string }[] })
+      .filteredCompanyProfiles();
+    expect(filteredCompanyProfiles).toHaveLength(1);
+    expect(filteredCompanyProfiles[0].tradeName).toBe('Company Two');
   });
 
   it('submits create payload and navigates to detail', async () => {

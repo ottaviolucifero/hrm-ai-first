@@ -1,0 +1,51 @@
+<div class="phone-field">
+  <label class="phone-field-label" [for]="numberFieldId">
+    {{ labelText }}
+    @if (required) {
+      <span aria-hidden="true">*</span>
+    }
+  </label>
+
+  <div class="phone-field-grid">
+    <app-lookup-select
+      [id]="dialCodeFieldId"
+      [label]="i18n.t('phoneField.dialCodeLabel')"
+      [placeholder]="i18n.t('phoneField.dialCodePlaceholder')"
+      [searchPlaceholder]="i18n.t('phoneField.searchPlaceholder')"
+      [autocomplete]="true"
+      [compact]="true"
+      [clearable]="true"
+      [disabled]="disabledState"
+      [readonly]="readonlyState"
+      [minSearchLength]="minSearchLength"
+      [pageSize]="pageSize"
+      [loadPage]="dialCodeLookup"
+      [value]="phoneValue.dialCode ?? ''"
+      [closedLabelBuilder]="dialCodeClosedLabel"
+      [optionLabelBuilder]="dialCodeOptionLabel"
+      (valueChange)="handleDialCodeChange($event)" />
+
+    <div class="phone-field-number-block">
+      <label class="phone-field-number-label" [for]="numberFieldId">{{ i18n.t('phoneField.numberLabel') }}</label>
+      <input
+        [id]="numberFieldId"
+        class="phone-field-number-input"
+        type="text"
+        [value]="phoneValue.nationalNumber ?? ''"
+        [disabled]="disabledState"
+        [readOnly]="readonlyState"
+        [required]="required"
+        [attr.placeholder]="numberPlaceholder || i18n.t('phoneField.numberPlaceholder')"
+        (input)="handleNationalNumberInput($event)"
+        (blur)="handleBlur()" />
+    </div>
+  </div>
+
+  @if (helpText.trim()) {
+    <p class="phone-field-help">{{ helpText }}</p>
+  }
+
+  @if (errorText.trim()) {
+    <p class="phone-field-error">{{ errorText }}</p>
+  }
+</div>

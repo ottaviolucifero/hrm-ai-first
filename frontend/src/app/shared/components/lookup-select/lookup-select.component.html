@@ -1,0 +1,142 @@
+<div class="lookup-select-field" [class.lookup-select-field-compact]="compact">
+  <label class="lookup-select-label" [for]="inputId">
+    {{ label }}
+    @if (labelRequired) {
+      <span aria-hidden="true">*</span>
+    }
+  </label>
+
+  <div
+    class="lookup-select-control"
+    [class.lookup-select-control-autocomplete]="autocomplete"
+    [class.lookup-select-control-has-clear]="autocomplete && clearable && hasValue && !readonlyState">
+    @if (autocomplete) {
+      <input
+        [id]="inputId"
+        class="lookup-select-input"
+        type="text"
+        [value]="controlText"
+        [disabled]="disabledState"
+        [readOnly]="readonlyState"
+        [required]="required"
+        [attr.placeholder]="placeholder"
+        [attr.aria-describedby]="describedByAttribute"
+        [attr.aria-expanded]="panelOpen"
+        [attr.aria-controls]="panelId"
+        [attr.aria-activedescendant]="activeDescendantId"
+        [attr.aria-invalid]="hasError"
+        aria-autocomplete="list"
+        role="combobox"
+        autocomplete="off"
+        (focus)="openPanel()"
+        (input)="handleAutocompleteInput($event)"
+        (keydown)="handleInputKeydown($event)"
+        (blur)="onBlur()" />
+
+      @if (clearable && hasValue && !readonlyState) {
+        <button
+          class="lookup-select-icon-button lookup-select-clear-button"
+          type="button"
+          [attr.aria-label]="i18n.t('lookupSelect.actions.clear')"
+          (click)="clearSelection()">
+          &times;
+        </button>
+      }
+    } @else {
+      <button
+        [id]="inputId"
+        class="lookup-select-button"
+        type="button"
+        [disabled]="disabledState"
+        [attr.aria-describedby]="describedByAttribute"
+        [attr.aria-expanded]="panelOpen"
+        [attr.aria-controls]="panelId"
+        [attr.aria-invalid]="hasError"
+        (click)="togglePanel()"
+        (blur)="onBlur()">
+        {{ controlText || placeholder }}
+      </button>
+
+      @if (clearable && hasValue && !readonlyState) {
+        <button
+          class="lookup-select-icon-button"
+          type="button"
+          [attr.aria-label]="i18n.t('lookupSelect.actions.clear')"
+          (click)="clearSelection()">
+          &times;
+        </button>
+      }
+    }
+
+    @if (!autocomplete) {
+      <button
+        class="lookup-select-icon-button"
+        type="button"
+        [disabled]="readonlyState"
+        [attr.aria-label]="i18n.t('lookupSelect.actions.toggle')"
+        (click)="togglePanel()">
+        v
+      </button>
+    }
+  </div>
+
+  @if (panelOpen) {
+    <div class="lookup-select-panel" [id]="panelId">
+      @if (!autocomplete) {
+        <input
+          class="lookup-select-panel-search"
+          type="text"
+          [value]="panelSearch"
+          [attr.placeholder]="searchPlaceholder || i18n.t('lookupSelect.searchPlaceholder')"
+          autocomplete="off"
+          (input)="handlePanelSearchInput($event)"
+          (keydown)="handleInputKeydown($event)" />
+      }
+
+      <p class="lookup-select-state" [hidden]="!loading">{{ i18n.t('lookupSelect.loading') }}</p>
+      <p
+        class="lookup-select-state lookup-select-state-error"
+        [hidden]="loading || !hasLoadError">
+        {{ i18n.t('lookupSelect.error') }}
+      </p>
+      <p
+        class="lookup-select-state"
+        [hidden]="loading || hasLoadError || renderedOptions.length !== 0">
+        {{ i18n.t('lookupSelect.empty') }}
+      </p>
+      <div
+        class="lookup-select-options"
+        [id]="listboxId"
+        role="listbox"
+        [hidden]="loading || hasLoadError || renderedOptions.length === 0">
+        @for (option of renderedOptions; track optionTrackBy($index, option)) {
+          <button
+            [id]="optionId($index)"
+            class="lookup-select-option"
+            type="button"
+            role="option"
+            [attr.aria-selected]="isHighlighted($index)"
+            [class.lookup-select-option-selected]="isSelected(option)"
+            [class.lookup-select-option-highlighted]="isHighlighted($index)"
+            (click)="selectOption(option)">
+            {{ optionLabelBuilder(option) }}
+          </button>
+        }
+      </div>
+
+      @if (canLoadMore && !loading && !hasLoadError) {
+        <button class="lookup-select-load-more" type="button" (click)="loadMore()">
+          {{ i18n.t('lookupSelect.actions.loadMore') }}
+        </button>
+      }
+    </div>
+  }
+
+  @if (helpText.trim()) {
+    <p class="lookup-select-help" [id]="helpId">{{ helpText }}</p>
+  }
+
+  @if (errorText.trim()) {
+    <p class="lookup-select-error" [id]="errorId">{{ errorText }}</p>
+  }
+</div>

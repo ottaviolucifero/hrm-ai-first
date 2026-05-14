@@ -66,6 +66,49 @@ public final class MasterDataQuerySupport {
 				page.isLast());
 	}
 
+	public static <T> Specification<T> activeSpecification() {
+		return (root, query, criteriaBuilder) -> criteriaBuilder.isTrue(root.get("active"));
+	}
+
+	public static <T> Specification<T> and(Specification<T> left, Specification<T> right) {
+		if (left == null) {
+			return right;
+		}
+		if (right == null) {
+			return left;
+		}
+		return left.and(right);
+	}
+
+	public static <T> Specification<T> or(Specification<T> left, Specification<T> right) {
+		if (left == null) {
+			return right;
+		}
+		if (right == null) {
+			return left;
+		}
+		return left.or(right);
+	}
+
+	public static <T> Specification<T> digitsOnlyStartsWithSpecification(String search, String... fieldPaths) {
+		String normalizedSearch = normalizeDigits(search);
+		if (normalizedSearch == null || fieldPaths.length == 0) {
+			return null;
+		}
+
+		return (root, query, criteriaBuilder) -> {
+			query.distinct(true);
+
+			List<Predicate> predicates = new ArrayList<>();
+			for (String fieldPath : fieldPaths) {
+				Expression<String> path = resolvePath(root, fieldPath);
+				predicates.add(criteriaBuilder.like(digitsOnlyExpression(path, criteriaBuilder), normalizedSearch + "%"));
+			}
+
+			return criteriaBuilder.or(predicates.toArray(Predicate[]::new));
+		};
+	}
+
 	private static int normalizePage(Integer page) {
 		return page == null || page < 0 ? DEFAULT_PAGE : page;
 	}
@@ -85,6 +128,30 @@ public final class MasterDataQuerySupport {
 
 		String normalizedSearch = search.trim().toLowerCase(Locale.ROOT);
 		return normalizedSearch.isEmpty() ? null : normalizedSearch;
+	}
+
+	private static String normalizeDigits(String search) {
+		if (search == null) {
+			return null;
+		}
+
+		String normalizedDigits = search.replaceAll("[^0-9]", "");
+		return normalizedDigits.isBlank() ? null : normalizedDigits;
+	}
+
+	private static Expression<String> digitsOnlyExpression(
+			Expression<String> expression,
+			jakarta.persistence.criteria.CriteriaBuilder criteriaBuilder) {
+		Expression<String> normalized = expression;
+		for (String token : List.of("+", "-", " ", "(", ")")) {
+			normalized = criteriaBuilder.function(
+					"replace",
+					String.class,
+					normalized,
+					criteriaBuilder.literal(token),
+					criteriaBuilder.literal(""));
+		}
+		return normalized;
 	}
 
 	@SuppressWarnings("unchecked")

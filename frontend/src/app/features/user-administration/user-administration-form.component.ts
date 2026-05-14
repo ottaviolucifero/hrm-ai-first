@@ -1,4 +1,4 @@
-import { Component, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, forkJoin, finalize } from 'rxjs';
@@ -10,9 +10,11 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { AppCheckboxComponent } from '../../shared/components/checkbox/app-checkbox.component';
 import { AppInputComponent } from '../../shared/components/input/app-input.component';
+import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
 import { EmailFieldComponent } from '../../shared/form-fields/email-field.component';
 import { PasswordFieldComponent } from '../../shared/form-fields/password-field.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
+import { LookupOption } from '../../shared/lookup/lookup.models';
 import {
   UserAdministrationCompanyProfileOption,
   UserAdministrationFormOptions,
@@ -28,6 +30,7 @@ type UserAdministrationFormMode = 'create' | 'edit';
     AppButtonComponent,
     AppCheckboxComponent,
     AppInputComponent,
+    LookupSelectComponent,
     EmailFieldComponent,
     PasswordFieldComponent,
     ReactiveFormsModule
@@ -68,6 +71,23 @@ export class UserAdministrationFormComponent implements OnDestroy {
     tenantLabel: [{ value: '', disabled: true }],
     employeeLabel: [{ value: '', disabled: true }]
   });
+  protected readonly tenantLookupOptions = computed<readonly LookupOption[]>(() =>
+    (this.formOptions()?.tenants ?? []).map((tenant) => ({
+      id: tenant.id,
+      code: tenant.code,
+      name: tenant.name
+    })));
+  protected readonly companyProfileLookupOptions = computed<readonly LookupOption[]>(() =>
+    this.filteredCompanyProfiles().map((companyProfile) => ({
+      id: companyProfile.id,
+      code: companyProfile.code,
+      name: companyProfile.tradeName || companyProfile.legalName,
+      extraLabel: companyProfile.legalName
+    })));
+  protected readonly tenantClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly tenantOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly companyProfileClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly companyProfileOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
 
   constructor() {
     this.configureModeValidators();
@@ -148,8 +168,8 @@ export class UserAdministrationFormComponent implements OnDestroy {
     this.load();
   }
 
-  protected selectTenant(event: Event): void {
-    const tenantId = (event.target as HTMLSelectElement).value;
+  protected selectTenant(value: string | Event): void {
+    const tenantId = this.lookupValue(value);
     this.form.controls.tenantId.setValue(tenantId);
     this.form.controls.companyProfileId.setValue('');
     this.updateTenantDisplayFields();
@@ -379,5 +399,13 @@ export class UserAdministrationFormComponent implements OnDestroy {
 
   private resolveApiMessage(error: unknown, fallbackKey: I18nKey): string {
     return resolveApiErrorMessage(this.i18n, error, { fallbackKey });
+  }
+
+  private lookupValue(value: string | Event): string {
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    return (value.target as HTMLSelectElement).value;
   }
 }
