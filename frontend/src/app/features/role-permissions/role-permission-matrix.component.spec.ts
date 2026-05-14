@@ -25,7 +25,7 @@ describe('RolePermissionMatrixComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Amministratore');
     expect(fixture.nativeElement.textContent).toContain('Ruoli tenant');
     expect(fixture.nativeElement.textContent).toContain('Personalizzato');
-    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Utenti', 'Ruoli']);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli']);
   });
 
   it('keeps system roles read-only in the permission matrix', async () => {
@@ -94,7 +94,7 @@ describe('RolePermissionMatrixComponent', () => {
     expect(component.canSave()).toBe(false);
     expect(saveButton.disabled).toBe(true);
     expect(checkbox.disabled).toBe(true);
-    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Utenti', 'Ruoli']);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli']);
   });
 
   it('tracks unsaved changes and restores the initial snapshot', async () => {
@@ -111,7 +111,7 @@ describe('RolePermissionMatrixComponent', () => {
     const inputs = fixture.nativeElement.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
     expect(component.canReset()).toBe(false);
     expect(component.canSave()).toBe(false);
-    expect(inputs.length).toBe(8);
+    expect(inputs.length).toBe(11);
     expect(Array.from(inputs).every((input) => input.disabled === false)).toBe(true);
 
     inputs[1].click();
@@ -148,6 +148,7 @@ describe('RolePermissionMatrixComponent', () => {
     fixture.detectChanges();
 
     expect(service.updateAssignedPermissions).toHaveBeenCalledWith('role-admin', [
+      'permission-company-profile-read',
       'permission-master-data-create',
       'permission-master-data-read'
     ]);
@@ -170,13 +171,13 @@ describe('RolePermissionMatrixComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Impossibile caricare ruoli e catalogo permessi.');
   });
 
-  it('shows user administration together with master data and role modules', async () => {
+  it('shows user administration together with master data role and company profile modules', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const fixture = await createFixture(createService());
     fixture.detectChanges();
 
-    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Utenti', 'Ruoli']);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli']);
     expect(fixture.nativeElement.textContent).not.toContain('Dipendenti');
     expect(fixture.nativeElement.textContent).not.toContain('Permessi');
   });
@@ -245,6 +246,14 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
 
   const rolePermissions = [
     {
+      id: 'permission-company-profile-read',
+      tenantId: 'tenant-1',
+      code: 'TENANT.COMPANY_PROFILE.READ',
+      name: 'Company profile read',
+      systemPermission: true,
+      active: true
+    },
+    {
       id: 'permission-master-data-read',
       tenantId: 'tenant-1',
       code: 'TENANT.MASTER_DATA.READ',
@@ -281,6 +290,22 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
     findAssignedPermissions: vi.fn(() => of(rolePermissions)),
     findPermissionCatalog: vi.fn(() => of([
       ...rolePermissions,
+      {
+        id: 'permission-company-profile-create',
+        tenantId: 'tenant-1',
+        code: 'TENANT.COMPANY_PROFILE.CREATE',
+        name: 'Company profile create',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-company-profile-update',
+        tenantId: 'tenant-1',
+        code: 'TENANT.COMPANY_PROFILE.UPDATE',
+        name: 'Company profile update',
+        systemPermission: true,
+        active: true
+      },
       {
         id: 'permission-master-data-create',
         tenantId: 'tenant-1',
@@ -352,8 +377,14 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
       permissions: permissionIds.map((permissionId) => ({
         id: permissionId,
         tenantId: 'tenant-1',
-        code: permissionId === 'permission-master-data-create' ? 'TENANT.MASTER_DATA.CREATE' : 'TENANT.MASTER_DATA.READ',
-        name: permissionId === 'permission-master-data-create' ? 'Master data create' : 'Master data read',
+        code: permissionId === 'permission-master-data-read'
+          ? 'TENANT.MASTER_DATA.READ'
+          : permissionId === 'permission-company-profile-read'
+            ? 'TENANT.COMPANY_PROFILE.READ'
+            : permissionId === 'permission-company-profile-create'
+              ? 'TENANT.COMPANY_PROFILE.CREATE'
+              : 'TENANT.MASTER_DATA.CREATE',
+        name: permissionId,
         systemPermission: true,
         active: true
       }))

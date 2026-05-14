@@ -2,6 +2,7 @@ package com.odsoftware.hrm.security.permission;
 
 public enum PermissionResource {
 	TENANT,
+	COMPANY_PROFILE,
 	USER,
 	ROLE,
 	PERMISSION,

@@ -1,0 +1,259 @@
+<section class="kt-container-fixed py-4 company-profile-form-page" aria-labelledby="company-profile-form-title">
+  <div class="company-profile-form-layout">
+    <header class="company-profile-form-page-header">
+      <div class="company-profile-form-heading">
+        <span class="company-profile-form-eyebrow">{{ i18n.t('nav.governance') }}</span>
+        <h1 id="company-profile-form-title" class="text-xl font-semibold text-mono">{{ i18n.t(titleKey()) }}</h1>
+        <p class="company-profile-form-subtitle">{{ i18n.t(subtitleKey()) }}</p>
+      </div>
+
+      <div class="company-profile-form-page-actions" role="group" [attr.aria-label]="i18n.t('companyProfileAdministration.form.actions.toolbar')">
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrow-left"
+          [label]="i18n.t('companyProfileAdministration.actions.back')"
+          (pressed)="goBack()" />
+        @if (hasError()) {
+          <app-button
+            variant="secondary"
+            size="sm"
+            icon="ki-filled ki-arrows-circle"
+            [label]="i18n.t('rolePermissions.actions.retry')"
+            (pressed)="retry()" />
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <section class="kt-card company-profile-form-state" role="status" aria-live="polite">
+        {{ i18n.t('companyProfileAdministration.form.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card company-profile-form-state company-profile-form-state-error" role="alert">
+        {{ i18n.t('companyProfileAdministration.form.errors.load') }}
+      </section>
+    } @else {
+      <form class="company-profile-form-grid" [formGroup]="form" (ngSubmit)="submit()">
+        <section class="kt-card company-profile-form-card" aria-labelledby="company-profile-form-main">
+          <h2 id="company-profile-form-main" class="company-profile-form-card-title">
+            {{ i18n.t('companyProfileAdministration.form.main.title') }}
+          </h2>
+
+          <app-input
+            formControlName="codeLabel"
+            [label]="i18n.t('masterData.columns.code')"
+            [helpText]="mode() === 'create' ? i18n.t('companyProfileAdministration.form.code.generated') : ''" />
+
+          <app-input
+            formControlName="legalName"
+            [label]="i18n.t('companyProfileAdministration.fields.legalName')"
+            [labelRequired]="true"
+            [required]="true"
+            [errorText]="validationMessage('legalName')" />
+
+          <app-input
+            formControlName="tradeName"
+            [label]="i18n.t('companyProfileAdministration.fields.tradeName')"
+            [labelRequired]="true"
+            [required]="true"
+            [errorText]="validationMessage('tradeName')" />
+
+          <app-checkbox
+            [label]="i18n.t('masterData.columns.active')"
+            [checked]="activeValue()"
+            [disabled]="true"
+            [helpText]="i18n.t('companyProfileAdministration.form.activeReadonly')" />
+        </section>
+
+        <section class="kt-card company-profile-form-card" aria-labelledby="company-profile-form-tenant-type">
+          <h2 id="company-profile-form-tenant-type" class="company-profile-form-card-title">
+            {{ i18n.t('companyProfileAdministration.form.tenantType.title') }}
+          </h2>
+
+          @if (canEditTenant()) {
+            <label class="company-profile-form-field">
+              <span>{{ i18n.t('companyProfileAdministration.fields.tenant') }} <strong class="company-profile-form-required" aria-hidden="true">*</strong></span>
+              <select class="kt-input" formControlName="tenantId" (change)="selectTenant($event)">
+                <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.tenant') }}</option>
+                @for (tenant of formOptions()?.tenants ?? []; track tenant.id) {
+                  <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.code }})</option>
+                }
+              </select>
+              @if (validationMessage('tenantId')) {
+                <small>{{ validationMessage('tenantId') }}</small>
+              }
+            </label>
+          } @else {
+            <app-input
+              formControlName="tenantLabel"
+              [label]="i18n.t('companyProfileAdministration.fields.tenant')"
+              [required]="true" />
+          }
+
+          <label class="company-profile-form-field">
+            <span>{{ i18n.t('companyProfileAdministration.fields.companyProfileType') }} <strong class="company-profile-form-required" aria-hidden="true">*</strong></span>
+            <select class="kt-input" formControlName="companyProfileTypeId">
+              <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.companyProfileType') }}</option>
+              @for (type of filteredCompanyProfileTypes(); track type.id) {
+                <option [value]="type.id">{{ type.name }} ({{ type.code }})</option>
+              }
+            </select>
+            @if (validationMessage('companyProfileTypeId')) {
+              <small>{{ validationMessage('companyProfileTypeId') }}</small>
+            }
+          </label>
+
+          <label class="company-profile-form-field">
+            <span>{{ i18n.t('masterData.columns.country') }} <strong class="company-profile-form-required" aria-hidden="true">*</strong></span>
+            <select class="kt-input" formControlName="countryId" (change)="selectCountry($event)">
+              <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.country') }}</option>
+              @for (country of orderedCountries(); track country.id) {
+                <option [value]="country.id">{{ country.name }} ({{ country.code }})</option>
+              }
+            </select>
+            @if (validationMessage('countryId')) {
+              <small>{{ validationMessage('countryId') }}</small>
+            }
+          </label>
+        </section>
+
+        <section class="kt-card company-profile-form-card" aria-labelledby="company-profile-form-fiscal">
+          <h2 id="company-profile-form-fiscal" class="company-profile-form-card-title">
+            {{ i18n.t('companyProfileAdministration.form.fiscal.title') }}
+          </h2>
+
+          @if (showItalianFiscalFields()) {
+            <app-input
+              formControlName="vatNumber"
+              [label]="i18n.t('companyProfileAdministration.fields.vatNumber')"
+              [labelRequired]="true"
+              [required]="true"
+              [errorText]="validationMessage('vatNumber')" />
+            <app-input formControlName="taxNumber" [label]="i18n.t('companyProfileAdministration.fields.taxNumber')" />
+          }
+          @if (showForeignFiscalField()) {
+            <app-input
+              formControlName="taxIdentifier"
+              [label]="i18n.t('companyProfileAdministration.fields.taxIdentifier')"
+              [labelRequired]="true"
+              [required]="true"
+              [errorText]="validationMessage('taxIdentifier')" />
+          }
+          <app-email-field
+            [control]="form.controls.pecEmail"
+            [label]="i18n.t('companyProfile.fields.pecEmail')"
+            [submitted]="submitted()" />
+          <app-input formControlName="sdiCode" [label]="i18n.t('companyProfile.fields.sdiCode')" />
+        </section>
+
+        <section class="kt-card company-profile-form-card" aria-labelledby="company-profile-form-contacts">
+          <h2 id="company-profile-form-contacts" class="company-profile-form-card-title">
+            {{ i18n.t('companyProfileAdministration.form.contacts.title') }}
+          </h2>
+
+          <app-email-field
+            [control]="form.controls.email"
+            [label]="i18n.t('userAdministration.columns.email')"
+            [required]="true"
+            [submitted]="submitted()" />
+
+          <div class="company-profile-form-phone-grid">
+            <label class="company-profile-form-field">
+              <span>{{ i18n.t('companyProfileAdministration.fields.phonePrefix') }}</span>
+              <select class="kt-input" formControlName="phonePrefix" (change)="selectPhonePrefix($event)">
+                <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.phonePrefix') }}</option>
+                @for (dialCode of phoneDialCodeOptions; track dialCode.code) {
+                  <option [value]="dialCode.code">{{ dialCodeLabel(dialCode) }}</option>
+                }
+              </select>
+            </label>
+
+            <app-input
+              formControlName="phoneNumber"
+              [label]="i18n.t('companyProfileAdministration.fields.phoneNumber')"
+              [labelRequired]="true"
+              [required]="true"
+              [errorText]="validationMessage('phoneNumber')"
+              [helpText]="i18n.t('companyProfileAdministration.form.phone.note')" />
+          </div>
+        </section>
+
+        <section class="kt-card company-profile-form-card company-profile-form-card-wide" aria-labelledby="company-profile-form-address">
+          <h2 id="company-profile-form-address" class="company-profile-form-card-title">
+            {{ i18n.t('companyProfileAdministration.form.address.title') }}
+          </h2>
+
+          <div class="company-profile-form-address-grid">
+            <app-input
+              formControlName="street"
+              [label]="i18n.t('companyProfileAdministration.fields.street')"
+              [labelRequired]="true"
+              [required]="true"
+              [errorText]="validationMessage('street')" />
+
+            <app-input
+              formControlName="streetNumber"
+              [label]="i18n.t('companyProfileAdministration.fields.streetNumber')"
+              [labelRequired]="true"
+              [required]="true"
+              [errorText]="validationMessage('streetNumber')" />
+
+            <label class="company-profile-form-field">
+              <span>{{ i18n.t('masterData.columns.postalCode') }} <strong class="company-profile-form-required" aria-hidden="true">*</strong></span>
+              <select class="kt-input" formControlName="globalZipCodeId" (change)="selectGlobalZipCode($event)">
+                <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.globalZipCode') }}</option>
+                @for (zipCode of filteredGlobalZipCodes(); track zipCode.id) {
+                  <option [value]="zipCode.id">{{ zipCode.code }} - {{ zipCode.name }}</option>
+                }
+              </select>
+              @if (validationMessage('globalZipCodeId')) {
+                <small>{{ validationMessage('globalZipCodeId') }}</small>
+              }
+            </label>
+
+            <app-input
+              formControlName="cityLabel"
+              [label]="i18n.t('masterData.columns.city')"
+              [helpText]="i18n.t('companyProfileAdministration.form.address.cityHelp')" />
+
+            <app-input
+              formControlName="provinceLabel"
+              [label]="i18n.t(areaLabelKey())" />
+
+            @if (showRegionField()) {
+              <label class="company-profile-form-field">
+                <span>{{ i18n.t('masterData.columns.region') }}</span>
+                <select class="kt-input" formControlName="regionId" (change)="selectRegion($event)">
+                  <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.region') }}</option>
+                  @for (region of filteredRegions(); track region.id) {
+                    <option [value]="region.id">{{ region.name }} ({{ region.code }})</option>
+                  }
+                </select>
+              </label>
+            }
+          </div>
+
+          <p class="company-profile-form-field-help">{{ i18n.t('companyProfileAdministration.form.address.lookupNote') }}</p>
+        </section>
+
+        <div class="company-profile-form-actions company-profile-form-card-wide">
+          <app-button
+            variant="secondary"
+            type="button"
+            [label]="i18n.t('companyProfileAdministration.form.actions.cancel')"
+            [disabled]="saving()"
+            (pressed)="goBack()" />
+          <app-button
+            type="submit"
+            variant="primary"
+            icon="ki-filled ki-check"
+            [label]="i18n.t(submitLabelKey())"
+            [loadingLabel]="i18n.t(submitLoadingLabelKey())"
+            [loading]="saving()"
+            [disabled]="submitDisabled()" />
+        </div>
+      </form>
+    }
+  </div>
+</section>

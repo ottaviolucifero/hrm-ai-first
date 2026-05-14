@@ -6,6 +6,40 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-064.7 - Supporto CAP manuali nei form indirizzo (pianificazione documentale)
+
+- Data: 2026-05-14
+- Branch: `task-064-5-company-profile-admin-ui`
+- Task: TASK-064.7 - Supporto CAP manuali nei form indirizzo
+- Modello consigliato nel prompt operativo: GPT-5.3 Codex
+- Area verificata:
+  - `AGENTS.md`
+  - `DECISIONS.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificata la coerenza del follow-up con il modello geografico approvato in `DEC-038` e con la sequenza `TASK-062`/`TASK-063`;
+  - verificato che il bug funzionale gia mitigato su Company Profile UI richieda un task dedicato e generalizzabile ai futuri form indirizzo;
+  - verificato che il passaggio richiesto fosse solo documentale/backlog, senza patch applicative backend/frontend.
+- Patch applicata:
+  - aggiunto `TASK-064.7` in `TASKS.md` con obiettivo, scope, esclusioni e focus su CAP manuali con `areaId` nullable;
+  - aggiornato `ROADMAP.md` con il nuovo follow-up `TASK-064.7` nelle sezioni backlog/prossimo passo e in cronologia versioni;
+  - aggiornato versioning/data in `TASKS.md` e `ROADMAP.md`.
+- Comandi eseguiti:
+  - `git diff -- TASKS.md ROADMAP.md docs/qa/QA-REPORTS.md`
+  - `git status --short --branch`
+- Esiti reali:
+  - aggiornamento documentale completato;
+  - nessuna modifica runtime/backend/frontend introdotta.
+- QA manuale:
+  - non applicabile per task esclusivamente documentale.
+- Regressioni trovate:
+  - nessuna regressione applicativa rilevata nel perimetro documentale.
+- Limiti/note:
+  - test backend/frontend non eseguiti in questo passaggio perche non sono stati modificati file applicativi.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-064.3 - Automatic code standard for future entities
 
 - Data: 2026-05-13
@@ -2404,6 +2438,109 @@ Nota operativa:
 - Nota tecnica:
   - `taxIdentifier` era gia presente sul modello `CompanyProfile` ed e rimasto invariato; `taxNumber` e stato aggiunto come campo separato per rispettare lo scope del task.
   - Esiste una possibile sovrapposizione semantica tra `taxIdentifier` e `taxNumber`; la chiarificazione di dominio e l eventuale razionalizzazione futura restano fuori scope e vanno trattate in task UI/API dedicato, senza migrazioni o rename in questa patch.
+- Stato finale: PASS WITH NOTES
+
+### TASK-064.5 - Company Profile Administration UI foundation
+
+- Data: 2026-05-13
+- Branch: `task-064-5-company-profile-admin-ui`
+- Task: TASK-064.5 - Company Profile Administration UI foundation
+- Agente/Modello usato:
+  - Analisi/planning: GPT-5.5 Thinking
+  - Sviluppo: GPT-5.3 Codex
+  - QA/regressione: GPT-5.4 style validation through real build/test execution
+- Aree/file verificati:
+  - backend admin API `CompanyProfile`, RBAC/permission seed, backend tests
+  - frontend feature `company-profile-administration`, routes, sidebar/header, permission summary, role permission matrix, i18n
+  - documentazione `TASKS.md`, `ROADMAP.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=CompanyProfileAdministrationControllerTests,HrmBackendApplicationTests test` -> OK, 70 test passed, 0 failure, 0 error
+  - `cd backend && .\mvnw.cmd test` -> OK
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale superato (`2.09 MB`, +`85.17 kB` rispetto al warning budget)
+  - `cd frontend && npm.cmd test -- --browsers=ChromeHeadless` -> KO, opzione non supportata dal builder test Angular/Vitest del repository
+  - `cd frontend && npm.cmd test -- --watch=false` -> OK, 35 file test passed, 240 test passed
+- Esiti reali:
+  - backend test suite completa verde dopo correzione della numerazione Flyway e isolamento dei test `CompanyProfileAdministrationControllerTests`
+  - frontend build verde
+  - frontend test suite verde usando il comando compatibile con il builder configurato nel repository
+- Verifiche funzionali:
+  - introdotte API admin `GET /api/admin/company-profiles`, `GET /api/admin/company-profiles/form-options`, `GET /api/admin/company-profiles/{id}`, `POST /api/admin/company-profiles`, `PUT /api/admin/company-profiles/{id}`
+  - `code` escluso dai request DTO, generato solo backend con formato tenant-aware `CP001`, `CP002`, ...
+  - `active` visibile ma non modificabile in lista/dettaglio/form; lifecycle activate/deactivate rimane fuori scope
+  - permessi `COMPANY_PROFILE` limitati a `READ`, `CREATE`, `UPDATE`; nessun `MANAGE`, nessun `DELETE`
+  - UI Angular amministrativa allineata ai pattern `/admin/users` e `/admin/tenants`, con shared `app-data-table`, card responsive, row actions sticky, i18n `it/fr/en` e sidebar visibility coerente con i permessi
+  - geografia form implementata solo con options/pattern gia disponibili; nessuna logica dipendente avanzata introdotta
+- QA manuale browser:
+  - non eseguita in questa sessione CLI
+  - validazione suggerita:
+    - login con credenziali QA progetto
+    - aprire `/admin/company-profiles`
+    - verificare allineamento DataTable rispetto a `/admin/users`
+    - verificare filtro lista
+    - aprire dettaglio e verificare card affiancate
+    - aprire edit e verificare `code` readonly
+    - creare nuovo company profile e verificare generazione `CPxxx`
+    - verificare i18n `it/fr/en` se disponibile
+- Limiti/note:
+  - il comando frontend con flag `--browsers=ChromeHeadless` non e compatibile con il builder test attuale del repository; la validazione reale e stata completata con `npm.cmd test -- --watch=false`
+  - la geografia usa le options esistenti senza cascata avanzata tenant/country/region/area oltre i pattern gia pronti; eventuali dipendenze geografiche evolute restano follow-up
+  - il build frontend mantiene un warning budget iniziale, preesistente come vincolo di bundle e non bloccante per il task
+- Stato finale: PASS WITH NOTES
+
+### TASK-064.5 - Company Profile Administration UI foundation (functional return patch)
+
+- Data: 2026-05-13
+- Branch: `task-064-5-company-profile-admin-ui`
+- Task: TASK-064.5 - Company Profile Administration UI foundation
+- Agente/Modello usato:
+  - Analisi/planning: GPT-5.5 Thinking
+  - Sviluppo: GPT-5.3 Codex
+  - QA/regressione: validazione reale con test backend/frontend
+- Aree/file verificati:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/CompanyProfileAdministrationController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/CompanyProfileAdministrationService.java`
+  - migration Flyway `V30`, `V31`, `V32` PostgreSQL/H2 per permessi, seed tipi e normalizzazione codici
+  - `frontend/src/app/features/company-profile-administration/*`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `frontend/src/app/layout/header/*`
+  - `frontend/src/app/layout/sidebar/*`
+  - `frontend/src/app/core/authorization/*`
+  - `frontend/src/app/features/role-permissions/*`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test` -> OK, 236 test passed, 0 failure, 0 error, 0 skipped
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale superato (`2.11 MB`, +`109.99 kB` rispetto al budget)
+  - `cd frontend && npm.cmd test -- --watch=false` -> OK, 35 file test passed, 245 test passed
+- Esiti reali:
+  - suite backend completa verde con Flyway fino a `V32`
+  - build frontend verde
+  - suite frontend verde dopo aggiornamento spec, i18n e mapping errori delete
+- Verifiche funzionali:
+  - aggiunti lifecycle `activate` / `deactivate` e `DELETE` fisico protetto per `CompanyProfile` con permission gating coerente;
+  - aggiunta migration tenant-aware per normalizzare i `CompanyProfile` esistenti con codice nullo o non conforme in formato `CP001`, `CP002`, ... preservando i record gia corretti;
+  - completato il seed minimo `CompanyProfileType` senza duplicati con `LEGAL_ENTITY`, `BUSINESS_UNIT`, `BRANCH`, `SUBSIDIARY`, `PUBLIC_ENTITY`;
+  - naming italiano utente riallineato a `Profilo aziendale` / `Profili aziendali` in navigazione, titoli, card, messaggi e matrice permessi;
+  - label fiscali chiarite: `taxIdentifier` -> `Identificativo fiscale`, `taxNumber` -> `Codice fiscale`;
+  - telefono gestito con soluzione minima locale `prefisso + numero`, default per paese supportato senza sovrascrivere modifiche manuali;
+  - indirizzo riordinato con `Paese`, `Via`, `Numero`, `CAP`, `City`, `Area/Provincia`, `Regione`, e label dinamica `Provincia` per l Italia;
+  - card `Riepilogo note` rimossa dal form per mantenere solo card funzionali;
+  - delete `409` mappato a messaggio i18n leggibile lato frontend.
+- QA manuale browser:
+  - non eseguita in questa sessione CLI
+  - validazione suggerita:
+    - login con credenziali QA progetto
+    - aprire `/admin/company-profiles`
+    - verificare posizionamento sotto Governance/Security insieme a `Tenant`
+    - verificare testi italiani `Profilo aziendale` / `Profili aziendali`
+    - provare `Attiva` / `Disattiva` da lista e dettaglio
+    - provare `Cancella definitivamente` su record non referenziato e verificare `409` su record referenziato
+    - creare un nuovo profilo aziendale e verificare generazione `CPxxx`
+    - verificare ordine indirizzo, label `Provincia` per Italia e comportamento minimo del telefono
+- Limiti/note:
+  - la soluzione telefono resta locale a `TASK-064.5`; il componente shared dedicato resta backlog `TASK-064.6`
+  - le select geografiche continuano a riusare gli endpoint e le liste attuali senza lookup paginato/autocomplete; il miglioramento strutturale resta demandato a `TASK-064.6`
+  - il warning budget frontend resta non bloccante e preesistente come vincolo di bundle
 - Stato finale: PASS WITH NOTES
 
 

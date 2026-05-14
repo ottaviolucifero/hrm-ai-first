@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.45
-Ultimo aggiornamento: 2026-05-13
+Versione: 2.48
+Ultimo aggiornamento: 2026-05-14
 Stato: In avanzamento
 
 ---
@@ -136,13 +136,14 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-064.2 Tenant automatic code generation
 - TASK-064.3 Automatic code standard for future entities
 - TASK-064.4 Company Profile fiscal fields
+- TASK-064.5 Company Profile Administration UI foundation
+- TASK-064.6 Shared lookup select and phone field foundation
+- TASK-064.7 Supporto CAP manuali nei form indirizzo
 
 ### Prossimo passo
 
-- TASK-064.5 Company Profile Administration UI foundation
-- Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
-- Follow-up subtask pianificati post TASK-064:
-- TASK-064.5 Company Profile Administration UI foundation
+- TASK-065 Implementare UI Employee management enterprise
+- Follow-up gia pianificati: TASK-064.6 shared lookup select and phone field foundation, TASK-064.7 supporto CAP manuali nei form indirizzo, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
 
@@ -251,13 +252,13 @@ TASK-059.4 completed the Governance/security Master Data rationalization by remo
 TASK-060 completed the role custom-code decision and implementation by confirming that runtime authorization depends on `permission.code`, keeping semantic seeded system role codes unchanged, generating tenant-scoped custom role codes as `RO###`, removing `code` from create payload/UI, and keeping `code` visible but read-only in edit/view.
 TASK-064.3 completed the durable governance standard for future entities with `code`, formalizing in `DEC-039` the default auto-code rule `prime due lettere + progressivo 3 cifre`, backend generation, UI non-editable code and documented exceptions only.
 TASK-064.4 completed the Company Profile fiscal fields follow-up by adding nullable `taxNumber`, `pecEmail` and `sdiCode` to `CompanyProfile` only, shipping Flyway `V27` PostgreSQL/H2 migrations, extending foundation response mapping and backend tests, and keeping `taxIdentifier`, `Tenant`, security/RBAC and CRUD/UI scope unchanged.
+TASK-064.5 completed the Company Profile Administration UI foundation and pre-commit functional return with backend admin APIs under `/api/admin/company-profiles`, tenant-aware backend auto-code `CP001/CP002`, activate/deactivate/delete lifecycle, `COMPANY_PROFILE` permissions through `READ`/`CREATE`/`UPDATE`/`DELETE`, tenant-aware normalization of existing company profile codes, company profile type seed completion, Angular admin routes/list/detail/form aligned to `/admin/users`, shared DataTable reuse, Italian naming `Profilo aziendale`, minimal local phone handling, refined address order, i18n `it/fr/en` and green backend/frontend validation.
+TASK-064.7 is planned as a dedicated follow-up to harden ZIP/CAP manual lookup handling across address forms, with explicit support for `GlobalZipCode.areaId` nullable and `provinceName/provinceCode` fallback without introducing a new City table or unrelated UI redesign.
 
 Prossimo passo:
 
 - TASK-065 Implementare UI Employee management enterprise
-- Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
-- Follow-up subtask post chiusura TASK-064:
-- TASK-064.5 Company Profile Administration UI foundation
+- Follow-up gia pianificati: TASK-064.6 shared lookup select and phone field foundation, TASK-064.7 supporto CAP manuali nei form indirizzo, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza immediata Employee/geography:
 
@@ -422,6 +423,9 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.48 | 2026-05-14 | Aggiunto il follow-up `TASK-064.7 - Supporto CAP manuali nei form indirizzo` nel backlog/next step con focus su `GlobalZipCode.areaId` nullable, fallback `provinceName/provinceCode`, copertura lookup CAP importati/manuali e test backend/frontend dedicati, senza introdurre nuova tabella City o redesign fuori scope. |
+| 2.47 | 2026-05-13 | TASK-064.5 rifinito prima del commit: aggiunti activate/deactivate e delete fisico protetto per `CompanyProfile`, permesso `DELETE`, normalizzazione tenant-aware dei codici esistenti `CP001/CP002`, seed minimi `CompanyProfileType`, naming italiano `Profilo aziendale`, patch telefono/indirizzo lato UI, test backend/frontend reali verdi e backlog aggiornato con `TASK-064.6` shared lookup select/phone field foundation. |
+| 2.46 | 2026-05-13 | TASK-064.5 completato: introdotte API admin `CompanyProfile`, permessi `COMPANY_PROFILE` (`READ`/`CREATE`/`UPDATE`), auto-code backend tenant-aware `CP001/CP002`, UI amministrativa Angular `/admin/company-profiles` allineata ai pattern Users/Tenant, i18n `it/fr/en`, test backend/frontend verdi e report QA aggiornato. |
 | 2.45 | 2026-05-13 | TASK-064.4 completato: aggiunti i campi fiscali nullable `taxNumber`, `pecEmail` e `sdiCode` su `CompanyProfile` con Flyway `V27` PostgreSQL/H2, mapping foundation response, test backend e chiavi i18n catalog-only `it/fr/en`; `taxIdentifier` e `Tenant` restano invariati e la UI CRUD `CompanyProfile` resta demandata a `TASK-064.5`. |
 | 2.44 | 2026-05-13 | TASK-064.3 completato in roadmap: formalizzata in `DEC-039` la regola durevole per i nuovi campi `code` con auto-code `prime due lettere + progressivo 3 cifre`, UI non editabile quando automatico e prossimi follow-up portati a `TASK-064.4` e `TASK-064.5`. |
 | 2.43 | 2026-05-13 | TASK-064.2 completato in roadmap: `Tenant.code` autogenerato lato backend con formato `TE###`, UI Tenant senza editing manuale del codice, test backend/frontend reali verdi e prossimo follow-up operativo portato a `TASK-064.3`. |

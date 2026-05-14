@@ -1,0 +1,180 @@
+<section class="kt-container-fixed py-4 company-profile-detail-page" aria-labelledby="company-profile-detail-title">
+  <div class="company-profile-detail-layout">
+    <header class="company-profile-detail-page-header">
+      <div class="company-profile-detail-heading">
+        <span class="company-profile-detail-eyebrow">{{ i18n.t('nav.governance') }}</span>
+        <h1 id="company-profile-detail-title" class="text-xl font-semibold text-mono">{{ detailTitle() }}</h1>
+        <p class="company-profile-detail-subtitle">{{ i18n.t('companyProfileAdministration.detail.subtitle') }}</p>
+      </div>
+
+      <div class="company-profile-detail-page-actions" role="group" [attr.aria-label]="i18n.t('companyProfileAdministration.detail.actions')">
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrow-left"
+          [label]="i18n.t('companyProfileAdministration.actions.back')"
+          (pressed)="goBack()" />
+        @if (companyProfile()) {
+          <app-button
+            variant="primary"
+            size="sm"
+            icon="ki-filled ki-pencil"
+            [label]="i18n.t('companyProfileAdministration.actions.edit')"
+            [disabled]="!modulePermissions().canUpdate"
+            (pressed)="editCompanyProfile()" />
+          <app-button
+            [variant]="companyProfile()!.active ? 'outline' : 'primary'"
+            size="sm"
+            [icon]="companyProfile()!.active ? 'ki-filled ki-cross-circle' : 'ki-filled ki-check-circle'"
+            [label]="i18n.t(activeActionLabelKey(companyProfile()!))"
+            [loadingLabel]="i18n.t(activeActionLoadingLabelKey(companyProfile()!))"
+            [loading]="actionSaving()"
+            [disabled]="actionSaving() || !modulePermissions().canUpdate"
+            (pressed)="triggerActiveAction()" />
+          <app-button
+            variant="destructive"
+            size="sm"
+            icon="ki-filled ki-trash"
+            [label]="i18n.t('companyProfileAdministration.actions.deletePhysical')"
+            [loadingLabel]="i18n.t('companyProfileAdministration.deletePhysical.processing')"
+            [loading]="actionSaving()"
+            [disabled]="actionSaving() || !canDelete()"
+            (pressed)="triggerDeleteAction()" />
+        }
+        @if (hasError()) {
+          <app-button
+            variant="secondary"
+            size="sm"
+            icon="ki-filled ki-arrows-circle"
+            [label]="i18n.t('rolePermissions.actions.retry')"
+            (pressed)="retry()" />
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <section class="kt-card company-profile-detail-state" role="status" aria-live="polite">
+        {{ i18n.t('companyProfileAdministration.detail.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card company-profile-detail-state company-profile-detail-state-error" role="alert">
+        {{ i18n.t('companyProfileAdministration.errors.detailLoad') }}
+      </section>
+    } @else if (companyProfile(); as detail) {
+      @if (hasPendingAction()) {
+        <section class="kt-card company-profile-detail-confirm" role="alertdialog" aria-modal="false" aria-labelledby="company-profile-detail-confirm-title">
+          <div class="company-profile-detail-confirm-content">
+            <h2 id="company-profile-detail-confirm-title" class="company-profile-detail-card-title">
+              {{ pendingActionTitle() }}
+            </h2>
+            <p class="company-profile-detail-subtitle">{{ pendingActionMessage() }}</p>
+          </div>
+
+          <div class="company-profile-detail-confirm-actions">
+            <app-button
+              variant="secondary"
+              size="sm"
+              [label]="i18n.t('masterData.form.cancel')"
+              [disabled]="actionSaving()"
+              (pressed)="cancelPendingAction()" />
+            <app-button
+              variant="destructive"
+              size="sm"
+              icon="ki-filled ki-check-circle"
+              [label]="i18n.t(pendingActionConfirmKey())"
+              [loadingLabel]="i18n.t(pendingActionLoadingKey())"
+              [loading]="actionSaving()"
+              [disabled]="actionSaving()"
+              (pressed)="confirmPendingAction()" />
+          </div>
+        </section>
+      }
+
+      <div class="company-profile-detail-grid">
+        <section class="kt-card company-profile-detail-card" aria-labelledby="company-profile-detail-main">
+          <h2 id="company-profile-detail-main" class="company-profile-detail-card-title">
+            {{ i18n.t('companyProfileAdministration.detail.main') }}
+          </h2>
+          <dl class="company-profile-detail-fields">
+            @for (field of mainFields(detail); track field.labelKey) {
+              <div class="company-profile-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="kt-card company-profile-detail-card" aria-labelledby="company-profile-detail-tenant-type">
+          <h2 id="company-profile-detail-tenant-type" class="company-profile-detail-card-title">
+            {{ i18n.t('companyProfileAdministration.detail.tenantType') }}
+          </h2>
+          <dl class="company-profile-detail-fields">
+            @for (field of tenantTypeFields(detail); track field.labelKey) {
+              <div class="company-profile-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="kt-card company-profile-detail-card" aria-labelledby="company-profile-detail-fiscal">
+          <h2 id="company-profile-detail-fiscal" class="company-profile-detail-card-title">
+            {{ i18n.t('companyProfileAdministration.detail.fiscal') }}
+          </h2>
+          <dl class="company-profile-detail-fields">
+            @for (field of fiscalFields(detail); track field.labelKey) {
+              <div class="company-profile-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="kt-card company-profile-detail-card" aria-labelledby="company-profile-detail-contacts">
+          <h2 id="company-profile-detail-contacts" class="company-profile-detail-card-title">
+            {{ i18n.t('companyProfileAdministration.detail.contacts') }}
+          </h2>
+          <dl class="company-profile-detail-fields">
+            @for (field of contactFields(detail); track field.labelKey) {
+              <div class="company-profile-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="kt-card company-profile-detail-card" aria-labelledby="company-profile-detail-address">
+          <h2 id="company-profile-detail-address" class="company-profile-detail-card-title">
+            {{ i18n.t('companyProfileAdministration.detail.address') }}
+          </h2>
+          <dl class="company-profile-detail-fields">
+            @for (field of addressFields(detail); track field.labelKey) {
+              <div class="company-profile-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="kt-card company-profile-detail-card" aria-labelledby="company-profile-detail-audit">
+          <h2 id="company-profile-detail-audit" class="company-profile-detail-card-title">
+            {{ i18n.t('companyProfileAdministration.detail.audit') }}
+          </h2>
+          <dl class="company-profile-detail-fields">
+            @for (field of auditFields(detail); track field.labelKey) {
+              <div class="company-profile-detail-field">
+                <dt>{{ i18n.t(field.labelKey) }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+      </div>
+    }
+  </div>
+</section>

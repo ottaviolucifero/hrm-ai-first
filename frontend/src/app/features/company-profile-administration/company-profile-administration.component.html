@@ -1,0 +1,71 @@
+<section class="kt-container-fixed py-4 company-profile-admin-page" aria-labelledby="company-profile-admin-title">
+  <div class="company-profile-admin-layout">
+    <header class="company-profile-admin-page-header">
+      <div class="company-profile-admin-heading">
+        <span class="company-profile-admin-eyebrow">{{ i18n.t('nav.governance') }}</span>
+        <h1 id="company-profile-admin-title" class="text-xl font-semibold text-mono">
+          {{ i18n.t('companyProfileAdministration.title') }}
+        </h1>
+        <p class="company-profile-admin-subtitle">{{ i18n.t('companyProfileAdministration.subtitle') }}</p>
+      </div>
+
+      <div class="company-profile-admin-page-actions" role="group" [attr.aria-label]="i18n.t('companyProfileAdministration.actions.toolbar')">
+        <app-button
+          variant="primary"
+          size="sm"
+          icon="ki-filled ki-plus"
+          [label]="i18n.t('companyProfileAdministration.actions.create')"
+          [disabled]="loading() || !modulePermissions().canCreate"
+          (pressed)="createCompanyProfile()" />
+      </div>
+    </header>
+
+    <section class="kt-card company-profile-admin-list-card" aria-labelledby="company-profile-admin-list-title">
+      <div class="company-profile-admin-list-toolbar">
+        <div class="company-profile-admin-list-heading">
+          <h2 id="company-profile-admin-list-title" class="company-profile-admin-list-title">
+            {{ i18n.t('companyProfileAdministration.list.title') }}
+          </h2>
+          <div class="company-profile-admin-list-meta-row">
+            <p class="company-profile-admin-list-meta">{{ i18n.t('companyProfileAdministration.list.subtitle') }}</p>
+            <span class="company-profile-admin-record-count">
+              {{ pageData().totalElements }} {{ i18n.t('dataTable.pagination.results') }}
+            </span>
+          </div>
+        </div>
+
+        <label class="company-profile-admin-table-search">
+          <span class="company-profile-admin-search-label">{{ i18n.t('roleAdministration.searchLabel') }}</span>
+          <input
+            class="kt-input company-profile-admin-search-input"
+            type="search"
+            [disabled]="loading()"
+            [value]="searchInput()"
+            [placeholder]="i18n.t('companyProfileAdministration.searchPlaceholder')"
+            (input)="updateSearch($event)" />
+        </label>
+      </div>
+
+      <div class="company-profile-admin-note" aria-live="polite">
+        {{ i18n.t(viewScopeKey()) }}
+      </div>
+
+      <app-data-table
+        [columns]="columns()"
+        [rows]="rows()"
+        [rowActions]="rowActions()"
+        [actionsColumnSticky]="'right'"
+        [pageData]="pageData()"
+        [pageSizeOptions]="pageSizeOptions"
+        [loading]="loading()"
+        [hasError]="hasError()"
+        [errorMessageKey]="'companyProfileAdministration.errors.load'"
+        [emptyMessageKey]="tableEmptyMessageKey()"
+        (rowAction)="handleRowAction($event)"
+        (previousPage)="goToPreviousPage()"
+        (nextPage)="goToNextPage()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="updatePageSize($event)" />
+    </section>
+  </div>
+</section>

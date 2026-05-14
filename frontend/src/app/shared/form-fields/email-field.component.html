@@ -1,4 +1,9 @@
-<label class="kt-label mb-2 block" for="loginEmail">{{ label }}</label>
+<label class="kt-label mb-2 block" for="loginEmail">
+  {{ label }}
+  @if (required) {
+    <strong class="email-field-required" aria-hidden="true">*</strong>
+  }
+</label>
 <input
   id="loginEmail"
   class="kt-input"

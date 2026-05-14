@@ -16,6 +16,10 @@ class PermissionCodeTests {
 				.isEqualTo("PLATFORM.TENANT.MANAGE");
 		assertThat(PermissionCode.of(PermissionScope.TENANT, PermissionResource.MASTER_DATA, PermissionAction.READ))
 				.isEqualTo("TENANT.MASTER_DATA.READ");
+		assertThat(PermissionCode.of(PermissionScope.TENANT, PermissionResource.COMPANY_PROFILE, PermissionAction.UPDATE))
+				.isEqualTo("TENANT.COMPANY_PROFILE.UPDATE");
+		assertThat(PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE))
+				.isEqualTo("PLATFORM.COMPANY_PROFILE.DELETE");
 	}
 
 	@Test

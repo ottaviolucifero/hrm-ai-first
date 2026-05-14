@@ -51,7 +51,11 @@ public class DevPlatformAdminBootstrap implements ApplicationRunner {
 			"PLATFORM.TENANT.CREATE",
 			"PLATFORM.TENANT.UPDATE",
 			"PLATFORM.TENANT.DELETE",
-			"PLATFORM.TENANT.MANAGE");
+			"PLATFORM.TENANT.MANAGE",
+			"PLATFORM.COMPANY_PROFILE.READ",
+			"PLATFORM.COMPANY_PROFILE.CREATE",
+			"PLATFORM.COMPANY_PROFILE.UPDATE",
+			"PLATFORM.COMPANY_PROFILE.DELETE");
 
 	private final TenantRepository tenantRepository;
 	private final UserAccountRepository userAccountRepository;

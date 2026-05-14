@@ -4,6 +4,9 @@ import { authGuard, loginRedirectGuard } from './core/auth/auth.guard';
 import { permissionGuard } from './core/authorization/permission.guard';
 import { HomeComponent } from './features/home/home.component';
 import { LoginComponent } from './features/login/login.component';
+import { CompanyProfileAdministrationComponent } from './features/company-profile-administration/company-profile-administration.component';
+import { CompanyProfileAdministrationDetailComponent } from './features/company-profile-administration/company-profile-administration-detail.component';
+import { CompanyProfileAdministrationFormComponent } from './features/company-profile-administration/company-profile-administration-form.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
 import { RoleAdministrationComponent } from './features/role-administration/role-administration.component';
 import { RolePermissionMatrixComponent } from './features/role-permissions/role-permission-matrix.component';
@@ -46,6 +49,42 @@ export const routes: Routes = [
             canActivate: [permissionGuard],
             data: {
               permissionModule: 'tenants',
+              requiredAction: 'view'
+            }
+          },
+          {
+            path: 'company-profiles',
+            component: CompanyProfileAdministrationComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'company-profiles',
+              requiredAction: 'view'
+            }
+          },
+          {
+            path: 'company-profiles/new',
+            component: CompanyProfileAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'company-profiles',
+              requiredAction: 'create'
+            }
+          },
+          {
+            path: 'company-profiles/:id/edit',
+            component: CompanyProfileAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'company-profiles',
+              requiredAction: 'update'
+            }
+          },
+          {
+            path: 'company-profiles/:id',
+            component: CompanyProfileAdministrationDetailComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'company-profiles',
               requiredAction: 'view'
             }
           },

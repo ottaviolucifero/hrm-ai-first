@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.42
-Ultimo aggiornamento: 2026-05-13
+Versione: 2.43
+Ultimo aggiornamento: 2026-05-14
 Stato: In avanzamento
 
 ---
@@ -4540,16 +4540,106 @@ Output implementato:
 
 ### TASK-064.5 - Company Profile Administration UI foundation
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
 - creare UI amministrativa `CompanyProfile`;
-- lista/dettaglio/modifica;
+- lista/dettaglio/creazione/modifica;
 - relazione con `Tenant`;
 - gestione campi esistenti e predisposizione campi fiscali;
 - i18n `it`/`fr`/`en`;
 - riuso componenti shared.
+
+Completato:
+
+- API amministrative dedicate introdotte sotto `/api/admin/company-profiles` con lista paginata, dettaglio, create, update, activate, deactivate, delete fisico protetto e form options;
+- tenant scope applicato lato backend per caller tenant e visibilita platform coerente con i pattern amministrativi esistenti;
+- `code` gestito solo lato backend con generazione tenant-aware `CP001`, `CP002`, ... e request DTO create/update senza campo `code`;
+- migration tenant-aware introdotta per normalizzare i `CompanyProfile` esistenti con codice mancante o non conforme senza rompere i record gia corretti;
+- seed `CompanyProfileType` esteso senza duplicati con set minimo coerente `LEGAL_ENTITY`, `BUSINESS_UNIT`, `BRANCH`, `SUBSIDIARY`, `PUBLIC_ENTITY`;
+- permessi `COMPANY_PROFILE` aggiornati con azioni `READ`, `CREATE`, `UPDATE`, `DELETE`, senza introdurre `MANAGE`;
+- seed RBAC aggiornati per platform admin bootstrap e tenant admin foundation;
+- feature Angular amministrativa introdotta sotto `/admin/company-profiles`, `/admin/company-profiles/new`, `/admin/company-profiles/:id`, `/admin/company-profiles/:id/edit`;
+- lista UI allineata al pattern `/admin/users` con `kt-container-fixed`, `kt-card`, filtro, `app-data-table` shared, row actions sticky a destra e stati loading/error/empty/noResults;
+- dettaglio UI introdotto con card readonly responsive per dati principali, tenant/tipo, fiscali, contatti, indirizzo e audit, con azioni dedicate activate/deactivate/delete;
+- form create/edit introdotto con reactive form, card responsive, shared inputs/buttons/email/checkbox, `active` solo visibile readonly e `code` readonly/generated automatically;
+- naming italiano utente allineato a `Profilo aziendale` / `Profili aziendali` su titoli, navigazione, card, messaggi e permessi visibili;
+- telefono gestito con soluzione minima locale `prefisso + numero` salvata nel backend come stringa unica, in attesa del componente shared dedicato;
+- geografia form implementata riusando soltanto options e pattern gia presenti, con ordine campi indirizzo riallineato e label dinamica `Provincia` per l Italia; eventuali dipendenze avanzate restano follow-up;
+- sidebar/header/permission summary/role permission matrix aggiornati per la nuova area amministrativa `Profili aziendali`;
+- chiavi i18n `companyProfileAdministration.*` e navigazione aggiunte in `it`/`fr`/`en`;
+- test backend e frontend aggiunti/aggiornati con esito reale verde; report QA e roadmap aggiornati.
+
+### TASK-064.6 - Shared lookup select and phone field foundation
+
+Stato: TODO
+
+Obiettivo:
+
+Introdurre componenti shared riutilizzabili per gestire lookup/select e campi telefono nei form amministrativi e nei futuri form HR, evitando select locali non scalabili e caricamenti completi di liste grandi.
+
+Include:
+
+1. Componente shared lookup select
+- creare `app-lookup-select`;
+- supportare Reactive Forms / ControlValueAccessor;
+- supportare modalita select semplice e autocomplete;
+- supportare autocomplete attivabile/disattivabile;
+- supportare lookup paginato, debounce, `minSearchLength`, `pageSize`;
+- supportare loading, empty, error, disabled, readonly, required, clearable;
+- supportare `helpText`, `errorText`, display `code - name`, valore iniziale selezionato e ricerca testuale;
+- supportare label breve nel campo chiuso e label estesa nel dropdown;
+- non sostituire in massa le select esistenti in questo task, salvo eventuale pilota autorizzato.
+
+2. Pattern backend lookup
+- definire o riusare response paginata standard per lookup;
+- prevedere endpoint lookup paginati riutilizzabili;
+- evitare API che caricano tutta la lista per entita potenzialmente grandi;
+- valutare come consumer prioritari: `Tenant`, `CompanyProfile`, `Country`, `Region`, `Area`, `GlobalZipCode`, `Employee`, `User`, `OfficeLocation`, `Role`.
+
+3. Componente shared phone field
+- creare `app-phone-field`;
+- comporre select/autocomplete prefisso internazionale + input numero;
+- supportare ricerca per dial code e nome paese;
+- mostrare nel campo chiuso solo il prefisso e nel dropdown `prefisso + paese`;
+- supportare default prefisso per paese selezionato (`Italia` -> `+39`, `Tunisia` -> `+216`);
+- non sovrascrivere il prefisso se l utente lo ha modificato manualmente;
+- salvare verso il backend una stringa unica compatibile con i campi attuali;
+- supportare `required`, `disabled`, `readonly`, `helpText`, `errorText` e validazione minima del numero.
+
+Motivazione:
+
+Le select attuali nei form caricano spesso tutta la lista. Questo non scala per entita come `Tenant`, `CompanyProfile`, `GlobalZipCode`, `Employee`, `User`, `OfficeLocation`. Serve una foundation shared prima di completare o rifinire le UI amministrative piu complesse.
+
+### TASK-064.7 - Supporto CAP manuali nei form indirizzo
+
+Stato: TODO
+
+Obiettivo:
+
+Gestire correttamente i CAP/ZIP inseriti manualmente nella tabella CAP in tutti i form indirizzo, con supporto esplicito ai casi in cui `areaId` non e valorizzato.
+
+Include:
+
+- verificare il modello attuale `GlobalZipCode` e i contratti lookup attualmente esposti;
+- gestire i record CAP con `areaId` nullable senza rompere i lookup esistenti;
+- usare `provinceName` / `provinceCode` come fallback quando `areaId` non e valorizzato;
+- garantire che il lookup indirizzo funzioni sia con CAP importati sia con CAP manuali;
+- chiarire il comportamento UI:
+  - Italia: CAP selezionato da lista quando disponibile;
+  - altri paesi: CAP inseribile manualmente o selezionabile se presente;
+- prevedere test backend/frontend dedicati al lookup CAP manuale;
+- mantenere coerenza con il modello geografico approvato in `TASK-062`/`TASK-063`.
+
+Esclusioni:
+
+- non implementare codice in questo task documentale di pianificazione;
+- non creare una nuova tabella `City`;
+- non modificare `Tenant`;
+- non modificare security/RBAC;
+- non fare redesign del form `CompanyProfile`;
+- non introdurre modifiche Employee UI fuori dai task successivi gia pianificati.
 
 ### TASK-065 - Implementare UI Employee management enterprise
 
@@ -4626,6 +4716,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.43 | 2026-05-14 | Aggiunto `TASK-064.7 - Supporto CAP manuali nei form indirizzo` come follow-up documentale generale per i lookup CAP/ZIP manuali con `areaId` nullable e fallback `provinceName/provinceCode`, includendo scope, test attesi ed esclusioni fuori perimetro (nessun codice/migration in questo passaggio). |
 | 2.42 | 2026-05-13 | TASK-064.4 chiuso come DONE: aggiunti i campi nullable `taxNumber`, `pecEmail` e `sdiCode` su `CompanyProfile` con Flyway `V27` PostgreSQL/H2, mapping foundation response, test backend reali verdi, chiavi i18n catalog-only `it/fr/en` e QA report aggiornato senza toccare `Tenant`, security/RBAC o CRUD/UI `CompanyProfile`. |
 | 2.41 | 2026-05-13 | TASK-064.3 chiuso come DONE: formalizzata in `DEC-039` la regola durevole per i nuovi campi `code` con auto-code `prime due lettere + progressivo 3 cifre`, UI non editabile quando automatico, nota operativa minima in `AGENTS.md` e QA documentale registrato senza modifiche codice. |
 | 2.40 | 2026-05-13 | TASK-064.2 completato: `Tenant.code` ora viene autogenerato lato backend come `TE###`, la UI Tenant non consente piu editing manuale del codice, test backend/frontend reali rieseguiti e QA report aggiornato. |

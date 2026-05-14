@@ -77,6 +77,12 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
         permissionModule: 'master-data'
       },
       {
+        id: 'governance-company-profiles',
+        titleKey: 'nav.companyProfiles',
+        route: '/admin/company-profiles',
+        permissionModule: 'company-profiles'
+      },
+      {
         id: 'governance-security',
         titleKey: 'nav.governanceSecurity',
         children: [
@@ -481,7 +487,7 @@ export class AppSidebarComponent {
         next: (user) => {
           this.userPermissionState.set({
             modules: new Set(
-              (['master-data', 'tenants', 'roles', 'permissions', 'users'] as const)
+              (['master-data', 'tenants', 'company-profiles', 'roles', 'permissions', 'users'] as const)
                 .filter((moduleId) => this.permissionSummaryService.hasAnyPermission(user, moduleId))
             )
           });
