@@ -188,18 +188,18 @@
               [required]="true"
               [errorText]="validationMessage('streetNumber')" />
 
-            <label class="company-profile-form-field">
-              <span>{{ i18n.t('masterData.columns.postalCode') }} <strong class="company-profile-form-required" aria-hidden="true">*</strong></span>
-              <select class="kt-input" formControlName="globalZipCodeId" (change)="selectGlobalZipCode($event)">
-                <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.globalZipCode') }}</option>
-                @for (zipCode of filteredGlobalZipCodes(); track zipCode.id) {
-                  <option [value]="zipCode.id">{{ zipCode.code }} - {{ zipCode.name }}</option>
-                }
-              </select>
-              @if (validationMessage('globalZipCodeId')) {
-                <small>{{ validationMessage('globalZipCodeId') }}</small>
-              }
-            </label>
+            <app-lookup-select
+              formControlName="globalZipCodeId"
+              [label]="i18n.t('masterData.columns.postalCode')"
+              [labelRequired]="true"
+              [required]="true"
+              [clearable]="true"
+              [placeholder]="i18n.t('companyProfileAdministration.form.placeholders.globalZipCode')"
+              [searchPlaceholder]="i18n.t('companyProfileAdministration.form.placeholders.globalZipCode')"
+              [loadPage]="zipCodeLookup"
+              [initialOption]="selectedGlobalZipCodeInitialOption()"
+              [errorText]="validationMessage('globalZipCodeId')"
+              (optionChange)="selectGlobalZipCodeOption($event)" />
 
             <app-input
               formControlName="cityLabel"

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, forkJoin, finalize, map } from 'rxjs';
+import { Subscription, forkJoin, finalize, map, of } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
@@ -10,6 +10,7 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { AppCheckboxComponent } from '../../shared/components/checkbox/app-checkbox.component';
 import { AppInputComponent } from '../../shared/components/input/app-input.component';
+import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
 import { EmailFieldComponent } from '../../shared/form-fields/email-field.component';
 import { PhoneFieldComponent } from '../../shared/form-fields/phone-field.component';
 import { LookupOption, LookupPage, LookupQuery } from '../../shared/lookup/lookup.models';
@@ -35,6 +36,7 @@ type CompanyProfileAdministrationFormMode = 'create' | 'edit';
     AppButtonComponent,
     AppCheckboxComponent,
     AppInputComponent,
+    LookupSelectComponent,
     EmailFieldComponent,
     PhoneFieldComponent,
     ReactiveFormsModule
@@ -70,6 +72,18 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
   private readonly selectedGlobalZipCodeIdSignal = signal('');
   protected readonly countryPhoneLookup = (query: LookupQuery) =>
     this.lookupService.findCountryLookups(query).pipe(map((page) => this.toCountryPhoneLookupPage(page)));
+  protected readonly zipCodeLookup = (query: LookupQuery) => {
+    const countryId = this.selectedCountryIdSignal().trim();
+    if (!countryId) {
+      return of(this.emptyLookupPage(query));
+    }
+
+    return this.lookupService.findZipCodeLookups(query, this.optionalValue(this.selectedTenantIdSignal()), {
+      countryId,
+      regionId: this.optionalValue(this.selectedRegionIdSignal()),
+      areaId: this.optionalValue(this.selectedAreaIdSignal())
+    });
+  };
 
   protected readonly form = this.formBuilder.group({
     codeLabel: [{ value: '', disabled: true }],
@@ -125,6 +139,15 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       && (!regionId || !option.regionId || option.regionId === regionId)
       && (!areaId || !option.areaId || option.areaId === areaId)
     );
+  });
+  protected readonly selectedGlobalZipCodeInitialOption = computed<LookupOption | null>(() => {
+    const globalZipCodeId = this.selectedGlobalZipCodeIdSignal();
+    if (!globalZipCodeId) {
+      return null;
+    }
+
+    const zipCode = this.formOptions()?.globalZipCodes.find((option) => option.id === globalZipCodeId) ?? null;
+    return zipCode ? this.toZipLookupOption(zipCode) : null;
   });
   protected readonly showRegionField = computed(() =>
     this.filteredRegions().length > 0 || this.selectedRegionIdSignal().trim().length > 0
@@ -261,11 +284,16 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.selectedGlobalZipCodeIdSignal.set('');
   }
 
-  protected selectGlobalZipCode(event: Event): void {
-    const globalZipCodeId = (event.target as HTMLSelectElement).value;
-    this.form.controls.globalZipCodeId.setValue(globalZipCodeId);
-    this.selectedGlobalZipCodeIdSignal.set(globalZipCodeId);
-    this.syncAddressFromGlobalZipCode(globalZipCodeId);
+  protected selectGlobalZipCodeOption(option: LookupOption | null): void {
+    if (!option) {
+      this.selectedGlobalZipCodeIdSignal.set('');
+      this.form.controls.cityLabel.setValue('');
+      this.form.controls.provinceLabel.setValue('');
+      return;
+    }
+
+    this.selectedGlobalZipCodeIdSignal.set(option.id);
+    this.syncAddressFromGlobalZipCodeOption(this.toZipCodeOption(option));
   }
 
   protected submit(): void {
@@ -583,10 +611,6 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     return countryCode?.trim().toUpperCase() === 'IT';
   }
 
-  private cityLabelForZipCode(globalZipCodeId: string): string {
-    return this.filteredGlobalZipCodes().find((option) => option.id === globalZipCodeId)?.name ?? '';
-  }
-
   private provinceLabelForEditDetail(detail: CompanyProfileAdministrationCompanyProfileDetail): string {
     const globalZipCodeId = detail.globalZipCode?.id ?? '';
     if (globalZipCodeId) {
@@ -611,6 +635,11 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       return;
     }
 
+    this.form.controls.cityLabel.setValue(zipCodeOption.name ?? '');
+    this.syncAddressFromGlobalZipCodeOption(zipCodeOption);
+  }
+
+  private syncAddressFromGlobalZipCodeOption(zipCodeOption: CompanyProfileAdministrationGlobalZipCodeOption): void {
     this.form.controls.cityLabel.setValue(zipCodeOption.name ?? '');
     const regionId = zipCodeOption.regionId ?? '';
     const areaId = zipCodeOption.areaId ?? '';
@@ -641,6 +670,15 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
   }
 
   private provinceLabelForZipOption(zipCodeOption: CompanyProfileAdministrationGlobalZipCodeOption): string {
+    const areaName = zipCodeOption.areaName?.trim() ?? '';
+    const areaCode = zipCodeOption.areaCode?.trim() ?? '';
+    if (areaName && areaCode) {
+      return `${areaName} (${areaCode})`;
+    }
+    if (areaName || areaCode) {
+      return areaName || areaCode;
+    }
+
     const provinceName = zipCodeOption.provinceName?.trim() ?? '';
     const provinceCode = zipCodeOption.provinceCode?.trim() ?? '';
     if (provinceName && provinceCode) {
@@ -648,6 +686,58 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     }
 
     return provinceName || provinceCode;
+  }
+
+  private toZipCodeOption(option: LookupOption): CompanyProfileAdministrationGlobalZipCodeOption {
+    const metadata = option.metadata ?? {};
+    return {
+      id: option.id,
+      code: option.code,
+      name: option.name,
+      tenantId: metadata['tenantId'] ?? null,
+      countryId: metadata['countryId'] ?? '',
+      countryName: metadata['countryName'] ?? null,
+      regionId: metadata['regionId'] ?? null,
+      regionName: metadata['regionName'] ?? null,
+      areaId: metadata['areaId'] ?? null,
+      areaCode: metadata['areaCode'] ?? null,
+      areaName: metadata['areaName'] ?? null,
+      provinceName: metadata['provinceName'] ?? null,
+      provinceCode: metadata['provinceCode'] ?? null
+    };
+  }
+
+  private toZipLookupOption(zipCode: CompanyProfileAdministrationGlobalZipCodeOption): LookupOption {
+    return {
+      id: zipCode.id,
+      code: zipCode.code,
+      name: zipCode.name,
+      extraLabel: this.provinceLabelForZipOption(zipCode),
+      metadata: {
+        tenantId: zipCode.tenantId ?? '',
+        countryId: zipCode.countryId,
+        countryName: zipCode.countryName ?? '',
+        regionId: zipCode.regionId ?? '',
+        regionName: zipCode.regionName ?? '',
+        areaId: zipCode.areaId ?? '',
+        areaCode: zipCode.areaCode ?? '',
+        areaName: zipCode.areaName ?? '',
+        provinceName: zipCode.provinceName ?? '',
+        provinceCode: zipCode.provinceCode ?? ''
+      }
+    };
+  }
+
+  private emptyLookupPage(query: LookupQuery): LookupPage<LookupOption> {
+    return {
+      content: [],
+      page: query.page,
+      size: query.size,
+      totalElements: 0,
+      totalPages: 0,
+      first: true,
+      last: true
+    };
   }
 
   private countryOrderWeight(countryCode: string): number {

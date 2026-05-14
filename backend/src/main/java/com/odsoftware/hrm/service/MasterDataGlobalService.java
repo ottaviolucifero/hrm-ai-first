@@ -307,15 +307,25 @@ public class MasterDataGlobalService {
 				this::toGlobalZipCodeResponse);
 	}
 
-	public MasterDataPageResponse<LookupOptionResponse> findGlobalZipCodeLookups(Integer page, Integer size, String search, UUID tenantId) {
+	public MasterDataPageResponse<LookupOptionResponse> findGlobalZipCodeLookups(
+			Integer page,
+			Integer size,
+			String search,
+			UUID tenantId,
+			UUID countryId,
+			UUID regionId,
+			UUID areaId) {
 		return findPage(
 				globalZipCodeRepository,
 				page,
 				size,
 				search,
 				Sort.by("postalCode").ascending().and(Sort.by("city")),
-				zipCodeSpecification(
+				zipCodeLookupSpecification(
 						tenantId,
+						countryId,
+						regionId,
+						areaId,
 						MasterDataQuerySupport.and(
 								MasterDataQuerySupport.activeSpecification(),
 								MasterDataQuerySupport.searchSpecification(
@@ -643,8 +653,8 @@ public class MasterDataGlobalService {
 		if (!isItaly(country) && region == null) {
 			throw new InvalidRequestException("regionId is required for non-Italian zip codes");
 		}
-		if (!isItaly(country) && area == null) {
-			throw new InvalidRequestException("areaId is required for non-Italian zip codes");
+		if (!isItaly(country) && area == null && clean(request.provinceName()) == null && clean(request.provinceCode()) == null) {
+			throw new InvalidRequestException("provinceName or provinceCode is required when areaId is not provided");
 		}
 		if (region != null) {
 			validateRegionCountry(region, country);
@@ -830,19 +840,23 @@ public class MasterDataGlobalService {
 	}
 
 	private LookupOptionResponse toGlobalZipCodeLookupResponse(GlobalZipCode globalZipCode) {
+		String provinceLabel = provinceLabel(globalZipCode);
 		return new LookupOptionResponse(
 				globalZipCode.getId(),
 				globalZipCode.getPostalCode(),
 				globalZipCode.getCity(),
-				globalZipCode.getProvinceName(),
+				provinceLabel,
 				lookupMetadata(
 						"tenantId", globalZipCode.getTenantId() == null ? null : globalZipCode.getTenantId().toString(),
 						"countryId", globalZipCode.getCountry().getId().toString(),
 						"countryCode", globalZipCode.getCountry().getIsoCode(),
+						"countryName", globalZipCode.getCountry().getName(),
 						"regionId", globalZipCode.getRegion() == null ? null : globalZipCode.getRegion().getId().toString(),
 						"regionCode", globalZipCode.getRegion() == null ? null : globalZipCode.getRegion().getCode(),
+						"regionName", globalZipCode.getRegion() == null ? null : globalZipCode.getRegion().getName(),
 						"areaId", globalZipCode.getArea() == null ? null : globalZipCode.getArea().getId().toString(),
 						"areaCode", globalZipCode.getArea() == null ? null : globalZipCode.getArea().getCode(),
+						"areaName", globalZipCode.getArea() == null ? null : globalZipCode.getArea().getName(),
 						"provinceCode", globalZipCode.getProvinceCode(),
 						"provinceName", globalZipCode.getProvinceName()));
 	}
@@ -940,6 +954,34 @@ public class MasterDataGlobalService {
 		return searchSpecification == null ? tenantSpecification : tenantSpecification.and(searchSpecification);
 	}
 
+	private Specification<GlobalZipCode> zipCodeLookupSpecification(
+			UUID tenantId,
+			UUID countryId,
+			UUID regionId,
+			UUID areaId,
+			Specification<GlobalZipCode> searchSpecification) {
+		Specification<GlobalZipCode> specification = zipCodeSpecification(tenantId, searchSpecification);
+		Specification<GlobalZipCode> filterSpecification = (root, query, criteriaBuilder) -> {
+			query.distinct(true);
+			var predicate = criteriaBuilder.conjunction();
+			if (countryId != null) {
+				predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("country").get("id"), countryId));
+			}
+			if (regionId != null) {
+				predicate = criteriaBuilder.and(predicate, criteriaBuilder.or(
+						criteriaBuilder.isNull(root.get("region")),
+						criteriaBuilder.equal(root.get("region").get("id"), regionId)));
+			}
+			if (areaId != null) {
+				predicate = criteriaBuilder.and(predicate, criteriaBuilder.or(
+						criteriaBuilder.isNull(root.get("area")),
+						criteriaBuilder.equal(root.get("area").get("id"), areaId)));
+			}
+			return predicate;
+		};
+		return specification == null ? filterSpecification : specification.and(filterSpecification);
+	}
+
 	private boolean isItaly(Country country) {
 		return "IT".equalsIgnoreCase(country.getIsoCode());
 	}
@@ -948,6 +990,21 @@ public class MasterDataGlobalService {
 		return tenantId == null
 				? UUID.fromString("00000000-0000-0000-0000-000000000000")
 				: tenantId;
+	}
+
+	private String provinceLabel(GlobalZipCode globalZipCode) {
+		String provinceName = clean(globalZipCode.getProvinceName());
+		String provinceCode = clean(globalZipCode.getProvinceCode());
+		if (provinceName != null && provinceCode != null) {
+			return provinceName + " (" + provinceCode + ")";
+		}
+		if (provinceName != null) {
+			return provinceName;
+		}
+		if (provinceCode != null) {
+			return provinceCode;
+		}
+		return globalZipCode.getArea() == null ? null : globalZipCode.getArea().getName();
 	}
 
 	private Boolean activeOrDefault(Boolean active) {

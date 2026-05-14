@@ -20,8 +20,16 @@ export class LookupService {
     return this.getLookupPage('/api/master-data/global/areas/lookup', query, { tenantId });
   }
 
-  findZipCodeLookups(query: LookupQuery, tenantId: string | null): Observable<LookupPage<LookupOption>> {
-    return this.getLookupPage('/api/master-data/global/zip-codes/lookup', query, { tenantId });
+  findZipCodeLookups(
+    query: LookupQuery,
+    tenantId: string | null,
+    filters: {
+      readonly countryId?: string | null;
+      readonly regionId?: string | null;
+      readonly areaId?: string | null;
+    } = {}
+  ): Observable<LookupPage<LookupOption>> {
+    return this.getLookupPage('/api/master-data/global/zip-codes/lookup', query, { tenantId, ...filters });
   }
 
   private getLookupPage(

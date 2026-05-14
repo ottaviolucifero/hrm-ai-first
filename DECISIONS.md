@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.35
+Versione: 1.36
 Ultimo aggiornamento: 2026-05-14
 Stato: Attivo
 
@@ -1599,7 +1599,7 @@ Alternative escluse:
 
 Impatto:
 
-I futuri task che richiedono lookup remoti devono partire da questo pattern come default. Nuovi endpoint lookup dovranno motivare eventuali eccezioni su shape, paginazione o UX. La normalizzazione persistente dei telefoni non e coperta da questa decisione e resta demandata al follow-up `TASK-064.8`.
+I futuri task che richiedono lookup remoti devono partire da questo pattern come default. Nuovi endpoint lookup dovranno motivare eventuali eccezioni su shape, paginazione o UX. La normalizzazione persistente dei telefoni non e coperta da questa decisione e resta demandata al follow-up `TASK-064.9`.
 
 ---
 
@@ -1607,6 +1607,7 @@ I futuri task che richiedono lookup remoti devono partire da questo pattern come
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.36 | 2026-05-14 | Allineato il riferimento backlog della decisione `DEC-040` alla nuova numerazione `TASK-064.9` per la normalizzazione telefono, dopo l'inserimento del nuovo `TASK-064.8` dedicato alla creazione guidata dei dati geografici esteri da form indirizzo. |
 | 1.35 | 2026-05-14 | Aggiunta DEC-040 per rendere durevole la foundation shared dei lookup: response paginata standard, DTO lookup uniforme `id/code/name/extraLabel/metadata`, riuso di `MasterDataQuerySupport` lato backend e `app-lookup-select` lato frontend come pattern di default per lookup remoti futuri. |
 | 1.34 | 2026-05-13 | Aggiunta DEC-039 per rendere durevole lo standard dei nuovi campi `code`: auto-code `prime due lettere + progressivo 3 cifre`, generazione backend, UI non editabile ed eccezioni solo se documentate. |
 | 1.33 | 2026-05-13 | Aggiunta DEC-038 per formalizzare il modello geografico indirizzi tenant-aware: Country globale, Region/Area tenant-scoped, ZIP/CAP ibrido globale Italia e tenant per altri paesi, City come attributo ZIP/CAP e prerequisito per TASK-063/TASK-065. |

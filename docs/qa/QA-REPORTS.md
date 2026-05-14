@@ -6,11 +6,101 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
-### TASK-064.9 - Apply shared lookup select to existing administration forms
+### TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo (pianificazione documentale)
+
+- Data: 2026-05-14
+- Branch: `main`
+- Task: TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo
+- Modello consigliato nel prompt operativo: GPT-5.4
+- Area verificata:
+  - `AGENTS.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificata la coerenza del nuovo follow-up con il modello geografico approvato in `TASK-062`/`TASK-063` e con il completamento di `TASK-064.7`;
+  - verificato che il nuovo task richieda solo pianificazione documentale, senza modifica di backend/frontend o del modello geografico;
+  - censiti i riferimenti esistenti a `TASK-064.8` e `TASK-064.9` per applicare la rinumerazione coerente a `TASK-064.9` e `TASK-064.10`.
+- Patch applicata:
+  - aggiunto `TASK-064.8` in `TASKS.md` con obiettivo, scope, flusso funzionale consigliato, nota sul significato di `Area` e relative esclusioni;
+  - rinumerati gli attuali task successivi: telefono -> `TASK-064.9`, adozione progressiva `app-lookup-select` -> `TASK-064.10`;
+  - aggiornati i riferimenti interni in `TASKS.md`, `ROADMAP.md`, `DECISIONS.md` e nel presente report QA.
+- Comandi eseguiti:
+  - `rg -n "TASK-064\\.(7|8|9|10)|Versione:|Follow-up gia pianificati" TASKS.md ROADMAP.md docs/qa/QA-REPORTS.md DECISIONS.md AGENTS.md`
+  - `git diff -- TASKS.md ROADMAP.md DECISIONS.md docs/qa/QA-REPORTS.md`
+  - `git status --short --branch`
+- Esiti reali:
+  - aggiornamento documentale completato;
+  - nessuna modifica runtime/backend/frontend introdotta.
+- QA manuale:
+  - non applicabile per task esclusivamente documentale.
+- Regressioni trovate:
+  - nessuna regressione applicativa rilevata nel perimetro documentale.
+- Limiti/note:
+  - nessun test backend/frontend eseguito in questo passaggio perche non sono stati modificati file applicativi;
+  - nessuna nuova decisione durevole introdotta; `DECISIONS.md` e stato aggiornato solo per riallineare un riferimento backlog gia esistente.
+- Stato finale: PASS WITH NOTES
+
+### TASK-064.7 - Supporto CAP manuali nei form indirizzo
+
+- Data: 2026-05-14
+- Branch: `main`
+- Task: TASK-064.7 - Supporto CAP manuali nei form indirizzo
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/MasterDataGlobalController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataGlobalService.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataGlobalControllerTests.java`
+  - `frontend/src/app/shared/lookup/lookup.service.ts`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-form.component.*`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-detail.component.*`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration.models.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificato che `GlobalZipCode.area`/`areaId` sia gia nullable e che `provinceName`/`provinceCode` siano campi disponibili nel modello approvato TASK-062/TASK-063;
+  - verificato che il lookup ZIP/CAP esistente fosse estendibile senza nuovi endpoint e senza architetture parallele;
+  - individuato `CompanyProfileAdministrationForm` come form indirizzo operativo attuale da aggiornare; Employee UI e OfficeLocation UI restano fuori perimetro per task successivi.
+- Patch applicata:
+  - esteso `GET /api/master-data/global/zip-codes/lookup` con filtri opzionali `countryId`, `regionId`, `areaId`;
+  - arricchito il metadata lookup ZIP/CAP con `countryName`, `regionName`, `areaName`, `provinceName`, `provinceCode`;
+  - consentiti CAP manuali tenant-scoped non italiani con `areaId = null` quando e valorizzato almeno un fallback provincia;
+  - migrato il CAP del form `CompanyProfileAdministrationForm` a `app-lookup-select`, filtrato da tenant/country/region/area;
+  - aggiornato il dettaglio Company Profile per usare `provinceName/provinceCode` quando `areaId` non e disponibile.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=MasterDataGlobalControllerTests,CompanyProfileAdministrationControllerTests" test`
+  - `cd frontend && npm.cmd test -- --watch=false --include src/app/features/company-profile-administration/company-profile-administration-form.component.spec.ts --include src/app/features/company-profile-administration/company-profile-administration-detail.component.spec.ts`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `git diff --check`
+- Esiti reali:
+  - backend targeted: `BUILD SUCCESS`, 39 test, 0 failure, 0 error, 0 skipped;
+  - frontend targeted: OK, 2 file test, 20 test passed;
+  - backend completo: `BUILD SUCCESS`, 244 test, 0 failure, 0 error, 0 skipped;
+  - frontend build: OK con warning budget iniziale gia noto (`2.15 MB`, sforamento `147.58 kB`);
+  - frontend test completo: OK, 37 file test passed, 273 test passed;
+  - `git diff --check`: OK, soli warning CRLF.
+- Regressioni trovate:
+  - una prima esecuzione frontend targeted ha evidenziato un null-check TypeScript mancante nel dettaglio Company Profile; corretto nella patch;
+  - una prima esecuzione Maven targeted ha richiesto quoting del parametro `-Dtest` in PowerShell; nessuna regressione applicativa collegata.
+- QA manuale consigliata:
+  1. Company Profile con paese Italia e CAP importato con `areaId` valorizzato: verificare selezione lookup, provincia/area e salvataggio.
+  2. Company Profile con CAP manuale gia presente in tabella e `areaId = null`: verificare selezione lookup e fallback `provinceName/provinceCode`.
+  3. Paese diverso da Italia con CAP digitato/manuale non presente in tabella: verificare il comportamento atteso del form operativo disponibile; la persistenza libera fuori tabella non e introdotta da questa patch.
+  4. Paese diverso da Italia con CAP presente in lookup e `areaId = null`: verificare selezione e fallback provincia.
+- Limiti/note:
+  - QA browser manuale non eseguita in questa sessione CLI;
+  - la patch copre CAP manuali gia inseriti in `global_zip_codes`; l'inserimento libero e persistito di CAP non presenti in tabella resta fuori scope perche `CompanyProfile` non espone campi liberi `postalCode/city`;
+  - nessuna modifica a tenant, security, RBAC o modello geografico approvato.
+- Stato finale: PASS WITH NOTES
+
+### TASK-064.10 - Apply shared lookup select to existing administration forms
 
 - Data: 2026-05-14
 - Branch: `task-064-6-shared-lookup-phone-foundation`
-- Task: TASK-064.9 - Apply shared lookup select to existing administration forms
+- Task: TASK-064.10 - Apply shared lookup select to existing administration forms
 - Modello consigliato nel prompt operativo: GPT-5.5
 - Area verificata:
   - `frontend/src/app/features/user-administration/user-administration-form.component.ts`
@@ -2613,7 +2703,7 @@ Nota operativa:
   - nessuna sostituzione massiva delle select esistenti
 - Limiti/note:
   - il pilot frontend continua a usare le options geografiche locali gia caricate per i select indirizzo; la nuova foundation lookup non sostituisce ancora in massa quei campi
-  - la persistenza telefono resta compatibile con la stringa unica esistente; la normalizzazione DB/API e rinviata al follow-up `TASK-064.8`
+  - la persistenza telefono resta compatibile con la stringa unica esistente; la normalizzazione DB/API e rinviata al follow-up `TASK-064.9`
   - il warning budget frontend resta non bloccante e preesistente come vincolo di bundle
   - nel follow-up backend/data del 2026-05-14 il fallback minimo iniziale `IT/TN` e stato rimosso; `metadata.phoneCode` e `extraLabel` ora derivano dal DB, dopo enrichment esplicito di `countries.phone_code`
 - Revalidazione bugfix manual QA:

@@ -31,8 +31,12 @@ export interface CompanyProfileAdministrationAreaOption extends CompanyProfileAd
 export interface CompanyProfileAdministrationGlobalZipCodeOption extends CompanyProfileAdministrationReference {
   readonly tenantId: string | null;
   readonly countryId: string;
+  readonly countryName?: string | null;
   readonly regionId: string | null;
+  readonly regionName?: string | null;
   readonly areaId: string | null;
+  readonly areaCode?: string | null;
+  readonly areaName?: string | null;
   readonly provinceName?: string | null;
   readonly provinceCode?: string | null;
 }
