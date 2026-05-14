@@ -235,6 +235,9 @@ class HrmBackendApplicationTests {
 	private static final UUID STARTTLS_SMTP_ENCRYPTION_TYPE_ID = UUID.fromString("74000000-0000-0000-0000-000000000003");
 	private static final UUID FOUNDATION_COMPANY_PROFILE_TYPE_ID = UUID.fromString("77000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_OPERATIVE_COMPANY_PROFILE_TYPE_ID = UUID.fromString("77000000-0000-0000-0000-000000000002");
+	private static final UUID FOUNDATION_BRANCH_COMPANY_PROFILE_TYPE_ID = UUID.fromString("77000000-0000-0000-0000-000000000003");
+	private static final UUID FOUNDATION_SUBSIDIARY_COMPANY_PROFILE_TYPE_ID = UUID.fromString("77000000-0000-0000-0000-000000000004");
+	private static final UUID FOUNDATION_PUBLIC_ENTITY_COMPANY_PROFILE_TYPE_ID = UUID.fromString("77000000-0000-0000-0000-000000000005");
 	private static final UUID FOUNDATION_HEADQUARTER_OFFICE_LOCATION_TYPE_ID = UUID.fromString("78000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_BRANCH_OFFICE_LOCATION_TYPE_ID = UUID.fromString("78000000-0000-0000-0000-000000000002");
 	private static final UUID FOUNDATION_REMOTE_HUB_OFFICE_LOCATION_TYPE_ID = UUID.fromString("78000000-0000-0000-0000-000000000003");
@@ -303,8 +306,8 @@ class HrmBackendApplicationTests {
 		assertThat(roleRepository.findAll())
 				.extracting(role -> role.getCode())
 				.contains("TENANT_ADMIN", "HR_MANAGER", "SUPERVISOR");
-		assertThat(permissionRepository.count()).isEqualTo(100);
-		assertThat(companyProfileTypeRepository.count()).isEqualTo(2);
+		assertThat(permissionRepository.count()).isEqualTo(108);
+		assertThat(companyProfileTypeRepository.count()).isEqualTo(5);
 		assertThat(officeLocationTypeRepository.count()).isEqualTo(3);
 	}
 
@@ -318,6 +321,18 @@ class HrmBackendApplicationTests {
 				.get()
 				.extracting(companyProfileType -> companyProfileType.getCode())
 				.isEqualTo("CP002");
+		assertThat(companyProfileTypeRepository.findById(FOUNDATION_BRANCH_COMPANY_PROFILE_TYPE_ID))
+				.get()
+				.extracting(companyProfileType -> companyProfileType.getCode())
+				.isEqualTo("CP003");
+		assertThat(companyProfileTypeRepository.findById(FOUNDATION_SUBSIDIARY_COMPANY_PROFILE_TYPE_ID))
+				.get()
+				.extracting(companyProfileType -> companyProfileType.getCode())
+				.isEqualTo("CP004");
+		assertThat(companyProfileTypeRepository.findById(FOUNDATION_PUBLIC_ENTITY_COMPANY_PROFILE_TYPE_ID))
+				.get()
+				.extracting(companyProfileType -> companyProfileType.getCode())
+				.isEqualTo("CP005");
 		assertThat(officeLocationTypeRepository.findById(FOUNDATION_HEADQUARTER_OFFICE_LOCATION_TYPE_ID))
 				.get()
 				.extracting(officeLocationType -> officeLocationType.getCode())
@@ -382,7 +397,9 @@ class HrmBackendApplicationTests {
 						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.TENANT, PermissionAction.MANAGE),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.USER, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.MASTER_DATA, PermissionAction.MANAGE),
-						PermissionCode.of(PermissionScope.TENANT, PermissionResource.PAYROLL_DOCUMENT, PermissionAction.READ))
+						PermissionCode.of(PermissionScope.TENANT, PermissionResource.PAYROLL_DOCUMENT, PermissionAction.READ),
+						PermissionCode.of(PermissionScope.TENANT, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE),
+						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE))
 				.allMatch(PermissionCode::isValid)
 				.noneMatch(code -> code.startsWith("TENANT.MASTER_DATA.") && code.split("\\.").length > 3);
 
@@ -466,7 +483,10 @@ class HrmBackendApplicationTests {
 						"TENANT.PERMISSION.READ",
 						"TENANT.PERMISSION.CREATE",
 						"TENANT.PERMISSION.UPDATE",
-						"TENANT.PERMISSION.DELETE");
+						"TENANT.PERMISSION.DELETE",
+						"TENANT.COMPANY_PROFILE.READ",
+						"TENANT.COMPANY_PROFILE.CREATE",
+						"TENANT.COMPANY_PROFILE.UPDATE");
 	}
 
 	@Test
@@ -1073,7 +1093,7 @@ class HrmBackendApplicationTests {
 		mockMvc.perform(get("/api/core-hr/employees/{id}", employee.getId()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.employeeCode").value("EMP-CORE-HR-API"))
-				.andExpect(jsonPath("$.companyProfile.code").value("FOUNDATION_LEGAL_ENTITY"));
+				.andExpect(jsonPath("$.companyProfile.code").value("CP001"));
 
 		mockMvc.perform(get("/api/core-hr/contracts"))
 				.andExpect(status().isOk())

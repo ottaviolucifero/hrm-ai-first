@@ -25,11 +25,12 @@ import { RolePermissionMatrixService } from './role-permission-matrix.service';
 
 const ROLE_PAGE_SIZE = 100;
 const PERMISSION_PAGE_SIZE = 100;
-const RESOURCE_ORDER: readonly RolePermissionResourceCode[] = ['MASTER_DATA', 'USER', 'ROLE'];
+const RESOURCE_ORDER: readonly RolePermissionResourceCode[] = ['MASTER_DATA', 'COMPANY_PROFILE', 'USER', 'ROLE'];
 const VISIBLE_RESOURCES = new Set<RolePermissionResourceCode>(RESOURCE_ORDER);
 
 const MODULE_LABELS: Record<RolePermissionResourceCode, I18nKey> = {
   TENANT: 'rolePermissions.modules.tenant',
+  COMPANY_PROFILE: 'rolePermissions.modules.companyProfile',
   USER: 'rolePermissions.modules.user',
   ROLE: 'rolePermissions.modules.role',
   PERMISSION: 'rolePermissions.modules.permission',

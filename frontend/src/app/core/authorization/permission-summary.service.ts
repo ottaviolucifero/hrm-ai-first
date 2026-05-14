@@ -136,7 +136,12 @@ export class PermissionSummaryService {
   }
 
   private isPermissionResource(value: string): value is PermissionResourceCode {
-    return value === 'TENANT' || value === 'MASTER_DATA' || value === 'ROLE' || value === 'PERMISSION' || value === 'USER';
+    return value === 'TENANT'
+      || value === 'COMPANY_PROFILE'
+      || value === 'MASTER_DATA'
+      || value === 'ROLE'
+      || value === 'PERMISSION'
+      || value === 'USER';
   }
 
   private isPermissionCodeAction(value: string): value is PermissionCodeAction {

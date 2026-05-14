@@ -24,6 +24,8 @@ describe('AppHeaderComponent', () => {
             path: 'admin',
             children: [
               { path: 'roles', component: DummyRouteComponent },
+              { path: 'company-profiles', component: DummyRouteComponent },
+              { path: 'company-profiles/:id', component: DummyRouteComponent },
               { path: 'users', component: DummyRouteComponent },
               { path: 'users/:id', component: DummyRouteComponent },
               { path: 'permissions', component: DummyRouteComponent }
@@ -73,6 +75,16 @@ describe('AppHeaderComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Ruoli');
+  });
+
+  it('shows the company profiles title for the company profile administration route', async () => {
+    const fixture = TestBed.createComponent(AppHeaderComponent);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/admin/company-profiles/company-1');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Profili aziendali');
   });
 
   it('shows the users title for the user administration list route', async () => {

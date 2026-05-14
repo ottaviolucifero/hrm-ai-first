@@ -16,6 +16,7 @@ export class EmailFieldComponent {
   @Input() label = 'Email';
   @Input() placeholder = 'name@company.com';
   @Input() submitted = false;
+  @Input() required = false;
 
   get showErrors(): boolean {
     return this.control.invalid && (this.control.touched || this.submitted);

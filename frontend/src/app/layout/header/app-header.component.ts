@@ -33,6 +33,10 @@ export class AppHeaderComponent {
       return 'nav.roles';
     }
 
+    if (normalizedPath.startsWith('/admin/company-profiles')) {
+      return 'nav.companyProfiles';
+    }
+
     if (normalizedPath.startsWith('/admin/users')) {
       return 'nav.users';
     }

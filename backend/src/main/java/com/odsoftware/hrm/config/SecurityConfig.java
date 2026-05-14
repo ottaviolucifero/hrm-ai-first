@@ -112,6 +112,22 @@ public class SecurityConfig {
 								"TENANT.USER.MANAGE",
 								"PLATFORM.USER.DELETE",
 								"PLATFORM.USER.MANAGE"))
+						.requestMatchers(HttpMethod.GET, "/api/admin/company-profiles/**")
+						.access(hasAnyAuthority(
+								"TENANT.COMPANY_PROFILE.READ",
+								"PLATFORM.COMPANY_PROFILE.READ"))
+						.requestMatchers(HttpMethod.POST, "/api/admin/company-profiles/**")
+						.access(hasAnyAuthority(
+								"TENANT.COMPANY_PROFILE.CREATE",
+								"PLATFORM.COMPANY_PROFILE.CREATE"))
+						.requestMatchers(HttpMethod.PUT, "/api/admin/company-profiles/**")
+						.access(hasAnyAuthority(
+								"TENANT.COMPANY_PROFILE.UPDATE",
+								"PLATFORM.COMPANY_PROFILE.UPDATE"))
+						.requestMatchers(HttpMethod.DELETE, "/api/admin/company-profiles/**")
+						.access(hasAnyAuthority(
+								"TENANT.COMPANY_PROFILE.DELETE",
+								"PLATFORM.COMPANY_PROFILE.DELETE"))
 						.requestMatchers(HttpMethod.GET, "/api/admin/roles/**")
 						.access(hasAnyAuthority(
 								"TENANT.ROLE.READ",

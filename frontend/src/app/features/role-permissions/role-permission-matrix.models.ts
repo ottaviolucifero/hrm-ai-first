@@ -56,6 +56,7 @@ export interface RolePermissionMatrixAssignmentResponse {
 export type RolePermissionScopeCode = 'PLATFORM' | 'TENANT';
 export type RolePermissionResourceCode =
   | 'TENANT'
+  | 'COMPANY_PROFILE'
   | 'USER'
   | 'ROLE'
   | 'PERMISSION'

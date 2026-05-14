@@ -1,10 +1,10 @@
 export type PermissionAction = 'view' | 'create' | 'update' | 'delete';
 
-export type PermissionModuleId = 'master-data' | 'tenants' | 'roles' | 'permissions' | 'users';
+export type PermissionModuleId = 'master-data' | 'tenants' | 'company-profiles' | 'roles' | 'permissions' | 'users';
 
 export type PermissionScopeCode = 'PLATFORM' | 'TENANT';
 
-export type PermissionResourceCode = 'TENANT' | 'MASTER_DATA' | 'ROLE' | 'PERMISSION' | 'USER';
+export type PermissionResourceCode = 'TENANT' | 'COMPANY_PROFILE' | 'MASTER_DATA' | 'ROLE' | 'PERMISSION' | 'USER';
 
 export type PermissionCodeAction = 'READ' | 'VIEW' | 'CREATE' | 'UPDATE' | 'DELETE' | 'MANAGE';
 
@@ -26,6 +26,7 @@ export interface ModulePermissionSummary {
 export const MODULE_PERMISSION_RESOURCE_MAP: Record<PermissionModuleId, PermissionResourceCode> = {
   'master-data': 'MASTER_DATA',
   tenants: 'TENANT',
+  'company-profiles': 'COMPANY_PROFILE',
   roles: 'ROLE',
   permissions: 'PERMISSION',
   users: 'USER'
@@ -45,5 +46,10 @@ export function isPermissionAction(value: unknown): value is PermissionAction {
 }
 
 export function isPermissionModuleId(value: unknown): value is PermissionModuleId {
-  return value === 'master-data' || value === 'tenants' || value === 'roles' || value === 'permissions' || value === 'users';
+  return value === 'master-data'
+    || value === 'tenants'
+    || value === 'company-profiles'
+    || value === 'roles'
+    || value === 'permissions'
+    || value === 'users';
 }

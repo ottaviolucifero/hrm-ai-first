@@ -1,0 +1,125 @@
+.company-profile-admin-page {
+  display: block;
+}
+
+.company-profile-admin-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.company-profile-admin-page-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.company-profile-admin-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.company-profile-admin-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.company-profile-admin-subtitle,
+.company-profile-admin-list-meta,
+.company-profile-admin-note {
+  color: var(--color-text-muted, #64748b);
+}
+
+.company-profile-admin-list-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border, #e9ecef);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.company-profile-admin-list-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border, #e9ecef);
+  background: var(--color-background, #ffffff);
+}
+
+.company-profile-admin-list-heading {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.company-profile-admin-list-meta-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.company-profile-admin-record-count {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+}
+
+.company-profile-admin-table-search {
+  display: grid;
+  gap: 0.35rem;
+  min-width: min(100%, 18rem);
+}
+
+.company-profile-admin-search-label {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.company-profile-admin-search-input {
+  min-height: 2.375rem;
+}
+
+.company-profile-admin-note {
+  background: #f8fbff;
+  border: 1px solid #dbe7ff;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  margin: 1rem 1.25rem 0;
+  padding: 0.75rem 0.875rem;
+}
+
+.company-profile-admin-page-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+@media (max-width: 960px) {
+  .company-profile-admin-page-header,
+  .company-profile-admin-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .company-profile-admin-table-search {
+    min-width: 0;
+  }
+
+  .company-profile-admin-list-toolbar {
+    padding: 1rem;
+  }
+
+  .company-profile-admin-note {
+    margin: 1rem 1rem 0;
+  }
+}

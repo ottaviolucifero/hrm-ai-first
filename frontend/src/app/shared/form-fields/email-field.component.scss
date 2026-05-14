@@ -1,3 +1,7 @@
 :host {
   display: block;
 }
+
+.email-field-required {
+  color: var(--color-destructive, #dc2626);
+}

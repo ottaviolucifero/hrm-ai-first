@@ -29,6 +29,7 @@ describe('AppSidebarComponent', () => {
               permissions: [
                 'TENANT.MASTER_DATA.READ',
                 'PLATFORM.TENANT.READ',
+                'TENANT.COMPANY_PROFILE.READ',
                 'TENANT.ROLE.READ',
                 'TENANT.USER.READ',
                 'TENANT.PERMISSION.READ'
@@ -43,6 +44,7 @@ describe('AppSidebarComponent', () => {
             path: 'admin',
             children: [
               { path: 'tenants', component: DummyRouteComponent },
+              { path: 'company-profiles', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },
               { path: 'users', component: DummyRouteComponent },
               { path: 'permissions', component: DummyRouteComponent }
@@ -68,6 +70,20 @@ describe('AppSidebarComponent', () => {
     expect(compiled.textContent).toContain('Persone');
     expect(compiled.textContent).toContain('Dati di base');
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]')).toBeTruthy();
+    const masterDataLink = compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]');
+    const companyProfilesLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/company-profiles"]');
+    const masterDataToCompanyProfilePosition = companyProfilesLink
+      ? masterDataLink?.compareDocumentPosition(companyProfilesLink) ?? 0
+      : 0;
+
+    expect(masterDataLink).toBeTruthy();
+    expect(companyProfilesLink).toBeTruthy();
+    expect(companyProfilesLink?.getAttribute('data-sidebar-level')).toBe('1');
+    expect(companyProfilesLink?.closest('.app-sidebar-subtree--level-2')).toBeNull();
+    expect(companyProfilesLink?.closest('.app-sidebar-subtree--level-1')).toBe(
+      masterDataLink?.closest('.app-sidebar-subtree--level-1')
+    );
+    expect(Boolean(masterDataToCompanyProfilePosition & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/tenants"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/roles"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/users"]')).toBeTruthy();
@@ -156,6 +172,7 @@ describe('AppSidebarComponent', () => {
             path: 'admin',
             children: [
               { path: 'tenants', component: DummyRouteComponent },
+              { path: 'company-profiles', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },
               { path: 'users', component: DummyRouteComponent },
               { path: 'permissions', component: DummyRouteComponent }
