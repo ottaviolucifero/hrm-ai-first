@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.48
+Versione: 2.50
 Ultimo aggiornamento: 2026-05-14
 Stato: In avanzamento
 
@@ -139,11 +139,13 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-064.5 Company Profile Administration UI foundation
 - TASK-064.6 Shared lookup select and phone field foundation
 - TASK-064.7 Supporto CAP manuali nei form indirizzo
+- TASK-064.8 Normalize phone fields for Company Profile and future contact entities
+- TASK-064.9 Apply shared lookup select to existing administration forms
 
 ### Prossimo passo
 
 - TASK-065 Implementare UI Employee management enterprise
-- Follow-up gia pianificati: TASK-064.6 shared lookup select and phone field foundation, TASK-064.7 supporto CAP manuali nei form indirizzo, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
+- Follow-up gia pianificati: TASK-064.7 supporto CAP manuali nei form indirizzo, TASK-064.8 normalizzazione futura dei telefoni, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
 
@@ -253,12 +255,15 @@ TASK-060 completed the role custom-code decision and implementation by confirmin
 TASK-064.3 completed the durable governance standard for future entities with `code`, formalizing in `DEC-039` the default auto-code rule `prime due lettere + progressivo 3 cifre`, backend generation, UI non-editable code and documented exceptions only.
 TASK-064.4 completed the Company Profile fiscal fields follow-up by adding nullable `taxNumber`, `pecEmail` and `sdiCode` to `CompanyProfile` only, shipping Flyway `V27` PostgreSQL/H2 migrations, extending foundation response mapping and backend tests, and keeping `taxIdentifier`, `Tenant`, security/RBAC and CRUD/UI scope unchanged.
 TASK-064.5 completed the Company Profile Administration UI foundation and pre-commit functional return with backend admin APIs under `/api/admin/company-profiles`, tenant-aware backend auto-code `CP001/CP002`, activate/deactivate/delete lifecycle, `COMPANY_PROFILE` permissions through `READ`/`CREATE`/`UPDATE`/`DELETE`, tenant-aware normalization of existing company profile codes, company profile type seed completion, Angular admin routes/list/detail/form aligned to `/admin/users`, shared DataTable reuse, Italian naming `Profilo aziendale`, minimal local phone handling, refined address order, i18n `it/fr/en` and green backend/frontend validation.
+TASK-064.6 completed the shared lookup/phone foundation by reusing the existing paginated master-data contract, adding backend lookup endpoints only for `Country`, `Region`, `Area` and `GlobalZipCode`, introducing shared Angular components `app-lookup-select` and `app-phone-field`, and limiting the pilot to `CompanyProfile` while preserving the current backend `phone: string | null` contract through a compatibility emission mode.
 TASK-064.7 is planned as a dedicated follow-up to harden ZIP/CAP manual lookup handling across address forms, with explicit support for `GlobalZipCode.areaId` nullable and `provinceName/provinceCode` fallback without introducing a new City table or unrelated UI redesign.
+TASK-064.8 is planned as a dedicated follow-up to normalize phone storage across `CompanyProfile` and future contact entities, separating dial code and national number at DB/API level once the shared field foundation introduced in TASK-064.6 has been validated.
+TASK-064.9 completed the progressive adoption of `app-lookup-select` on existing admin forms with a bounded patch (`UserAdministrationForm` tenant/company profile and `TenantAdministration` default country), preserving API contracts/security and documenting deferred migrations that require dedicated address-cascade hardening.
 
 Prossimo passo:
 
 - TASK-065 Implementare UI Employee management enterprise
-- Follow-up gia pianificati: TASK-064.6 shared lookup select and phone field foundation, TASK-064.7 supporto CAP manuali nei form indirizzo, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
+- Follow-up gia pianificati: TASK-064.7 supporto CAP manuali nei form indirizzo, TASK-064.8 normalizzazione futura dei telefoni, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza immediata Employee/geography:
 
@@ -423,6 +428,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.50 | 2026-05-14 | TASK-064.9 completato in roadmap con migrazione progressiva di select amministrative a `app-lookup-select` (User Administration tenant/company profile + Tenant Administration default country), test frontend reali verdi e rinvio documentato dei casi geografici piu complessi a follow-up dedicati. |
+| 2.49 | 2026-05-14 | TASK-064.6 completato in roadmap: foundation shared lookup/phone chiusa con endpoint backend paginati per `Country/Region/Area/GlobalZipCode`, componenti Angular `app-lookup-select` e `app-phone-field`, pilot limitato a `CompanyProfile` senza cambiare il contratto backend `phone: string | null`, test backend/frontend reali verdi e nuovo follow-up `TASK-064.8` per la normalizzazione futura dei telefoni. |
 | 2.48 | 2026-05-14 | Aggiunto il follow-up `TASK-064.7 - Supporto CAP manuali nei form indirizzo` nel backlog/next step con focus su `GlobalZipCode.areaId` nullable, fallback `provinceName/provinceCode`, copertura lookup CAP importati/manuali e test backend/frontend dedicati, senza introdurre nuova tabella City o redesign fuori scope. |
 | 2.47 | 2026-05-13 | TASK-064.5 rifinito prima del commit: aggiunti activate/deactivate e delete fisico protetto per `CompanyProfile`, permesso `DELETE`, normalizzazione tenant-aware dei codici esistenti `CP001/CP002`, seed minimi `CompanyProfileType`, naming italiano `Profilo aziendale`, patch telefono/indirizzo lato UI, test backend/frontend reali verdi e backlog aggiornato con `TASK-064.6` shared lookup select/phone field foundation. |
 | 2.46 | 2026-05-13 | TASK-064.5 completato: introdotte API admin `CompanyProfile`, permessi `COMPANY_PROFILE` (`READ`/`CREATE`/`UPDATE`), auto-code backend tenant-aware `CP001/CP002`, UI amministrativa Angular `/admin/company-profiles` allineata ai pattern Users/Tenant, i18n `it/fr/en`, test backend/frontend verdi e report QA aggiornato. |

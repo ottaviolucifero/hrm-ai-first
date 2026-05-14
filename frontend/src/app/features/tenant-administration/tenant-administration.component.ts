@@ -11,7 +11,10 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { AppCheckboxComponent } from '../../shared/components/checkbox/app-checkbox.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
+import { LookupOption, LookupQuery } from '../../shared/lookup/lookup.models';
+import { LookupService } from '../../shared/lookup/lookup.service';
 import {
   DEFAULT_TENANT_ADMIN_PAGE_SIZE,
   EMPTY_TENANT_ADMIN_PAGE,
@@ -32,7 +35,7 @@ type TenantAdministrationFormMode = 'create' | 'edit' | 'view';
 
 @Component({
   selector: 'app-tenant-administration',
-  imports: [AppButtonComponent, AppCheckboxComponent, DataTableComponent, ReactiveFormsModule],
+  imports: [AppButtonComponent, AppCheckboxComponent, DataTableComponent, LookupSelectComponent, ReactiveFormsModule],
   templateUrl: './tenant-administration.component.html',
   styleUrl: './tenant-administration.component.scss'
 })
@@ -41,6 +44,7 @@ export class TenantAdministrationComponent implements OnDestroy {
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly tenantAdministrationService = inject(TenantAdministrationService);
+  private readonly lookupService = inject(LookupService);
   private readonly notificationService = inject(NotificationService);
   protected readonly i18n = inject(I18nService);
 
@@ -145,6 +149,9 @@ export class TenantAdministrationComponent implements OnDestroy {
     defaultCurrencyId: ['', [Validators.required]],
     active: [true]
   });
+  protected readonly countryLookup = (query: LookupQuery) => this.lookupService.findCountryLookups(query);
+  protected readonly countryClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly countryOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
 
   constructor() {
     this.loadTenants();
@@ -300,6 +307,33 @@ export class TenantAdministrationComponent implements OnDestroy {
 
   protected modalReadOnly(): boolean {
     return this.modalMode() === 'view';
+  }
+
+  protected selectedCountryInitialOption(): LookupOption | null {
+    const selectedCountryId = this.form.controls.defaultCountryId.getRawValue().trim();
+    if (!selectedCountryId) {
+      return null;
+    }
+
+    const tenantCountry = this.modalTenant()?.defaultCountry;
+    if (tenantCountry && tenantCountry.id === selectedCountryId) {
+      return {
+        id: tenantCountry.id,
+        code: tenantCountry.code,
+        name: tenantCountry.name
+      };
+    }
+
+    const formCountry = this.formOptions()?.countries.find((country) => country.id === selectedCountryId);
+    if (!formCountry) {
+      return null;
+    }
+
+    return {
+      id: formCountry.id,
+      code: formCountry.code,
+      name: formCountry.name
+    };
   }
 
   protected notesKey(): I18nKey {

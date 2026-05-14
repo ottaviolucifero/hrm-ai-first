@@ -17,6 +17,7 @@ import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeRequest;
 import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeResponse;
 import com.odsoftware.hrm.dto.masterdata.global.RegionRequest;
 import com.odsoftware.hrm.dto.masterdata.global.RegionResponse;
+import com.odsoftware.hrm.dto.lookup.LookupOptionResponse;
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.service.MasterDataGlobalService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,6 +59,15 @@ public class MasterDataGlobalController {
 		return masterDataGlobalService.findCountries(page, size, search);
 	}
 
+	@GetMapping("/countries/lookup")
+	@Operation(summary = "List countries for lookup")
+	public MasterDataPageResponse<LookupOptionResponse> findCountryLookups(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search) {
+		return masterDataGlobalService.findCountryLookups(page, size, search);
+	}
+
 	@GetMapping("/countries/{id}")
 	@Operation(summary = "Get country by id")
 	public CountryResponse findCountryById(@PathVariable UUID id) {
@@ -92,6 +102,16 @@ public class MasterDataGlobalController {
 			@RequestParam(required = false) String search,
 			@RequestParam(required = false) UUID tenantId) {
 		return masterDataGlobalService.findRegions(page, size, search, tenantId);
+	}
+
+	@GetMapping("/regions/lookup")
+	@Operation(summary = "List regions for lookup")
+	public MasterDataPageResponse<LookupOptionResponse> findRegionLookups(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search,
+			@RequestParam(required = false) UUID tenantId) {
+		return masterDataGlobalService.findRegionLookups(page, size, search, tenantId);
 	}
 
 	@GetMapping("/regions/{id}")
@@ -130,6 +150,16 @@ public class MasterDataGlobalController {
 		return masterDataGlobalService.findAreas(page, size, search, tenantId);
 	}
 
+	@GetMapping("/areas/lookup")
+	@Operation(summary = "List areas for lookup")
+	public MasterDataPageResponse<LookupOptionResponse> findAreaLookups(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search,
+			@RequestParam(required = false) UUID tenantId) {
+		return masterDataGlobalService.findAreaLookups(page, size, search, tenantId);
+	}
+
 	@GetMapping("/areas/{id}")
 	@Operation(summary = "Get area by id")
 	public AreaResponse findAreaById(@PathVariable UUID id) {
@@ -164,6 +194,16 @@ public class MasterDataGlobalController {
 			@RequestParam(required = false) String search,
 			@RequestParam(required = false) UUID tenantId) {
 		return masterDataGlobalService.findGlobalZipCodes(page, size, search, tenantId);
+	}
+
+	@GetMapping("/zip-codes/lookup")
+	@Operation(summary = "List global zip codes for lookup")
+	public MasterDataPageResponse<LookupOptionResponse> findGlobalZipCodeLookups(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "25") Integer size,
+			@RequestParam(required = false) String search,
+			@RequestParam(required = false) UUID tenantId) {
+		return masterDataGlobalService.findGlobalZipCodeLookups(page, size, search, tenantId);
 	}
 
 	@GetMapping("/zip-codes/{id}")

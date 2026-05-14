@@ -6,6 +6,43 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-064.9 - Apply shared lookup select to existing administration forms
+
+- Data: 2026-05-14
+- Branch: `task-064-6-shared-lookup-phone-foundation`
+- Task: TASK-064.9 - Apply shared lookup select to existing administration forms
+- Modello consigliato nel prompt operativo: GPT-5.5
+- Area verificata:
+  - `frontend/src/app/features/user-administration/user-administration-form.component.ts`
+  - `frontend/src/app/features/user-administration/user-administration-form.component.html`
+  - `frontend/src/app/features/user-administration/user-administration-form.component.spec.ts`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.ts`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.html`
+  - `frontend/src/app/features/tenant-administration/tenant-administration.component.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - censite le select amministrative esistenti (`UserAdministrationForm`, `TenantAdministration`, `CompanyProfileAdministrationForm`, `UserAdministrationDetail`, `MasterDataAdmin`, `Login`);
+  - individuate come migrabili subito le select con beneficio alto e patch minima;
+  - esclusa in questa patch la migrazione massiva delle select geografiche `CompanyProfile` per evitare regressioni sul flusso address pilot.
+- Patch applicata:
+  - migrato `UserAdministrationForm` da select native a `app-lookup-select` su `tenantId` (create platform scope) e `companyProfileId` (filtrato per tenant);
+  - migrato `TenantAdministration` `defaultCountryId` a `app-lookup-select` con lookup paginato remoto (`/api/master-data/global/countries/lookup`);
+  - mantenuto `defaultCurrencyId` su select locale (nessun lookup currency dedicato in scope);
+  - aggiornati test frontend impattati dalle nuove lookup.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - frontend test: OK, 37 file test passed, 271 test passed;
+  - frontend build: OK con warning noto budget iniziale (`2.15 MB`, +`145.73 kB`).
+- Regressioni trovate:
+  - un failure iniziale in `user-administration-form.component.spec.ts` dovuto ad asserzione DOM non piu valida con dropdown chiuso; corretto verificando il filtro dati invece del testo opzioni renderizzato.
+- Limiti/note:
+  - select geografiche `CompanyProfile` (`countryId`, `regionId`, `globalZipCodeId`) rimandate a follow-up dedicato per migrazione lookup completa con dipendenze address cascade;
+  - nessuna modifica backend/security/RBAC in questa patch.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-064.7 - Supporto CAP manuali nei form indirizzo (pianificazione documentale)
 
 - Data: 2026-05-14
@@ -2541,6 +2578,91 @@ Nota operativa:
   - la soluzione telefono resta locale a `TASK-064.5`; il componente shared dedicato resta backlog `TASK-064.6`
   - le select geografiche continuano a riusare gli endpoint e le liste attuali senza lookup paginato/autocomplete; il miglioramento strutturale resta demandato a `TASK-064.6`
   - il warning budget frontend resta non bloccante e preesistente come vincolo di bundle
+- Stato finale: PASS WITH NOTES
+
+### TASK-064.6 - Shared lookup select and phone field foundation
+
+- Data: 2026-05-14
+- Branch: `main`
+- Task: TASK-064.6 - Shared lookup select and phone field foundation
+- Agente/Modello usato:
+  - Analisi/planning: GPT-5.5 Thinking
+  - Sviluppo: GPT-5.5
+  - QA/regressione: validazione reale con build/test backend e frontend
+- Aree/file verificati:
+  - backend lookup foundation `MasterDataGlobalController`, `MasterDataGlobalService`, `MasterDataQuerySupport`, `LookupOptionResponse`, `MasterDataGlobalControllerTests`
+  - frontend shared lookup/phone `app-lookup-select`, `app-phone-field`, `LookupService`, i18n `it/fr/en`
+  - pilot `CompanyProfileAdministrationFormComponent`
+  - documentazione `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build` -> KO iniziale per errore TypeScript su accesso `metadata.phoneCode`; corretto durante il task
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale superato (`2.14 MB`, +`139.81 kB` rispetto al budget)
+  - `cd frontend && npm.cmd test -- --watch=false` -> KO iniziali durante l assestamento dei nuovi spec/componenti; corretto durante il task
+  - `cd frontend && npm.cmd test -- --watch=false` -> OK, 37 file test passed, 262 test passed
+  - `cd backend && .\mvnw.cmd test` -> OK, suite completa verde
+- Esiti reali:
+  - backend completo verde dopo introduzione degli endpoint lookup paginati e dei test dedicati
+  - build frontend verde
+  - suite frontend verde dopo assestamento di CVA/spec e del pilot `CompanyProfile`
+- Verifiche funzionali:
+  - introdotti gli endpoint lookup `GET /api/master-data/global/countries/lookup`, `/regions/lookup`, `/areas/lookup`, `/zip-codes/lookup`
+  - lookup backend limitati al perimetro approvato `Country`, `Region`, `Area`, `GlobalZipCode`, con `page`, `size`, `search`, ordinamento coerente e metadata minimi
+  - introdotto il componente shared `app-lookup-select` con Reactive Forms / `ControlValueAccessor`, autocomplete opzionale, debounce, `minSearchLength`, paginazione, clear, loading/error/empty e i18n `it/fr/en`
+  - introdotto il componente shared `app-phone-field` con modello interno strutturato `dialCode` / `nationalNumber` / `fullNumber`, default `+39` e `+216`, validazione minima non country-specific e modalita compatibile `phone: string | null`
+  - pilot limitato a `CompanyProfile`: il backend/API e il DB non sono stati normalizzati in questo task; il form salva ancora una stringa unica compatibile
+  - nessuna sostituzione massiva delle select esistenti
+- Limiti/note:
+  - il pilot frontend continua a usare le options geografiche locali gia caricate per i select indirizzo; la nuova foundation lookup non sostituisce ancora in massa quei campi
+  - la persistenza telefono resta compatibile con la stringa unica esistente; la normalizzazione DB/API e rinviata al follow-up `TASK-064.8`
+  - il warning budget frontend resta non bloccante e preesistente come vincolo di bundle
+  - nel follow-up backend/data del 2026-05-14 il fallback minimo iniziale `IT/TN` e stato rimosso; `metadata.phoneCode` e `extraLabel` ora derivano dal DB, dopo enrichment esplicito di `countries.phone_code`
+- Revalidazione bugfix manual QA:
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale superato (`2.14 MB`, +`139.96 kB`)
+  - `cd frontend && npm.cmd test -- --watch=false` -> OK, 37 file test passed, 263 test passed
+  - `cd backend && .\mvnw.cmd test` -> OK, suite completa verde
+- Follow-up backend/data API QA:
+  - ambito: solo backend API per `GET /api/master-data/global/countries/lookup`
+  - credenziali: usate credenziali QA fornite
+  - root cause del precedente `403`: l utente bootstrap `qa.platform.admin@example.com` autenticava correttamente ma non aveva authority `PLATFORM.MASTER_DATA.*`; nessuna modifica security/RBAC applicata
+  - sorgente esplicita per `ISO2 -> phone_code`: `DataHub core/country-codes` (`https://datahub.io/core/country-codes`, CSV `https://datahub.io/core/country-codes/_r/-/data/country-codes.csv`, licenza pubblicata `ODC-PDDL-1.0`), documentata anche in `docs/data-sources/global-master-data.md`
+  - strategia di enrichment: migration Flyway PostgreSQL + H2 che valorizzano `countries.phone_code` con il codice E.164 base/primario, senza suffissi locali; esempi `1-809,1-829,1-849 -> +1`, `39-06 -> +39`
+  - copertura seed: `248 / 249` country row valorizzate; skip sicuro `UM` (`United States Minor Outlying Islands`) per `Dial` vuoto nel dataset sorgente
+  - shared/base calling codes gestiti come codice condiviso del paese: esempi `+1`, `+44`, `+39`
+  - fix query lookup: la ricerca paese riusa il search esistente su `isoCode` e `name`, e aggiunge il match digit-only `startsWith` su `phoneCode`; questo evita falsi positivi come `+33 -> +233`, `+49 -> +249`, `+34 -> +234`
+  - comandi/URL verificati prima del fix dati/query:
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=%2B33` -> `200`, `0` risultati
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=33` -> `200`, `0` risultati
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=france` -> `200`, `FR` trovato ma `metadata.phoneCode` assente
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=FR` -> `200`, `FR` presente tra i risultati ma `metadata.phoneCode` assente
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=francia` -> `200`, `0` risultati (non bloccante; alias/localizzazione non supportati)
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=%2B39` -> `200`, `0` risultati
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=39` -> `200`, `0` risultati
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=%2B216` -> `200`, `0` risultati
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=216` -> `200`, `0` risultati
+  - comandi/URL verificati dopo fix dati/query:
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=%2B33` -> `200`, `FR` unico risultato, `metadata.phoneCode=+33`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=33` -> `200`, `FR` unico risultato, `metadata.phoneCode=+33`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=france` -> `200`, `FR` unico risultato, `metadata.phoneCode=+33`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=FR` -> `200`, `FR` presente tra i risultati, `metadata.phoneCode=+33`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=francia` -> `200`, `0` risultati (resta follow-up non bloccante)
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=%2B39` -> `200`, risultati `VA, IT`; `IT` presente con `metadata.phoneCode=+39`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=39` -> `200`, risultati `VA, IT`; `IT` presente con `metadata.phoneCode=+39`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=italy` -> `200`, `IT` unico risultato, `metadata.phoneCode=+39`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=IT` -> `200`, `IT` presente tra i risultati, `metadata.phoneCode=+39`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=%2B216` -> `200`, `TN` unico risultato, `metadata.phoneCode=+216`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=216` -> `200`, `TN` unico risultato, `metadata.phoneCode=+216`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=tunisia` -> `200`, `TN` unico risultato, `metadata.phoneCode=+216`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=TN` -> `200`, `TN` unico risultato, `metadata.phoneCode=+216`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=%2B49` -> `200`, `DE` unico risultato, `metadata.phoneCode=+49`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=49` -> `200`, `DE` unico risultato, `metadata.phoneCode=+49`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=germany` -> `200`, `DE` unico risultato, `metadata.phoneCode=+49`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=DE` -> `200`, `DE` presente tra i risultati, `metadata.phoneCode=+49`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=%2B34` -> `200`, `ES` unico risultato, `metadata.phoneCode=+34`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=34` -> `200`, `ES` unico risultato, `metadata.phoneCode=+34`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=spain` -> `200`, `ES` unico risultato, `metadata.phoneCode=+34`
+    - `GET /api/master-data/global/countries/lookup?page=0&size=10&search=ES` -> `200`, `ES` non compare nella prima pagina dei risultati per ricerca testuale su `ES`, ma resta correttamente ricercabile per nome e phone code
+  - test automatici backend del follow-up:
+    - `cd backend && .\mvnw.cmd test` -> OK, suite completa verde dopo migration V33 e test lookup estesi (`FR`, `IT`, `TN`, `DE`, `ES`, ricerca con e senza `+`)
 - Stato finale: PASS WITH NOTES
 
 

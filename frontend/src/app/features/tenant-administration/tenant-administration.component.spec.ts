@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { LookupService } from '../../shared/lookup/lookup.service';
 import { TenantAdministrationComponent } from './tenant-administration.component';
 import { TenantAdministrationCreateRequest } from './tenant-administration.models';
 import { TenantAdministrationService } from './tenant-administration.service';
@@ -185,6 +186,20 @@ async function createFixture(
       {
         provide: TenantAdministrationService,
         useValue: createService(serviceOverrides)
+      },
+      {
+        provide: LookupService,
+        useValue: {
+          findCountryLookups: vi.fn(() => of({
+            content: [{ id: 'country-1', code: 'IT', name: 'Italia' }],
+            page: 0,
+            size: 25,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true
+          }))
+        }
       }
     ]
   }).compileComponents();

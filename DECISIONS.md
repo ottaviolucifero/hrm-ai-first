@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.34
-Ultimo aggiornamento: 2026-05-13
+Versione: 1.35
+Ultimo aggiornamento: 2026-05-14
 Stato: Attivo
 
 ---
@@ -1565,10 +1565,49 @@ I futuri task che introducono nuove entita con campo `code` devono partire da qu
 
 ---
 
+### DEC-040 - Shared lookup foundation reuses the standard paginated contract and a common frontend lookup component
+
+Data: 2026-05-14
+Stato: Approvata
+
+Decisione:
+
+I nuovi lookup backend destinati a select/autocomplete riusabili devono riusare il contratto paginato standard gia presente nel repository, evitando endpoint dedicati che caricano liste complete.
+
+Lo standard approvato per questa foundation e:
+
+- response paginata basata su `MasterDataPageResponse<T>`;
+- query paginata/search basata sui pattern di `MasterDataQuerySupport`;
+- DTO lookup esplicito con struttura `id`, `code`, `name`, `extraLabel`, `metadata`;
+- ordinamento coerente e ricerca testuale lato backend;
+- riuso lato frontend tramite il componente shared `app-lookup-select`, compatibile con Reactive Forms e `ControlValueAccessor`.
+
+Questa decisione formalizza il pattern introdotto in `TASK-064.6` per i lookup `Country`, `Region`, `Area` e `GlobalZipCode` e lo rende il riferimento di default per lookup futuri su entita grandi o potenzialmente grandi.
+
+Motivazione:
+
+- evitare select locali non scalabili e caricamenti completi di dataset ampi;
+- mantenere un solo pattern backend/frontend per lookup paginati e autocomplete;
+- ridurre duplicazioni tra feature amministrative e futuri form HR;
+- preservare coerenza con i contratti di paginazione e i componenti shared gia presenti nel repository.
+
+Alternative escluse:
+
+- creare endpoint lookup ad hoc non paginati per ogni feature;
+- usare DTO lookup non uniformi tra entita diverse;
+- mantenere componenti select/autocomplete locali separati quando il caso d uso e un lookup remoto standard.
+
+Impatto:
+
+I futuri task che richiedono lookup remoti devono partire da questo pattern come default. Nuovi endpoint lookup dovranno motivare eventuali eccezioni su shape, paginazione o UX. La normalizzazione persistente dei telefoni non e coperta da questa decisione e resta demandata al follow-up `TASK-064.8`.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.35 | 2026-05-14 | Aggiunta DEC-040 per rendere durevole la foundation shared dei lookup: response paginata standard, DTO lookup uniforme `id/code/name/extraLabel/metadata`, riuso di `MasterDataQuerySupport` lato backend e `app-lookup-select` lato frontend come pattern di default per lookup remoti futuri. |
 | 1.34 | 2026-05-13 | Aggiunta DEC-039 per rendere durevole lo standard dei nuovi campi `code`: auto-code `prime due lettere + progressivo 3 cifre`, generazione backend, UI non editabile ed eccezioni solo se documentate. |
 | 1.33 | 2026-05-13 | Aggiunta DEC-038 per formalizzare il modello geografico indirizzi tenant-aware: Country globale, Region/Area tenant-scoped, ZIP/CAP ibrido globale Italia e tenant per altri paesi, City come attributo ZIP/CAP e prerequisito per TASK-063/TASK-065. |
 | 1.32 | 2026-05-12 | Aggiunta DEC-037 per formalizzare il pattern shared di conferma per azioni UI critiche/distruttive, con riuso obbligatorio, coerenza UX, i18n e integrazione attesa con il shared DataTable. |

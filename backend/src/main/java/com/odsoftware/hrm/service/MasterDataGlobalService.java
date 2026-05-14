@@ -18,6 +18,7 @@ import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeRequest;
 import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeResponse;
 import com.odsoftware.hrm.dto.masterdata.global.RegionRequest;
 import com.odsoftware.hrm.dto.masterdata.global.RegionResponse;
+import com.odsoftware.hrm.dto.lookup.LookupOptionResponse;
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.entity.master.Area;
 import com.odsoftware.hrm.entity.master.Country;
@@ -39,8 +40,10 @@ import com.odsoftware.hrm.repository.master.GlobalZipCodeRepository;
 import com.odsoftware.hrm.repository.master.MaritalStatusRepository;
 import com.odsoftware.hrm.repository.master.NationalIdentifierTypeRepository;
 import com.odsoftware.hrm.repository.master.RegionRepository;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
@@ -94,8 +97,21 @@ public class MasterDataGlobalService {
 				size,
 				search,
 				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("isoCode")),
-				MasterDataQuerySupport.searchSpecification(search, "isoCode", "name", "phoneCode"),
+				countrySearchSpecification(search),
 				this::toCountryResponse);
+	}
+
+	public MasterDataPageResponse<LookupOptionResponse> findCountryLookups(Integer page, Integer size, String search) {
+		return findPage(
+				countryRepository,
+				page,
+				size,
+				search,
+				Sort.by("name").ascending().and(Sort.by("isoCode")),
+				MasterDataQuerySupport.and(
+						MasterDataQuerySupport.activeSpecification(),
+						countrySearchSpecification(search)),
+				this::toCountryLookupResponse);
 	}
 
 	public CountryResponse findCountryById(UUID id) {
@@ -142,6 +158,21 @@ public class MasterDataGlobalService {
 						tenantId,
 						MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name")),
 				this::toRegionResponse);
+	}
+
+	public MasterDataPageResponse<LookupOptionResponse> findRegionLookups(Integer page, Integer size, String search, UUID tenantId) {
+		return findPage(
+				regionRepository,
+				page,
+				size,
+				search,
+				Sort.by("name").ascending().and(Sort.by("code")),
+				tenantScopedSpecification(
+						tenantId,
+						MasterDataQuerySupport.and(
+								MasterDataQuerySupport.activeSpecification(),
+								MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name"))),
+				this::toRegionLookupResponse);
 	}
 
 	public RegionResponse findRegionById(UUID id) {
@@ -192,6 +223,21 @@ public class MasterDataGlobalService {
 						tenantId,
 						MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name", "region.code", "region.name")),
 				this::toAreaResponse);
+	}
+
+	public MasterDataPageResponse<LookupOptionResponse> findAreaLookups(Integer page, Integer size, String search, UUID tenantId) {
+		return findPage(
+				areaRepository,
+				page,
+				size,
+				search,
+				Sort.by("name").ascending().and(Sort.by("code")),
+				tenantScopedSpecification(
+						tenantId,
+						MasterDataQuerySupport.and(
+								MasterDataQuerySupport.activeSpecification(),
+								MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name", "region.code", "region.name"))),
+				this::toAreaLookupResponse);
 	}
 
 	public AreaResponse findAreaById(UUID id) {
@@ -259,6 +305,32 @@ public class MasterDataGlobalService {
 								"area.code",
 								"area.name")),
 				this::toGlobalZipCodeResponse);
+	}
+
+	public MasterDataPageResponse<LookupOptionResponse> findGlobalZipCodeLookups(Integer page, Integer size, String search, UUID tenantId) {
+		return findPage(
+				globalZipCodeRepository,
+				page,
+				size,
+				search,
+				Sort.by("postalCode").ascending().and(Sort.by("city")),
+				zipCodeSpecification(
+						tenantId,
+						MasterDataQuerySupport.and(
+								MasterDataQuerySupport.activeSpecification(),
+								MasterDataQuerySupport.searchSpecification(
+										search,
+										"postalCode",
+										"city",
+										"provinceCode",
+										"provinceName",
+										"country.isoCode",
+										"country.name",
+										"region.code",
+										"region.name",
+										"area.code",
+										"area.name"))),
+				this::toGlobalZipCodeLookupResponse);
 	}
 
 	public GlobalZipCodeResponse findGlobalZipCodeById(UUID id) {
@@ -673,6 +745,18 @@ public class MasterDataGlobalService {
 				country.getUpdatedAt());
 	}
 
+	private LookupOptionResponse toCountryLookupResponse(Country country) {
+		String phoneCode = clean(country.getPhoneCode());
+		return new LookupOptionResponse(
+				country.getId(),
+				country.getIsoCode(),
+				country.getName(),
+				phoneCode,
+				lookupMetadata(
+						"isoCode", country.getIsoCode(),
+						"phoneCode", phoneCode));
+	}
+
 	private RegionResponse toRegionResponse(Region region) {
 		return new RegionResponse(
 				region.getId(),
@@ -683,6 +767,19 @@ public class MasterDataGlobalService {
 				region.getActive(),
 				region.getCreatedAt(),
 				region.getUpdatedAt());
+	}
+
+	private LookupOptionResponse toRegionLookupResponse(Region region) {
+		return new LookupOptionResponse(
+				region.getId(),
+				region.getCode(),
+				region.getName(),
+				region.getCountry().getName(),
+				lookupMetadata(
+						"tenantId", region.getTenantId() == null ? null : region.getTenantId().toString(),
+						"countryId", region.getCountry().getId().toString(),
+						"countryCode", region.getCountry().getIsoCode(),
+						"countryName", region.getCountry().getName()));
 	}
 
 	private AreaResponse toAreaResponse(Area area) {
@@ -696,6 +793,21 @@ public class MasterDataGlobalService {
 				area.getActive(),
 				area.getCreatedAt(),
 				area.getUpdatedAt());
+	}
+
+	private LookupOptionResponse toAreaLookupResponse(Area area) {
+		return new LookupOptionResponse(
+				area.getId(),
+				area.getCode(),
+				area.getName(),
+				area.getRegion().getName(),
+				lookupMetadata(
+						"tenantId", area.getTenantId() == null ? null : area.getTenantId().toString(),
+						"countryId", area.getCountry().getId().toString(),
+						"countryCode", area.getCountry().getIsoCode(),
+						"regionId", area.getRegion().getId().toString(),
+						"regionCode", area.getRegion().getCode(),
+						"regionName", area.getRegion().getName()));
 	}
 
 	private GlobalZipCodeResponse toGlobalZipCodeResponse(GlobalZipCode globalZipCode) {
@@ -715,6 +827,24 @@ public class MasterDataGlobalService {
 				globalZipCode.getActive(),
 				globalZipCode.getCreatedAt(),
 				globalZipCode.getUpdatedAt());
+	}
+
+	private LookupOptionResponse toGlobalZipCodeLookupResponse(GlobalZipCode globalZipCode) {
+		return new LookupOptionResponse(
+				globalZipCode.getId(),
+				globalZipCode.getPostalCode(),
+				globalZipCode.getCity(),
+				globalZipCode.getProvinceName(),
+				lookupMetadata(
+						"tenantId", globalZipCode.getTenantId() == null ? null : globalZipCode.getTenantId().toString(),
+						"countryId", globalZipCode.getCountry().getId().toString(),
+						"countryCode", globalZipCode.getCountry().getIsoCode(),
+						"regionId", globalZipCode.getRegion() == null ? null : globalZipCode.getRegion().getId().toString(),
+						"regionCode", globalZipCode.getRegion() == null ? null : globalZipCode.getRegion().getCode(),
+						"areaId", globalZipCode.getArea() == null ? null : globalZipCode.getArea().getId().toString(),
+						"areaCode", globalZipCode.getArea() == null ? null : globalZipCode.getArea().getCode(),
+						"provinceCode", globalZipCode.getProvinceCode(),
+						"provinceName", globalZipCode.getProvinceName()));
 	}
 
 	private CurrencyResponse toCurrencyResponse(Currency currency) {
@@ -837,6 +967,17 @@ public class MasterDataGlobalService {
 		return cleaned.isEmpty() ? null : cleaned;
 	}
 
+	private Map<String, String> lookupMetadata(String... entries) {
+		Map<String, String> metadata = new LinkedHashMap<>();
+		for (int index = 0; index < entries.length; index += 2) {
+			String value = entries[index + 1];
+			if (value != null && !value.isBlank()) {
+				metadata.put(entries[index], value);
+			}
+		}
+		return metadata;
+	}
+
 	private <T, R> MasterDataPageResponse<R> findPage(
 			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
 			Integer page,
@@ -848,6 +989,12 @@ public class MasterDataGlobalService {
 		return MasterDataQuerySupport.toPageResponse(
 				repository.findAll(specification, MasterDataQuerySupport.buildPageable(page, size, sort)),
 				mapper);
+	}
+
+	private Specification<Country> countrySearchSpecification(String search) {
+		return MasterDataQuerySupport.or(
+				MasterDataQuerySupport.searchSpecification(search, "isoCode", "name"),
+				MasterDataQuerySupport.digitsOnlyStartsWithSpecification(search, "phoneCode"));
 	}
 
 	private record ZipCodeRelations(UUID tenantId, Country country, Region region, Area area) {

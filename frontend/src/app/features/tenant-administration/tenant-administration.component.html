@@ -95,15 +95,19 @@
                   <input class="kt-input" type="text" formControlName="legalName" [readonly]="modalReadOnly()" />
                 </label>
 
-                <label class="tenant-admin-field">
-                  <span>{{ i18n.t('tenantAdministration.columns.defaultCountry') }}</span>
-                  <select class="kt-input" formControlName="defaultCountryId" [disabled]="modalReadOnly()">
-                    <option value="">{{ i18n.t('tenantAdministration.form.selectCountry') }}</option>
-                    @for (country of formOptions()?.countries ?? []; track country.id) {
-                      <option [value]="country.id">{{ country.name }} ({{ country.code }})</option>
-                    }
-                  </select>
-                </label>
+                <app-lookup-select
+                  class="tenant-admin-field"
+                  formControlName="defaultCountryId"
+                  [label]="i18n.t('tenantAdministration.columns.defaultCountry')"
+                  [placeholder]="i18n.t('tenantAdministration.form.selectCountry')"
+                  [required]="true"
+                  [labelRequired]="true"
+                  [readonly]="modalReadOnly()"
+                  [loadPage]="countryLookup"
+                  [initialOption]="selectedCountryInitialOption()"
+                  [closedLabelBuilder]="countryClosedLabelBuilder"
+                  [optionLabelBuilder]="countryOptionLabelBuilder"
+                  [errorText]="submitted() && form.controls.defaultCountryId.hasError('required') ? i18n.t('masterData.form.required') : ''" />
 
                 <label class="tenant-admin-field">
                   <span>{{ i18n.t('tenantAdministration.columns.defaultCurrency') }}</span>

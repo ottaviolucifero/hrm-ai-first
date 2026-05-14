@@ -30,6 +30,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -447,16 +448,89 @@ class MasterDataGlobalControllerTests {
 	}
 
 	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalLookupEndpointsSupportSearchPaginationAndMetadata() throws Exception {
+		UUID lookupCountryId = createCountry("Task 0646 Lookup Country", "L6");
+		UUID lookupRegionId = createRegion(FOUNDATION_TENANT_ID, lookupCountryId, "Task 0646 Lookup Region", "L6-R1");
+		UUID lookupAreaId = createArea(FOUNDATION_TENANT_ID, lookupCountryId, lookupRegionId, "Task 0646 Lookup Area", "L6-A1");
+		UUID lookupZipId = createZipCode(FOUNDATION_TENANT_ID, lookupCountryId, lookupRegionId, lookupAreaId, "Task 0646 Lookup City", "64046");
+
+		mockMvc.perform(get("/api/master-data/global/countries/lookup?search=Task 0646 Lookup Country&size=200"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.size").value(100))
+				.andExpect(jsonPath("$.content[0].id").value(lookupCountryId.toString()))
+				.andExpect(jsonPath("$.content[0].code").value("L6"))
+				.andExpect(jsonPath("$.content[0].name").value("Task 0646 Lookup Country"))
+				.andExpect(jsonPath("$.content[0].extraLabel").value("+999"))
+				.andExpect(jsonPath("$.content[0].metadata.phoneCode").value("+999"));
+
+		mockMvc.perform(get("/api/master-data/global/regions/lookup")
+						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("search", "Task 0646 Lookup Region"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].id").value(lookupRegionId.toString()))
+				.andExpect(jsonPath("$.content[0].metadata.tenantId").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.content[0].metadata.countryId").value(lookupCountryId.toString()));
+
+		mockMvc.perform(get("/api/master-data/global/areas/lookup")
+						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("search", "Task 0646 Lookup Area"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].id").value(lookupAreaId.toString()))
+				.andExpect(jsonPath("$.content[0].metadata.regionId").value(lookupRegionId.toString()));
+
+		mockMvc.perform(get("/api/master-data/global/zip-codes/lookup")
+						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("search", "Task 0646 Lookup"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[*].id").value(org.hamcrest.Matchers.hasItem(lookupZipId.toString())))
+				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].code").value(org.hamcrest.Matchers.hasItem("64046")))
+				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].name").value(org.hamcrest.Matchers.hasItem("Task 0646 Lookup City")))
+				.andExpect(jsonPath("$.content[?(@.id=='" + lookupZipId + "')].metadata.areaId").value(org.hamcrest.Matchers.hasItem(lookupAreaId.toString())));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void countryLookupIncludesPersistedPhoneCodeMetadataForSeededCountries() throws Exception {
+		assertCountryLookupContainsBySearch("France", "FR", "France", "+33");
+		assertCountryLookupContainsBySearch("Germany", "DE", "Germany", "+49");
+		assertCountryLookupContainsBySearch("Spain", "ES", "Spain", "+34");
+		assertCountryLookupContainsBySearch("Italy", "IT", "Italy", "+39");
+		assertCountryLookupContainsBySearch("Tunisia", "TN", "Tunisia", "+216");
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void countryLookupSupportsPhoneCodeSearchWithAndWithoutPlus() throws Exception {
+		assertCountryLookupContainsBySearch("+33", "FR", "France", "+33");
+		assertCountryLookupContainsBySearch("33", "FR", "France", "+33");
+		assertCountryLookupContainsBySearch("+49", "DE", "Germany", "+49");
+		assertCountryLookupContainsBySearch("49", "DE", "Germany", "+49");
+		assertCountryLookupContainsBySearch("+34", "ES", "Spain", "+34");
+		assertCountryLookupContainsBySearch("34", "ES", "Spain", "+34");
+		assertCountryLookupContainsBySearch("+39", "IT", "Italy", "+39");
+		assertCountryLookupContainsBySearch("39", "IT", "Italy", "+39");
+		assertCountryLookupContainsBySearch("+216", "TN", "Tunisia", "+216");
+		assertCountryLookupContainsBySearch("216", "TN", "Tunisia", "+216");
+	}
+
+	@Test
 	void openApiIncludesMasterDataGlobalCrudEndpoints() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/countries']").exists())
+				.andExpect(jsonPath("$.paths['/api/master-data/global/countries/lookup']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/countries/{id}']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/regions']").exists())
+				.andExpect(jsonPath("$.paths['/api/master-data/global/regions/lookup']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/regions/{id}']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/areas']").exists())
+				.andExpect(jsonPath("$.paths['/api/master-data/global/areas/lookup']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/areas/{id}']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes']").exists())
+				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes/lookup']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes/{id}']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes/import/italy']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/currencies']").exists())
@@ -650,5 +724,18 @@ class MasterDataGlobalControllerTests {
 			tenant.setDefaultCurrency(currencyRepository.findById(EUR_CURRENCY_ID).orElseThrow());
 			return tenantRepository.saveAndFlush(tenant);
 		});
+	}
+
+	private void assertCountryLookupContainsBySearch(
+			String search,
+			String expectedCode,
+			String expectedName,
+			String expectedPhoneCode) throws Exception {
+		mockMvc.perform(get("/api/master-data/global/countries/lookup").param("search", search))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[?(@.code=='" + expectedCode + "')].name").value(hasItem(expectedName)))
+				.andExpect(jsonPath("$.content[?(@.code=='" + expectedCode + "')].extraLabel").value(hasItem(expectedPhoneCode)))
+				.andExpect(jsonPath("$.content[?(@.code=='" + expectedCode + "')].metadata.isoCode").value(hasItem(expectedCode)))
+				.andExpect(jsonPath("$.content[?(@.code=='" + expectedCode + "')].metadata.phoneCode").value(hasItem(expectedPhoneCode)));
 	}
 }

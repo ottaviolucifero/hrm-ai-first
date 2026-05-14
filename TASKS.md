@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.43
+Versione: 2.45
 Ultimo aggiornamento: 2026-05-14
 Stato: In avanzamento
 
@@ -4573,7 +4573,7 @@ Completato:
 
 ### TASK-064.6 - Shared lookup select and phone field foundation
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -4608,6 +4608,17 @@ Include:
 - salvare verso il backend una stringa unica compatibile con i campi attuali;
 - supportare `required`, `disabled`, `readonly`, `helpText`, `errorText` e validazione minima del numero.
 
+Completato:
+
+- backend lookup foundation riusando `MasterDataPageResponse` e `MasterDataQuerySupport`, senza introdurre architetture parallele;
+- endpoint lookup paginati aggiunti solo per `Country`, `Region`, `Area` e `GlobalZipCode`, con `page`, `size`, `search`, ordinamento coerente e metadata minimi utili;
+- DTO backend shared `LookupOptionResponse` introdotto con `id`, `code`, `name`, `extraLabel`, `metadata`;
+- componente shared Angular `app-lookup-select` introdotto con `ControlValueAccessor`, supporto select/autocomplete, debounce, `minSearchLength`, paginazione, loading/error/empty, `helpText`, `errorText`, `clearable`, `readonly`, `required` e i18n `it/fr/en`;
+- componente shared Angular `app-phone-field` introdotto con modello interno strutturato `dialCode`, `nationalNumber`, `fullNumber`, `ControlValueAccessor`, default `+39`/`+216`, lookup prefissi basato sui paesi e validazione minima non country-specific;
+- pilot limitato al form `Company Profile`, mantenendo il contratto backend corrente `phone: string | null` tramite emissione compatibile `compat-string`;
+- nessuna sostituzione massiva delle select esistenti, nessuna modifica schema/API `CompanyProfile`, nessun endpoint phone-specific dedicato;
+- test backend/frontend aggiunti e validati con esito reale verde.
+
 Motivazione:
 
 Le select attuali nei form caricano spesso tutta la lista. Questo non scala per entita come `Tenant`, `CompanyProfile`, `GlobalZipCode`, `Employee`, `User`, `OfficeLocation`. Serve una foundation shared prima di completare o rifinire le UI amministrative piu complesse.
@@ -4640,6 +4651,64 @@ Esclusioni:
 - non modificare security/RBAC;
 - non fare redesign del form `CompanyProfile`;
 - non introdurre modifiche Employee UI fuori dai task successivi gia pianificati.
+
+### TASK-064.8 - Normalize phone fields for Company Profile and future contact entities
+
+Stato: TODO
+
+Obiettivo:
+
+Normalizzare la persistenza telefono separando prefisso internazionale e numero nazionale/locale nel database e nelle API, invece di affidarsi solo a una stringa unica.
+
+Motivazione:
+
+Una singola stringa telefono e utile nel breve periodo, ma puo creare problemi per future integrazioni con provider SMS, WhatsApp, telefonia o notifiche che richiedono numeri normalizzati e strutturati.
+
+Scope:
+
+- valutare i campi telefono attuali in `CompanyProfile` e nelle future entita di contatto;
+- aggiungere campi separati dove appropriato, ad esempio:
+  - `phoneDialCode`
+  - `phoneNationalNumber`
+  - `phoneFullNumber`, opzionale o calcolato se utile
+- aggiornare migration database;
+- aggiornare contratti DTO/API;
+- aggiornare i form frontend per inviare e ricevere dati telefono strutturati;
+- mantenere backward compatibility o definire una strategia di migrazione per i valori telefono esistenti;
+- definire lo standard da riusare piu avanti per `Employee`, `User`, `OfficeLocation` e altre entita di contatto;
+- aggiungere test backend e frontend;
+- aggiornare `docs/qa/QA-REPORTS.md`;
+- aggiornare `DECISIONS.md` se il modello telefono normalizzato diventa uno standard durevole di progetto.
+
+### TASK-064.9 - Apply shared lookup select to existing administration forms
+
+Stato: DONE
+
+Obiettivo:
+
+Applicare progressivamente `app-lookup-select` alle aree amministrative gia implementate, eliminando select locali non scalabili dove il beneficio e immediato e mantenendo invariati contratti API/DTO.
+
+Completato:
+
+- analisi select amministrative correnti su:
+  - `UserAdministrationForm`
+  - `TenantAdministration` (modal create/edit)
+  - `CompanyProfileAdministrationForm`
+  - `UserAdministrationDetail` (assegnazione ruoli/tenant access)
+  - `MasterDataAdmin` (filtri categoria/entita)
+  - `Login` (selettore lingua)
+- migrazione a `app-lookup-select` effettuata su:
+  - `UserAdministrationForm`:
+    - `tenantId` (create platform scope)
+    - `companyProfileId` (filtrato per tenant selezionato)
+  - `TenantAdministration`:
+    - `defaultCountryId` (lookup paginato remoto `Country`)
+- mantenuti invariati e rimandati con motivazione:
+  - `CompanyProfileAdministrationForm` select geografiche (`countryId`, `regionId`, `globalZipCodeId`) per evitare regressioni sul flusso address pilot gia validato in `TASK-064.6`; richiedono un follow-up dedicato per orchestrare lookup remoto + dipendenze country/region/zip senza duplicare logiche;
+  - `TenantAdministration.defaultCurrencyId` per assenza di endpoint lookup dedicato currency in scope `TASK-064.9`;
+  - select statiche o a basso valore immediato (`Login` lingua, filtri locali `MasterDataAdmin`) non migrate per evitare sostituzione massiva non necessaria;
+- nessuna modifica backend/security/RBAC e nessuna nuova API lookup introdotta;
+- test frontend aggiornati ed eseguiti con esito reale verde (`npm test`, `npm run build`).
 
 ### TASK-065 - Implementare UI Employee management enterprise
 
@@ -4716,6 +4785,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.45 | 2026-05-14 | TASK-064.9 chiuso come DONE con migrazione progressiva di select amministrative a `app-lookup-select`: `UserAdministrationForm` (`tenantId`, `companyProfileId`) e `TenantAdministration` (`defaultCountryId` lookup paginato), mantenendo invariati backend/security e documentando i campi rimandati a follow-up per evitare regressioni sui flussi geografici complessi. |
+| 2.44 | 2026-05-14 | TASK-064.6 chiuso come DONE: introdotta la foundation shared lookup/phone con endpoint backend paginati `Country/Region/Area/GlobalZipCode`, DTO `LookupOptionResponse`, componenti Angular `app-lookup-select` e `app-phone-field`, pilot limitato a `CompanyProfile` con compatibilita `phone: string | null`, test backend/frontend reali verdi e nuovo follow-up `TASK-064.8` per la futura normalizzazione strutturata dei telefoni. |
 | 2.43 | 2026-05-14 | Aggiunto `TASK-064.7 - Supporto CAP manuali nei form indirizzo` come follow-up documentale generale per i lookup CAP/ZIP manuali con `areaId` nullable e fallback `provinceName/provinceCode`, includendo scope, test attesi ed esclusioni fuori perimetro (nessun codice/migration in questo passaggio). |
 | 2.42 | 2026-05-13 | TASK-064.4 chiuso come DONE: aggiunti i campi nullable `taxNumber`, `pecEmail` e `sdiCode` su `CompanyProfile` con Flyway `V27` PostgreSQL/H2, mapping foundation response, test backend reali verdi, chiavi i18n catalog-only `it/fr/en` e QA report aggiornato senza toccare `Tenant`, security/RBAC o CRUD/UI `CompanyProfile`. |
 | 2.41 | 2026-05-13 | TASK-064.3 chiuso come DONE: formalizzata in `DEC-039` la regola durevole per i nuovi campi `code` con auto-code `prime due lettere + progressivo 3 cifre`, UI non editabile quando automatico, nota operativa minima in `AGENTS.md` e QA documentale registrato senza modifiche codice. |

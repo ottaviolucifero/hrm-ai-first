@@ -158,25 +158,14 @@
             [required]="true"
             [submitted]="submitted()" />
 
-          <div class="company-profile-form-phone-grid">
-            <label class="company-profile-form-field">
-              <span>{{ i18n.t('companyProfileAdministration.fields.phonePrefix') }}</span>
-              <select class="kt-input" formControlName="phonePrefix" (change)="selectPhonePrefix($event)">
-                <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.phonePrefix') }}</option>
-                @for (dialCode of phoneDialCodeOptions; track dialCode.code) {
-                  <option [value]="dialCode.code">{{ dialCodeLabel(dialCode) }}</option>
-                }
-              </select>
-            </label>
-
-            <app-input
-              formControlName="phoneNumber"
-              [label]="i18n.t('companyProfileAdministration.fields.phoneNumber')"
-              [labelRequired]="true"
-              [required]="true"
-              [errorText]="validationMessage('phoneNumber')"
-              [helpText]="i18n.t('companyProfileAdministration.form.phone.note')" />
-          </div>
+          <app-phone-field
+            formControlName="phone"
+            [required]="true"
+            [emitMode]="'compat-string'"
+            [selectedCountryCode]="selectedCountryCode()"
+            [dialCodeLookup]="countryPhoneLookup"
+            [errorText]="validationMessage('phone')"
+            [helpText]="i18n.t('companyProfileAdministration.form.phone.note')" />
         </section>
 
         <section class="kt-card company-profile-form-card company-profile-form-card-wide" aria-labelledby="company-profile-form-address">
