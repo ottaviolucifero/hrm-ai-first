@@ -225,6 +225,30 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       return leftCountry.name.localeCompare(rightCountry.name, 'it', { sensitivity: 'base' });
     });
   });
+  protected readonly tenantLookupOptions = computed<readonly LookupOption[]>(() =>
+    (this.formOptions()?.tenants ?? []).map((tenant) => ({
+      id: tenant.id,
+      code: tenant.code,
+      name: tenant.name
+    })));
+  protected readonly companyProfileTypeLookupOptions = computed<readonly LookupOption[]>(() =>
+    this.filteredCompanyProfileTypes().map((type) => ({
+      id: type.id,
+      code: type.code,
+      name: type.name
+    })));
+  protected readonly countryLookupOptions = computed<readonly LookupOption[]>(() =>
+    this.orderedCountries().map((country) => ({
+      id: country.id,
+      code: country.code,
+      name: country.name
+    })));
+  protected readonly tenantLookupClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly tenantLookupOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly companyProfileTypeClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly companyProfileTypeOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly countryLookupClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly countryLookupOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
   protected readonly showItalianFiscalFields = computed(() => this.isItalianCountryCode(this.selectedCountryCode()));
   protected readonly showForeignFiscalField = computed(() => {
     const countryCode = this.selectedCountryCode().trim();
@@ -295,8 +319,8 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.load();
   }
 
-  protected selectTenant(event: Event): void {
-    const tenantId = (event.target as HTMLSelectElement).value;
+  protected selectTenant(value: string | Event): void {
+    const tenantId = this.lookupValue(value);
     this.form.controls.tenantId.setValue(tenantId);
     this.form.controls.companyProfileTypeId.setValue('');
     this.form.controls.regionId.setValue('');
@@ -311,8 +335,8 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.updateTenantLabel();
   }
 
-  protected selectCountry(event: Event): void {
-    const countryId = (event.target as HTMLSelectElement).value;
+  protected selectCountry(value: string | Event): void {
+    const countryId = this.lookupValue(value);
     this.form.controls.countryId.setValue(countryId);
     this.form.controls.regionId.setValue('');
     this.form.controls.areaId.setValue('');
@@ -1060,6 +1084,14 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
 
   private resolveApiMessage(error: unknown, fallbackKey: I18nKey): string {
     return resolveApiErrorMessage(this.i18n, error, { fallbackKey });
+  }
+
+  private lookupValue(value: string | Event): string {
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    return (value.target as HTMLSelectElement).value;
   }
 
   private toCountryPhoneLookupPage(page: LookupPage<LookupOption>): LookupPage<LookupOption> {

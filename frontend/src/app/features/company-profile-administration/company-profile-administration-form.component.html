@@ -72,18 +72,17 @@
           </h2>
 
           @if (canEditTenant()) {
-            <label class="company-profile-form-field">
-              <span>{{ i18n.t('companyProfileAdministration.fields.tenant') }} <strong class="company-profile-form-required" aria-hidden="true">*</strong></span>
-              <select class="kt-input" formControlName="tenantId" (change)="selectTenant($event)">
-                <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.tenant') }}</option>
-                @for (tenant of formOptions()?.tenants ?? []; track tenant.id) {
-                  <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.code }})</option>
-                }
-              </select>
-              @if (validationMessage('tenantId')) {
-                <small>{{ validationMessage('tenantId') }}</small>
-              }
-            </label>
+            <app-lookup-select
+              formControlName="tenantId"
+              [label]="i18n.t('companyProfileAdministration.fields.tenant')"
+              [labelRequired]="true"
+              [required]="true"
+              [placeholder]="i18n.t('companyProfileAdministration.form.placeholders.tenant')"
+              [options]="tenantLookupOptions()"
+              [closedLabelBuilder]="tenantLookupClosedLabelBuilder"
+              [optionLabelBuilder]="tenantLookupOptionLabelBuilder"
+              [errorText]="validationMessage('tenantId')"
+              (valueChange)="selectTenant($event)" />
           } @else {
             <app-input
               formControlName="tenantLabel"
@@ -91,31 +90,28 @@
               [required]="true" />
           }
 
-          <label class="company-profile-form-field">
-            <span>{{ i18n.t('companyProfileAdministration.fields.companyProfileType') }} <strong class="company-profile-form-required" aria-hidden="true">*</strong></span>
-            <select class="kt-input" formControlName="companyProfileTypeId">
-              <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.companyProfileType') }}</option>
-              @for (type of filteredCompanyProfileTypes(); track type.id) {
-                <option [value]="type.id">{{ type.name }} ({{ type.code }})</option>
-              }
-            </select>
-            @if (validationMessage('companyProfileTypeId')) {
-              <small>{{ validationMessage('companyProfileTypeId') }}</small>
-            }
-          </label>
+          <app-lookup-select
+            formControlName="companyProfileTypeId"
+            [label]="i18n.t('companyProfileAdministration.fields.companyProfileType')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('companyProfileAdministration.form.placeholders.companyProfileType')"
+            [options]="companyProfileTypeLookupOptions()"
+            [closedLabelBuilder]="companyProfileTypeClosedLabelBuilder"
+            [optionLabelBuilder]="companyProfileTypeOptionLabelBuilder"
+            [errorText]="validationMessage('companyProfileTypeId')" />
 
-          <label class="company-profile-form-field">
-            <span>{{ i18n.t('masterData.columns.country') }} <strong class="company-profile-form-required" aria-hidden="true">*</strong></span>
-            <select class="kt-input" formControlName="countryId" (change)="selectCountry($event)">
-              <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.country') }}</option>
-              @for (country of orderedCountries(); track country.id) {
-                <option [value]="country.id">{{ country.name }} ({{ country.code }})</option>
-              }
-            </select>
-            @if (validationMessage('countryId')) {
-              <small>{{ validationMessage('countryId') }}</small>
-            }
-          </label>
+          <app-lookup-select
+            formControlName="countryId"
+            [label]="i18n.t('masterData.columns.country')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('companyProfileAdministration.form.placeholders.country')"
+            [options]="countryLookupOptions()"
+            [closedLabelBuilder]="countryLookupClosedLabelBuilder"
+            [optionLabelBuilder]="countryLookupOptionLabelBuilder"
+            [errorText]="validationMessage('countryId')"
+            (valueChange)="selectCountry($event)" />
         </section>
 
         <section class="kt-card company-profile-form-card" aria-labelledby="company-profile-form-fiscal">

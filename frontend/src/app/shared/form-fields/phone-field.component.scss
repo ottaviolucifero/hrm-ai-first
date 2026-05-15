@@ -27,10 +27,12 @@
 }
 
 .phone-field-number-input {
+  box-sizing: border-box;
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 0.5rem;
   color: var(--color-foreground, #111827);
   font-size: 0.9375rem;
+  line-height: 1.25rem;
   min-height: 2.5rem;
   outline: none;
   padding: 0.5625rem 0.75rem;

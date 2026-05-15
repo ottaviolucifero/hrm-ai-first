@@ -84,8 +84,16 @@ export class UserAdministrationFormComponent implements OnDestroy {
       name: companyProfile.tradeName || companyProfile.legalName,
       extraLabel: companyProfile.legalName
     })));
+  protected readonly userTypeLookupOptions = computed<readonly LookupOption[]>(() =>
+    (this.formOptions()?.userTypes ?? []).map((userType) => ({
+      id: userType.id,
+      code: userType.code,
+      name: userType.name
+    })));
   protected readonly tenantClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
   protected readonly tenantOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly userTypeClosedLabelBuilder = (option: LookupOption): string => option.name || option.code;
+  protected readonly userTypeOptionLabelBuilder = (option: LookupOption): string => option.name || option.code;
   protected readonly companyProfileClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
   protected readonly companyProfileOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
 

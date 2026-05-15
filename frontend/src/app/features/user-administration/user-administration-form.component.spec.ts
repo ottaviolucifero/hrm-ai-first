@@ -41,6 +41,7 @@ describe('UserAdministrationFormComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Nuovo utente');
     expect(fixture.nativeElement.textContent).toContain('Password iniziale');
     expect(fixture.nativeElement.querySelector('app-email-field')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-lookup-select[formcontrolname="userTypeId"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelectorAll('app-password-field').length).toBe(2);
     expect(fixture.nativeElement.querySelectorAll('app-input').length).toBeGreaterThan(0);
     expect(fixture.nativeElement.querySelectorAll('app-checkbox').length).toBe(2);

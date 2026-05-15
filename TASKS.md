@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.50
+Versione: 2.51
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -4789,16 +4789,26 @@ Completato:
   - `Login` (selettore lingua)
 - migrazione a `app-lookup-select` effettuata su:
   - `UserAdministrationForm`:
+    - `userTypeId`
     - `tenantId` (create platform scope)
     - `companyProfileId` (filtrato per tenant selezionato)
+  - `UserAdministrationDetail`:
+    - tenant per assegnazione ruoli quando sono disponibili piu tenant access attivi;
+    - ruolo assegnabile nel pannello gestione ruoli;
+  - `CompanyProfileAdministrationForm`:
+    - `tenantId` (solo create platform scope);
+    - `companyProfileTypeId`;
+    - `countryId`;
   - `TenantAdministration`:
     - `defaultCountryId` (lookup paginato remoto `Country`)
 - mantenuti invariati e rimandati con motivazione:
-  - `CompanyProfileAdministrationForm` select geografiche (`countryId`, `regionId`, `globalZipCodeId`) per evitare regressioni sul flusso address pilot gia validato in `TASK-064.6`; richiedono un follow-up dedicato per orchestrare lookup remoto + dipendenze country/region/zip senza duplicare logiche;
+  - `CompanyProfileAdministrationForm` lookup geografiche gia migrate (`regionId`, `areaId`, `globalZipCodeId`) lasciate invariate per evitare regressioni sul flusso address pilot gia validato in `TASK-064.6`;
   - `TenantAdministration.defaultCurrencyId` per assenza di endpoint lookup dedicato currency in scope `TASK-064.10`;
-  - select statiche o a basso valore immediato (`Login` lingua, filtri locali `MasterDataAdmin`) non migrate per evitare sostituzione massiva non necessaria;
+  - select statiche o a basso valore immediato (`Login` lingua, filtri locali `MasterDataAdmin` categoria/entita) non migrate per evitare sostituzione massiva non necessaria;
+- verifica styling condiviso completata:
+  - `app-lookup-select` mantiene gia `min-height: 2.5rem`, coerente con `app-input` e con i campi lookup geografici `Region`/`Area`/`CAP`; nessun fix CSS locale o duplicato necessario;
 - nessuna modifica backend/security/RBAC e nessuna nuova API lookup introdotta;
-- test frontend aggiornati ed eseguiti con esito reale verde (`npm test`, `npm run build`).
+- test frontend aggiornati ed eseguiti con esito reale verde (`npm.cmd test -- --watch=false`, `npm.cmd run build`).
 
 ### TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base
 
@@ -4927,6 +4937,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.51 | 2026-05-15 | TASK-064.10 completato/corretto: migrate anche le select residue `UserAdministrationForm.userTypeId`, `UserAdministrationDetail` tenant/ruolo assegnabile e `CompanyProfileAdministrationForm` tenant/tipo/paese a `app-lookup-select`, mantenendo locali `MasterDataAdmin` categoria/entita e `TenantAdministration.defaultCurrencyId`, con test frontend reali verdi e nessun cambio backend/API. |
 | 2.50 | 2026-05-15 | TASK-064.9 completato: normalizzata la persistenza telefono di `CompanyProfile` con campi strutturati `phoneDialCode` e `phoneNationalNumber`, migration vendor-specific `V34` con backfill legacy conservativo, bridge temporaneo `phone`, aggiornamenti backend/frontend cross-stack, nuova decisione durevole su standard telefono e test reali verdi. |
 | 2.49 | 2026-05-15 | Aggiunto il nuovo follow-up documentale `TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base`, con scope, regole funzionali, vincoli ed esclusioni coerenti al modello geografico tenant-aware approvato (`TASK-062`/`TASK-063`) e senza modifiche runtime/backend/frontend. |
 | 2.48 | 2026-05-15 | TASK-064.8 chiuso come DONE nel working tree del branch dedicato: `CompanyProfileAdministrationForm` supporta la creazione guidata estera di `Region`, `Area` e `GlobalZipCode` tramite `app-lookup-select` con pulsante `+` esterno, popup locali di feature e auto-code backend tenant-aware `RE###`/`AR###`, senza modificare schema/security/RBAC; test backend/frontend reali verdi e QA aggiornata con sola nota residua sulla verifica manuale browser. |
