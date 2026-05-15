@@ -70,7 +70,15 @@ public class CompanyProfile extends BaseMasterEntity {
 	private String pecEmail;
 
 	@Size(max = 50)
-	@Column(name = "phone", length = 50)
+	@Column(name = "phone_dial_code", length = 10)
+	private String phoneDialCode;
+
+	@Size(max = 50)
+	@Column(name = "phone_national_number", length = 50)
+	private String phoneNationalNumber;
+
+	@Size(max = 70)
+	@Column(name = "phone", length = 70)
 	private String phone;
 
 	@Size(max = 50)
@@ -182,6 +190,22 @@ public class CompanyProfile extends BaseMasterEntity {
 
 	public void setPecEmail(String pecEmail) {
 		this.pecEmail = pecEmail;
+	}
+
+	public String getPhoneDialCode() {
+		return phoneDialCode;
+	}
+
+	public void setPhoneDialCode(String phoneDialCode) {
+		this.phoneDialCode = phoneDialCode;
+	}
+
+	public String getPhoneNationalNumber() {
+		return phoneNationalNumber;
+	}
+
+	public void setPhoneNationalNumber(String phoneNationalNumber) {
+		this.phoneNationalNumber = phoneNationalNumber;
 	}
 
 	public String getPhone() {

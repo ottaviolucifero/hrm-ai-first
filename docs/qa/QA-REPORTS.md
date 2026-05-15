@@ -2816,3 +2816,45 @@ Nota operativa:
 
 
 
+### TASK-064.9 - CompanyProfile phone persistence normalization + compatibility bridge
+
+- Data: 2026-05-15
+- Branch: `task-064-9-company-profile-phone-normalization`
+- Task: TASK-064.9 - CompanyProfile phone persistence normalization + compatibility bridge
+- Agente/Modello usato:
+  - Analisi/planning: GPT-5.5 Thinking
+  - Sviluppo: GPT-5.5
+  - QA/regressione: validazione reale con test backend/frontend e build Angular
+- Aree/file verificati:
+  - backend `CompanyProfile` entity/DTO/service/foundation mapping
+  - migration Flyway vendor-specific PostgreSQL/H2
+  - test backend `CompanyProfileAdministrationControllerTests`, regressione `MasterDataGlobalControllerTests`, suite backend completa
+  - frontend `CompanyProfileAdministrationFormComponent`, `CompanyProfileAdministrationDetailComponent`, model/service, i18n `it/fr/en`
+  - documentazione `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=CompanyProfileAdministrationControllerTests test` -> OK, `BUILD SUCCESS`, 20 test passed
+  - `cd backend && .\mvnw.cmd -Dtest=MasterDataGlobalControllerTests test` -> KO iniziale per blocco sandbox Maven (`Permission denied: getsockopt` sul parent POM); rilanciato con permessi elevati -> OK, `BUILD SUCCESS`, 22 test passed
+  - `cd backend && .\mvnw.cmd test` -> OK, `BUILD SUCCESS`, suite backend completa verde
+  - `cd frontend && npm.cmd test -- --watch=false` -> OK, 38 file test passed, 286 test passed
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale (`2.18 MB`, sforamento `175.18 kB`)
+- Esiti reali:
+  - backend verde sui test mirati del task e sulla suite completa
+  - frontend verde su test e build
+  - nessuna regressione osservata sul lookup `phoneCode`
+- Verifiche funzionali:
+  - `CompanyProfile` persiste ora `phoneDialCode` e `phoneNationalNumber`; `phoneFullNumber` resta derivato e non viene persistito
+  - il campo legacy `phone` resta disponibile come bridge temporaneo di compatibilita per read/fallback legacy
+  - la migration `V34` PostgreSQL/H2 aggiunge i nuovi campi, estende la lunghezza del legacy `phone` e migra i dati in modo conservativo
+  - lo split legacy avviene solo per valori trim con forma `+prefisso spazio numero`; negli altri casi il valore legacy completo viene copiato in `phoneNationalNumber` con `phoneDialCode = null`
+  - le API admin create/update accettano payload strutturati `phoneDialCode` / `phoneNationalNumber`; il nuovo frontend non invia piu `phone`
+  - il backend accetta `phone` solo come fallback legacy temporaneo e rifiuta richieste senza `phoneNationalNumber` strutturato ne `phone` legacy
+  - le response admin/detail/foundation espongono sia i nuovi campi strutturati sia `phone` legacy
+  - il form Company Profile usa `app-phone-field` in modalita strutturata senza redesign e la detail view ricompone il numero dai campi strutturati quando necessario
+  - `DEC-041` formalizza lo standard durevole per la normalizzazione progressiva dei telefoni sulle future entita di contatto
+- Limiti/note:
+  - lo scope runtime resta limitato a `CompanyProfile`; `OfficeLocation`, `Employee`, `UserAccount` e altre entita non sono state modificate in questo task
+  - il warning budget frontend resta non bloccante e preesistente come vincolo di bundle
+  - durante i comandi Maven compare in coda un rumore ambiente (`'D' n’est pas reconnu...`) non bloccante: i processi terminano comunque con `BUILD SUCCESS`
+- Stato finale: PASS
+
+

@@ -424,11 +424,14 @@ class HrmBackendApplicationTests {
 	}
 
 	@Test
-	void foundationReadServiceMapsCompanyProfileFiscalFields() {
+	void foundationReadServiceMapsCompanyProfileFiscalAndStructuredPhoneFields() {
 		var companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow();
 		companyProfile.setTaxIdentifier("LEGACY-TAX-ID");
 		companyProfile.setTaxNumber("NEW-TAX-NUMBER");
 		companyProfile.setPecEmail("pec@example.it");
+		companyProfile.setPhoneDialCode("+39");
+		companyProfile.setPhoneNationalNumber("0212345678");
+		companyProfile.setPhone("+39 0212345678");
 		companyProfile.setSdiCode("SDI1234");
 		companyProfileRepository.saveAndFlush(companyProfile);
 
@@ -438,6 +441,9 @@ class HrmBackendApplicationTests {
 					assertThat(response.taxIdentifier()).isEqualTo("LEGACY-TAX-ID");
 					assertThat(response.taxNumber()).isEqualTo("NEW-TAX-NUMBER");
 					assertThat(response.pecEmail()).isEqualTo("pec@example.it");
+					assertThat(response.phoneDialCode()).isEqualTo("+39");
+					assertThat(response.phoneNationalNumber()).isEqualTo("0212345678");
+					assertThat(response.phone()).isEqualTo("+39 0212345678");
 					assertThat(response.sdiCode()).isEqualTo("SDI1234");
 				});
 	}
