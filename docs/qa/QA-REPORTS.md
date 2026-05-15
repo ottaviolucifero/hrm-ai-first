@@ -6,6 +6,65 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo
+
+- Data: 2026-05-15
+- Branch: `task-064-8-manual-foreign-geography`
+- Task: TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo
+- Modello consigliato nel prompt operativo: 5.3 Codex
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/dto/masterdata/global/RegionRequest.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/masterdata/global/AreaRequest.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataGlobalService.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataGlobalControllerTests.java`
+  - `frontend/src/app/shared/components/lookup-select/lookup-select.component.*`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-form.component.*`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration.service.ts`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration.models.ts`
+  - `frontend/src/app/features/company-profile-administration/company-profile-geography-create-dialog.component.*`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificato contro il codice reale che il solo form indirizzo operativo in scope fosse `CompanyProfileAdministrationForm`;
+  - verificato che il problema reale della creazione `Region` non fosse il payload `tenantId/countryId`, ma il fatto che `RegionRequest` e `AreaRequest` richiedessero ancora `code` manuale;
+  - verificato che `ZIP/CAP` non avesse lo stesso problema perche continua a usare `postalCode`/`city` sul contratto gia esistente;
+  - verificato il riuso del pattern auto-code gia adottato nei master data recenti e l'assenza di un helper condiviso immediatamente riusabile dentro `MasterDataGlobalService`, scegliendo quindi una soluzione locale minima nello stesso service;
+  - verificato che tenant/security/RBAC ed endpoint REST potessero restare invariati.
+- Patch applicata:
+  - resi opzionali i campi `code` in `RegionRequest` e `AreaRequest`;
+  - aggiunto in `MasterDataGlobalService` l'auto-code tenant-aware locale `RE###`/`AR###` in create, con preservazione del codice esistente in update e senza endpoint paralleli o migration DB;
+  - esteso i test backend per create senza `code`, progressivo automatico, coerenza `country/region/area` e preservazione del `code` in update;
+  - rimosso il campo `code` dai popup `Region`/`Area` e dai payload frontend corrispondenti, mantenendo `postalCode` e `city` per `ZIP/CAP`;
+  - corretto il dialog geografico per attivare solo i controlli coerenti con la modalita (`region`, `area`, `zip`);
+  - spostato il pulsante `+` di `app-lookup-select` all'esterno del campo, mantenendo interna solo la `x` di clear;
+  - aggiornati i18n `it/fr/en`, test `lookup-select`, test dialog geografico e test `CompanyProfileAdministrationForm` sul nuovo comportamento.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd backend && .\mvnw.cmd "-Dtest=MasterDataGlobalControllerTests,CompanyProfileAdministrationControllerTests" test`
+- Esiti reali:
+  - frontend build: OK con warning noto budget iniziale (`2.17 MB`, sforamento `174.07 kB`);
+  - frontend test completo: OK, 38 file test passed, 285 test passed;
+  - backend completo: `BUILD SUCCESS`, 245 test, 0 failure, 0 error, 0 skipped;
+  - backend targeted: `BUILD SUCCESS`, 40 test, 0 failure, 0 error, 0 skipped.
+- Regressioni trovate:
+  - il primo tentativo di test backend mirato ha evidenziato che `updateRegion` e `updateArea` stavano ancora leggendo `request.code()` invece di preservare il codice esistente; corretto nel service;
+  - il primo pass dei nuovi test frontend sul popup ha evidenziato che i controlli nascosti restavano `required`, bloccando il submit di `Region` e `Area`; corretto disattivando i controlli fuori modalita;
+  - nei log Maven resta il rumore shell residuale `'D' n est pas reconnu...`, senza impatto sul `BUILD SUCCESS`.
+- QA manuale consigliata:
+  1. Company Profile con paese Italia: verificare che non compaiano i pulsanti `+`, che il CAP resti da lookup e che provincia/citta si popolino come prima.
+  2. Company Profile con paese estero e permesso `TENANT.MASTER_DATA.CREATE`: verificare sequenza `Country -> Region -> Area -> ZIP`, apertura popup e auto-selezione del record creato.
+  3. Company Profile estero senza permessi master data create/manage: verificare che il form resti selettivo ma senza affordance di creazione.
+  4. Company Profile estero in edit con dati gia creati manualmente: verificare riapertura coerente delle lookup e salvataggio senza regressioni.
+- Limiti/note:
+  - il task risulta completato e validato nel working tree locale del branch dedicato; non esiste ancora un commit sul branch;
+  - la QA browser manuale non e stata eseguita in questa sessione CLI;
+  - il warning budget frontend iniziale resta invariato e non e stato affrontato in questo task.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo (pianificazione documentale)
 
 - Data: 2026-05-14

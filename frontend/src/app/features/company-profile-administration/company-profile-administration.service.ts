@@ -3,12 +3,18 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
+  CompanyProfileAdministrationAreaRecord,
   CompanyProfileAdministrationCompanyProfileDetail,
   CompanyProfileAdministrationCompanyProfileListItem,
+  CompanyProfileAdministrationCreateAreaRequest,
+  CompanyProfileAdministrationCreateGlobalZipCodeRequest,
   CompanyProfileAdministrationCreateRequest,
+  CompanyProfileAdministrationCreateRegionRequest,
   CompanyProfileAdministrationFormOptions,
   CompanyProfileAdministrationPage,
   CompanyProfileAdministrationQuery,
+  CompanyProfileAdministrationGlobalZipCodeRecord,
+  CompanyProfileAdministrationRegionRecord,
   CompanyProfileAdministrationUpdateRequest
 } from './company-profile-administration.models';
 
@@ -48,6 +54,20 @@ export class CompanyProfileAdministrationService {
 
   createCompanyProfile(payload: CompanyProfileAdministrationCreateRequest): Observable<CompanyProfileAdministrationCompanyProfileDetail> {
     return this.http.post<CompanyProfileAdministrationCompanyProfileDetail>('/api/admin/company-profiles', payload);
+  }
+
+  createRegion(payload: CompanyProfileAdministrationCreateRegionRequest): Observable<CompanyProfileAdministrationRegionRecord> {
+    return this.http.post<CompanyProfileAdministrationRegionRecord>('/api/master-data/global/regions', payload);
+  }
+
+  createArea(payload: CompanyProfileAdministrationCreateAreaRequest): Observable<CompanyProfileAdministrationAreaRecord> {
+    return this.http.post<CompanyProfileAdministrationAreaRecord>('/api/master-data/global/areas', payload);
+  }
+
+  createGlobalZipCode(
+    payload: CompanyProfileAdministrationCreateGlobalZipCodeRequest
+  ): Observable<CompanyProfileAdministrationGlobalZipCodeRecord> {
+    return this.http.post<CompanyProfileAdministrationGlobalZipCodeRecord>('/api/master-data/global/zip-codes', payload);
   }
 
   updateCompanyProfile(

@@ -51,6 +51,9 @@ export class LookupSelectComponent implements ControlValueAccessor, Validator, O
   @Input() disabled = false;
   @Input() readonly = false;
   @Input() clearable = false;
+  @Input() createEnabled = false;
+  @Input() createDisabled = false;
+  @Input() createLabel = '';
   @Input() autocomplete = true;
   @Input() compact = false;
   @Input() minSearchLength = 0;
@@ -81,6 +84,7 @@ export class LookupSelectComponent implements ControlValueAccessor, Validator, O
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() optionChange = new EventEmitter<LookupOption | null>();
+  @Output() createRequested = new EventEmitter<void>();
 
   protected panelOpen = false;
   protected loading = false;
@@ -140,6 +144,14 @@ export class LookupSelectComponent implements ControlValueAccessor, Validator, O
 
   protected get readonlyState(): boolean {
     return this.readonly || this.disabledState;
+  }
+
+  protected get createActionVisible(): boolean {
+    return this.createEnabled;
+  }
+
+  protected get createActionDisabled(): boolean {
+    return this.readonlyState || this.createDisabled;
   }
 
   protected get hasValue(): boolean {
@@ -302,6 +314,14 @@ export class LookupSelectComponent implements ControlValueAccessor, Validator, O
     this.optionChange.emit(null);
     this.onValidatorChange();
     this.markForCheck();
+  }
+
+  protected requestCreate(): void {
+    if (this.createActionDisabled) {
+      return;
+    }
+
+    this.createRequested.emit();
   }
 
   protected loadMore(): void {

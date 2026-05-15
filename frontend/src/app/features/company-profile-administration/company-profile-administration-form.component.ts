@@ -17,13 +17,24 @@ import { LookupOption, LookupPage, LookupQuery } from '../../shared/lookup/looku
 import { LookupService } from '../../shared/lookup/lookup.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import {
+  CompanyProfileGeographyCreateDialogComponent,
+  CompanyProfileGeographyCreateDialogConfig,
+  CompanyProfileGeographyCreateSubmitEvent
+} from './company-profile-geography-create-dialog.component';
+import {
   CompanyProfileAdministrationAreaOption,
+  CompanyProfileAdministrationAreaRecord,
   CompanyProfileAdministrationCompanyProfileDetail,
   CompanyProfileAdministrationCompanyProfileTypeOption,
+  CompanyProfileAdministrationCreateAreaRequest,
+  CompanyProfileAdministrationCreateGlobalZipCodeRequest,
   CompanyProfileAdministrationCreateRequest,
+  CompanyProfileAdministrationCreateRegionRequest,
   CompanyProfileAdministrationFormOptions,
   CompanyProfileAdministrationGlobalZipCodeOption,
+  CompanyProfileAdministrationGlobalZipCodeRecord,
   CompanyProfileAdministrationRegionOption,
+  CompanyProfileAdministrationRegionRecord,
   CompanyProfileAdministrationUpdateRequest
 } from './company-profile-administration.models';
 import { CompanyProfileAdministrationService } from './company-profile-administration.service';
@@ -36,6 +47,7 @@ type CompanyProfileAdministrationFormMode = 'create' | 'edit';
     AppButtonComponent,
     AppCheckboxComponent,
     AppInputComponent,
+    CompanyProfileGeographyCreateDialogComponent,
     LookupSelectComponent,
     EmailFieldComponent,
     PhoneFieldComponent,
@@ -65,6 +77,9 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
   protected readonly formOptions = signal<CompanyProfileAdministrationFormOptions | null>(null);
   protected readonly companyProfile = signal<CompanyProfileAdministrationCompanyProfileDetail | null>(null);
   protected readonly platformScope = signal(false);
+  protected readonly geographyCreateEnabled = signal(false);
+  protected readonly geographyDialog = signal<CompanyProfileGeographyCreateDialogConfig | null>(null);
+  protected readonly geographyDialogSubmitting = signal(false);
   private readonly selectedTenantIdSignal = signal('');
   private readonly selectedCountryIdSignal = signal('');
   private readonly selectedRegionIdSignal = signal('');
@@ -149,8 +164,53 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     const zipCode = this.formOptions()?.globalZipCodes.find((option) => option.id === globalZipCodeId) ?? null;
     return zipCode ? this.toZipLookupOption(zipCode) : null;
   });
-  protected readonly showRegionField = computed(() =>
-    this.filteredRegions().length > 0 || this.selectedRegionIdSignal().trim().length > 0
+  protected readonly selectedRegionInitialOption = computed<LookupOption | null>(() => {
+    const regionId = this.selectedRegionIdSignal();
+    if (!regionId) {
+      return null;
+    }
+
+    const region = this.filteredRegions().find((option) => option.id === regionId) ?? null;
+    return region ? this.toRegionLookupOption(region) : null;
+  });
+  protected readonly selectedAreaInitialOption = computed<LookupOption | null>(() => {
+    const areaId = this.selectedAreaIdSignal();
+    if (!areaId) {
+      return null;
+    }
+
+    const area = this.filteredAreas().find((option) => option.id === areaId) ?? null;
+    return area ? this.toAreaLookupOption(area) : null;
+  });
+  protected readonly regionLookupOptions = computed<readonly LookupOption[]>(() =>
+    this.filteredRegions().map((option) => this.toRegionLookupOption(option))
+  );
+  protected readonly areaLookupOptions = computed<readonly LookupOption[]>(() =>
+    this.filteredAreas().map((option) => this.toAreaLookupOption(option))
+  );
+  protected readonly isForeignCountrySelected = computed(() => {
+    const countryCode = this.selectedCountryCode().trim();
+    return countryCode.length > 0 && !this.isItalianCountryCode(countryCode);
+  });
+  protected readonly showItalianProvinceField = computed(() => !this.isForeignCountrySelected());
+  protected readonly canCreateRegion = computed(() =>
+    this.geographyCreateEnabled()
+    && this.isForeignCountrySelected()
+    && this.selectedTenantIdSignal().trim().length > 0
+    && this.selectedCountryIdSignal().trim().length > 0
+  );
+  protected readonly canCreateArea = computed(() =>
+    this.canCreateRegion()
+    && this.selectedRegionIdSignal().trim().length > 0
+  );
+  protected readonly canCreateZipCode = computed(() =>
+    this.canCreateArea()
+    && this.selectedAreaIdSignal().trim().length > 0
+  );
+  protected readonly hasSelectedRegion = computed(() => this.selectedRegionIdSignal().trim().length > 0);
+  protected readonly zipLookupDisabled = computed(() =>
+    !this.selectedCountryIdSignal().trim()
+    || (this.isForeignCountrySelected() && !this.selectedAreaIdSignal().trim())
   );
   protected readonly orderedCountries = computed(() => {
     const countries = [...(this.formOptions()?.countries ?? [])];
@@ -242,6 +302,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.form.controls.areaId.setValue('');
     this.form.controls.globalZipCodeId.setValue('');
     this.form.controls.cityLabel.setValue('');
+    this.form.controls.provinceLabel.setValue('');
     this.selectedTenantIdSignal.set(tenantId);
     this.selectedRegionIdSignal.set('');
     this.selectedAreaIdSignal.set('');
@@ -264,36 +325,159 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     this.applyCountryDependentValidators(countryId);
   }
 
-  protected selectRegion(event: Event): void {
-    const regionId = (event.target as HTMLSelectElement).value;
+  protected selectRegionOption(option: LookupOption | null): void {
+    const regionId = option?.id ?? '';
     this.form.controls.regionId.setValue(regionId);
     this.form.controls.areaId.setValue('');
     this.form.controls.globalZipCodeId.setValue('');
     this.form.controls.cityLabel.setValue('');
+    this.form.controls.provinceLabel.setValue('');
     this.selectedRegionIdSignal.set(regionId);
     this.selectedAreaIdSignal.set('');
     this.selectedGlobalZipCodeIdSignal.set('');
   }
 
-  protected selectArea(event: Event): void {
-    const areaId = (event.target as HTMLSelectElement).value;
+  protected selectAreaOption(option: LookupOption | null): void {
+    const areaId = option?.id ?? '';
     this.form.controls.areaId.setValue(areaId);
     this.form.controls.globalZipCodeId.setValue('');
     this.form.controls.cityLabel.setValue('');
+    this.form.controls.provinceLabel.setValue('');
     this.selectedAreaIdSignal.set(areaId);
     this.selectedGlobalZipCodeIdSignal.set('');
   }
 
   protected selectGlobalZipCodeOption(option: LookupOption | null): void {
     if (!option) {
+      this.form.controls.globalZipCodeId.setValue('');
       this.selectedGlobalZipCodeIdSignal.set('');
       this.form.controls.cityLabel.setValue('');
       this.form.controls.provinceLabel.setValue('');
       return;
     }
 
+    this.form.controls.globalZipCodeId.setValue(option.id);
     this.selectedGlobalZipCodeIdSignal.set(option.id);
     this.syncAddressFromGlobalZipCodeOption(this.toZipCodeOption(option));
+  }
+
+  protected openRegionCreateDialog(): void {
+    if (!this.canCreateRegion()) {
+      return;
+    }
+
+    this.geographyDialog.set({
+      mode: 'region',
+      countryName: this.selectedCountryLabel(),
+      areaLabel: this.i18n.t(this.areaLabelKey())
+    });
+  }
+
+  protected openAreaCreateDialog(): void {
+    if (!this.canCreateArea()) {
+      return;
+    }
+
+    this.geographyDialog.set({
+      mode: 'area',
+      countryName: this.selectedCountryLabel(),
+      regionName: this.selectedRegionLabel(),
+      areaLabel: this.i18n.t(this.areaLabelKey())
+    });
+  }
+
+  protected openZipCreateDialog(): void {
+    if (!this.canCreateZipCode()) {
+      return;
+    }
+
+    this.geographyDialog.set({
+      mode: 'zip',
+      countryName: this.selectedCountryLabel(),
+      regionName: this.selectedRegionLabel(),
+      areaName: this.selectedAreaLabel(),
+      areaLabel: this.i18n.t(this.areaLabelKey())
+    });
+  }
+
+  protected closeGeographyDialog(): void {
+    if (this.geographyDialogSubmitting()) {
+      return;
+    }
+
+    this.geographyDialog.set(null);
+  }
+
+  protected submitGeographyCreateDialog(event: CompanyProfileGeographyCreateSubmitEvent): void {
+    const tenantId = this.selectedTenantIdSignal().trim();
+    const countryId = this.selectedCountryIdSignal().trim();
+    if (!tenantId || !countryId) {
+      return;
+    }
+
+    this.geographyDialogSubmitting.set(true);
+
+    if (event.mode === 'region') {
+      const payload: CompanyProfileAdministrationCreateRegionRequest = {
+        tenantId,
+        countryId,
+        name: event.name,
+        active: true
+      };
+      this.companyProfileAdministrationService.createRegion(payload)
+        .pipe(finalize(() => this.geographyDialogSubmitting.set(false)))
+        .subscribe({
+          next: (region) => this.handleCreatedRegion(region),
+          error: (error) => this.notifyApiError(error, 'companyProfileAdministration.geography.errors.createRegion')
+        });
+      return;
+    }
+
+    const regionId = this.selectedRegionIdSignal().trim();
+    if (event.mode === 'area') {
+      if (!regionId) {
+        this.geographyDialogSubmitting.set(false);
+        return;
+      }
+
+      const payload: CompanyProfileAdministrationCreateAreaRequest = {
+        tenantId,
+        countryId,
+        regionId,
+        name: event.name,
+        active: true
+      };
+      this.companyProfileAdministrationService.createArea(payload)
+        .pipe(finalize(() => this.geographyDialogSubmitting.set(false)))
+        .subscribe({
+          next: (area) => this.handleCreatedArea(area),
+          error: (error) => this.notifyApiError(error, 'companyProfileAdministration.geography.errors.createArea')
+        });
+      return;
+    }
+
+    const areaId = this.selectedAreaIdSignal().trim();
+    if (!regionId || !areaId) {
+      this.geographyDialogSubmitting.set(false);
+      return;
+    }
+
+    const payload: CompanyProfileAdministrationCreateGlobalZipCodeRequest = {
+      tenantId,
+      countryId,
+      regionId,
+      areaId,
+      city: event.city,
+      postalCode: event.postalCode,
+      sourceType: 'MANUAL',
+      active: true
+    };
+    this.companyProfileAdministrationService.createGlobalZipCode(payload)
+      .pipe(finalize(() => this.geographyDialogSubmitting.set(false)))
+      .subscribe({
+        next: (zipCode) => this.handleCreatedZipCode(zipCode),
+        error: (error) => this.notifyApiError(error, 'companyProfileAdministration.geography.errors.createZip')
+      });
   }
 
   protected submit(): void {
@@ -349,6 +533,8 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     | 'legalName'
     | 'tradeName'
     | 'countryId'
+    | 'regionId'
+    | 'areaId'
     | 'vatNumber'
     | 'taxIdentifier'
     | 'phone'
@@ -375,6 +561,8 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       legalName: 'companyProfileAdministration.form.validation.legalNameRequired',
       tradeName: 'companyProfileAdministration.form.validation.tradeNameRequired',
       countryId: 'companyProfileAdministration.form.validation.countryRequired',
+      regionId: 'companyProfileAdministration.form.validation.regionRequired',
+      areaId: 'companyProfileAdministration.form.validation.areaRequired',
       vatNumber: 'companyProfileAdministration.form.validation.vatNumberRequired',
       taxIdentifier: 'companyProfileAdministration.form.validation.taxIdentifierRequired',
       phone: 'companyProfileAdministration.form.validation.phoneNumberRequired',
@@ -403,6 +591,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
         .subscribe({
           next: ({ authenticatedUser, formOptions, detail }) => {
             this.platformScope.set(authenticatedUser.userType.startsWith('PLATFORM_'));
+            this.geographyCreateEnabled.set(this.hasMasterDataCreatePermission(authenticatedUser));
             this.formOptions.set(formOptions);
             this.companyProfile.set(detail);
             this.populateEditForm();
@@ -423,6 +612,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       .subscribe({
         next: ({ authenticatedUser, formOptions }) => {
           this.platformScope.set(authenticatedUser.userType.startsWith('PLATFORM_'));
+          this.geographyCreateEnabled.set(this.hasMasterDataCreatePermission(authenticatedUser));
           this.formOptions.set(formOptions);
           this.companyProfile.set(null);
           this.populateCreateForm(authenticatedUser.tenantId);
@@ -611,6 +801,21 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     return countryCode?.trim().toUpperCase() === 'IT';
   }
 
+  private selectedCountryLabel(): string {
+    const country = this.formOptions()?.countries.find((option) => option.id === this.selectedCountryIdSignal()) ?? null;
+    return this.referenceValue(country);
+  }
+
+  private selectedRegionLabel(): string {
+    const region = this.filteredRegions().find((option) => option.id === this.selectedRegionIdSignal()) ?? null;
+    return this.referenceValue(region);
+  }
+
+  private selectedAreaLabel(): string {
+    const area = this.filteredAreas().find((option) => option.id === this.selectedAreaIdSignal()) ?? null;
+    return this.referenceValue(area);
+  }
+
   private provinceLabelForEditDetail(detail: CompanyProfileAdministrationCompanyProfileDetail): string {
     const globalZipCodeId = detail.globalZipCode?.id ?? '';
     if (globalZipCodeId) {
@@ -758,8 +963,12 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     if (!countryCode.trim()) {
       this.form.controls.vatNumber.setValidators([Validators.maxLength(50)]);
       this.form.controls.taxIdentifier.setValidators([Validators.maxLength(50)]);
+      this.form.controls.regionId.setValidators([]);
+      this.form.controls.areaId.setValidators([]);
       this.form.controls.vatNumber.updateValueAndValidity({ emitEvent: false });
       this.form.controls.taxIdentifier.updateValueAndValidity({ emitEvent: false });
+      this.form.controls.regionId.updateValueAndValidity({ emitEvent: false });
+      this.form.controls.areaId.updateValueAndValidity({ emitEvent: false });
       return;
     }
 
@@ -773,8 +982,12 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
 
     this.form.controls.vatNumber.setValidators(vatValidators);
     this.form.controls.taxIdentifier.setValidators(taxIdentifierValidators);
+    this.form.controls.regionId.setValidators(isItalianCountry ? [] : [Validators.required]);
+    this.form.controls.areaId.setValidators(isItalianCountry ? [] : [Validators.required]);
     this.form.controls.vatNumber.updateValueAndValidity({ emitEvent: false });
     this.form.controls.taxIdentifier.updateValueAndValidity({ emitEvent: false });
+    this.form.controls.regionId.updateValueAndValidity({ emitEvent: false });
+    this.form.controls.areaId.updateValueAndValidity({ emitEvent: false });
   }
 
   private notifyApiError(error: unknown, fallbackKey: I18nKey): void {
@@ -815,5 +1028,152 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
         phoneCode
       }
     };
+  }
+
+  private toRegionLookupOption(region: CompanyProfileAdministrationRegionOption): LookupOption {
+    return {
+      id: region.id,
+      code: region.code,
+      name: region.name,
+      extraLabel: null,
+      metadata: {
+        tenantId: region.tenantId,
+        countryId: region.countryId
+      }
+    };
+  }
+
+  private toAreaLookupOption(area: CompanyProfileAdministrationAreaOption): LookupOption {
+    return {
+      id: area.id,
+      code: area.code,
+      name: area.name,
+      extraLabel: null,
+      metadata: {
+        tenantId: area.tenantId,
+        countryId: area.countryId,
+        regionId: area.regionId
+      }
+    };
+  }
+
+  private handleCreatedRegion(region: CompanyProfileAdministrationRegionRecord): void {
+    const nextRegion: CompanyProfileAdministrationRegionOption = {
+      id: region.id,
+      tenantId: region.tenantId,
+      countryId: region.country.id,
+      code: region.code,
+      name: region.name
+    };
+    this.updateFormOptions((formOptions) => ({
+      ...formOptions,
+      regions: this.sortByCode([...formOptions.regions.filter((option) => option.id !== nextRegion.id), nextRegion])
+    }));
+    this.form.controls.regionId.setValue(nextRegion.id);
+    this.form.controls.areaId.setValue('');
+    this.form.controls.globalZipCodeId.setValue('');
+    this.form.controls.cityLabel.setValue('');
+    this.form.controls.provinceLabel.setValue('');
+    this.selectedRegionIdSignal.set(nextRegion.id);
+    this.selectedAreaIdSignal.set('');
+    this.selectedGlobalZipCodeIdSignal.set('');
+    this.notificationService.success(this.i18n.t('companyProfileAdministration.geography.feedback.regionCreated'), {
+      titleKey: 'alert.title.success'
+    });
+    this.geographyDialog.set(null);
+  }
+
+  private handleCreatedArea(area: CompanyProfileAdministrationAreaRecord): void {
+    const nextArea: CompanyProfileAdministrationAreaOption = {
+      id: area.id,
+      tenantId: area.tenantId,
+      countryId: area.country.id,
+      regionId: area.region.id,
+      code: area.code,
+      name: area.name
+    };
+    this.updateFormOptions((formOptions) => ({
+      ...formOptions,
+      areas: this.sortByCode([...formOptions.areas.filter((option) => option.id !== nextArea.id), nextArea])
+    }));
+    this.form.controls.areaId.setValue(nextArea.id);
+    this.form.controls.globalZipCodeId.setValue('');
+    this.form.controls.cityLabel.setValue('');
+    this.form.controls.provinceLabel.setValue('');
+    this.selectedAreaIdSignal.set(nextArea.id);
+    this.selectedGlobalZipCodeIdSignal.set('');
+    this.notificationService.success(this.i18n.t('companyProfileAdministration.geography.feedback.areaCreated'), {
+      titleKey: 'alert.title.success'
+    });
+    this.geographyDialog.set(null);
+  }
+
+  private handleCreatedZipCode(zipCode: CompanyProfileAdministrationGlobalZipCodeRecord): void {
+    const nextZipCode: CompanyProfileAdministrationGlobalZipCodeOption = {
+      id: zipCode.id,
+      tenantId: zipCode.tenantId,
+      countryId: zipCode.country.id,
+      countryName: zipCode.country.name,
+      regionId: zipCode.region?.id ?? null,
+      regionName: zipCode.region?.name ?? null,
+      areaId: zipCode.area?.id ?? null,
+      areaCode: zipCode.area?.code ?? null,
+      areaName: zipCode.area?.name ?? null,
+      code: zipCode.postalCode,
+      name: zipCode.city,
+      provinceCode: zipCode.provinceCode,
+      provinceName: zipCode.provinceName
+    };
+    this.updateFormOptions((formOptions) => ({
+      ...formOptions,
+      globalZipCodes: this.sortZipCodes([...formOptions.globalZipCodes.filter((option) => option.id !== nextZipCode.id), nextZipCode])
+    }));
+    this.form.controls.globalZipCodeId.setValue(nextZipCode.id);
+    this.selectedGlobalZipCodeIdSignal.set(nextZipCode.id);
+    this.syncAddressFromGlobalZipCodeOption(nextZipCode);
+    this.notificationService.success(this.i18n.t('companyProfileAdministration.geography.feedback.zipCreated'), {
+      titleKey: 'alert.title.success'
+    });
+    this.geographyDialog.set(null);
+  }
+
+  private updateFormOptions(
+    updater: (formOptions: CompanyProfileAdministrationFormOptions) => CompanyProfileAdministrationFormOptions
+  ): void {
+    const currentFormOptions = this.formOptions();
+    if (!currentFormOptions) {
+      return;
+    }
+
+    this.formOptions.set(updater(currentFormOptions));
+  }
+
+  private sortByCode<T extends { code: string }>(options: readonly T[]): readonly T[] {
+    return [...options].sort((leftOption, rightOption) =>
+      leftOption.code.localeCompare(rightOption.code, 'it', { sensitivity: 'base' })
+    );
+  }
+
+  private sortZipCodes(options: readonly CompanyProfileAdministrationGlobalZipCodeOption[]): readonly CompanyProfileAdministrationGlobalZipCodeOption[] {
+    return [...options].sort((leftOption, rightOption) => {
+      const postalCodeComparison = leftOption.code.localeCompare(rightOption.code, 'it', { sensitivity: 'base' });
+      if (postalCodeComparison !== 0) {
+        return postalCodeComparison;
+      }
+
+      return leftOption.name.localeCompare(rightOption.name, 'it', { sensitivity: 'base' });
+    });
+  }
+
+  private hasMasterDataCreatePermission(user: { permissions?: readonly string[]; authorities?: readonly string[] } | null): boolean {
+    const normalizedCodes = [
+      ...(user?.permissions ?? []),
+      ...(user?.authorities ?? [])
+    ].map((code) => code.trim().toUpperCase());
+
+    return normalizedCodes.includes('TENANT.MASTER_DATA.CREATE')
+      || normalizedCodes.includes('TENANT.MASTER_DATA.MANAGE')
+      || normalizedCodes.includes('PLATFORM.MASTER_DATA.CREATE')
+      || normalizedCodes.includes('PLATFORM.MASTER_DATA.MANAGE');
   }
 }

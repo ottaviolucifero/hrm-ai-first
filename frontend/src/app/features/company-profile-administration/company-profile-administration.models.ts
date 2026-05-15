@@ -41,6 +41,45 @@ export interface CompanyProfileAdministrationGlobalZipCodeOption extends Company
   readonly provinceCode?: string | null;
 }
 
+export interface CompanyProfileAdministrationGlobalMasterReference {
+  readonly id: string;
+  readonly code: string;
+  readonly name: string;
+}
+
+export interface CompanyProfileAdministrationRegionRecord {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly country: CompanyProfileAdministrationGlobalMasterReference;
+  readonly name: string;
+  readonly code: string;
+  readonly active: boolean;
+}
+
+export interface CompanyProfileAdministrationAreaRecord {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly country: CompanyProfileAdministrationGlobalMasterReference;
+  readonly region: CompanyProfileAdministrationGlobalMasterReference;
+  readonly name: string;
+  readonly code: string;
+  readonly active: boolean;
+}
+
+export interface CompanyProfileAdministrationGlobalZipCodeRecord {
+  readonly id: string;
+  readonly tenantId: string | null;
+  readonly country: CompanyProfileAdministrationGlobalMasterReference;
+  readonly region: CompanyProfileAdministrationGlobalMasterReference | null;
+  readonly area: CompanyProfileAdministrationGlobalMasterReference | null;
+  readonly city: string;
+  readonly postalCode: string;
+  readonly provinceCode: string | null;
+  readonly provinceName: string | null;
+  readonly sourceType: 'OFFICIAL_IMPORT' | 'MANUAL' | 'API';
+  readonly active: boolean;
+}
+
 export interface CompanyProfileAdministrationCompanyProfileListItem extends DataTableRow {
   readonly id: string;
   readonly tenant: CompanyProfileAdministrationReference;
@@ -94,6 +133,32 @@ export interface CompanyProfileAdministrationCreateRequest {
   readonly globalZipCodeId: string | null;
   readonly street: string;
   readonly streetNumber: string;
+}
+
+export interface CompanyProfileAdministrationCreateRegionRequest {
+  readonly tenantId: string;
+  readonly countryId: string;
+  readonly name: string;
+  readonly active: boolean;
+}
+
+export interface CompanyProfileAdministrationCreateAreaRequest {
+  readonly tenantId: string;
+  readonly countryId: string;
+  readonly regionId: string;
+  readonly name: string;
+  readonly active: boolean;
+}
+
+export interface CompanyProfileAdministrationCreateGlobalZipCodeRequest {
+  readonly tenantId: string;
+  readonly countryId: string;
+  readonly regionId: string;
+  readonly areaId: string;
+  readonly city: string;
+  readonly postalCode: string;
+  readonly sourceType: 'MANUAL';
+  readonly active: boolean;
 }
 
 export interface CompanyProfileAdministrationUpdateRequest {

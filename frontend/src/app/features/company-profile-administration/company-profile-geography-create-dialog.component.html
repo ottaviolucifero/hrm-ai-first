@@ -1,0 +1,94 @@
+<div class="company-profile-geography-dialog-overlay" role="presentation">
+  <section
+    class="company-profile-geography-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="company-profile-geography-dialog-title">
+    <header class="company-profile-geography-dialog-header">
+      <div>
+        <h2 id="company-profile-geography-dialog-title" class="company-profile-geography-dialog-title">
+          {{ i18n.t(titleKey()) }}
+        </h2>
+      </div>
+
+      <app-button
+        variant="ghost"
+        size="sm"
+        icon="ki-filled ki-cross"
+        [iconOnly]="true"
+        [ariaLabel]="i18n.t('companyProfileAdministration.form.actions.cancel')"
+        [label]="i18n.t('companyProfileAdministration.form.actions.cancel')"
+        [disabled]="submitting"
+        (pressed)="cancelDialog()" />
+    </header>
+
+    <form class="company-profile-geography-dialog-body" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="company-profile-geography-dialog-context">
+        <div class="company-profile-geography-dialog-context-row">
+          <span>{{ i18n.t('masterData.columns.country') }}</span>
+          <strong>{{ config.countryName }}</strong>
+        </div>
+
+        @if (config.regionName) {
+          <div class="company-profile-geography-dialog-context-row">
+            <span>{{ i18n.t('masterData.columns.region') }}</span>
+            <strong>{{ config.regionName }}</strong>
+          </div>
+        }
+
+        @if (config.areaName) {
+          <div class="company-profile-geography-dialog-context-row">
+            <span>{{ areaContextLabel() }}</span>
+            <strong>{{ config.areaName }}</strong>
+          </div>
+        }
+      </div>
+
+      @if (showsNameField()) {
+        <div class="company-profile-geography-dialog-fields">
+          <app-input
+            formControlName="name"
+            [label]="i18n.t('masterData.columns.name')"
+            [labelRequired]="true"
+            [required]="true"
+            [errorText]="errorText('name')" />
+        </div>
+      }
+
+      @if (showsZipFields()) {
+        <div class="company-profile-geography-dialog-fields">
+          <app-input
+            formControlName="postalCode"
+            [label]="i18n.t('masterData.columns.postalCode')"
+            [labelRequired]="true"
+            [required]="true"
+            [errorText]="errorText('postalCode')" />
+
+          <app-input
+            formControlName="city"
+            [label]="i18n.t('masterData.columns.city')"
+            [labelRequired]="true"
+            [required]="true"
+            [errorText]="errorText('city')" />
+        </div>
+      }
+
+      <div class="company-profile-geography-dialog-actions">
+        <app-button
+          variant="secondary"
+          type="button"
+          [label]="i18n.t('companyProfileAdministration.form.actions.cancel')"
+          [disabled]="submitting"
+          (pressed)="cancelDialog()" />
+        <app-button
+          type="submit"
+          variant="primary"
+          icon="ki-filled ki-check"
+          [label]="i18n.t(submitLabelKey())"
+          [loadingLabel]="i18n.t(submitLoadingLabelKey())"
+          [loading]="submitting"
+          [disabled]="submitting" />
+      </div>
+    </form>
+  </section>
+</div>
