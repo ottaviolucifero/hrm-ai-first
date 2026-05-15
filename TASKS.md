@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.53
+Versione: 2.54
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -4899,6 +4899,196 @@ Nota backlog 065+:
 
 Stato: TODO
 
+Obiettivo:
+
+Implementare progressivamente la governance dei beni/dispositivi aziendali, partendo dal modello `Device` esistente e aggiungendo CRUD amministrativo, identificazione tramite asset code/barcode/QR, stampa etichetta, storico assegnazioni e UI dettaglio enterprise.
+
+Analisi corrente:
+
+- il backend ha gia `Device` con tenant, company profile, name, type, brand, model, serial number, purchase date, warranty end date, device status, assigned employee corrente, assigned at e active;
+- la migration foundation `V9__create_device_backend_foundation.sql` crea la tabella `devices` con FK verso tenant, company profile, master data device ed employee assegnato;
+- oggi Device risulta esposto solo in lettura tramite Core HR API `GET /api/core-hr/devices` e `GET /api/core-hr/devices/{id}`;
+- i dettagli Company Profile e User Administration usano gia layout a card, header con azioni, `app-button`, lookup shared e sezioni operative locali; il pattern Device deve riusare questi riferimenti prima di introdurre componenti shared.
+
+Nota governance:
+
+- ogni subtask che introduce CRUD/API/UI amministrativa deve verificare permessi/authorities e matrice ruolo/permessi secondo la regola generale di questo documento;
+- non creare modelli Device paralleli;
+- non introdurre redesign generale;
+- non anticipare Employee UI in questo blocco.
+
+#### TASK-066.1 - Device governance backlog refinement
+
+Stato: DONE
+
+Tipo: Documentale / Backlog governance
+
+Obiettivo:
+
+- dettagliare il perimetro Device governance;
+- definire subtask backend/frontend/QA;
+- documentare asset code, barcode/QR, stampa etichetta, storico assegnazioni e pattern dettaglio shared;
+- aggiornare `TASKS.md`, `ROADMAP.md` e `docs/qa/QA-REPORTS.md`;
+- nessuna modifica codice.
+
+Validazione:
+
+- verificato che `TASK-066` sia Device governance e che `TASK-067` resti UI HolidayCalendar;
+- verificato il modello `Device` backend corrente;
+- verificato che Device sia oggi esposto solo da Core HR read-only API, salvo future API admin;
+- verificati i pattern dettaglio esistenti di Company Profile e User Administration;
+- nessun codice applicativo, migration o test applicativo modificato.
+
+#### TASK-066.2 - Device backend administration CRUD
+
+Stato: TODO
+
+Tipo: Backend
+
+Obiettivo:
+
+- introdurre API amministrative Device sotto endpoint admin coerente con i pattern esistenti;
+- lista paginata, dettaglio, create, update, activate/deactivate, delete fisico protetto se previsto;
+- riusare il modello `Device` esistente;
+- non creare modelli paralleli;
+- usare lookup verso `CompanyProfile`, `DeviceType`, `DeviceBrand`, `DeviceStatus` ed eventualmente `Employee`;
+- aggiungere/aggiornare test backend;
+- includere verifica permessi/authorities e matrice ruolo/permessi se vengono introdotte nuove capability admin.
+
+#### TASK-066.3 - Device asset code and barcode/QR foundation
+
+Stato: TODO
+
+Tipo: Backend + Frontend foundation
+
+Obiettivo:
+
+- aggiungere asset code automatico e non editabile per identificare il bene;
+- valutare formato consigliato, ad esempio `DEV000001` o standard coerente con `DEC-039` se applicabile;
+- generare `barcodeValue` a partire dall'asset code;
+- preferire CODE 128 o QR code rispetto a EAN, perche il codice bene puo essere alfanumerico;
+- non inserire nel barcode dati variabili come dipendente, marca, modello o seriale;
+- predisporre API/DTO per esporre `assetCode`/`barcodeValue`.
+
+#### TASK-066.4 - Device assignment history foundation
+
+Stato: TODO
+
+Tipo: Backend
+
+Obiettivo:
+
+- introdurre tabella storico assegnazioni, ad esempio `device_assignments`;
+- storicizzare assegnazioni del bene a dipendenti diversi nel tempo;
+- mantenere su `Device` l'assegnazione corrente come stato denormalizzato/operativo;
+- campi minimi da valutare:
+  - `tenant_id`;
+  - `device_id`;
+  - `employee_id`;
+  - `assigned_from`;
+  - `assigned_to`;
+  - `assigned_by_user_id`;
+  - `returned_at`;
+  - `return_note`;
+  - `condition_on_assign`;
+  - `condition_on_return`;
+  - `notes`;
+  - `created_at`;
+  - `updated_at`;
+- regola: assegnazione aperta quando `assigned_to` e null;
+- quando si riassegna/restituisce, chiudere la riga precedente e crearne una nuova;
+- aggiungere API e test backend.
+
+#### TASK-066.5 - Device frontend administration UI
+
+Stato: TODO
+
+Tipo: Frontend
+
+Obiettivo:
+
+- implementare lista Device;
+- implementare form create/edit;
+- implementare dettaglio Device organizzato a card;
+- riusare layout, `DataTable`, lookup select, confirmation dialog e pattern admin esistenti;
+- rispettare i18n `it`/`fr`/`en`;
+- non introdurre redesign generale;
+- prevedere routing coerente con le altre administration UI.
+
+Dettaglio UI desiderato:
+
+- card identita bene: nome, asset code, tipo, marca, modello, seriale, stato;
+- card azienda/tenant: tenant, company profile, active;
+- card acquisto/garanzia: purchase date, warranty end date, badge garanzia valida/scaduta se semplice;
+- card assegnazione corrente: dipendente assegnato, `assignedAt`, azioni assegna/restituisci se gia disponibili;
+- card QR/barcode: anteprima elegante del codice, asset code visibile, azione stampa etichetta;
+- card audit/info tecniche se coerente con pattern esistenti.
+
+#### TASK-066.6 - Device assignment UI
+
+Stato: TODO
+
+Tipo: Frontend
+
+Obiettivo:
+
+- mostrare storico assegnazioni nel dettaglio Device;
+- introdurre azioni "Assegna", "Restituisci", "Riassegna" se supportate dal backend;
+- visualizzare dipendente, periodo, stato alla consegna, stato alla restituzione e note;
+- mantenere UX semplice e coerente con il resto dell'app.
+
+#### TASK-066.7 - Device label print UI
+
+Stato: TODO
+
+Tipo: Frontend
+
+Obiettivo:
+
+- mostrare anteprima QR/barcode in una card dedicata nel dettaglio Device;
+- generare vista stampabile o PDF base per etichetta;
+- etichetta iniziale con:
+  - nome applicazione/brand;
+  - asset code;
+  - nome bene;
+  - seriale;
+  - QR/barcode;
+- rimandare integrazioni avanzate con stampanti Zebra o formati industriali a task futuro.
+
+#### TASK-066.8 - Shared entity detail header/actions pattern
+
+Stato: TODO
+
+Tipo: Frontend shared component / UX governance
+
+Obiettivo:
+
+- valutare e introdurre un pattern o componente shared per header/azioni delle pagine dettaglio;
+- gestire azioni standard:
+  - torna alla lista;
+  - modifica;
+  - salva;
+  - annulla;
+  - elimina;
+  - attiva/disattiva;
+  - azioni custom;
+- evitare duplicazioni tra Device, Company Profile, User Administration e futuri Employee;
+- non migrare massivamente tutte le pagine se non sostenibile nello stesso task;
+- se necessario, applicare il nuovo pattern prima a Device e documentare follow-up per Company Profile e Utenti.
+
+#### TASK-066.9 - Device governance QA hardening
+
+Stato: TODO
+
+Tipo: QA
+
+Obiettivo:
+
+- verificare backend, frontend, permessi, regressioni e i18n;
+- validare build/test reali;
+- aggiornare `docs/qa/QA-REPORTS.md`;
+- verificare che non siano stati introdotti componenti duplicati o architetture parallele.
+
 ### TASK-067 - UI HolidayCalendar
 
 Stato: TODO
@@ -4962,6 +5152,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.54 | 2026-05-15 | TASK-066 raffinato come epic Device governance con subtask `TASK-066.1`..`TASK-066.9`: CRUD admin, asset code/barcode/QR, storico assegnazioni, UI frontend, stampa etichetta, pattern shared header/actions e QA hardening; `TASK-066.1` documentale completato, subtask implementativi lasciati TODO, `TASK-067` HolidayCalendar invariato e nessuna modifica applicativa. |
 | 2.53 | 2026-05-15 | TASK-065 completato come riorganizzazione documentale del backlog Core HR UI: Employee rinviato a `TASK-073`, anticipati `TASK-066` Device, `TASK-067` HolidayCalendar, `TASK-068` disciplinary, `TASK-069` PayrollDocument foundation, `TASK-070` LeaveRequest foundation, `TASK-071` Audit UI e `TASK-072` Security Admin hardening; blocco Platform/Cross-tenant/Stabilization rinumerato coerentemente fino a `TASK-077` e riferimenti attivi riallineati senza modifiche runtime. |
 | 2.52 | 2026-05-15 | TASK-064.11 completato con CRUD amministrativo `Region`/`Area` in Master Data, filtri/lookup geografici estesi, delete fisico protetto da referenze, codice backend-side `RE###`/`AR###`, test backend/frontend reali e aggiornamento QA/reportistica. |
 | 2.51 | 2026-05-15 | TASK-064.10 completato/corretto: migrate anche le select residue `UserAdministrationForm.userTypeId`, `UserAdministrationDetail` tenant/ruolo assegnabile e `CompanyProfileAdministrationForm` tenant/tipo/paese a `app-lookup-select`, mantenendo locali `MasterDataAdmin` categoria/entita e `TenantAdministration.defaultCurrencyId`, con test frontend reali verdi e nessun cambio backend/API. |
