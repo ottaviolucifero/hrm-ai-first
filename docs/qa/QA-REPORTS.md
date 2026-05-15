@@ -1042,6 +1042,49 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
   - nei log Maven restano warning ambiente gia noti e non bloccanti: Mockito/ByteBuddy dynamic agent e messaggio shell residuale `'D' n’est pas reconnu...`.
 - Stato finale: PASS WITH NOTES
 
+### TASK-066.4 - Device assignment history foundation
+
+- Data: 2026-05-15
+- Branch: `task-066-4-device-assignment-history-foundation`
+- Task: TASK-066.4 - Device assignment history foundation
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/resources/db/vendor/postgresql/V36__add_device_assignment_history.sql`
+  - `backend/src/main/resources/db/vendor/h2/V36__add_device_assignment_history.sql`
+  - `backend/src/main/java/com/odsoftware/hrm/entity/device/Device.java`
+  - `backend/src/main/java/com/odsoftware/hrm/entity/device/DeviceAssignment.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/device/DeviceRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/device/DeviceAssignmentRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/DeviceAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/controller/DeviceAdministrationController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/config/SecurityConfig.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/deviceadministration/*`
+  - `backend/src/test/java/com/odsoftware/hrm/DeviceAdministrationControllerTests.java`
+  - `ARCHITECTURE.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=DeviceAdministrationControllerTests test`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - suite mirata `DeviceAdministrationControllerTests`: `BUILD SUCCESS`, `29` test eseguiti, `0` failure, `0` error, `0` skipped;
+  - suite backend completa: `BUILD SUCCESS`, `280` test eseguiti, `0` failure, `0` error, `0` skipped.
+- Verifiche funzionali confermate:
+  - introdotta tabella storica `device_assignments` con Flyway `V36` PostgreSQL/H2, FK a `tenants`, `devices`, `employees`, `user_accounts`, indici coerenti e backfill delle assegnazioni correnti gia presenti in `devices`;
+  - `Device.assignedTo` e `Device.assignedAt` restano lo stato operativo corrente, mentre `device_assignments` diventa la fonte storica;
+  - aggiunti gli endpoint admin `GET /api/admin/devices/{deviceId}/assignments`, `POST /api/admin/devices/{deviceId}/assignments` e `POST /api/admin/devices/{deviceId}/assignments/return`;
+  - create/update admin `Device` integrano ora automaticamente la chiusura/apertura dello storico quando cambia `assignedToEmployeeId`;
+  - riassegnazione chiude la riga aperta precedente tramite `assigned_to` senza impostare `returned_at`; la restituzione chiude la riga aperta e valorizza `returned_at`, `return_note` e `condition_on_return`;
+  - l unicita logica della assegnazione aperta e gestita nel service con lock pessimista sul `Device`; dati incoerenti con piu righe aperte producono `409 Conflict`;
+  - le POST di assign/return riusano i permessi `DEVICE` esistenti, ma richiedono `DEVICE.UPDATE` o `DEVICE.MANAGE` tramite mapping security specifico, senza nuove migration RBAC;
+  - nessuna modifica applicata a `/api/core-hr/devices` o al frontend.
+- Limiti/note:
+  - la suite reale e stata eseguita con profilo test H2; la migration PostgreSQL `V36` e stata mantenuta allineata alla variante H2 ma non e stata eseguita contro un PostgreSQL live in questo turno;
+  - il primo tentativo del test mirato in sandbox e fallito per risoluzione Maven del parent POM (`Permission denied: getsockopt`); il rerun con permessi elevati e poi la suite completa locale hanno validato correttamente il task;
+  - nei log Maven restano warning ambiente gia noti e non bloccanti: Mockito/ByteBuddy dynamic agent e messaggio shell residuale `'D' n’est pas reconnu...`.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-063 - Address geography backend foundation
 
 - Data: 2026-05-13

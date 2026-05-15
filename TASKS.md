@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.56
+Versione: 2.57
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -4990,7 +4990,7 @@ Validazione:
 
 #### TASK-066.4 - Device assignment history foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend
 
@@ -5016,6 +5016,17 @@ Obiettivo:
 - regola: assegnazione aperta quando `assigned_to` e null;
 - quando si riassegna/restituisce, chiudere la riga precedente e crearne una nuova;
 - aggiungere API e test backend.
+
+Validazione:
+
+- aggiunta tabella `device_assignments` con migration Flyway vendor-specific `V36` per PostgreSQL e H2, FK verso `tenants`, `devices`, `employees` e `user_accounts`, indici tenant/device, tenant/employee e device/date, piu backfill delle assegnazioni correnti gia presenti su `devices`;
+- introdotta entity JPA `DeviceAssignment` con repository dedicato e relazioni lazy coerenti con i pattern esistenti;
+- estesi `DeviceAdministrationService` e `DeviceAdministrationController` con `GET /api/admin/devices/{deviceId}/assignments`, `POST /api/admin/devices/{deviceId}/assignments` e `POST /api/admin/devices/{deviceId}/assignments/return`, senza modifiche a `/api/core-hr/devices` o al frontend;
+- mantenuta la regola operativa: `Device.assignedTo` / `assignedAt` restano lo stato corrente, mentre `device_assignments` traccia lo storico e chiude/apre le righe durante assign, reassign, return e update admin coerenti;
+- l unicita logica della assegnazione aperta e gestita nel service con lock pessimistico sul `Device`; in caso di dati incoerenti con piu righe aperte il backend restituisce `409 Conflict`;
+- riusato il catalogo permessi `DEVICE` esistente, con mapping security specifico per richiedere `DEVICE.UPDATE` sulle POST di assign/return senza nuove migration RBAC;
+- estesa `DeviceAdministrationControllerTests` con copertura reale su history list, create/update con storico, reassign, return, no-op stesso employee, doppia riga aperta incoerente, mismatch tenant/company, security e delete bloccato da FK storico;
+- eseguiti test backend reali `cd backend && .\mvnw.cmd -Dtest=DeviceAdministrationControllerTests test` e `cd backend && .\mvnw.cmd test` con esito verde.
 
 #### TASK-066.5 - Device frontend administration UI
 
@@ -5170,6 +5181,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.57 | 2026-05-15 | TASK-066.4 completato con foundation backend-only dello storico assegnazioni `Device`: nuova tabella `device_assignments` via Flyway `V36` PostgreSQL/H2 con backfill, entity/repository dedicati, endpoint admin per history/assign/return, integrazione create/update con chiusura/apertura storico, lock pessimista sul `Device`, decisione durevole `DEC-043` e suite backend reale verde. |
 | 2.56 | 2026-05-15 | TASK-066.3 completato come foundation backend-only per identificazione `Device`: aggiunti `assetCode`/`barcodeValue`, migration Flyway `V35` PostgreSQL/H2 con backfill tenant-scoped `DEV000001`, generazione backend dal massimo progressivo per tenant, esposizione solo su API admin `Device`, nuova decisione durevole `DEC-042` e suite backend reale verde. |
 | 2.55 | 2026-05-15 | TASK-066.2 completato con CRUD amministrativo backend `Device` sotto `/api/admin/devices`, filtri paginati, lookup/form-options, validazioni tenant/company/master data/employee, endpoint dedicati `activate`/`deactivate`, delete fisico protetto, mapping security su permessi `DEVICE` gia seedati in `V18`, test backend reali verdi e nessun modello parallelo introdotto. |
 | 2.54 | 2026-05-15 | TASK-066 raffinato come epic Device governance con subtask `TASK-066.1`..`TASK-066.9`: CRUD admin, asset code/barcode/QR, storico assegnazioni, UI frontend, stampa etichetta, pattern shared header/actions e QA hardening; `TASK-066.1` documentale completato, subtask implementativi lasciati TODO, `TASK-067` HolidayCalendar invariato e nessuna modifica applicativa. |
