@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.57
+Versione: 2.58
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -146,7 +146,8 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 ### Prossimo passo
 
-- TASK-065 Implementare UI Employee management enterprise
+- TASK-066 UI Device governance
+- Sequenza backlog immediata: `TASK-067` UI HolidayCalendar, `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -266,14 +267,17 @@ TASK-064.11 completed the dedicated `Region` and `Area` administrative CRUD in M
 
 Prossimo passo:
 
-- TASK-065 Implementare UI Employee management enterprise
+- TASK-066 UI Device governance
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
-Sequenza immediata Employee/geography:
+Sequenza immediata Core HR UI post-TASK-064.11:
 
 - TASK-062: decisione documentale sul modello geografico indirizzi completata tramite `DEC-038`;
 - TASK-063: foundation backend geography con tenant scope Region/Area e modello ZIP/CAP ibrido completata;
-- TASK-065: UI Employee management enterprise, prossimo step dopo TASK-064.
+- TASK-065: riorganizzazione backlog Core HR UI completata come task documentale;
+- TASK-066: UI Device governance, prossimo step operativo;
+- TASK-067 -> TASK-072: blocco UI/CRUD piu circoscritto per consolidare pattern e verifiche permessi prima di Employee;
+- TASK-073: UI Employee management enterprise, posticipata dopo il consolidamento dei task precedenti.
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
 
@@ -408,15 +412,15 @@ Profili Spring Boot configurati:
 
 ### Fase 2H - Geography / Frontend Shell / UI Admin / Operations
 
-- TASK-036 -> TASK-072
+- TASK-036 -> TASK-073
 
 ### Fase 2I - Platform Operations
 
-- TASK-073 -> TASK-074
+- TASK-074 -> TASK-075
 
 ### Fase 3 - Stabilization
 
-- TASK-075 -> TASK-076
+- TASK-076 -> TASK-077
 
 ---
 
@@ -432,9 +436,10 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.58 | 2026-05-15 | TASK-065 completato come riorganizzazione documentale del backlog Core HR UI: prossimo passo riallineato a `TASK-066` Device governance, blocco operativo immediato portato a `TASK-067`..`TASK-072`, UI Employee rinviata a `TASK-073` e blocco Platform/Cross-tenant/Stabilization rinumerato coerentemente fino a `TASK-077`, senza modifiche applicative. |
+| 2.57 | 2026-05-15 | TASK-064.11 completato con CRUD amministrativo `Region`/`Area` in Master Data, estensione API/lookup esistenti, delete fisico protetto da referenze, filtri geografici UI e validazione reale backend/frontend senza modifiche security/RBAC. |
 | 2.56 | 2026-05-15 | TASK-064.10 completato/corretto in roadmap: estesa l'adozione di `app-lookup-select` alle select residue di `UserAdministrationForm`, `UserAdministrationDetail` e `CompanyProfileAdministrationForm`, verificata la coerenza visuale shared senza fix CSS locali, mantenuti locali `MasterDataAdmin` categoria/entita e `TenantAdministration.defaultCurrencyId`, test frontend reali verdi e nessun cambio backend/API. |
 | 2.55 | 2026-05-15 | TASK-064.9 completato: `CompanyProfile` ora persiste il telefono in modo strutturato con `phoneDialCode` e `phoneNationalNumber`, bridge legacy temporaneo `phone`, migration `V34` con backfill conservativo e standard durevole demandato a `DEC-041` per future entita di contatto. |
-| 2.57 | 2026-05-15 | TASK-064.11 completato con CRUD amministrativo `Region`/`Area` in Master Data, estensione API/lookup esistenti, delete fisico protetto da referenze, filtri geografici UI e validazione reale backend/frontend senza modifiche security/RBAC. |
 | 2.54 | 2026-05-15 | Aggiornato backlog con il nuovo follow-up `TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base`, mantenendo `TASK-064.9` come follow-up telefono separato e senza introdurre modifiche runtime/backend/frontend. |
 | 2.53 | 2026-05-15 | TASK-064.8 completato in roadmap nel working tree del branch dedicato: `CompanyProfileAdministrationForm` supporta la creazione guidata estera di `Region`, `Area` e `GlobalZipCode` tramite `app-lookup-select` con `+` esterno, popup locali e auto-code backend tenant-aware `RE###`/`AR###`, mantenendo il flusso Italia su CAP importati/lookup e senza modifiche schema/security/RBAC. |
 | 2.52 | 2026-05-14 | Inserito il nuovo follow-up `TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo` subito dopo `TASK-064.7`, con rinumerazione coerente di `TASK-064.9` (telefono) e `TASK-064.10` (adozione progressiva di `app-lookup-select`) e riallineamento dei riferimenti roadmap. |

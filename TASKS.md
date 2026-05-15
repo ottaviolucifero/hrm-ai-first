@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.52
+Versione: 2.53
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -4870,7 +4870,60 @@ Validazione:
 - UI Master Data aggiornata con CRUD `Region`/`Area`, lookup dipendenti e codice read-only;
 - test reali eseguiti: `cd backend && .\mvnw.cmd test`, `cd frontend && npm.cmd run build`, `cd frontend && npm.cmd test`.
 
-### TASK-065 - Implementare UI Employee management enterprise
+### TASK-065 - Riorganizzazione backlog Core HR UI prima di Employee
+
+Stato: DONE
+
+Tipo:
+
+- task documentale di riallineamento backlog.
+
+Obiettivo:
+
+- posticipare la UI Employee dopo un blocco di CRUD/UI piu circoscritti;
+- riallineare numerazione e riferimenti futuri da `TASK-065` in avanti tra `TASKS.md`, `ROADMAP.md` e documentazione QA.
+
+Validazione:
+
+- backlog futuro rinumerato da `TASK-065` in avanti senza toccare i task `DONE`;
+- `ROADMAP.md` riallineato sul prossimo passo operativo `TASK-066`;
+- nessuna modifica a backend/frontend, migration, endpoint o test applicativi.
+
+Nota backlog 065+:
+
+- `Employee` e rimandato perche piu ampio, dipendente da piu moduli e piu esposto a regressioni cross-stack;
+- `Device`, `HolidayCalendar` e `disciplinary governance` vengono anticipati insieme ad altre UI operative piu circoscritte per consolidare pattern CRUD/UI riusabili prima della UI Employee;
+- ogni nuovo CRUD/UI amministrativa del blocco seguente deve includere verifica permessi/authorities e matrice ruolo/permessi secondo la regola generale gia presente in questo documento.
+
+### TASK-066 - UI Device governance
+
+Stato: TODO
+
+### TASK-067 - UI HolidayCalendar
+
+Stato: TODO
+
+### TASK-068 - UI disciplinary governance
+
+Stato: TODO
+
+### TASK-069 - UI PayrollDocument foundation
+
+Stato: TODO
+
+### TASK-070 - UI LeaveRequest foundation
+
+Stato: TODO
+
+### TASK-071 - Audit UI / compliance explorer
+
+Stato: TODO
+
+### TASK-072 - Security Admin UI completion/hardening
+
+Stato: TODO
+
+### TASK-073 - UI Employee management enterprise
 
 Stato: TODO
 
@@ -4881,61 +4934,25 @@ Prerequisiti:
 
 Nota:
 
-La UI Employee deve usare il modello geografico indirizzi stabilizzato prima di implementare form, select, readonly/freeze fields e riuso dei dati geografici per Employee.
-
-### TASK-066 - Implementare Security Admin UI
-
-Stato: TODO
-
-Include:
-
-- utenti;
-- MFA;
-- tenant access;
-- ruoli;
-- permessi.
-
-### TASK-067 - Implementare UI Device governance
-
-Stato: TODO
-
-### TASK-068 - Implementare UI PayrollDocument
-
-Stato: TODO
-
-### TASK-069 - Implementare UI LeaveRequest
-
-Stato: TODO
-
-### TASK-070 - Implementare UI HolidayCalendar
-
-Stato: TODO
-
-### TASK-071 - Implementare Audit UI / compliance explorer
-
-Stato: TODO
-
-### TASK-072 - Implementare UI disciplinary governance
-
-Stato: TODO
+La UI Employee deve usare il modello geografico indirizzi stabilizzato e i pattern CRUD/UI consolidati nei task precedenti prima di implementare form, select, readonly/freeze fields e riuso dei dati geografici per Employee.
 
 ## FASE 2G - PLATFORM OPERATIONS
 
-### TASK-073 - Implementare Platform Operator / Super Admin governance
+### TASK-074 - Implementare Platform Operator / Super Admin governance
 
 Stato: TODO
 
-### TASK-074 - Implementare Cross-tenant admin UI
+### TASK-075 - Implementare Cross-tenant admin UI
 
 Stato: TODO
 
 ## FASE 3 - STABILIZATION
 
-### TASK-075 - Configurare logging, monitoring e observability enterprise
+### TASK-076 - Configurare logging, monitoring e observability enterprise
 
 Stato: TODO
 
-### TASK-076 - Test integrato MVP enterprise completo
+### TASK-077 - Test integrato MVP enterprise completo
 
 Stato: TODO
 
@@ -4945,9 +4962,10 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.53 | 2026-05-15 | TASK-065 completato come riorganizzazione documentale del backlog Core HR UI: Employee rinviato a `TASK-073`, anticipati `TASK-066` Device, `TASK-067` HolidayCalendar, `TASK-068` disciplinary, `TASK-069` PayrollDocument foundation, `TASK-070` LeaveRequest foundation, `TASK-071` Audit UI e `TASK-072` Security Admin hardening; blocco Platform/Cross-tenant/Stabilization rinumerato coerentemente fino a `TASK-077` e riferimenti attivi riallineati senza modifiche runtime. |
+| 2.52 | 2026-05-15 | TASK-064.11 completato con CRUD amministrativo `Region`/`Area` in Master Data, filtri/lookup geografici estesi, delete fisico protetto da referenze, codice backend-side `RE###`/`AR###`, test backend/frontend reali e aggiornamento QA/reportistica. |
 | 2.51 | 2026-05-15 | TASK-064.10 completato/corretto: migrate anche le select residue `UserAdministrationForm.userTypeId`, `UserAdministrationDetail` tenant/ruolo assegnabile e `CompanyProfileAdministrationForm` tenant/tipo/paese a `app-lookup-select`, mantenendo locali `MasterDataAdmin` categoria/entita e `TenantAdministration.defaultCurrencyId`, con test frontend reali verdi e nessun cambio backend/API. |
 | 2.50 | 2026-05-15 | TASK-064.9 completato: normalizzata la persistenza telefono di `CompanyProfile` con campi strutturati `phoneDialCode` e `phoneNationalNumber`, migration vendor-specific `V34` con backfill legacy conservativo, bridge temporaneo `phone`, aggiornamenti backend/frontend cross-stack, nuova decisione durevole su standard telefono e test reali verdi. |
-| 2.52 | 2026-05-15 | TASK-064.11 completato con CRUD amministrativo `Region`/`Area` in Master Data, filtri/lookup geografici estesi, delete fisico protetto da referenze, codice backend-side `RE###`/`AR###`, test backend/frontend reali e aggiornamento QA/reportistica. |
 | 2.49 | 2026-05-15 | Aggiunto il nuovo follow-up documentale `TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base`, con scope, regole funzionali, vincoli ed esclusioni coerenti al modello geografico tenant-aware approvato (`TASK-062`/`TASK-063`) e senza modifiche runtime/backend/frontend. |
 | 2.48 | 2026-05-15 | TASK-064.8 chiuso come DONE nel working tree del branch dedicato: `CompanyProfileAdministrationForm` supporta la creazione guidata estera di `Region`, `Area` e `GlobalZipCode` tramite `app-lookup-select` con pulsante `+` esterno, popup locali di feature e auto-code backend tenant-aware `RE###`/`AR###`, senza modificare schema/security/RBAC; test backend/frontend reali verdi e QA aggiornata con sola nota residua sulla verifica manuale browser. |
 | 2.47 | 2026-05-14 | Inserito `TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo` come nuovo follow-up documentale dopo `TASK-064.7`, con rinumerazione coerente dei successivi task telefono e lookup (`TASK-064.9` e `TASK-064.10`) e aggiornamento dei riferimenti interni. |
