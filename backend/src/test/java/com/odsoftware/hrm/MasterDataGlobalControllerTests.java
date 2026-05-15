@@ -101,27 +101,31 @@ class MasterDataGlobalControllerTests {
 				.andExpect(jsonPath("$.name").value("Task 030 Country Updated"));
 
 		UUID regionId = createRegion(FOUNDATION_TENANT_ID, countryId, "Task 030 Region", "qa-r1");
+		String regionCode = regionRepository.findById(regionId).orElseThrow().getCode();
 		mockMvc.perform(get("/api/master-data/global/regions"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/regions/{id}", regionId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
-				.andExpect(jsonPath("$.code").value("QA-R1"));
-		mockMvc.perform(putJson("/api/master-data/global/regions/" + regionId, regionRequest(FOUNDATION_TENANT_ID, countryId, "Task 030 Region Updated", "QA-R1")))
+				.andExpect(jsonPath("$.code").value(regionCode));
+		mockMvc.perform(putJson("/api/master-data/global/regions/" + regionId, regionRequest(FOUNDATION_TENANT_ID, countryId, "Task 030 Region Updated", "IGNORED-REGION-CODE")))
 				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.code").value(regionCode))
 				.andExpect(jsonPath("$.name").value("Task 030 Region Updated"));
 
 		UUID areaId = createArea(FOUNDATION_TENANT_ID, countryId, regionId, "Task 030 Area", "qa-a1");
+		String areaCode = areaRepository.findById(areaId).orElseThrow().getCode();
 		mockMvc.perform(get("/api/master-data/global/areas"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.content").isArray());
 		mockMvc.perform(get("/api/master-data/global/areas/{id}", areaId))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
-				.andExpect(jsonPath("$.code").value("QA-A1"));
-		mockMvc.perform(putJson("/api/master-data/global/areas/" + areaId, areaRequest(FOUNDATION_TENANT_ID, countryId, regionId, "Task 030 Area Updated", "QA-A1")))
+				.andExpect(jsonPath("$.code").value(areaCode));
+		mockMvc.perform(putJson("/api/master-data/global/areas/" + areaId, areaRequest(FOUNDATION_TENANT_ID, countryId, regionId, "Task 030 Area Updated", "IGNORED-AREA-CODE")))
 				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.code").value(areaCode))
 				.andExpect(jsonPath("$.name").value("Task 030 Area Updated"));
 
 		UUID zipCodeId = createZipCode(FOUNDATION_TENANT_ID, countryId, regionId, areaId, "Task City", "30100");
@@ -297,6 +301,55 @@ class MasterDataGlobalControllerTests {
 				.andExpect(jsonPath("$.status").value(400))
 				.andExpect(jsonPath("$.message").value("Validation failed"))
 				.andExpect(jsonPath("$.validationErrors.name").exists());
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalApiAutoGeneratesRegionAndAreaCodesWhenOmitted() throws Exception {
+		UUID countryId = createCountry("Task 0648 Auto Country", "A8");
+		UUID secondaryCountryId = createCountry("Task 0648 Auto Country B", "B8");
+
+		MvcResult firstRegionResult = mockMvc.perform(postJson(
+				"/api/master-data/global/regions",
+				regionRequest(FOUNDATION_TENANT_ID, countryId, "Task 0648 Region A")))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.country.id").value(countryId.toString()))
+				.andExpect(jsonPath("$.code").value(org.hamcrest.Matchers.matchesRegex("RE\\d{3}")))
+				.andReturn();
+		String firstRegionCode = objectMapper.readTree(firstRegionResult.getResponse().getContentAsString()).get("code").asText();
+
+		MvcResult secondRegionResult = mockMvc.perform(postJson(
+				"/api/master-data/global/regions",
+				regionRequest(FOUNDATION_TENANT_ID, secondaryCountryId, "Task 0648 Region B")))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.code").value(org.hamcrest.Matchers.matchesRegex("RE\\d{3}")))
+				.andReturn();
+		String secondRegionCode = objectMapper.readTree(secondRegionResult.getResponse().getContentAsString()).get("code").asText();
+		assertThat(progressiveOf(secondRegionCode, "RE")).isEqualTo(progressiveOf(firstRegionCode, "RE") + 1);
+
+		UUID regionId = responseId(firstRegionResult);
+		UUID secondRegionId = responseId(secondRegionResult);
+
+		MvcResult firstAreaResult = mockMvc.perform(postJson(
+				"/api/master-data/global/areas",
+				areaRequest(FOUNDATION_TENANT_ID, countryId, regionId, "Task 0648 Area A")))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.tenantId").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.country.id").value(countryId.toString()))
+				.andExpect(jsonPath("$.region.id").value(regionId.toString()))
+				.andExpect(jsonPath("$.code").value(org.hamcrest.Matchers.matchesRegex("AR\\d{3}")))
+				.andReturn();
+		String firstAreaCode = objectMapper.readTree(firstAreaResult.getResponse().getContentAsString()).get("code").asText();
+
+		MvcResult secondAreaResult = mockMvc.perform(postJson(
+				"/api/master-data/global/areas",
+				areaRequest(FOUNDATION_TENANT_ID, secondaryCountryId, secondRegionId, "Task 0648 Area B")))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.code").value(org.hamcrest.Matchers.matchesRegex("AR\\d{3}")))
+				.andReturn();
+		String secondAreaCode = objectMapper.readTree(secondAreaResult.getResponse().getContentAsString()).get("code").asText();
+		assertThat(progressiveOf(secondAreaCode, "AR")).isEqualTo(progressiveOf(firstAreaCode, "AR") + 1);
 	}
 
 	@Test
@@ -693,8 +746,25 @@ class MasterDataGlobalControllerTests {
 		return request;
 	}
 
+	private Map<String, Object> regionRequest(UUID tenantId, UUID countryId, String name) {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("name", name);
+		request.put("tenantId", tenantId);
+		request.put("countryId", countryId);
+		return request;
+	}
+
 	private Map<String, Object> areaRequest(UUID tenantId, UUID countryId, UUID regionId, String name, String code) {
 		Map<String, Object> request = codeNameRequest(code, name);
+		request.put("tenantId", tenantId);
+		request.put("countryId", countryId);
+		request.put("regionId", regionId);
+		return request;
+	}
+
+	private Map<String, Object> areaRequest(UUID tenantId, UUID countryId, UUID regionId, String name) {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("name", name);
 		request.put("tenantId", tenantId);
 		request.put("countryId", countryId);
 		request.put("regionId", regionId);
@@ -735,6 +805,10 @@ class MasterDataGlobalControllerTests {
 		request.put("code", code);
 		request.put("name", name);
 		return request;
+	}
+
+	private int progressiveOf(String code, String prefix) {
+		return Integer.parseInt(code.substring(prefix.length()));
 	}
 
 	private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder postJson(String path, Object request) throws Exception {

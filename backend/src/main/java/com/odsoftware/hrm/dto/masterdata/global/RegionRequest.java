@@ -9,6 +9,6 @@ public record RegionRequest(
 		@NotNull UUID tenantId,
 		@NotNull UUID countryId,
 		@NotBlank @Size(max = 100) String name,
-		@NotBlank @Size(max = 50) String code,
+		@Size(max = 50) String code,
 		Boolean active) {
 }

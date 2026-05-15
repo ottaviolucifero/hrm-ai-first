@@ -291,6 +291,8 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     component.form.controls.taxIdentifier.setValue('FR-TID-1');
     component.form.controls.taxNumber.setValue('FR-CF-1');
     component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
+    component.form.controls.regionId.setValue('region-fr-1');
+    component.form.controls.areaId.setValue('area-fr-1');
     component.form.controls.globalZipCodeId.setValue('zip-fr-1');
     component.form.controls.email.setValue('foreign@example.com');
     (phoneField as any).handleNationalNumberInput(makeInputEvent('1234567'));
@@ -304,6 +306,253 @@ describe('CompanyProfileAdministrationFormComponent', () => {
       taxNumber: null,
       countryId: 'country-2'
     }));
+  });
+
+  it('keeps Italy flow without create buttons and enables guided create flow for foreign countries with master-data permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), {
+      userType: 'TENANT_ADMIN',
+      tenantId: 'tenant-1',
+      permissions: [
+        'TENANT.COMPANY_PROFILE.READ',
+        'TENANT.COMPANY_PROFILE.CREATE',
+        'TENANT.COMPANY_PROFILE.UPDATE',
+        'TENANT.MASTER_DATA.CREATE'
+      ]
+    });
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as CompanyProfileFormHandle;
+
+    component.selectCountry({ target: { value: 'country-1' } } as unknown as Event);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('lookup importato');
+    expect(fixture.nativeElement.querySelectorAll('.lookup-select-create-button')).toHaveLength(0);
+
+    component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
+    fixture.detectChanges();
+
+    const createButtons = fixture.nativeElement.querySelectorAll('.lookup-select-create-button');
+    expect(createButtons).toHaveLength(3);
+    expect((createButtons[0] as HTMLButtonElement).disabled).toBe(false);
+    expect((createButtons[1] as HTMLButtonElement).disabled).toBe(true);
+    expect((createButtons[2] as HTMLButtonElement).disabled).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('paesi esteri');
+  });
+
+  it('hides guided create buttons for foreign countries without master-data create or manage permissions', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), {
+      userType: 'TENANT_ADMIN',
+      tenantId: 'tenant-1',
+      permissions: [
+        'TENANT.COMPANY_PROFILE.READ',
+        'TENANT.COMPANY_PROFILE.CREATE',
+        'TENANT.COMPANY_PROFILE.UPDATE'
+      ]
+    });
+    fixture.detectChanges();
+    const component = fixture.componentInstance as unknown as CompanyProfileFormHandle;
+
+    component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.lookup-select-create-button')).toHaveLength(0);
+  });
+
+  it('creates and auto-selects a foreign region from the guided dialog flow', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const createRegion = vi.fn(() => of({
+      id: 'region-fr-2',
+      tenantId: 'tenant-1',
+      country: { id: 'country-2', code: 'FR', name: 'France' },
+      code: 'RE001',
+      name: 'Nouvelle-Aquitaine',
+      active: true
+    }));
+    const fixture = await createFixture(createService({ createRegion }), {
+      userType: 'TENANT_ADMIN',
+      tenantId: 'tenant-1',
+      permissions: [
+        'TENANT.COMPANY_PROFILE.READ',
+        'TENANT.COMPANY_PROFILE.CREATE',
+        'TENANT.COMPANY_PROFILE.UPDATE',
+        'TENANT.MASTER_DATA.CREATE'
+      ]
+    });
+    fixture.detectChanges();
+    const component = fixture.componentInstance as any;
+
+    component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
+    fixture.detectChanges();
+
+    component.openRegionCreateDialog();
+    fixture.detectChanges();
+    expect(component.geographyDialog()?.mode).toBe('region');
+
+    component.submitGeographyCreateDialog({ mode: 'region', name: 'Nouvelle-Aquitaine' });
+    fixture.detectChanges();
+
+    expect(createRegion).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      countryId: 'country-2',
+      name: 'Nouvelle-Aquitaine',
+      active: true
+    });
+    expect(component.form.controls.regionId.value).toBe('region-fr-2');
+    expect(component.form.controls.areaId.value).toBe('');
+    expect(component.form.controls.globalZipCodeId.value).toBe('');
+    expect(component.geographyDialog()).toBeNull();
+  });
+
+  it('creates and auto-selects a foreign area from the guided dialog flow', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const createArea = vi.fn(() => of({
+      id: 'area-fr-2',
+      tenantId: 'tenant-1',
+      country: { id: 'country-2', code: 'FR', name: 'France' },
+      region: { id: 'region-fr-1', code: 'RE001', name: 'Ile-de-France' },
+      code: 'AR001',
+      name: 'Paris',
+      active: true
+    }));
+    const fixture = await createFixture(createService({ createArea }), {
+      userType: 'TENANT_ADMIN',
+      tenantId: 'tenant-1',
+      permissions: [
+        'TENANT.COMPANY_PROFILE.READ',
+        'TENANT.COMPANY_PROFILE.CREATE',
+        'TENANT.COMPANY_PROFILE.UPDATE',
+        'TENANT.MASTER_DATA.CREATE'
+      ]
+    });
+    fixture.detectChanges();
+    const component = fixture.componentInstance as any;
+
+    component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
+    component.selectRegionOption({ id: 'region-fr-1', code: 'IDF', name: 'Ile-de-France' });
+    fixture.detectChanges();
+
+    component.openAreaCreateDialog();
+    fixture.detectChanges();
+    expect(component.geographyDialog()?.mode).toBe('area');
+
+    component.submitGeographyCreateDialog({ mode: 'area', name: 'Paris' });
+    fixture.detectChanges();
+
+    expect(createArea).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      countryId: 'country-2',
+      regionId: 'region-fr-1',
+      name: 'Paris',
+      active: true
+    });
+    expect(component.form.controls.areaId.value).toBe('area-fr-2');
+    expect(component.form.controls.globalZipCodeId.value).toBe('');
+    expect(component.geographyDialog()).toBeNull();
+  });
+
+  it('resets dependent foreign geography fields when the parent selection changes', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), {
+      userType: 'TENANT_ADMIN',
+      tenantId: 'tenant-1',
+      permissions: [
+        'TENANT.COMPANY_PROFILE.READ',
+        'TENANT.COMPANY_PROFILE.CREATE',
+        'TENANT.COMPANY_PROFILE.UPDATE',
+        'TENANT.MASTER_DATA.CREATE'
+      ]
+    });
+    fixture.detectChanges();
+    const component = fixture.componentInstance as any;
+
+    component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
+    component.selectRegionOption({ id: 'region-fr-1', code: 'RE001', name: 'Ile-de-France' });
+    component.selectAreaOption({ id: 'area-fr-1', code: 'AR001', name: 'Paris' });
+    component.selectGlobalZipCodeOption({
+      id: 'zip-fr-1',
+      code: '75001',
+      name: 'Paris',
+      metadata: {
+        countryId: 'country-2',
+        regionId: 'region-fr-1',
+        areaId: 'area-fr-1',
+        areaName: 'Paris',
+        areaCode: 'AR001'
+      }
+    });
+    fixture.detectChanges();
+
+    component.selectRegionOption({ id: 'region-fr-2', code: 'RE002', name: 'Nouvelle-Aquitaine' });
+    fixture.detectChanges();
+
+    expect(component.form.controls.regionId.value).toBe('region-fr-2');
+    expect(component.form.controls.areaId.value).toBe('');
+    expect(component.form.controls.globalZipCodeId.value).toBe('');
+    expect(component.form.controls.cityLabel.value).toBe('');
+    expect(component.form.controls.provinceLabel.value).toBe('');
+  });
+
+  it('creates and auto-selects a foreign zip code from the guided dialog flow', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const createGlobalZipCode = vi.fn(() => of({
+      id: 'zip-fr-2',
+      tenantId: 'tenant-1',
+      country: { id: 'country-2', code: 'FR', name: 'France' },
+      region: { id: 'region-fr-1', code: 'IDF', name: 'Ile-de-France' },
+      area: { id: 'area-fr-1', code: 'PAR', name: 'Paris' },
+      city: 'Paris',
+      postalCode: '75002',
+      provinceCode: null,
+      provinceName: null,
+      sourceType: 'MANUAL' as const,
+      active: true
+    }));
+    const fixture = await createFixture(createService({ createGlobalZipCode }), {
+      userType: 'TENANT_ADMIN',
+      tenantId: 'tenant-1',
+      permissions: [
+        'TENANT.COMPANY_PROFILE.READ',
+        'TENANT.COMPANY_PROFILE.CREATE',
+        'TENANT.COMPANY_PROFILE.UPDATE',
+        'TENANT.MASTER_DATA.CREATE'
+      ]
+    });
+    fixture.detectChanges();
+    const component = fixture.componentInstance as any;
+
+    component.selectCountry({ target: { value: 'country-2' } } as unknown as Event);
+    component.selectRegionOption({ id: 'region-fr-1', code: 'IDF', name: 'Ile-de-France' });
+    component.selectAreaOption({ id: 'area-fr-1', code: 'PAR', name: 'Paris' });
+    fixture.detectChanges();
+
+    component.openZipCreateDialog();
+    fixture.detectChanges();
+    expect(component.geographyDialog()?.mode).toBe('zip');
+
+    component.submitGeographyCreateDialog({ mode: 'zip', city: 'Paris', postalCode: '75002' });
+    fixture.detectChanges();
+
+    expect(createGlobalZipCode).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      countryId: 'country-2',
+      regionId: 'region-fr-1',
+      areaId: 'area-fr-1',
+      city: 'Paris',
+      postalCode: '75002',
+      sourceType: 'MANUAL',
+      active: true
+    });
+    expect(component.form.controls.globalZipCodeId.value).toBe('zip-fr-2');
+    expect(component.form.controls.cityLabel.value).toBe('Paris');
+    expect(component.form.controls.provinceLabel.value).toBe('Paris (PAR)');
+    expect(component.geographyDialog()).toBeNull();
   });
 
   it('renders edit form with readonly code and submits update without tenant or active', async () => {
@@ -531,8 +780,14 @@ function createService(overrides: Partial<CompanyProfileAdministrationService> =
         { id: 'country-1', code: 'IT', name: 'Italy' },
         { id: 'country-4', code: 'DE', name: 'Germany' }
       ],
-      regions: [{ id: 'region-1', tenantId: 'tenant-1', countryId: 'country-1', code: 'RG001', name: 'Lazio' }],
-      areas: [{ id: 'area-1', tenantId: 'tenant-1', countryId: 'country-1', regionId: 'region-1', code: 'RM', name: 'Rome' }],
+      regions: [
+        { id: 'region-1', tenantId: 'tenant-1', countryId: 'country-1', code: 'RG001', name: 'Lazio' },
+        { id: 'region-fr-1', tenantId: 'tenant-1', countryId: 'country-2', code: 'IDF', name: 'Ile-de-France' }
+      ],
+      areas: [
+        { id: 'area-1', tenantId: 'tenant-1', countryId: 'country-1', regionId: 'region-1', code: 'RM', name: 'Rome' },
+        { id: 'area-fr-1', tenantId: 'tenant-1', countryId: 'country-2', regionId: 'region-fr-1', code: 'PAR', name: 'Paris' }
+      ],
       globalZipCodes: [
         { id: 'zip-1', tenantId: 'tenant-1', countryId: 'country-1', regionId: 'region-1', areaId: 'area-1', code: '00100', name: 'Roma' },
         {
@@ -546,11 +801,24 @@ function createService(overrides: Partial<CompanyProfileAdministrationService> =
           provinceName: 'Roma',
           provinceCode: 'RM'
         },
-        { id: 'zip-fr-1', tenantId: null, countryId: 'country-2', regionId: null, areaId: null, code: '75001', name: 'Paris' }
+        {
+          id: 'zip-fr-1',
+          tenantId: 'tenant-1',
+          countryId: 'country-2',
+          regionId: 'region-fr-1',
+          areaId: 'area-fr-1',
+          areaCode: 'PAR',
+          areaName: 'Paris',
+          code: '75001',
+          name: 'Paris'
+        }
       ]
     })),
     findCompanyProfileById: vi.fn(() => of(detail)),
     createCompanyProfile: vi.fn(() => of({ ...detail, id: 'company-created' })),
+    createRegion: vi.fn(),
+    createArea: vi.fn(),
+    createGlobalZipCode: vi.fn(),
     updateCompanyProfile: vi.fn(() => of(detail)),
     activateCompanyProfile: vi.fn(),
     deactivateCompanyProfile: vi.fn(),

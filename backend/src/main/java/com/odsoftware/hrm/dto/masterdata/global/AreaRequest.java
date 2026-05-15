@@ -10,6 +10,6 @@ public record AreaRequest(
 		@NotNull UUID countryId,
 		@NotNull UUID regionId,
 		@NotBlank @Size(max = 100) String name,
-		@NotBlank @Size(max = 50) String code,
+		@Size(max = 50) String code,
 		Boolean active) {
 }

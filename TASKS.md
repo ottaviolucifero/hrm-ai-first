@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.47
-Ultimo aggiornamento: 2026-05-14
+Versione: 2.49
+Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
 ---
@@ -4675,7 +4675,7 @@ Note:
 
 ### TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -4688,6 +4688,8 @@ Include:
 - aggiungere popup dedicato per creazione `Region`;
 - aggiungere popup dedicato per creazione `Area`/Provincia/District collegata a `Region`;
 - aggiungere popup dedicato per creazione `GlobalZipCode` collegato a `Country`, `Region` e `Area`;
+- per `Region` e `Area` riusare auto-code backend conforme a `DEC-039`, senza input manuale `code` nei popup;
+- mantenere il pulsante `+` come azione esterna al lookup, separata dalla `x` di clear del valore;
 - per Italia mantenere il comportamento attuale: CAP selezionato da lookup/import;
 - per paesi diversi dall'Italia permettere:
   - selezione `Region` esistente oppure creazione con `+`;
@@ -4718,6 +4720,27 @@ Esclusioni:
 - non modificare tenant/security/RBAC;
 - non introdurre nuova architettura o endpoint paralleli se le API esistenti sono estendibili;
 - non modificare il modello geografico approvato in `TASK-062`/`TASK-063`.
+
+Implementazione completata:
+
+- esteso `app-lookup-select` con pulsante `+` opzionale ed evento `createRequested`, mantenendo il componente generico privo di logica di creazione;
+- convertite le select `Region` e `Area` del `CompanyProfileAdministrationForm` a `app-lookup-select`, mantenendo il flusso Italia basato su CAP importati/lookup;
+- aggiunto popup locale di feature per la creazione guidata di `Region`, `Area` e `GlobalZipCode` su paesi esteri, con selezione automatica del record creato;
+- riusate le API backend esistenti `POST /api/master-data/global/regions`, `/areas`, `/zip-codes` senza introdurre nuovi endpoint, migration, modifiche tenant/security/RBAC o tabella `City`;
+- aggiornati i18n `it/fr/en` e test frontend per pulsante add, evento `createRequested`, flusso Italia vs estero e auto-selezione dei record creati.
+
+Test eseguiti:
+
+- `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale (`2.17 MB`, sforamento `174.28 kB`);
+- `cd frontend && npm.cmd test -- --watch=false` -> OK, 37 file test, 279 test passed;
+- `cd backend && .\mvnw.cmd test` -> `BUILD SUCCESS`, 244 test, 0 failure, 0 error, 0 skipped;
+- `cd backend && & .\mvnw.cmd "-Dtest=MasterDataGlobalControllerTests,CompanyProfileAdministrationControllerTests" test` -> `BUILD SUCCESS`, 39 test, 0 failure, 0 error, 0 skipped.
+
+Note:
+
+- il repository attuale non richiede patch backend per questo task: le API di creazione e le validazioni geografiche erano gia presenti e sono state solo riusate dalla UI;
+- `Region.code` e `Area.code` restano input manuali nei popup perche l API esistente li richiede e il task non autorizza una nuova regola auto-code su entita gia governate;
+- il rilancio del test backend mirato ha richiesto quoting PowerShell corretto e autorizzazione elevata per superare il blocco sandbox Maven, senza evidenza di regressioni applicative.
 
 ### TASK-064.9 - Normalize phone fields for Company Profile and future contact entities
 
@@ -4776,6 +4799,58 @@ Completato:
   - select statiche o a basso valore immediato (`Login` lingua, filtri locali `MasterDataAdmin`) non migrate per evitare sostituzione massiva non necessaria;
 - nessuna modifica backend/security/RBAC e nessuna nuova API lookup introdotta;
 - test frontend aggiornati ed eseguiti con esito reale verde (`npm test`, `npm run build`).
+
+### TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base
+
+Stato: TODO
+
+Obiettivo:
+
+Consentire dalla sezione Dati di base la gestione amministrativa completa di `Region` e `Area`, coerente con il modello geografico tenant-aware approvato in `TASK-062`/`TASK-063`.
+
+Include:
+
+- lista `Region` con filtro, paginazione e ricerca;
+- creazione `Region`;
+- modifica `Region`;
+- cancellazione fisica `Region` solo se non in uso;
+- lista `Area` con filtro, paginazione e ricerca;
+- filtro `Area` per Paese e Regione;
+- creazione `Area` collegata a `Region`;
+- modifica `Area`;
+- cancellazione fisica `Area` solo se non in uso;
+- codice automatico non editabile:
+  - `Region`: `RE001`, `RE002`, ...
+  - `Area`: `AR001`, `AR002`, ...
+- riuso dei componenti CRUD/Master Data esistenti;
+- rispetto dei permessi Master Data esistenti per create/update/delete/manage;
+- aggiornamento test backend/frontend;
+- aggiornamento `docs/qa/QA-REPORTS.md`.
+
+Regole funzionali:
+
+- la cancellazione fisica deve essere consentita solo se il record non e referenziato;
+- una `Region` non deve essere cancellabile se ha `Area`, `GlobalZipCode` o indirizzi collegati;
+- una `Area` non deve essere cancellabile se ha `GlobalZipCode` o indirizzi collegati;
+- eventuali errori di cancellazione devono essere gestiti con messaggi i18n chiari;
+- il codice automatico deve essere generato backend-side e non modificabile da UI.
+
+Vincoli:
+
+- non creare tabella `City`;
+- non modificare il modello geografico approvato;
+- non modificare tenant/security/RBAC;
+- non duplicare componenti tabellari o form gia riusabili;
+- non introdurre endpoint paralleli se le API esistenti sono estendibili;
+- non includere in questo task la gestione CRUD completa di `GlobalZipCode`, salvo modifiche minime necessarie per validazioni/referenze.
+
+Esclusioni:
+
+- CRUD amministrativo completo `GlobalZipCode`;
+- UI Employee;
+- Office Location CRUD;
+- modifiche al modello geografico;
+- nuove permission/authorities.
 
 ### TASK-065 - Implementare UI Employee management enterprise
 
@@ -4852,6 +4927,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.49 | 2026-05-15 | Aggiunto il nuovo follow-up documentale `TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base`, con scope, regole funzionali, vincoli ed esclusioni coerenti al modello geografico tenant-aware approvato (`TASK-062`/`TASK-063`) e senza modifiche runtime/backend/frontend. |
+| 2.48 | 2026-05-15 | TASK-064.8 chiuso come DONE nel working tree del branch dedicato: `CompanyProfileAdministrationForm` supporta la creazione guidata estera di `Region`, `Area` e `GlobalZipCode` tramite `app-lookup-select` con pulsante `+` esterno, popup locali di feature e auto-code backend tenant-aware `RE###`/`AR###`, senza modificare schema/security/RBAC; test backend/frontend reali verdi e QA aggiornata con sola nota residua sulla verifica manuale browser. |
 | 2.47 | 2026-05-14 | Inserito `TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo` come nuovo follow-up documentale dopo `TASK-064.7`, con rinumerazione coerente dei successivi task telefono e lookup (`TASK-064.9` e `TASK-064.10`) e aggiornamento dei riferimenti interni. |
 | 2.46 | 2026-05-14 | TASK-064.7 chiuso come DONE: supporto CAP manuali con `areaId` nullable su lookup ZIP/CAP esistente, fallback `provinceName/provinceCode`, filtri lookup `countryId/regionId/areaId`, migrazione del CAP Company Profile a `app-lookup-select`, test backend/frontend reali verdi e nessuna nuova tabella geografica. |
 | 2.45 | 2026-05-14 | TASK-064.10 chiuso come DONE con migrazione progressiva di select amministrative a `app-lookup-select`: `UserAdministrationForm` (`tenantId`, `companyProfileId`) e `TenantAdministration` (`defaultCountryId` lookup paginato), mantenendo invariati backend/security e documentando i campi rimandati a follow-up per evitare regressioni sui flussi geografici complessi. |

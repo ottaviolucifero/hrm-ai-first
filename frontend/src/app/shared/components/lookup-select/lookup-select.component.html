@@ -6,76 +6,90 @@
     }
   </label>
 
-  <div
-    class="lookup-select-control"
-    [class.lookup-select-control-autocomplete]="autocomplete"
-    [class.lookup-select-control-has-clear]="autocomplete && clearable && hasValue && !readonlyState">
-    @if (autocomplete) {
-      <input
-        [id]="inputId"
-        class="lookup-select-input"
-        type="text"
-        [value]="controlText"
-        [disabled]="disabledState"
-        [readOnly]="readonlyState"
-        [required]="required"
-        [attr.placeholder]="placeholder"
-        [attr.aria-describedby]="describedByAttribute"
-        [attr.aria-expanded]="panelOpen"
-        [attr.aria-controls]="panelId"
-        [attr.aria-activedescendant]="activeDescendantId"
-        [attr.aria-invalid]="hasError"
-        aria-autocomplete="list"
-        role="combobox"
-        autocomplete="off"
-        (focus)="openPanel()"
-        (input)="handleAutocompleteInput($event)"
-        (keydown)="handleInputKeydown($event)"
-        (blur)="onBlur()" />
+  <div class="lookup-select-row" [class.lookup-select-row-has-create]="createActionVisible">
+    <div
+      class="lookup-select-control"
+      [class.lookup-select-control-autocomplete]="autocomplete"
+      [class.lookup-select-control-has-clear]="autocomplete && clearable && hasValue && !readonlyState">
+      @if (autocomplete) {
+        <input
+          [id]="inputId"
+          class="lookup-select-input"
+          type="text"
+          [value]="controlText"
+          [disabled]="disabledState"
+          [readOnly]="readonlyState"
+          [required]="required"
+          [attr.placeholder]="placeholder"
+          [attr.aria-describedby]="describedByAttribute"
+          [attr.aria-expanded]="panelOpen"
+          [attr.aria-controls]="panelId"
+          [attr.aria-activedescendant]="activeDescendantId"
+          [attr.aria-invalid]="hasError"
+          aria-autocomplete="list"
+          role="combobox"
+          autocomplete="off"
+          (focus)="openPanel()"
+          (input)="handleAutocompleteInput($event)"
+          (keydown)="handleInputKeydown($event)"
+          (blur)="onBlur()" />
 
-      @if (clearable && hasValue && !readonlyState) {
+        @if (clearable && hasValue && !readonlyState) {
+          <button
+            class="lookup-select-icon-button lookup-select-clear-button"
+            type="button"
+            [attr.aria-label]="i18n.t('lookupSelect.actions.clear')"
+            (click)="clearSelection()">
+            &times;
+          </button>
+        }
+      } @else {
         <button
-          class="lookup-select-icon-button lookup-select-clear-button"
+          [id]="inputId"
+          class="lookup-select-button"
           type="button"
-          [attr.aria-label]="i18n.t('lookupSelect.actions.clear')"
-          (click)="clearSelection()">
-          &times;
+          [disabled]="disabledState"
+          [attr.aria-describedby]="describedByAttribute"
+          [attr.aria-expanded]="panelOpen"
+          [attr.aria-controls]="panelId"
+          [attr.aria-invalid]="hasError"
+          (click)="togglePanel()"
+          (blur)="onBlur()">
+          {{ controlText || placeholder }}
         </button>
-      }
-    } @else {
-      <button
-        [id]="inputId"
-        class="lookup-select-button"
-        type="button"
-        [disabled]="disabledState"
-        [attr.aria-describedby]="describedByAttribute"
-        [attr.aria-expanded]="panelOpen"
-        [attr.aria-controls]="panelId"
-        [attr.aria-invalid]="hasError"
-        (click)="togglePanel()"
-        (blur)="onBlur()">
-        {{ controlText || placeholder }}
-      </button>
 
-      @if (clearable && hasValue && !readonlyState) {
+        @if (clearable && hasValue && !readonlyState) {
+          <button
+            class="lookup-select-icon-button"
+            type="button"
+            [attr.aria-label]="i18n.t('lookupSelect.actions.clear')"
+            (click)="clearSelection()">
+            &times;
+          </button>
+        }
+      }
+
+      @if (!autocomplete) {
         <button
           class="lookup-select-icon-button"
           type="button"
-          [attr.aria-label]="i18n.t('lookupSelect.actions.clear')"
-          (click)="clearSelection()">
-          &times;
+          [disabled]="readonlyState"
+          [attr.aria-label]="i18n.t('lookupSelect.actions.toggle')"
+          (click)="togglePanel()">
+          v
         </button>
       }
-    }
+    </div>
 
-    @if (!autocomplete) {
+    @if (createActionVisible) {
       <button
-        class="lookup-select-icon-button"
+        class="lookup-select-icon-button lookup-select-create-button"
         type="button"
-        [disabled]="readonlyState"
-        [attr.aria-label]="i18n.t('lookupSelect.actions.toggle')"
-        (click)="togglePanel()">
-        v
+        [disabled]="createActionDisabled"
+        [attr.aria-label]="createLabel || i18n.t('lookupSelect.actions.create')"
+        [attr.title]="createLabel || i18n.t('lookupSelect.actions.create')"
+        (click)="requestCreate()">
+        +
       </button>
     }
   </div>

@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.52
-Ultimo aggiornamento: 2026-05-14
+Versione: 2.54
+Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
 ---
@@ -142,11 +142,12 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-064.8 Creazione manuale dati geografici esteri da form indirizzo
 - TASK-064.9 Normalize phone fields for Company Profile and future contact entities
 - TASK-064.10 Apply shared lookup select to existing administration forms
+- TASK-064.11 CRUD amministrativo Region e Area nei Dati di base
 
 ### Prossimo passo
 
 - TASK-065 Implementare UI Employee management enterprise
-- Follow-up gia pianificati: TASK-064.8 creazione guidata dati geografici esteri da form indirizzo, TASK-064.9 normalizzazione futura dei telefoni, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
+- Follow-up gia pianificati: TASK-064.9 normalizzazione futura dei telefoni, TASK-064.11 CRUD amministrativo Region/Area nei Dati di base, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
 
@@ -258,14 +259,15 @@ TASK-064.4 completed the Company Profile fiscal fields follow-up by adding nulla
 TASK-064.5 completed the Company Profile Administration UI foundation and pre-commit functional return with backend admin APIs under `/api/admin/company-profiles`, tenant-aware backend auto-code `CP001/CP002`, activate/deactivate/delete lifecycle, `COMPANY_PROFILE` permissions through `READ`/`CREATE`/`UPDATE`/`DELETE`, tenant-aware normalization of existing company profile codes, company profile type seed completion, Angular admin routes/list/detail/form aligned to `/admin/users`, shared DataTable reuse, Italian naming `Profilo aziendale`, minimal local phone handling, refined address order, i18n `it/fr/en` and green backend/frontend validation.
 TASK-064.6 completed the shared lookup/phone foundation by reusing the existing paginated master-data contract, adding backend lookup endpoints only for `Country`, `Region`, `Area` and `GlobalZipCode`, introducing shared Angular components `app-lookup-select` and `app-phone-field`, and limiting the pilot to `CompanyProfile` while preserving the current backend `phone: string | null` contract through a compatibility emission mode.
 TASK-064.7 completed the ZIP/CAP manual lookup hardening across address forms by extending the existing paginated lookup contract, supporting `GlobalZipCode.areaId` nullable records with `provinceName/provinceCode` fallback, and keeping the approved TASK-062/TASK-063 geography model unchanged.
-TASK-064.8 is planned as a dedicated follow-up to support guided creation of foreign geographic data from address forms, extending `app-lookup-select` with a generic add affordance and orchestrating Region/Area/ZIP creation without introducing a `City` table or free address fields outside the approved model.
+TASK-064.8 completed the guided foreign geography creation flow on `CompanyProfileAdministrationForm`, extending `app-lookup-select` with an external optional add affordance, keeping Italy on imported ZIP lookup, reusing the existing Region/Area/GlobalZipCode APIs and adding tenant-aware backend auto-code `RE###`/`AR###` for Region/Area create without schema, security or RBAC changes.
 TASK-064.9 is planned as a dedicated follow-up to normalize phone storage across `CompanyProfile` and future contact entities, separating dial code and national number at DB/API level once the shared field foundation introduced in TASK-064.6 has been validated.
 TASK-064.10 completed the progressive adoption of `app-lookup-select` on existing admin forms with a bounded patch (`UserAdministrationForm` tenant/company profile and `TenantAdministration` default country), preserving API contracts/security and documenting deferred migrations that require dedicated address-cascade hardening.
+TASK-064.11 is planned as a dedicated backlog follow-up for full administrative CRUD of `Region` and `Area` in Master Data, with safe physical-delete constraints on references, backend-side auto-code (`RE###`/`AR###`), reuse of existing CRUD foundations and no changes to tenant/security/RBAC or the approved geography model.
 
 Prossimo passo:
 
 - TASK-065 Implementare UI Employee management enterprise
-- Follow-up gia pianificati: TASK-064.8 creazione guidata dati geografici esteri da form indirizzo, TASK-064.9 normalizzazione futura dei telefoni, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
+- Follow-up gia pianificati: TASK-064.9 normalizzazione futura dei telefoni, TASK-064.11 CRUD amministrativo Region/Area nei Dati di base, tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza immediata Employee/geography:
 
@@ -430,6 +432,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.54 | 2026-05-15 | Aggiornato backlog con il nuovo follow-up `TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base`, mantenendo `TASK-064.9` come follow-up telefono separato e senza introdurre modifiche runtime/backend/frontend. |
+| 2.53 | 2026-05-15 | TASK-064.8 completato in roadmap nel working tree del branch dedicato: `CompanyProfileAdministrationForm` supporta la creazione guidata estera di `Region`, `Area` e `GlobalZipCode` tramite `app-lookup-select` con `+` esterno, popup locali e auto-code backend tenant-aware `RE###`/`AR###`, mantenendo il flusso Italia su CAP importati/lookup e senza modifiche schema/security/RBAC. |
 | 2.52 | 2026-05-14 | Inserito il nuovo follow-up `TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo` subito dopo `TASK-064.7`, con rinumerazione coerente di `TASK-064.9` (telefono) e `TASK-064.10` (adozione progressiva di `app-lookup-select`) e riallineamento dei riferimenti roadmap. |
 | 2.51 | 2026-05-14 | TASK-064.7 completato in roadmap: lookup ZIP/CAP esistente esteso con filtri `countryId/regionId/areaId`, supporto record manuali con `areaId` nullable e fallback `provinceName/provinceCode`, migrazione CAP Company Profile a `app-lookup-select`, test backend/frontend reali verdi e nessuna modifica al modello geografico approvato. |
 | 2.50 | 2026-05-14 | TASK-064.10 completato in roadmap con migrazione progressiva di select amministrative a `app-lookup-select` (User Administration tenant/company profile + Tenant Administration default country), test frontend reali verdi e rinvio documentato dei casi geografici piu complessi a follow-up dedicati. |

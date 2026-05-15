@@ -18,6 +18,7 @@ import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeRequest;
 import com.odsoftware.hrm.dto.masterdata.global.NationalIdentifierTypeResponse;
 import com.odsoftware.hrm.dto.masterdata.global.RegionRequest;
 import com.odsoftware.hrm.dto.masterdata.global.RegionResponse;
+import com.odsoftware.hrm.entity.common.BaseTenantMasterEntity;
 import com.odsoftware.hrm.dto.lookup.LookupOptionResponse;
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.entity.master.Area;
@@ -47,6 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -183,13 +185,15 @@ public class MasterDataGlobalService {
 	public RegionResponse createRegion(RegionRequest request) {
 		validateTenant(request.tenantId());
 		Country country = findCountry(request.countryId());
-		String code = cleanUpper(request.code());
-		if (regionRepository.existsByTenantIdAndCountry_IdAndCode(request.tenantId(), country.getId(), code)) {
-			throw new ResourceConflictException("Region code already exists for country: " + code);
-		}
+		String code = generateNextTenantCode(request.tenantId(), "RE", regionRepository, "Region");
 		Region region = new Region();
 		applyRegion(region, request, country, code);
-		return toRegionResponse(regionRepository.save(region));
+		try {
+			return toRegionResponse(regionRepository.save(region));
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw new ResourceConflictException("Region code generation collision for tenant. Retry create operation.");
+		}
 	}
 
 	@Transactional
@@ -197,7 +201,7 @@ public class MasterDataGlobalService {
 		Region region = findRegion(id);
 		validateTenant(request.tenantId());
 		Country country = findCountry(request.countryId());
-		String code = cleanUpper(request.code());
+		String code = cleanUpper(region.getCode());
 		if (regionRepository.existsByTenantIdAndCountry_IdAndCodeAndIdNot(request.tenantId(), country.getId(), code, id)) {
 			throw new ResourceConflictException("Region code already exists for country: " + code);
 		}
@@ -251,13 +255,15 @@ public class MasterDataGlobalService {
 		Region region = findRegion(request.regionId());
 		validateRegionCountry(region, country);
 		validateRegionTenant(region, request.tenantId());
-		String code = cleanUpper(request.code());
-		if (areaRepository.existsByTenantIdAndRegion_IdAndCode(request.tenantId(), region.getId(), code)) {
-			throw new ResourceConflictException("Area code already exists for region: " + code);
-		}
+		String code = generateNextTenantCode(request.tenantId(), "AR", areaRepository, "Area");
 		Area area = new Area();
 		applyArea(area, request, country, region, code);
-		return toAreaResponse(areaRepository.save(area));
+		try {
+			return toAreaResponse(areaRepository.save(area));
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw new ResourceConflictException("Area code generation collision for tenant. Retry create operation.");
+		}
 	}
 
 	@Transactional
@@ -268,7 +274,7 @@ public class MasterDataGlobalService {
 		Region region = findRegion(request.regionId());
 		validateRegionCountry(region, country);
 		validateRegionTenant(region, request.tenantId());
-		String code = cleanUpper(request.code());
+		String code = cleanUpper(area.getCode());
 		if (areaRepository.existsByTenantIdAndRegion_IdAndCodeAndIdNot(request.tenantId(), region.getId(), code, id)) {
 			throw new ResourceConflictException("Area code already exists for region: " + code);
 		}
@@ -933,6 +939,54 @@ public class MasterDataGlobalService {
 		return id == null
 				? globalZipCodeRepository.existsByTenantIdAndCountry_IdAndPostalCodeAndCity(tenantId, countryId, postalCode, city)
 				: globalZipCodeRepository.existsByTenantIdAndCountry_IdAndPostalCodeAndCityAndIdNot(tenantId, countryId, postalCode, city, id);
+	}
+
+	private <T extends BaseTenantMasterEntity> String generateNextTenantCode(
+			UUID tenantId,
+			String codePrefix,
+			com.odsoftware.hrm.repository.master.MasterDataRepository<T> repository,
+			String label) {
+		List<T> tenantEntities = repository.findAll(
+				(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("tenantId"), tenantId),
+				Sort.by(Sort.Order.desc("code")));
+		return nextProgressiveCode(codePrefix, tenantEntities, BaseTenantMasterEntity::getCode, label);
+	}
+
+	private <T> String nextProgressiveCode(
+			String codePrefix,
+			List<T> entities,
+			Function<T, String> codeExtractor,
+			String label) {
+		int maxProgressive = 0;
+		for (T entity : entities) {
+			int parsedProgressive = parseProgressiveCode(codeExtractor.apply(entity), codePrefix);
+			if (parsedProgressive > maxProgressive) {
+				maxProgressive = parsedProgressive;
+			}
+		}
+
+		if (maxProgressive >= 999) {
+			throw new ResourceConflictException(label + " code progressive exhausted for tenant");
+		}
+
+		return codePrefix + String.format(Locale.ROOT, "%03d", maxProgressive + 1);
+	}
+
+	private int parseProgressiveCode(String code, String prefix) {
+		String normalizedCode = cleanUpper(code);
+		if (normalizedCode == null || !normalizedCode.startsWith(prefix)) {
+			return -1;
+		}
+		if (normalizedCode.length() != prefix.length() + 3) {
+			return -1;
+		}
+		String progressive = normalizedCode.substring(prefix.length());
+		for (int index = 0; index < progressive.length(); index++) {
+			if (!Character.isDigit(progressive.charAt(index))) {
+				return -1;
+			}
+		}
+		return Integer.parseInt(progressive);
 	}
 
 	private <T> Specification<T> tenantScopedSpecification(UUID tenantId, Specification<T> searchSpecification) {

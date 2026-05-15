@@ -18,6 +18,10 @@ import { LookupSelectComponent } from './lookup-select.component';
         [minSearchLength]="minSearchLength"
         [options]="options"
         [loadPage]="loadPage"
+        [createEnabled]="createEnabled"
+        [createDisabled]="createDisabled"
+        [createLabel]="'Create item'"
+        (createRequested)="handleCreateRequested()"
         [clearable]="true" />
     </form>
   `
@@ -26,8 +30,11 @@ class LookupSelectHostComponent {
   readonly form;
   autocomplete = true;
   minSearchLength = 0;
+  createEnabled = false;
+  createDisabled = false;
   options: readonly LookupOption[] = [];
   loadPage: LookupLoadFn | null = null;
+  createRequestedCount = 0;
   submitCount = 0;
 
   constructor(private readonly formBuilder: NonNullableFormBuilder) {
@@ -39,6 +46,10 @@ class LookupSelectHostComponent {
   handleSubmit(event: Event): void {
     event.preventDefault();
     this.submitCount += 1;
+  }
+
+  handleCreateRequested(): void {
+    this.createRequestedCount += 1;
   }
 }
 
@@ -329,6 +340,45 @@ describe('LookupSelectComponent', () => {
     await vi.advanceTimersByTimeAsync(1);
     expect(host.loadPage).toHaveBeenCalledTimes(1);
     expect(host.loadPage).toHaveBeenCalledWith(expect.objectContaining({ search: 'It' }));
+  });
+
+  it('shows the optional create button and emits createRequested', () => {
+    host.createEnabled = true;
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('.lookup-select-create-button') as HTMLButtonElement;
+    expect(button).not.toBeNull();
+    expect(button.closest('.lookup-select-control')).toBeNull();
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(host.createRequestedCount).toBe(1);
+    expect(host.submitCount).toBe(0);
+  });
+
+  it('disables the optional create button without emitting createRequested', () => {
+    host.createEnabled = true;
+    host.createDisabled = true;
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('.lookup-select-create-button') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(host.createRequestedCount).toBe(0);
+  });
+
+  it('disables the create button when the control is readonly', () => {
+    host.createEnabled = true;
+    const component = getLookupSelectComponent() as any;
+    component.readonly = true;
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('.lookup-select-create-button') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
   });
 
   function getLookupSelectComponent(): LookupSelectComponent {

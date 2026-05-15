@@ -188,42 +188,76 @@
               [required]="true"
               [errorText]="validationMessage('streetNumber')" />
 
+            @if (isForeignCountrySelected()) {
+              <app-lookup-select
+                formControlName="regionId"
+                [label]="i18n.t('masterData.columns.region')"
+                [labelRequired]="true"
+                [required]="true"
+                [clearable]="true"
+                [placeholder]="i18n.t('companyProfileAdministration.form.placeholders.region')"
+                [searchPlaceholder]="i18n.t('companyProfileAdministration.form.placeholders.region')"
+                [options]="regionLookupOptions()"
+                [initialOption]="selectedRegionInitialOption()"
+                [createEnabled]="canCreateRegion()"
+                [createDisabled]="false"
+                [createLabel]="i18n.t('companyProfileAdministration.geography.actions.createRegion')"
+                [errorText]="validationMessage('regionId')"
+                (optionChange)="selectRegionOption($event)"
+                (createRequested)="openRegionCreateDialog()" />
+
+              <app-lookup-select
+                formControlName="areaId"
+                [label]="i18n.t(areaLabelKey())"
+                [labelRequired]="true"
+                [required]="true"
+                [clearable]="true"
+                [placeholder]="i18n.t('companyProfileAdministration.form.placeholders.area')"
+                [searchPlaceholder]="i18n.t('companyProfileAdministration.form.placeholders.area')"
+                [options]="areaLookupOptions()"
+                [initialOption]="selectedAreaInitialOption()"
+                [disabled]="!hasSelectedRegion()"
+                [createEnabled]="geographyCreateEnabled() && isForeignCountrySelected()"
+                [createDisabled]="!canCreateArea()"
+                [createLabel]="i18n.t('companyProfileAdministration.geography.actions.createArea')"
+                [errorText]="validationMessage('areaId')"
+                (optionChange)="selectAreaOption($event)"
+                (createRequested)="openAreaCreateDialog()" />
+            }
+
             <app-lookup-select
               formControlName="globalZipCodeId"
               [label]="i18n.t('masterData.columns.postalCode')"
               [labelRequired]="true"
               [required]="true"
               [clearable]="true"
+              [disabled]="zipLookupDisabled()"
               [placeholder]="i18n.t('companyProfileAdministration.form.placeholders.globalZipCode')"
               [searchPlaceholder]="i18n.t('companyProfileAdministration.form.placeholders.globalZipCode')"
               [loadPage]="zipCodeLookup"
               [initialOption]="selectedGlobalZipCodeInitialOption()"
+              [createEnabled]="geographyCreateEnabled() && isForeignCountrySelected()"
+              [createDisabled]="!canCreateZipCode()"
+              [createLabel]="i18n.t('companyProfileAdministration.geography.actions.createZip')"
               [errorText]="validationMessage('globalZipCodeId')"
-              (optionChange)="selectGlobalZipCodeOption($event)" />
+              (optionChange)="selectGlobalZipCodeOption($event)"
+              (createRequested)="openZipCreateDialog()" />
 
             <app-input
               formControlName="cityLabel"
               [label]="i18n.t('masterData.columns.city')"
               [helpText]="i18n.t('companyProfileAdministration.form.address.cityHelp')" />
 
-            <app-input
-              formControlName="provinceLabel"
-              [label]="i18n.t(areaLabelKey())" />
-
-            @if (showRegionField()) {
-              <label class="company-profile-form-field">
-                <span>{{ i18n.t('masterData.columns.region') }}</span>
-                <select class="kt-input" formControlName="regionId" (change)="selectRegion($event)">
-                  <option value="">{{ i18n.t('companyProfileAdministration.form.placeholders.region') }}</option>
-                  @for (region of filteredRegions(); track region.id) {
-                    <option [value]="region.id">{{ region.name }} ({{ region.code }})</option>
-                  }
-                </select>
-              </label>
+            @if (showItalianProvinceField()) {
+              <app-input
+                formControlName="provinceLabel"
+                [label]="i18n.t(areaLabelKey())" />
             }
           </div>
 
-          <p class="company-profile-form-field-help">{{ i18n.t('companyProfileAdministration.form.address.lookupNote') }}</p>
+          <p class="company-profile-form-field-help">
+            {{ i18n.t(isForeignCountrySelected() ? 'companyProfileAdministration.form.address.lookupNoteForeign' : 'companyProfileAdministration.form.address.lookupNoteItaly') }}
+          </p>
         </section>
 
         <div class="company-profile-form-actions company-profile-form-card-wide">
@@ -246,3 +280,11 @@
     }
   </div>
 </section>
+
+@if (geographyDialog(); as dialogConfig) {
+  <app-company-profile-geography-create-dialog
+    [config]="dialogConfig"
+    [submitting]="geographyDialogSubmitting()"
+    (cancel)="closeGeographyDialog()"
+    (submitRequested)="submitGeographyCreateDialog($event)" />
+}
