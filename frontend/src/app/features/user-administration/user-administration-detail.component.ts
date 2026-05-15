@@ -10,8 +10,10 @@ import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
+import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
 import { PasswordFieldComponent } from '../../shared/form-fields/password-field.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
+import { LookupOption } from '../../shared/lookup/lookup.models';
 import {
   UserAdministrationRole,
   UserPasswordResetResponse,
@@ -35,7 +37,7 @@ type UserLifecycleAction = 'activate' | 'deactivate' | 'lock' | 'unlock';
 
 @Component({
   selector: 'app-user-administration-detail',
-  imports: [AppButtonComponent, PasswordFieldComponent, ReactiveFormsModule],
+  imports: [AppButtonComponent, LookupSelectComponent, PasswordFieldComponent, ReactiveFormsModule],
   templateUrl: './user-administration-detail.component.html',
   styleUrl: './user-administration-detail.component.scss'
 })
@@ -70,9 +72,25 @@ export class UserAdministrationDetailComponent implements OnDestroy {
   protected readonly assignedRoles = signal<readonly UserAdministrationRole[]>([]);
   protected readonly availableRoles = signal<readonly UserAdministrationRole[]>([]);
   protected readonly roleTenantOptions = computed(() => this.buildTenantOptions(this.user()));
+  protected readonly roleTenantLookupOptions = computed<readonly LookupOption[]>(() =>
+    this.roleTenantOptions().map((access) => ({
+      id: access.tenantId,
+      code: access.tenantCode,
+      name: access.tenantName
+    })));
+  protected readonly availableRoleLookupOptions = computed<readonly LookupOption[]>(() =>
+    this.availableRoles().map((role) => ({
+      id: role.id,
+      code: role.code,
+      name: role.name
+    })));
   protected readonly canAssignRole = computed(() =>
     Boolean(this.user() && this.selectedTenantId() && this.selectedRoleId()) && !this.roleLoading() && !this.roleSaving()
   );
+  protected readonly tenantLookupClosedLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly tenantLookupOptionLabelBuilder = (option: LookupOption): string => `${option.name} (${option.code})`;
+  protected readonly roleLookupClosedLabelBuilder = (option: LookupOption): string => `${option.code} - ${option.name}`;
+  protected readonly roleLookupOptionLabelBuilder = (option: LookupOption): string => `${option.code} - ${option.name}`;
   protected readonly passwordForm = this.formBuilder.group({
     newPassword: ['', [Validators.required, Validators.maxLength(255)]],
     confirmPassword: ['', [Validators.required]]
@@ -145,15 +163,15 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     this.loadUser();
   }
 
-  protected selectRoleTenant(event: Event): void {
-    const tenantId = (event.target as HTMLSelectElement).value;
+  protected selectRoleTenant(value: string | Event | LookupOption | null): void {
+    const tenantId = this.lookupValue(value);
     this.selectedTenantId.set(tenantId || null);
     this.selectedRoleId.set('');
     this.loadRoleManagement();
   }
 
-  protected selectRoleForAssignment(event: Event): void {
-    this.selectedRoleId.set((event.target as HTMLSelectElement).value);
+  protected selectRoleForAssignment(value: string | Event | LookupOption | null): void {
+    this.selectedRoleId.set(this.lookupValue(value));
   }
 
   protected assignSelectedRole(): void {
@@ -556,6 +574,22 @@ export class UserAdministrationDetailComponent implements OnDestroy {
       },
       ...activeAccesses
     ];
+  }
+
+  private lookupValue(value: string | Event | LookupOption | null): string {
+    if (!value) {
+      return '';
+    }
+
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if ('id' in value) {
+      return value.id;
+    }
+
+    return (value.target as HTMLSelectElement).value;
   }
 
   private applyPasswordResetResponse(response: UserPasswordResetResponse): void {

@@ -226,18 +226,15 @@
             </div>
 
             @if (roleTenantOptions().length > 1) {
-              <label class="user-detail-role-tenant-select">
-                <span>{{ i18n.t('userAdministration.roles.tenantLabel') }}</span>
-                <select
-                  class="kt-input"
-                  [disabled]="roleLoading() || roleSaving()"
-                  [value]="selectedTenantId() ?? ''"
-                  (change)="selectRoleTenant($event)">
-                  @for (access of roleTenantOptions(); track access.tenantId) {
-                    <option [value]="access.tenantId">{{ access.tenantCode }} - {{ access.tenantName }}</option>
-                  }
-                </select>
-              </label>
+              <app-lookup-select
+                class="user-detail-role-tenant-select"
+                [label]="i18n.t('userAdministration.roles.tenantLabel')"
+                [disabled]="roleLoading() || roleSaving()"
+                [options]="roleTenantLookupOptions()"
+                [value]="selectedTenantId() ?? ''"
+                [closedLabelBuilder]="tenantLookupClosedLabelBuilder"
+                [optionLabelBuilder]="tenantLookupOptionLabelBuilder"
+                (valueChange)="selectRoleTenant($event)" />
             } @else {
               <div class="user-detail-role-tenant-static">
                 <span>{{ i18n.t('userAdministration.roles.tenantLabel') }}</span>
@@ -281,19 +278,17 @@
               <div class="user-detail-role-panel">
                 <h3 class="user-detail-role-panel-title">{{ i18n.t('userAdministration.roles.availableTitle') }}</h3>
                 <div class="user-detail-role-assignment">
-                  <label class="user-detail-role-select">
-                    <span>{{ i18n.t('userAdministration.roles.roleLabel') }}</span>
-                    <select
-                      class="kt-input"
-                      [disabled]="roleSaving() || availableRoles().length === 0"
-                      [value]="selectedRoleId()"
-                      (change)="selectRoleForAssignment($event)">
-                      <option value="">{{ i18n.t('userAdministration.roles.selectPlaceholder') }}</option>
-                      @for (role of availableRoles(); track role.id) {
-                        <option [value]="role.id">{{ role.code }} - {{ role.name }}</option>
-                      }
-                    </select>
-                  </label>
+                  <app-lookup-select
+                    class="user-detail-role-select"
+                    [label]="i18n.t('userAdministration.roles.roleLabel')"
+                    [placeholder]="i18n.t('userAdministration.roles.selectPlaceholder')"
+                    [disabled]="roleSaving() || availableRoles().length === 0"
+                    [options]="availableRoleLookupOptions()"
+                    [value]="selectedRoleId()"
+                    [clearable]="true"
+                    [closedLabelBuilder]="roleLookupClosedLabelBuilder"
+                    [optionLabelBuilder]="roleLookupOptionLabelBuilder"
+                    (valueChange)="selectRoleForAssignment($event)" />
 
                   <app-button
                     variant="primary"

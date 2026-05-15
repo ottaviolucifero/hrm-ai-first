@@ -45,18 +45,16 @@
             [submitted]="submitted()" />
 
           @if (mode() === 'create') {
-            <label class="user-form-field">
-              <span>{{ i18n.t('userAdministration.columns.userType') }}</span>
-              <select class="kt-input" formControlName="userTypeId" [attr.aria-invalid]="form.controls.userTypeId.invalid && submitted()">
-                <option value="">{{ i18n.t('userAdministration.form.userType.placeholder') }}</option>
-                @for (userType of formOptions()?.userTypes ?? []; track userType.id) {
-                  <option [value]="userType.id">{{ userType.name || userType.code }}</option>
-                }
-              </select>
-              @if (form.controls.userTypeId.hasError('required') && submitted()) {
-                <small>{{ i18n.t('userAdministration.form.validation.userTypeRequired') }}</small>
-              }
-            </label>
+            <app-lookup-select
+              formControlName="userTypeId"
+              [label]="i18n.t('userAdministration.columns.userType')"
+              [placeholder]="i18n.t('userAdministration.form.userType.placeholder')"
+              [required]="true"
+              [labelRequired]="true"
+              [options]="userTypeLookupOptions()"
+              [closedLabelBuilder]="userTypeClosedLabelBuilder"
+              [optionLabelBuilder]="userTypeOptionLabelBuilder"
+              [errorText]="form.controls.userTypeId.hasError('required') && submitted() ? i18n.t('userAdministration.form.validation.userTypeRequired') : ''" />
           } @else {
             <app-input
               formControlName="userTypeLabel"

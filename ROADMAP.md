@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.55
+Versione: 2.56
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -261,7 +261,7 @@ TASK-064.6 completed the shared lookup/phone foundation by reusing the existing 
 TASK-064.7 completed the ZIP/CAP manual lookup hardening across address forms by extending the existing paginated lookup contract, supporting `GlobalZipCode.areaId` nullable records with `provinceName/provinceCode` fallback, and keeping the approved TASK-062/TASK-063 geography model unchanged.
 TASK-064.8 completed the guided foreign geography creation flow on `CompanyProfileAdministrationForm`, extending `app-lookup-select` with an external optional add affordance, keeping Italy on imported ZIP lookup, reusing the existing Region/Area/GlobalZipCode APIs and adding tenant-aware backend auto-code `RE###`/`AR###` for Region/Area create without schema, security or RBAC changes.
 TASK-064.9 completed the dedicated `CompanyProfile` phone persistence normalization by introducing `phoneDialCode` and `phoneNationalNumber` at DB/API level, keeping `phone` as a temporary compatibility bridge, applying a conservative legacy backfill strategy and formalizing the reusable standard for future contact entities in `DEC-041`.
-TASK-064.10 completed the progressive adoption of `app-lookup-select` on existing admin forms with a bounded patch (`UserAdministrationForm` tenant/company profile and `TenantAdministration` default country), preserving API contracts/security and documenting deferred migrations that require dedicated address-cascade hardening.
+TASK-064.10 completed the progressive adoption of `app-lookup-select` on existing admin forms by covering `UserAdministrationForm` (`userTypeId`, `tenantId`, `companyProfileId`), `UserAdministrationDetail` (tenant and assignable role selectors) and `CompanyProfileAdministrationForm` (`tenantId`, `companyProfileTypeId`, `countryId`), while preserving API contracts/security, keeping `TenantAdministration.defaultCurrencyId` local for lack of a compatible lookup endpoint, and leaving `MasterDataAdmin` category/entity as static frontend filters.
 TASK-064.11 is planned as a dedicated backlog follow-up for full administrative CRUD of `Region` and `Area` in Master Data, with safe physical-delete constraints on references, backend-side auto-code (`RE###`/`AR###`), reuse of existing CRUD foundations and no changes to tenant/security/RBAC or the approved geography model.
 
 Prossimo passo:
@@ -432,6 +432,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.56 | 2026-05-15 | TASK-064.10 completato/corretto in roadmap: estesa l'adozione di `app-lookup-select` alle select residue di `UserAdministrationForm`, `UserAdministrationDetail` e `CompanyProfileAdministrationForm`, verificata la coerenza visuale shared senza fix CSS locali, mantenuti locali `MasterDataAdmin` categoria/entita e `TenantAdministration.defaultCurrencyId`, test frontend reali verdi e nessun cambio backend/API. |
 | 2.55 | 2026-05-15 | TASK-064.9 completato: `CompanyProfile` ora persiste il telefono in modo strutturato con `phoneDialCode` e `phoneNationalNumber`, bridge legacy temporaneo `phone`, migration `V34` con backfill conservativo e standard durevole demandato a `DEC-041` per future entita di contatto. |
 | 2.54 | 2026-05-15 | Aggiornato backlog con il nuovo follow-up `TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base`, mantenendo `TASK-064.9` come follow-up telefono separato e senza introdurre modifiche runtime/backend/frontend. |
 | 2.53 | 2026-05-15 | TASK-064.8 completato in roadmap nel working tree del branch dedicato: `CompanyProfileAdministrationForm` supporta la creazione guidata estera di `Region`, `Area` e `GlobalZipCode` tramite `app-lookup-select` con `+` esterno, popup locali e auto-code backend tenant-aware `RE###`/`AR###`, mantenendo il flusso Italia su CAP importati/lookup e senza modifiche schema/security/RBAC. |

@@ -43,8 +43,8 @@ interface CompanyProfileFormHandle {
     };
   };
   submit: () => void;
-  selectTenant: (event: Event) => void;
-  selectCountry: (event: Event) => void;
+  selectTenant: (event: string | Event) => void;
+  selectCountry: (event: string | Event) => void;
   selectGlobalZipCodeOption: (option: LookupOption | null) => void;
 }
 
@@ -82,15 +82,17 @@ describe('CompanyProfileAdministrationFormComponent', () => {
 
     const fixture = await createFixture(createService(), { userType: 'PLATFORM_OPERATOR', tenantId: 'tenant-1' });
     fixture.detectChanges();
-    const component = fixture.componentInstance as unknown as CompanyProfileFormHandle;
+    const component = fixture.componentInstance as unknown as CompanyProfileFormHandle & {
+      companyProfileTypeLookupOptions: () => readonly LookupOption[];
+    };
 
     expect(component.form.controls.tenantId.disabled).toBe(false);
     component.selectTenant({ target: { value: 'tenant-2' } } as unknown as Event);
     fixture.detectChanges();
 
-    const contextCard = fixture.nativeElement.querySelector('[aria-labelledby="company-profile-form-tenant-type"]') as HTMLElement;
-    expect(contextCard.textContent).toContain('Branch');
-    expect(contextCard.textContent).not.toContain('Legal entity');
+    const optionLabels = component.companyProfileTypeLookupOptions().map((option) => option.name);
+    expect(optionLabels).toContain('Branch');
+    expect(optionLabels).not.toContain('Legal entity');
   });
 
   it('defaults the phone prefix from country without overriding manual changes', async () => {
@@ -140,14 +142,15 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     const fixture = await createFixture(createService());
     fixture.detectChanges();
 
-    const countrySelect = fixture.nativeElement.querySelector('select[formcontrolname="countryId"]') as HTMLSelectElement;
-    const optionLabels = Array.from(countrySelect.options).map((option) => option.textContent?.trim() ?? '');
+    const optionLabels = ((fixture.componentInstance as unknown) as {
+      countryLookupOptions: () => readonly LookupOption[];
+    }).countryLookupOptions().map((option) => `${option.name} (${option.code})`);
 
-    expect(optionLabels[1]).toContain('Italy');
-    expect(optionLabels[2]).toContain('Tunisia');
-    expect(optionLabels[3]).toContain('France');
-    expect(optionLabels[4]).toContain('Germany');
-    expect(optionLabels[5]).toContain('Spain');
+    expect(optionLabels[0]).toContain('Italy');
+    expect(optionLabels[1]).toContain('Tunisia');
+    expect(optionLabels[2]).toContain('France');
+    expect(optionLabels[3]).toContain('Germany');
+    expect(optionLabels[4]).toContain('Spain');
   });
 
   it('fills province from zip code option when available', async () => {

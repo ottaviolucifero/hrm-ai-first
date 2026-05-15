@@ -94,7 +94,7 @@ describe('UserAdministrationDetailComponent', () => {
     expect(roleManagementSection.querySelector('.user-detail-role-tenant-select select')).toBeNull();
     expect(roleManagementSection.querySelector('.user-detail-role-tenant-static')?.textContent).toContain('Tenant');
     expect(roleManagementSection.querySelector('.user-detail-role-tenant-static')?.textContent).toContain('Tenant (TENANT)');
-    expect(roleManagementSection.querySelector('.user-detail-role-select select')).not.toBeNull();
+    expect(roleManagementSection.querySelector('.user-detail-role-select')).not.toBeNull();
   }, 15000);
 
   it('navigates to edit from the detail action', async () => {
@@ -189,7 +189,7 @@ describe('UserAdministrationDetailComponent', () => {
     fixture.detectChanges();
 
     const roleManagementSection = fixture.nativeElement.querySelector('[aria-labelledby="user-detail-role-management"]') as HTMLElement;
-    expect(roleManagementSection.querySelector('.user-detail-role-tenant-select select')).not.toBeNull();
+    expect(roleManagementSection.querySelector('.user-detail-role-tenant-select')).not.toBeNull();
     expect(roleManagementSection.querySelector('.user-detail-role-tenant-static')).toBeNull();
   });
 

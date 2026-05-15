@@ -1,25 +1,29 @@
-<label class="kt-label mb-2 block" for="loginEmail">
-  {{ label }}
-  @if (required) {
-    <strong class="email-field-required" aria-hidden="true">*</strong>
-  }
-</label>
-<input
-  id="loginEmail"
-  class="kt-input"
-  type="email"
-  autocomplete="email"
-  [attr.aria-invalid]="showErrors"
-  [formControl]="control"
-  [placeholder]="placeholder"
-/>
-
-@if (showErrors) {
-  <div class="mt-1.5 text-xs text-destructive">
-    @if (control.hasError('required')) {
-      <span>{{ i18n.t('form.email.required') }}</span>
-    } @else if (control.hasError('email')) {
-      <span>{{ i18n.t('form.email.invalid') }}</span>
+<div class="app-email-field">
+  <label class="app-email-label" [for]="inputId">
+    {{ label }}
+    @if (required) {
+      <strong class="email-field-required" aria-hidden="true">*</strong>
     }
-  </div>
-}
+  </label>
+
+  <input
+    [id]="inputId"
+    class="app-email-control"
+    type="email"
+    autocomplete="email"
+    [attr.aria-describedby]="showErrors ? errorId : null"
+    [attr.aria-invalid]="showErrors"
+    [formControl]="control"
+    [placeholder]="placeholder"
+  />
+
+  @if (showErrors) {
+    <p class="app-email-error" [id]="errorId">
+      @if (control.hasError('required')) {
+        <span>{{ i18n.t('form.email.required') }}</span>
+      } @else if (control.hasError('email')) {
+        <span>{{ i18n.t('form.email.invalid') }}</span>
+      }
+    </p>
+  }
+</div>

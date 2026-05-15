@@ -852,6 +852,7 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
   - non e stata rieseguita l intera suite backend perche il task richiedeva isolamento e verifica mirata dello scope ZIP/CAP.
 - Stato finale: PASS
 
+
 ### TASK-055 corrective patch - user hard delete and separate deactivate endpoint
 
 - Data: 2026-05-12
@@ -1316,6 +1317,57 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: backend test OK (107 test, 0 failure, 0 errori, 0 skipped), fix applicato e validato, nessuna regressione bloccante.
 
 ## Frontend QA reports
+
+### TASK-064.10 - Apply shared lookup select to existing administration forms (completion/correction)
+
+- Data: 2026-05-15
+- Branch: `task-064-10-complete-shared-lookup-select`
+- Task: TASK-064.10 - Apply shared lookup select to existing administration forms
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `frontend/src/app/features/user-administration/user-administration-form.component.*`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.*`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-form.component.*`
+  - `frontend/src/app/shared/components/lookup-select/lookup-select.component.*`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - censite le select residue reali nelle aree amministrative gia implementate e confermato che `MasterDataAdmin` categoria/entita restano filtri locali di navigazione frontend;
+  - verificato che `TenantAdministration.defaultCurrencyId` continui a dipendere solo da `form-options`, senza endpoint lookup currency compatibile gia disponibile;
+  - verificato che `CompanyProfileAdministrationForm` usi gia `app-lookup-select` per `Region`, `Area` e `CAP`, quindi fuori da questa patch salvo regressioni;
+  - verificata la coerenza visuale shared: `app-lookup-select` usa gia `min-height: 2.5rem`, allineata a `app-input` e ai lookup geografici esistenti.
+- Patch applicata:
+  - migrato `UserAdministrationForm.userTypeId` a `app-lookup-select`, mantenendo invariata la logica di create/edit;
+  - migrati in `UserAdministrationDetail` il tenant selector per assegnazione ruoli e il selector del ruolo assegnabile a `app-lookup-select`, senza cambiare le chiamate API o il flusso di role management;
+  - migrati in `CompanyProfileAdministrationForm` i campi `tenantId` (solo create platform scope), `companyProfileTypeId` e `countryId` a `app-lookup-select`;
+  - mantenuti locali `MasterDataAdmin` categoria/entita e `TenantAdministration.defaultCurrencyId` con motivazione documentata;
+  - aggiornati i test frontend impattati dalle nuove lookup e dalle asserzioni che in precedenza leggevano il DOM delle `option` native.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - frontend test completo: OK, 38 file test passed, 286 test passed;
+  - frontend build: OK con warning noto budget iniziale (`2.18 MB`, sforamento `176.23 kB`).
+- Regressioni trovate:
+  - il primo pass di `npm.cmd test -- --watch=false` ha evidenziato una spec ancora legata al testo delle `option` native del campo `countryId` nel `CompanyProfileAdministrationForm`; corretta verificando il filtro dati del componente invece del testo DOM a dropdown chiuso.
+- Review visuale pre-commit:
+  - rieseguita review locale su `CompanyProfileAdministrationForm`, `UserAdministrationForm`, `UserAdministrationDetail`, `TenantAdministration` modal e `MasterDataAdmin`, confrontando `app-lookup-select`, `app-input`, `app-email-field`, `app-phone-field`, `app-data-table` e la baseline globale `kt-input`;
+  - confermato che `app-input`, `app-lookup-select` e `app-phone-field` sono gia coerenti per altezza base, border radius, font size, padding e stato disabled;
+  - confermato che i residui `<input class="kt-input">` e `<select class="kt-input">` in `TenantAdministration` e `MasterDataAdmin` restano visivamente coerenti e fuori da una migrazione shared ulteriore in questo pass;
+  - trovata un unica incoerenza reale nel componente shared `app-email-field`, ancora basato su markup/stile `kt-input` locale;
+  - corretto `app-email-field` per allinearlo ai token visuali di `app-input` e introdotta generazione di `id` univoco, evitando collisioni DOM nei form con piu campi email nella stessa vista;
+  - follow-up shared su `app-phone-field`: aggiunti `box-sizing: border-box` e `line-height: 1.25rem` a `.phone-field-number-input` per riallineare l altezza visuale del campo `Numero` con `app-lookup-select`, `app-email-field` e `kt-input`, senza fix locali nel `CompanyProfile`;
+  - aggiornata la label shared del prefisso in `it/fr/en` a `Prefisso` / `Prefixe` / `Prefix`, mantenendo allineata anche la chiave parallela `companyProfileAdministration.fields.phonePrefix`;
+  - validazione reale post-fix: `cd frontend && npm.cmd test -- --watch=false` -> OK, 38 file test passed, 286 test passed; `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale (`2.18 MB`, +`177.50 kB`).
+- QA manuale:
+  - non eseguita in browser in questa sessione CLI.
+- Limiti/note:
+  - nessuna modifica backend, DTO, API, security o RBAC;
+  - resta il warning budget frontend iniziale gia noto e non affrontato in questo task;
+  - Angular continua a stampare in test il warning standard sul binding `disabled` con reactive forms nei componenti custom, senza impatto sul risultato verde della suite.
+- Stato finale: PASS WITH NOTES
 
 ### TASK-064.1 - Tenant UI naming and layout refinement
 
