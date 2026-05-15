@@ -14,4 +14,8 @@ public interface HolidayCalendarRepository extends JpaRepository<HolidayCalendar
 	List<HolidayCalendar> findByCountry_IdAndRegion_IdAndArea_Id(UUID countryId, UUID regionId, UUID areaId);
 
 	List<HolidayCalendar> findByCountry_IdAndActiveTrue(UUID countryId);
+
+	boolean existsByRegion_Id(UUID regionId);
+
+	boolean existsByArea_Id(UUID areaId);
 }

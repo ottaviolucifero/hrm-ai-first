@@ -6,6 +6,8 @@ import { MasterDataAdminComponent } from './master-data-admin.component';
 import { MasterDataPage, MasterDataRow } from './master-data.models';
 import { MasterDataService } from './master-data.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
+import { LookupService } from '../../shared/lookup/lookup.service';
+import { LookupOption, LookupPage } from '../../shared/lookup/lookup.models';
 
 describe('MasterDataAdminComponent', () => {
   afterEach(() => {
@@ -45,6 +47,19 @@ describe('MasterDataAdminComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Si');
     expect((fixture.nativeElement.querySelector('.data-table-page-size-select') as HTMLSelectElement).value).toBe('20');
   }, 15000);
+
+  it('keeps Region and Area selectable in global master data', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createMasterDataService({}));
+    fixture.detectChanges();
+
+    const resourceSelect = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
+    const resourceValues = Array.from(resourceSelect.options).map((option) => option.value);
+
+    expect(resourceValues).toContain('regions');
+    expect(resourceValues).toContain('areas');
+  });
 
   it('reloads the first resource of the selected category', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
@@ -110,6 +125,181 @@ describe('MasterDataAdminComponent', () => {
       { page: 0, size: 20, search: 'ital' }
     );
     expect(fixture.nativeElement.textContent).toContain('Nessun risultato per i filtri correnti.');
+  });
+
+  it('sends tenant, country and region filters for Area list', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi.fn(() => of(createPage([])))
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      updateCountryFilter: (value: string) => void;
+      updateRegionFilter: (value: string) => void;
+    };
+    fixture.detectChanges();
+
+    const resourceSelect = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
+    resourceSelect.value = 'areas';
+    resourceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.updateCountryFilter('country-1');
+    fixture.detectChanges();
+    component.updateRegionFilter('region-1');
+    fixture.detectChanges();
+
+    expect(masterDataService.fetchRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ endpoint: '/api/master-data/global/areas' }),
+      {
+        page: 0,
+        size: 20,
+        filters: {
+          tenantId: 'tenant-1',
+          countryId: 'country-1',
+          regionId: 'region-1'
+        }
+      }
+    );
+  });
+
+  it('keeps Region code readonly in edit mode', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const masterDataService = createMasterDataService({
+      fetchRows: vi
+        .fn()
+        .mockReturnValueOnce(of(createPage([])))
+        .mockReturnValueOnce(
+          of(
+            createPage([
+              {
+                id: 'region-1',
+                tenantId: 'tenant-1',
+                code: 'RE001',
+                name: 'Lazio',
+                active: true,
+                country: {
+                  id: 'country-1',
+                  code: 'IT',
+                  name: 'Italy'
+                }
+              }
+            ])
+          )
+        )
+    });
+
+    const fixture = await createFixture(masterDataService);
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const resourceSelect = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
+    resourceSelect.value = 'regions';
+    resourceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.handleRowAction({
+      action: { id: 'edit' },
+      row: {
+        id: 'region-1',
+        tenantId: 'tenant-1',
+        countryId: 'country-1',
+        code: 'RE001',
+        name: 'Lazio',
+        active: true,
+        country: {
+          id: 'country-1',
+          code: 'IT',
+          name: 'Italy'
+        }
+      }
+    });
+    fixture.detectChanges();
+
+    const inputs = fixture.nativeElement.querySelectorAll('.app-input-control') as NodeListOf<HTMLInputElement>;
+    expect(inputs[0].value).toBe('RE001');
+    expect(inputs[0].disabled).toBe(true);
+  });
+
+  it('shows the saved country when editing a Region', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createMasterDataService({}));
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const resourceSelect = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
+    resourceSelect.value = 'regions';
+    resourceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.handleRowAction({
+      action: { id: 'edit' },
+      row: {
+        id: 'region-1',
+        tenantId: 'tenant-1',
+        code: 'RE001',
+        name: 'Lazio',
+        active: true,
+        country: {
+          id: 'country-1',
+          code: 'IT',
+          name: 'Italy'
+        }
+      }
+    });
+    fixture.detectChanges();
+
+    const lookupInput = fixture.nativeElement.querySelector('.master-data-modal app-lookup-select input') as HTMLInputElement;
+    expect(lookupInput.value).toContain('IT - Italy');
+  });
+
+  it('shows the saved country and region when editing an Area', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createMasterDataService({}));
+    const component = fixture.componentInstance as MasterDataAdminComponent & {
+      handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+    };
+    fixture.detectChanges();
+
+    const resourceSelect = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
+    resourceSelect.value = 'areas';
+    resourceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    component.handleRowAction({
+      action: { id: 'edit' },
+      row: {
+        id: 'area-1',
+        tenantId: 'tenant-1',
+        code: 'AR001',
+        name: 'Rome metro',
+        active: true,
+        country: {
+          id: 'country-1',
+          code: 'IT',
+          name: 'Italy'
+        },
+        region: {
+          id: 'region-1',
+          code: 'RE001',
+          name: 'Lazio'
+        }
+      }
+    });
+    fixture.detectChanges();
+
+    const lookupInputs = fixture.nativeElement.querySelectorAll('.master-data-modal app-lookup-select input') as NodeListOf<HTMLInputElement>;
+    expect(lookupInputs[0].value).toContain('IT - Italy');
+    expect(lookupInputs[1].value).toContain('RE001 - Lazio');
   });
 
   it('changes page with the pagination controls', async () => {
@@ -1589,6 +1779,10 @@ async function createFixture(
             permissions
           })
         }
+      },
+      {
+        provide: LookupService,
+        useValue: createLookupService()
       }
     ]
   }).compileComponents();
@@ -1619,6 +1813,36 @@ function createPage(
     content,
     page: 0,
     size: 20,
+    totalElements: content.length,
+    totalPages: content.length > 0 ? 1 : 0,
+    first: true,
+    last: true,
+    ...overrides
+  };
+}
+
+function createLookupService(): Pick<LookupService, 'findCountryLookups' | 'findRegionLookups' | 'findAreaLookups'> {
+  return {
+    findCountryLookups: vi.fn(() =>
+      of(createLookupPage([{ id: 'country-1', code: 'IT', name: 'Italy' }]))
+    ),
+    findRegionLookups: vi.fn(() =>
+      of(createLookupPage([{ id: 'region-1', code: 'RE001', name: 'Lazio' }]))
+    ),
+    findAreaLookups: vi.fn(() =>
+      of(createLookupPage([{ id: 'area-1', code: 'AR001', name: 'Rome metro' }]))
+    )
+  };
+}
+
+function createLookupPage(
+  content: readonly LookupOption[],
+  overrides: Partial<LookupPage<LookupOption>> = {}
+): LookupPage<LookupOption> {
+  return {
+    content,
+    page: 0,
+    size: 25,
     totalElements: content.length,
     totalPages: content.length > 0 ? 1 : 0,
     first: true,

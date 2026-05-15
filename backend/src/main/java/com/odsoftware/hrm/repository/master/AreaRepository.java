@@ -8,4 +8,8 @@ public interface AreaRepository extends MasterDataRepository<Area> {
 	boolean existsByTenantIdAndRegion_IdAndCode(UUID tenantId, UUID regionId, String code);
 
 	boolean existsByTenantIdAndRegion_IdAndCodeAndIdNot(UUID tenantId, UUID regionId, String code, UUID id);
+
+	long countByCountry_Id(UUID countryId);
+
+	long countByRegion_Id(UUID regionId);
 }

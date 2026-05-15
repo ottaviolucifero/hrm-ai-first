@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.51
+Versione: 2.52
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -4812,7 +4812,7 @@ Completato:
 
 ### TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -4861,6 +4861,14 @@ Esclusioni:
 - Office Location CRUD;
 - modifiche al modello geografico;
 - nuove permission/authorities.
+
+Validazione:
+
+- backend `Region`/`Area` estesi sotto `/api/master-data/global` senza API parallele;
+- introdotti delete fisici protetti `/physical` per `Region` e `Area`;
+- aggiunti filtri `Area` per `countryId` e `regionId` e lookup `Region` filtrabile per `countryId`;
+- UI Master Data aggiornata con CRUD `Region`/`Area`, lookup dipendenti e codice read-only;
+- test reali eseguiti: `cd backend && .\mvnw.cmd test`, `cd frontend && npm.cmd run build`, `cd frontend && npm.cmd test`.
 
 ### TASK-065 - Implementare UI Employee management enterprise
 
@@ -4939,6 +4947,7 @@ Stato: TODO
 |---|---|---|
 | 2.51 | 2026-05-15 | TASK-064.10 completato/corretto: migrate anche le select residue `UserAdministrationForm.userTypeId`, `UserAdministrationDetail` tenant/ruolo assegnabile e `CompanyProfileAdministrationForm` tenant/tipo/paese a `app-lookup-select`, mantenendo locali `MasterDataAdmin` categoria/entita e `TenantAdministration.defaultCurrencyId`, con test frontend reali verdi e nessun cambio backend/API. |
 | 2.50 | 2026-05-15 | TASK-064.9 completato: normalizzata la persistenza telefono di `CompanyProfile` con campi strutturati `phoneDialCode` e `phoneNationalNumber`, migration vendor-specific `V34` con backfill legacy conservativo, bridge temporaneo `phone`, aggiornamenti backend/frontend cross-stack, nuova decisione durevole su standard telefono e test reali verdi. |
+| 2.52 | 2026-05-15 | TASK-064.11 completato con CRUD amministrativo `Region`/`Area` in Master Data, filtri/lookup geografici estesi, delete fisico protetto da referenze, codice backend-side `RE###`/`AR###`, test backend/frontend reali e aggiornamento QA/reportistica. |
 | 2.49 | 2026-05-15 | Aggiunto il nuovo follow-up documentale `TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base`, con scope, regole funzionali, vincoli ed esclusioni coerenti al modello geografico tenant-aware approvato (`TASK-062`/`TASK-063`) e senza modifiche runtime/backend/frontend. |
 | 2.48 | 2026-05-15 | TASK-064.8 chiuso come DONE nel working tree del branch dedicato: `CompanyProfileAdministrationForm` supporta la creazione guidata estera di `Region`, `Area` e `GlobalZipCode` tramite `app-lookup-select` con pulsante `+` esterno, popup locali di feature e auto-code backend tenant-aware `RE###`/`AR###`, senza modificare schema/security/RBAC; test backend/frontend reali verdi e QA aggiornata con sola nota residua sulla verifica manuale browser. |
 | 2.47 | 2026-05-14 | Inserito `TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo` come nuovo follow-up documentale dopo `TASK-064.7`, con rinumerazione coerente dei successivi task telefono e lookup (`TASK-064.9` e `TASK-064.10`) e aggiornamento dei riferimenti interni. |

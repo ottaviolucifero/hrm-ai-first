@@ -12,12 +12,23 @@ export class LookupService {
     return this.getLookupPage('/api/master-data/global/countries/lookup', query);
   }
 
-  findRegionLookups(query: LookupQuery, tenantId: string | null): Observable<LookupPage<LookupOption>> {
-    return this.getLookupPage('/api/master-data/global/regions/lookup', query, { tenantId });
+  findRegionLookups(
+    query: LookupQuery,
+    tenantId: string | null,
+    countryId: string | null = null
+  ): Observable<LookupPage<LookupOption>> {
+    return this.getLookupPage('/api/master-data/global/regions/lookup', query, { tenantId, countryId });
   }
 
-  findAreaLookups(query: LookupQuery, tenantId: string | null): Observable<LookupPage<LookupOption>> {
-    return this.getLookupPage('/api/master-data/global/areas/lookup', query, { tenantId });
+  findAreaLookups(
+    query: LookupQuery,
+    tenantId: string | null,
+    filters: {
+      readonly countryId?: string | null;
+      readonly regionId?: string | null;
+    } = {}
+  ): Observable<LookupPage<LookupOption>> {
+    return this.getLookupPage('/api/master-data/global/areas/lookup', query, { tenantId, ...filters });
   }
 
   findZipCodeLookups(

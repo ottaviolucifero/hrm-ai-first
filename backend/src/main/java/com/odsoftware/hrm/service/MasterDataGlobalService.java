@@ -21,6 +21,9 @@ import com.odsoftware.hrm.dto.masterdata.global.RegionResponse;
 import com.odsoftware.hrm.entity.common.BaseTenantMasterEntity;
 import com.odsoftware.hrm.dto.lookup.LookupOptionResponse;
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
+import com.odsoftware.hrm.repository.calendar.HolidayCalendarRepository;
+import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
+import com.odsoftware.hrm.repository.core.OfficeLocationRepository;
 import com.odsoftware.hrm.entity.master.Area;
 import com.odsoftware.hrm.entity.master.Country;
 import com.odsoftware.hrm.entity.master.Currency;
@@ -63,6 +66,9 @@ public class MasterDataGlobalService {
 	private final RegionRepository regionRepository;
 	private final AreaRepository areaRepository;
 	private final GlobalZipCodeRepository globalZipCodeRepository;
+	private final CompanyProfileRepository companyProfileRepository;
+	private final OfficeLocationRepository officeLocationRepository;
+	private final HolidayCalendarRepository holidayCalendarRepository;
 	private final CurrencyRepository currencyRepository;
 	private final GenderRepository genderRepository;
 	private final MaritalStatusRepository maritalStatusRepository;
@@ -75,6 +81,9 @@ public class MasterDataGlobalService {
 			RegionRepository regionRepository,
 			AreaRepository areaRepository,
 			GlobalZipCodeRepository globalZipCodeRepository,
+			CompanyProfileRepository companyProfileRepository,
+			OfficeLocationRepository officeLocationRepository,
+			HolidayCalendarRepository holidayCalendarRepository,
 			CurrencyRepository currencyRepository,
 			GenderRepository genderRepository,
 			MaritalStatusRepository maritalStatusRepository,
@@ -85,6 +94,9 @@ public class MasterDataGlobalService {
 		this.regionRepository = regionRepository;
 		this.areaRepository = areaRepository;
 		this.globalZipCodeRepository = globalZipCodeRepository;
+		this.companyProfileRepository = companyProfileRepository;
+		this.officeLocationRepository = officeLocationRepository;
+		this.holidayCalendarRepository = holidayCalendarRepository;
 		this.currencyRepository = currencyRepository;
 		this.genderRepository = genderRepository;
 		this.maritalStatusRepository = maritalStatusRepository;
@@ -149,28 +161,30 @@ public class MasterDataGlobalService {
 		countryRepository.save(country);
 	}
 
-	public MasterDataPageResponse<RegionResponse> findRegions(Integer page, Integer size, String search, UUID tenantId) {
+	public MasterDataPageResponse<RegionResponse> findRegions(Integer page, Integer size, String search, UUID tenantId, UUID countryId) {
 		return findPage(
 				regionRepository,
 				page,
 				size,
 				search,
 				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
-				tenantScopedSpecification(
+				tenantScopedSpecificationWithCountryFilter(
 						tenantId,
+						countryId,
 						MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name")),
 				this::toRegionResponse);
 	}
 
-	public MasterDataPageResponse<LookupOptionResponse> findRegionLookups(Integer page, Integer size, String search, UUID tenantId) {
+	public MasterDataPageResponse<LookupOptionResponse> findRegionLookups(Integer page, Integer size, String search, UUID tenantId, UUID countryId) {
 		return findPage(
 				regionRepository,
 				page,
 				size,
 				search,
 				Sort.by("name").ascending().and(Sort.by("code")),
-				tenantScopedSpecification(
+				tenantScopedSpecificationWithCountryFilter(
 						tenantId,
+						countryId,
 						MasterDataQuerySupport.and(
 								MasterDataQuerySupport.activeSpecification(),
 								MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name"))),
@@ -216,28 +230,47 @@ public class MasterDataGlobalService {
 		regionRepository.save(region);
 	}
 
-	public MasterDataPageResponse<AreaResponse> findAreas(Integer page, Integer size, String search, UUID tenantId) {
+	@Transactional
+	public void deletePhysicalRegion(UUID id) {
+		Region region = findRegion(id);
+		if (isRegionReferenced(region.getId())) {
+			throw physicalDeleteConflict("Region");
+		}
+		try {
+			regionRepository.delete(region);
+			regionRepository.flush();
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw physicalDeleteConflict("Region");
+		}
+	}
+
+	public MasterDataPageResponse<AreaResponse> findAreas(Integer page, Integer size, String search, UUID tenantId, UUID countryId, UUID regionId) {
 		return findPage(
 				areaRepository,
 				page,
 				size,
 				search,
 				MasterDataQuerySupport.defaultNewestFirstSort(Sort.by("code")),
-				tenantScopedSpecification(
+				tenantScopedAreaSpecification(
 						tenantId,
+						countryId,
+						regionId,
 						MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name", "region.code", "region.name")),
 				this::toAreaResponse);
 	}
 
-	public MasterDataPageResponse<LookupOptionResponse> findAreaLookups(Integer page, Integer size, String search, UUID tenantId) {
+	public MasterDataPageResponse<LookupOptionResponse> findAreaLookups(Integer page, Integer size, String search, UUID tenantId, UUID countryId, UUID regionId) {
 		return findPage(
 				areaRepository,
 				page,
 				size,
 				search,
 				Sort.by("name").ascending().and(Sort.by("code")),
-				tenantScopedSpecification(
+				tenantScopedAreaSpecification(
 						tenantId,
+						countryId,
+						regionId,
 						MasterDataQuerySupport.and(
 								MasterDataQuerySupport.activeSpecification(),
 								MasterDataQuerySupport.searchSpecification(search, "code", "name", "country.isoCode", "country.name", "region.code", "region.name"))),
@@ -287,6 +320,21 @@ public class MasterDataGlobalService {
 		Area area = findArea(id);
 		area.setActive(false);
 		areaRepository.save(area);
+	}
+
+	@Transactional
+	public void deletePhysicalArea(UUID id) {
+		Area area = findArea(id);
+		if (isAreaReferenced(area.getId())) {
+			throw physicalDeleteConflict("Area");
+		}
+		try {
+			areaRepository.delete(area);
+			areaRepository.flush();
+		}
+		catch (DataIntegrityViolationException exception) {
+			throw physicalDeleteConflict("Area");
+		}
 	}
 
 	public MasterDataPageResponse<GlobalZipCodeResponse> findGlobalZipCodes(Integer page, Integer size, String search, UUID tenantId) {
@@ -998,6 +1046,31 @@ public class MasterDataGlobalService {
 		return searchSpecification == null ? tenantSpecification : tenantSpecification.and(searchSpecification);
 	}
 
+	private Specification<Region> tenantScopedSpecificationWithCountryFilter(UUID tenantId, UUID countryId, Specification<Region> searchSpecification) {
+		Specification<Region> specification = tenantScopedSpecification(tenantId, searchSpecification);
+		if (countryId == null) {
+			return specification;
+		}
+		Specification<Region> countrySpecification =
+				(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("country").get("id"), countryId);
+		return specification == null ? countrySpecification : specification.and(countrySpecification);
+	}
+
+	private Specification<Area> tenantScopedAreaSpecification(UUID tenantId, UUID countryId, UUID regionId, Specification<Area> searchSpecification) {
+		Specification<Area> specification = tenantScopedSpecification(tenantId, searchSpecification);
+		if (countryId != null) {
+			Specification<Area> countrySpecification =
+					(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("country").get("id"), countryId);
+			specification = specification == null ? countrySpecification : specification.and(countrySpecification);
+		}
+		if (regionId != null) {
+			Specification<Area> regionSpecification =
+					(root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("region").get("id"), regionId);
+			specification = specification == null ? regionSpecification : specification.and(regionSpecification);
+		}
+		return specification;
+	}
+
 	private Specification<GlobalZipCode> zipCodeSpecification(UUID tenantId, Specification<GlobalZipCode> searchSpecification) {
 		if (tenantId == null) {
 			return searchSpecification;
@@ -1038,6 +1111,25 @@ public class MasterDataGlobalService {
 
 	private boolean isItaly(Country country) {
 		return "IT".equalsIgnoreCase(country.getIsoCode());
+	}
+
+	private boolean isRegionReferenced(UUID regionId) {
+		return areaRepository.countByRegion_Id(regionId) > 0
+				|| globalZipCodeRepository.countByRegion_Id(regionId) > 0
+				|| companyProfileRepository.existsByRegion_Id(regionId)
+				|| officeLocationRepository.existsByRegion_Id(regionId)
+				|| holidayCalendarRepository.existsByRegion_Id(regionId);
+	}
+
+	private boolean isAreaReferenced(UUID areaId) {
+		return globalZipCodeRepository.countByArea_Id(areaId) > 0
+				|| companyProfileRepository.existsByArea_Id(areaId)
+				|| officeLocationRepository.existsByArea_Id(areaId)
+				|| holidayCalendarRepository.existsByArea_Id(areaId);
+	}
+
+	private ResourceConflictException physicalDeleteConflict(String label) {
+		return new ResourceConflictException(label + " cannot be physically deleted because it is referenced by other data");
 	}
 
 	private UUID resolveTenantScopeKey(UUID tenantId) {

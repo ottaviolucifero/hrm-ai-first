@@ -354,6 +354,113 @@ class MasterDataGlobalControllerTests {
 
 	@Test
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalRegionAndAreaListsSupportTenantCountryAndRegionFilters() throws Exception {
+		Tenant secondaryTenant = ensureSecondaryTenant();
+		UUID primaryCountryId = createCountry("Task 06411 Filter Country A", "F1");
+		UUID secondaryCountryId = createCountry("Task 06411 Filter Country B", "F2");
+		UUID primaryRegionId = createRegion(FOUNDATION_TENANT_ID, primaryCountryId, "Task 06411 Filter Region A", "F1-R1");
+		createRegion(FOUNDATION_TENANT_ID, secondaryCountryId, "Task 06411 Filter Region B", "F2-R1");
+		createRegion(secondaryTenant.getId(), primaryCountryId, "Task 06411 Filter Region C", "F1-R2");
+		UUID primaryAreaId = createArea(FOUNDATION_TENANT_ID, primaryCountryId, primaryRegionId, "Task 06411 Filter Area A", "F1-A1");
+		createArea(FOUNDATION_TENANT_ID, secondaryCountryId, createRegion(FOUNDATION_TENANT_ID, secondaryCountryId, "Task 06411 Filter Region D", "F2-R2"), "Task 06411 Filter Area B", "F2-A1");
+		createArea(secondaryTenant.getId(), primaryCountryId, createRegion(secondaryTenant.getId(), primaryCountryId, "Task 06411 Filter Region E", "F1-R3"), "Task 06411 Filter Area C", "F1-A2");
+
+		mockMvc.perform(get("/api/master-data/global/regions")
+						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("countryId", primaryCountryId.toString())
+						.param("search", "Task 06411 Filter Region")
+						.param("page", "0")
+						.param("size", "10"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(10))
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].id").value(primaryRegionId.toString()));
+
+		mockMvc.perform(get("/api/master-data/global/areas")
+						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("countryId", primaryCountryId.toString())
+						.param("regionId", primaryRegionId.toString())
+						.param("search", "Task 06411 Filter Area")
+						.param("page", "0")
+						.param("size", "10"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.size").value(10))
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].id").value(primaryAreaId.toString()));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalRegionAndAreaLookupEndpointsSupportCountryAndRegionFilters() throws Exception {
+		Tenant secondaryTenant = ensureSecondaryTenant();
+		UUID primaryCountryId = createCountry("Task 06411 Lookup Country A", "L1");
+		UUID secondaryCountryId = createCountry("Task 06411 Lookup Country B", "L2");
+		UUID primaryRegionId = createRegion(FOUNDATION_TENANT_ID, primaryCountryId, "Task 06411 Lookup Region A", "L1-R1");
+		createRegion(FOUNDATION_TENANT_ID, secondaryCountryId, "Task 06411 Lookup Region B", "L2-R1");
+		createRegion(secondaryTenant.getId(), primaryCountryId, "Task 06411 Lookup Region C", "L1-R2");
+		UUID primaryAreaId = createArea(FOUNDATION_TENANT_ID, primaryCountryId, primaryRegionId, "Task 06411 Lookup Area A", "L1-A1");
+		createArea(FOUNDATION_TENANT_ID, secondaryCountryId, createRegion(FOUNDATION_TENANT_ID, secondaryCountryId, "Task 06411 Lookup Region D", "L2-R2"), "Task 06411 Lookup Area B", "L2-A1");
+		createArea(secondaryTenant.getId(), primaryCountryId, createRegion(secondaryTenant.getId(), primaryCountryId, "Task 06411 Lookup Region E", "L1-R3"), "Task 06411 Lookup Area C", "L1-A2");
+
+		mockMvc.perform(get("/api/master-data/global/regions/lookup")
+						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("countryId", primaryCountryId.toString())
+						.param("search", "Task 06411 Lookup Region"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].id").value(primaryRegionId.toString()))
+				.andExpect(jsonPath("$.content[0].metadata.countryId").value(primaryCountryId.toString()));
+
+		mockMvc.perform(get("/api/master-data/global/areas/lookup")
+						.param("tenantId", FOUNDATION_TENANT_ID.toString())
+						.param("countryId", primaryCountryId.toString())
+						.param("regionId", primaryRegionId.toString())
+						.param("search", "Task 06411 Lookup Area"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(1))
+				.andExpect(jsonPath("$.content[0].id").value(primaryAreaId.toString()))
+				.andExpect(jsonPath("$.content[0].metadata.regionId").value(primaryRegionId.toString()));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalPhysicalDeleteRemovesUnreferencedRegionAndArea() throws Exception {
+		UUID countryId = createCountry("Task 06411 Delete Country", "D1");
+		UUID regionId = createRegion(FOUNDATION_TENANT_ID, countryId, "Task 06411 Delete Region", "D1-R1");
+		UUID areaId = createArea(FOUNDATION_TENANT_ID, countryId, regionId, "Task 06411 Delete Area", "D1-A1");
+
+		mockMvc.perform(delete("/api/master-data/global/areas/{id}/physical", areaId).with(csrf()))
+				.andExpect(status().isNoContent());
+		assertThat(areaRepository.findById(areaId)).isEmpty();
+
+		mockMvc.perform(delete("/api/master-data/global/regions/{id}/physical", regionId).with(csrf()))
+				.andExpect(status().isNoContent());
+		assertThat(regionRepository.findById(regionId)).isEmpty();
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGlobalPhysicalDeleteBlocksReferencedRegionAndArea() throws Exception {
+		UUID countryId = createCountry("Task 06411 Reference Country", "R1");
+		UUID regionId = createRegion(FOUNDATION_TENANT_ID, countryId, "Task 06411 Reference Region", "R1-R1");
+		UUID areaId = createArea(FOUNDATION_TENANT_ID, countryId, regionId, "Task 06411 Reference Area", "R1-A1");
+		createZipCode(FOUNDATION_TENANT_ID, countryId, regionId, areaId, "Task 06411 Reference City", "64111");
+
+		mockMvc.perform(delete("/api/master-data/global/areas/{id}/physical", areaId).with(csrf()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.status").value(409))
+				.andExpect(jsonPath("$.message").value("Area cannot be physically deleted because it is referenced by other data"));
+
+		mockMvc.perform(delete("/api/master-data/global/regions/{id}/physical", regionId).with(csrf()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.status").value(409))
+				.andExpect(jsonPath("$.message").value("Region cannot be physically deleted because it is referenced by other data"));
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGlobalApiAllowsCountryWithoutDefaultCurrency() throws Exception {
 		mockMvc.perform(postJson("/api/master-data/global/countries", countryRequest("Task 042 Country", "QC", null)))
 				.andExpect(status().isCreated())
@@ -623,9 +730,11 @@ class MasterDataGlobalControllerTests {
 				.andExpect(jsonPath("$.paths['/api/master-data/global/regions']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/regions/lookup']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/regions/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/master-data/global/regions/{id}/physical']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/areas']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/areas/lookup']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/areas/{id}']").exists())
+				.andExpect(jsonPath("$.paths['/api/master-data/global/areas/{id}/physical']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes/lookup']").exists())
 				.andExpect(jsonPath("$.paths['/api/master-data/global/zip-codes/{id}']").exists())

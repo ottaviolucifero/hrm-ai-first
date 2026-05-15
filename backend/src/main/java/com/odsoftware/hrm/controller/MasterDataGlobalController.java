@@ -100,8 +100,9 @@ public class MasterDataGlobalController {
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "25") Integer size,
 			@RequestParam(required = false) String search,
-			@RequestParam(required = false) UUID tenantId) {
-		return masterDataGlobalService.findRegions(page, size, search, tenantId);
+			@RequestParam(required = false) UUID tenantId,
+			@RequestParam(required = false) UUID countryId) {
+		return masterDataGlobalService.findRegions(page, size, search, tenantId, countryId);
 	}
 
 	@GetMapping("/regions/lookup")
@@ -110,8 +111,9 @@ public class MasterDataGlobalController {
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "25") Integer size,
 			@RequestParam(required = false) String search,
-			@RequestParam(required = false) UUID tenantId) {
-		return masterDataGlobalService.findRegionLookups(page, size, search, tenantId);
+			@RequestParam(required = false) UUID tenantId,
+			@RequestParam(required = false) UUID countryId) {
+		return masterDataGlobalService.findRegionLookups(page, size, search, tenantId, countryId);
 	}
 
 	@GetMapping("/regions/{id}")
@@ -140,14 +142,23 @@ public class MasterDataGlobalController {
 		masterDataGlobalService.disableRegion(id);
 	}
 
+	@DeleteMapping("/regions/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete region")
+	public void deletePhysicalRegion(@PathVariable UUID id) {
+		masterDataGlobalService.deletePhysicalRegion(id);
+	}
+
 	@GetMapping("/areas")
 	@Operation(summary = "List areas")
 	public MasterDataPageResponse<AreaResponse> findAreas(
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "25") Integer size,
 			@RequestParam(required = false) String search,
-			@RequestParam(required = false) UUID tenantId) {
-		return masterDataGlobalService.findAreas(page, size, search, tenantId);
+			@RequestParam(required = false) UUID tenantId,
+			@RequestParam(required = false) UUID countryId,
+			@RequestParam(required = false) UUID regionId) {
+		return masterDataGlobalService.findAreas(page, size, search, tenantId, countryId, regionId);
 	}
 
 	@GetMapping("/areas/lookup")
@@ -156,8 +167,10 @@ public class MasterDataGlobalController {
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "25") Integer size,
 			@RequestParam(required = false) String search,
-			@RequestParam(required = false) UUID tenantId) {
-		return masterDataGlobalService.findAreaLookups(page, size, search, tenantId);
+			@RequestParam(required = false) UUID tenantId,
+			@RequestParam(required = false) UUID countryId,
+			@RequestParam(required = false) UUID regionId) {
+		return masterDataGlobalService.findAreaLookups(page, size, search, tenantId, countryId, regionId);
 	}
 
 	@GetMapping("/areas/{id}")
@@ -184,6 +197,13 @@ public class MasterDataGlobalController {
 	@Operation(summary = "Disable area")
 	public void disableArea(@PathVariable UUID id) {
 		masterDataGlobalService.disableArea(id);
+	}
+
+	@DeleteMapping("/areas/{id}/physical")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Physically delete area")
+	public void deletePhysicalArea(@PathVariable UUID id) {
+		masterDataGlobalService.deletePhysicalArea(id);
 	}
 
 	@GetMapping("/zip-codes")
