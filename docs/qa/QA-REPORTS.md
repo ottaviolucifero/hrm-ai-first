@@ -6,6 +6,56 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-066.1 - Device governance backlog refinement
+
+- Data: 2026-05-15
+- Branch: `task-066-1-device-governance-backlog-refinement`
+- Task: TASK-066.1 - Device governance backlog refinement
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `AGENTS.md`
+  - `frontend/AGENTS.md`
+  - `backend/AGENTS.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `docs/qa/QA-REPORTS.md`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-detail.component.ts`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-detail.component.html`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.ts`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.html`
+  - `backend/src/main/java/com/odsoftware/hrm/entity/device/Device.java`
+  - `backend/src/main/resources/db/migration/V9__create_device_backend_foundation.sql`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/corehr/DeviceResponse.java`
+  - `backend/src/main/java/com/odsoftware/hrm/controller/CoreHrReadController.java`
+- Analisi eseguita:
+  - verificato che `TASK-066` fosse la voce generica `UI Device governance` e che `TASK-067` restasse `UI HolidayCalendar`;
+  - verificato che il modello backend `Device` includa tenant, company profile, name, type, brand, model, serial number, purchase date, warranty end date, device status, assigned employee corrente, assigned at e active;
+  - verificato che Device sia esposto oggi tramite Core HR read-only API `GET /api/core-hr/devices` e `GET /api/core-hr/devices/{id}`, senza evidenza di API amministrative Device gia presenti;
+  - verificati i pattern frontend detail di Company Profile e User Administration: header azioni, `app-button`, card `kt-card`, griglie dettaglio, lookup shared e sezioni operative locali.
+- Patch applicata:
+  - raffinato `TASK-066` in `TASKS.md` come epic Device governance con subtask `TASK-066.1`..`TASK-066.9`;
+  - documentati CRUD admin, asset code/barcode/QR, stampa etichetta, storico assegnazioni, UI dettaglio a card, assignment UI, pattern shared header/actions e QA hardening;
+  - aggiornato `ROADMAP.md` con `TASK-066.1` completato, prossimo passo `TASK-066.2` e sequenza Device pianificata;
+  - mantenuto `TASK-067` come `UI HolidayCalendar`;
+  - nessuna modifica a codice backend/frontend, migration, API o security.
+- Comandi eseguiti:
+  - `rg -n "^### TASK-066|^#### TASK-066|^### TASK-067|^### TASK-068|Prossimo passo|TASK-066 UI Device|TASK-067 UI Holiday" TASKS.md ROADMAP.md`
+  - `rg -n "@RequestMapping\\(.*device|/devices|DeviceAdministration|Admin.*Device|device administration|api/admin.*device" backend/src/main/java backend/src/test/java frontend/src/app`
+  - `rg -n "Device|devices|device" backend/src/main/java backend/src/test/java frontend/src/app`
+  - `git diff -- TASKS.md ROADMAP.md docs/qa/QA-REPORTS.md`
+  - `git status --short --branch`
+- Esiti reali:
+  - aggiornamento documentale completato;
+  - `TASK-067` resta invariato come `UI HolidayCalendar`;
+  - nessuna modifica runtime/applicativa introdotta.
+- QA manuale:
+  - non applicabile per task esclusivamente documentale.
+- Limiti/note:
+  - nessun test backend/frontend eseguito perche non sono stati modificati file applicativi;
+  - nessuna nuova decisione durevole emersa: `DECISIONS.md` non e stato modificato.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-065 - Riorganizzazione backlog Core HR UI prima di Employee
 
 - Data: 2026-05-15
