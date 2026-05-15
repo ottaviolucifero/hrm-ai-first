@@ -1,8 +1,11 @@
 package com.odsoftware.hrm.controller;
 
+import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationAssignmentRequest;
+import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationAssignmentResponse;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationDeviceCreateRequest;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationDeviceDetailResponse;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationDeviceListItemResponse;
+import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationReturnRequest;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationDeviceUpdateRequest;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationFormOptionsResponse;
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
@@ -10,6 +13,7 @@ import com.odsoftware.hrm.service.DeviceAdministrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -74,6 +78,12 @@ public class DeviceAdministrationController {
 		return deviceAdministrationService.findDeviceById(deviceId);
 	}
 
+	@GetMapping("/{deviceId}/assignments")
+	@Operation(summary = "List device assignment history")
+	public List<DeviceAdministrationAssignmentResponse> findDeviceAssignments(@PathVariable UUID deviceId) {
+		return deviceAdministrationService.findDeviceAssignments(deviceId);
+	}
+
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create device")
@@ -88,6 +98,23 @@ public class DeviceAdministrationController {
 			@PathVariable UUID deviceId,
 			@Valid @RequestBody DeviceAdministrationDeviceUpdateRequest request) {
 		return deviceAdministrationService.updateDevice(deviceId, request);
+	}
+
+	@PostMapping("/{deviceId}/assignments")
+	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(summary = "Assign or reassign device")
+	public DeviceAdministrationAssignmentResponse assignDevice(
+			@PathVariable UUID deviceId,
+			@Valid @RequestBody DeviceAdministrationAssignmentRequest request) {
+		return deviceAdministrationService.assignDevice(deviceId, request);
+	}
+
+	@PostMapping("/{deviceId}/assignments/return")
+	@Operation(summary = "Return device")
+	public DeviceAdministrationAssignmentResponse returnDevice(
+			@PathVariable UUID deviceId,
+			@Valid @RequestBody DeviceAdministrationReturnRequest request) {
+		return deviceAdministrationService.returnDevice(deviceId, request);
 	}
 
 	@PutMapping("/{deviceId}/activate")

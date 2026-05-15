@@ -1,5 +1,7 @@
 package com.odsoftware.hrm.service;
 
+import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationAssignmentRequest;
+import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationAssignmentResponse;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationDeviceCreateRequest;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationDeviceDetailResponse;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationDeviceListItemResponse;
@@ -7,11 +9,14 @@ import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationDeviceUpd
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationEmployeeOptionResponse;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationFormOptionsResponse;
 import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationReferenceResponse;
+import com.odsoftware.hrm.dto.deviceadministration.DeviceAdministrationReturnRequest;
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.entity.core.CompanyProfile;
 import com.odsoftware.hrm.entity.core.Tenant;
 import com.odsoftware.hrm.entity.device.Device;
+import com.odsoftware.hrm.entity.device.DeviceAssignment;
 import com.odsoftware.hrm.entity.employee.Employee;
+import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.master.DeviceBrand;
 import com.odsoftware.hrm.entity.master.DeviceStatus;
 import com.odsoftware.hrm.entity.master.DeviceType;
@@ -20,8 +25,10 @@ import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
 import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.repository.device.DeviceAssignmentRepository;
 import com.odsoftware.hrm.repository.device.DeviceRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
+import com.odsoftware.hrm.repository.identity.UserAccountRepository;
 import com.odsoftware.hrm.repository.master.DeviceBrandRepository;
 import com.odsoftware.hrm.repository.master.DeviceStatusRepository;
 import com.odsoftware.hrm.repository.master.DeviceTypeRepository;
@@ -29,9 +36,11 @@ import com.odsoftware.hrm.security.CurrentCaller;
 import com.odsoftware.hrm.security.CurrentCallerService;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -49,30 +58,36 @@ public class DeviceAdministrationService {
 	private static final int DEVICE_ASSET_CODE_DIGITS = 6;
 
 	private final DeviceRepository deviceRepository;
+	private final DeviceAssignmentRepository deviceAssignmentRepository;
 	private final TenantRepository tenantRepository;
 	private final CompanyProfileRepository companyProfileRepository;
 	private final DeviceTypeRepository deviceTypeRepository;
 	private final DeviceBrandRepository deviceBrandRepository;
 	private final DeviceStatusRepository deviceStatusRepository;
 	private final EmployeeRepository employeeRepository;
+	private final UserAccountRepository userAccountRepository;
 	private final CurrentCallerService currentCallerService;
 
 	public DeviceAdministrationService(
 			DeviceRepository deviceRepository,
+			DeviceAssignmentRepository deviceAssignmentRepository,
 			TenantRepository tenantRepository,
 			CompanyProfileRepository companyProfileRepository,
 			DeviceTypeRepository deviceTypeRepository,
 			DeviceBrandRepository deviceBrandRepository,
 			DeviceStatusRepository deviceStatusRepository,
 			EmployeeRepository employeeRepository,
+			UserAccountRepository userAccountRepository,
 			CurrentCallerService currentCallerService) {
 		this.deviceRepository = deviceRepository;
+		this.deviceAssignmentRepository = deviceAssignmentRepository;
 		this.tenantRepository = tenantRepository;
 		this.companyProfileRepository = companyProfileRepository;
 		this.deviceTypeRepository = deviceTypeRepository;
 		this.deviceBrandRepository = deviceBrandRepository;
 		this.deviceStatusRepository = deviceStatusRepository;
 		this.employeeRepository = employeeRepository;
+		this.userAccountRepository = userAccountRepository;
 		this.currentCallerService = currentCallerService;
 	}
 
@@ -156,6 +171,16 @@ public class DeviceAdministrationService {
 		return toDetailResponse(findDeviceForAdministration(deviceId));
 	}
 
+	public List<DeviceAdministrationAssignmentResponse> findDeviceAssignments(UUID deviceId) {
+		Device device = findDeviceForAdministration(deviceId);
+		return deviceAssignmentRepository.findByTenant_IdAndDevice_IdOrderByAssignedFromDescCreatedAtDesc(
+						device.getTenant().getId(),
+						device.getId())
+				.stream()
+				.map(this::toAssignmentResponse)
+				.toList();
+	}
+
 	@Transactional
 	public DeviceAdministrationDeviceDetailResponse createDevice(DeviceAdministrationDeviceCreateRequest request) {
 		assertCallerCanManageTenant(request.tenantId());
@@ -168,6 +193,7 @@ public class DeviceAdministrationService {
 		validateAssignment(request.assignedAt(), assignedEmployee);
 		validateWarrantyDates(request.purchaseDate(), request.warrantyEndDate());
 		String assetCode = generateNextAssetCode(tenant.getId());
+		OffsetDateTime effectiveAssignedFrom = resolveCreateAssignedFrom(request.assignedAt(), assignedEmployee);
 
 		Device device = new Device();
 		device.setTenant(tenant);
@@ -183,16 +209,20 @@ public class DeviceAdministrationService {
 		device.setWarrantyEndDate(request.warrantyEndDate());
 		device.setDeviceStatus(deviceStatus);
 		device.setAssignedTo(assignedEmployee);
-		device.setAssignedAt(assignedEmployee == null ? null : request.assignedAt());
+		device.setAssignedAt(effectiveAssignedFrom);
 		device.setActive(true);
-		return toDetailResponse(deviceRepository.saveAndFlush(device));
+		Device savedDevice = deviceRepository.saveAndFlush(device);
+		if (assignedEmployee != null) {
+			createOpenAssignment(savedDevice, assignedEmployee, effectiveAssignedFrom, resolveAssignedByUserOrNull(), null, null);
+		}
+		return toDetailResponse(savedDevice);
 	}
 
 	@Transactional
 	public DeviceAdministrationDeviceDetailResponse updateDevice(
 			UUID deviceId,
 			DeviceAdministrationDeviceUpdateRequest request) {
-		Device device = findDeviceForAdministration(deviceId);
+		Device device = lockDeviceForAdministration(deviceId);
 		UUID tenantId = device.getTenant().getId();
 		CompanyProfile companyProfile = findCompanyProfileForTenant(request.companyProfileId(), tenantId);
 		DeviceType deviceType = findDeviceTypeForTenant(request.deviceTypeId(), tenantId);
@@ -211,9 +241,41 @@ public class DeviceAdministrationService {
 		device.setPurchaseDate(request.purchaseDate());
 		device.setWarrantyEndDate(request.warrantyEndDate());
 		device.setDeviceStatus(deviceStatus);
-		device.setAssignedTo(assignedEmployee);
-		device.setAssignedAt(assignedEmployee == null ? null : request.assignedAt());
+		if (assignedEmployee == null) {
+			clearCurrentAssignment(device);
+		} else {
+			assignOrReassignDevice(device, assignedEmployee, request.assignedAt(), null, null);
+		}
 		return toDetailResponse(deviceRepository.saveAndFlush(device));
+	}
+
+	@Transactional
+	public DeviceAdministrationAssignmentResponse assignDevice(
+			UUID deviceId,
+			DeviceAdministrationAssignmentRequest request) {
+		Device device = lockDeviceForAdministration(deviceId);
+		Employee employee = findAssignedEmployee(
+				request.employeeId(),
+				device.getTenant().getId(),
+				device.getCompanyProfile().getId());
+		DeviceAssignment assignment = assignOrReassignDevice(
+				device,
+				employee,
+				request.assignedFrom(),
+				request.conditionOnAssign(),
+				request.notes());
+		deviceRepository.saveAndFlush(device);
+		return toAssignmentResponse(assignment);
+	}
+
+	@Transactional
+	public DeviceAdministrationAssignmentResponse returnDevice(
+			UUID deviceId,
+			DeviceAdministrationReturnRequest request) {
+		Device device = lockDeviceForAdministration(deviceId);
+		DeviceAssignment assignment = returnAssignedDevice(device, request);
+		deviceRepository.saveAndFlush(device);
+		return toAssignmentResponse(assignment);
 	}
 
 	@Transactional
@@ -311,9 +373,11 @@ public class DeviceAdministrationService {
 		return device;
 	}
 
-	private Tenant findTenant(UUID tenantId) {
-		return tenantRepository.findById(tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Tenant not found: " + tenantId));
+	private Device lockDeviceForAdministration(UUID deviceId) {
+		Device device = deviceRepository.findWithAdministrationGraphByIdForUpdate(deviceId)
+				.orElseThrow(() -> new ResourceNotFoundException("Device not found: " + deviceId));
+		assertCallerCanManageTenant(device.getTenant().getId());
+		return device;
 	}
 
 	private Tenant lockAndFindTenant(UUID tenantId) {
@@ -372,6 +436,170 @@ public class DeviceAdministrationService {
 		return employee;
 	}
 
+	private DeviceAssignment assignOrReassignDevice(
+			Device device,
+			Employee employee,
+			OffsetDateTime requestedAssignedFrom,
+			String conditionOnAssign,
+			String notes) {
+		DeviceAssignment openAssignment = ensureCurrentOpenAssignment(device);
+		OffsetDateTime effectiveAssignedFrom = resolveAssignedFrom(device, openAssignment, employee, requestedAssignedFrom);
+		String cleanedConditionOnAssign = clean(conditionOnAssign);
+		String cleanedNotes = clean(notes);
+		UserAccount assignedByUser = resolveAssignedByUserOrNull();
+
+		if (openAssignment != null && openAssignment.getEmployee().getId().equals(employee.getId())) {
+			if (!Objects.equals(openAssignment.getAssignedFrom(), effectiveAssignedFrom)) {
+				openAssignment.setAssignedFrom(effectiveAssignedFrom);
+			}
+			if (cleanedConditionOnAssign != null
+					&& !Objects.equals(openAssignment.getConditionOnAssign(), cleanedConditionOnAssign)) {
+				openAssignment.setConditionOnAssign(cleanedConditionOnAssign);
+			}
+			if (cleanedNotes != null && !Objects.equals(openAssignment.getNotes(), cleanedNotes)) {
+				openAssignment.setNotes(cleanedNotes);
+			}
+			if (assignedByUser != null) {
+				openAssignment.setAssignedByUser(assignedByUser);
+			}
+			device.setAssignedTo(employee);
+			device.setAssignedAt(effectiveAssignedFrom);
+			return openAssignment;
+		}
+
+		if (openAssignment != null) {
+			validateClosedAt(openAssignment.getAssignedFrom(), effectiveAssignedFrom, "Assignment transition timestamp must be greater than or equal to assignment start");
+			openAssignment.setAssignedTo(effectiveAssignedFrom);
+			openAssignment.setReturnedAt(null);
+			openAssignment.setReturnNote(null);
+			openAssignment.setConditionOnReturn(null);
+		}
+
+		device.setAssignedTo(employee);
+		device.setAssignedAt(effectiveAssignedFrom);
+		return createOpenAssignment(
+				device,
+				employee,
+				effectiveAssignedFrom,
+				assignedByUser,
+				cleanedConditionOnAssign,
+				cleanedNotes);
+	}
+
+	private void clearCurrentAssignment(Device device) {
+		DeviceAssignment openAssignment = ensureCurrentOpenAssignment(device);
+		if (openAssignment != null) {
+			OffsetDateTime returnedAt = OffsetDateTime.now();
+			validateClosedAt(openAssignment.getAssignedFrom(), returnedAt, "Return timestamp must be greater than or equal to assignment start");
+			openAssignment.setAssignedTo(returnedAt);
+			openAssignment.setReturnedAt(returnedAt);
+		}
+		device.setAssignedTo(null);
+		device.setAssignedAt(null);
+	}
+
+	private DeviceAssignment returnAssignedDevice(Device device, DeviceAdministrationReturnRequest request) {
+		DeviceAssignment openAssignment = ensureCurrentOpenAssignment(device);
+		if (openAssignment == null) {
+			throw new InvalidRequestException("Device is not currently assigned");
+		}
+		OffsetDateTime returnedAt = request.returnedAt() != null ? request.returnedAt() : OffsetDateTime.now();
+		validateClosedAt(openAssignment.getAssignedFrom(), returnedAt, "Return timestamp must be greater than or equal to assignment start");
+		openAssignment.setAssignedTo(returnedAt);
+		openAssignment.setReturnedAt(returnedAt);
+		openAssignment.setReturnNote(clean(request.returnNote()));
+		openAssignment.setConditionOnReturn(clean(request.conditionOnReturn()));
+		String cleanedNotes = clean(request.notes());
+		if (cleanedNotes != null) {
+			openAssignment.setNotes(cleanedNotes);
+		}
+		device.setAssignedTo(null);
+		device.setAssignedAt(null);
+		return openAssignment;
+	}
+
+	private DeviceAssignment ensureCurrentOpenAssignment(Device device) {
+		List<DeviceAssignment> openAssignments = findOpenAssignments(device);
+		if (!openAssignments.isEmpty()) {
+			return openAssignments.getFirst();
+		}
+		if (device.getAssignedTo() == null) {
+			return null;
+		}
+		OffsetDateTime assignedFrom = firstNonNull(device.getAssignedAt(), device.getCreatedAt(), OffsetDateTime.now());
+		return createOpenAssignment(
+				device,
+				device.getAssignedTo(),
+				assignedFrom,
+				resolveAssignedByUserOrNull(),
+				null,
+				null);
+	}
+
+	private List<DeviceAssignment> findOpenAssignments(Device device) {
+		List<DeviceAssignment> openAssignments = deviceAssignmentRepository.findByTenant_IdAndDevice_IdAndAssignedToIsNullOrderByAssignedFromAsc(
+				device.getTenant().getId(),
+				device.getId());
+		if (openAssignments.size() > 1) {
+			throw new ResourceConflictException("Device has multiple open assignment history rows: " + device.getId());
+		}
+		return openAssignments;
+	}
+
+	private DeviceAssignment createOpenAssignment(
+			Device device,
+			Employee employee,
+			OffsetDateTime assignedFrom,
+			UserAccount assignedByUser,
+			String conditionOnAssign,
+			String notes) {
+		DeviceAssignment assignment = new DeviceAssignment();
+		assignment.setTenant(device.getTenant());
+		assignment.setDevice(device);
+		assignment.setEmployee(employee);
+		assignment.setAssignedFrom(assignedFrom);
+		assignment.setAssignedByUser(assignedByUser);
+		assignment.setConditionOnAssign(conditionOnAssign);
+		assignment.setNotes(notes);
+		return deviceAssignmentRepository.saveAndFlush(assignment);
+	}
+
+	private OffsetDateTime resolveCreateAssignedFrom(OffsetDateTime requestedAssignedFrom, Employee assignedEmployee) {
+		if (assignedEmployee == null) {
+			return null;
+		}
+		return requestedAssignedFrom != null ? requestedAssignedFrom : OffsetDateTime.now();
+	}
+
+	private OffsetDateTime resolveAssignedFrom(
+			Device device,
+			DeviceAssignment openAssignment,
+			Employee employee,
+			OffsetDateTime requestedAssignedFrom) {
+		if (requestedAssignedFrom != null) {
+			return requestedAssignedFrom;
+		}
+		if (openAssignment != null && openAssignment.getEmployee().getId().equals(employee.getId())) {
+			return openAssignment.getAssignedFrom();
+		}
+		if (device.getAssignedTo() != null
+				&& device.getAssignedTo().getId().equals(employee.getId())
+				&& device.getAssignedAt() != null) {
+			return device.getAssignedAt();
+		}
+		return OffsetDateTime.now();
+	}
+
+	private void validateClosedAt(OffsetDateTime assignedFrom, OffsetDateTime closedAt, String message) {
+		if (assignedFrom != null && closedAt != null && closedAt.isBefore(assignedFrom)) {
+			throw new InvalidRequestException(message);
+		}
+	}
+
+	private UserAccount resolveAssignedByUserOrNull() {
+		return userAccountRepository.findById(currentCaller().userId()).orElse(null);
+	}
+
 	private DeviceAdministrationDeviceListItemResponse toListItemResponse(Device device) {
 		return new DeviceAdministrationDeviceListItemResponse(
 				device.getId(),
@@ -413,6 +641,26 @@ public class DeviceAdministrationService {
 				device.getActive(),
 				device.getCreatedAt(),
 				device.getUpdatedAt());
+	}
+
+	private DeviceAdministrationAssignmentResponse toAssignmentResponse(DeviceAssignment assignment) {
+		UserAccount assignedByUser = assignment.getAssignedByUser();
+		return new DeviceAdministrationAssignmentResponse(
+				assignment.getId(),
+				assignment.getDevice().getId(),
+				assignment.getEmployee().getId(),
+				toEmployeeReference(assignment.getEmployee()),
+				assignedByUser == null ? null : assignedByUser.getId(),
+				assignedByUser == null ? null : assignedByUser.getEmail(),
+				assignment.getAssignedFrom(),
+				assignment.getAssignedTo(),
+				assignment.getReturnedAt(),
+				assignment.getReturnNote(),
+				assignment.getConditionOnAssign(),
+				assignment.getConditionOnReturn(),
+				assignment.getNotes(),
+				assignment.getCreatedAt(),
+				assignment.getUpdatedAt());
 	}
 
 	private DeviceAdministrationReferenceResponse toTenantReference(Tenant tenant) {
@@ -460,7 +708,7 @@ public class DeviceAdministrationService {
 		return displayName.isEmpty() ? employee.getEmployeeCode() : displayName;
 	}
 
-	private void validateAssignment(java.time.OffsetDateTime assignedAt, Employee assignedEmployee) {
+	private void validateAssignment(OffsetDateTime assignedAt, Employee assignedEmployee) {
 		if (assignedEmployee == null && assignedAt != null) {
 			throw new InvalidRequestException("Assigned at requires an assigned employee");
 		}
@@ -546,5 +794,15 @@ public class DeviceAdministrationService {
 	private String cleanUpper(String value) {
 		String cleaned = clean(value);
 		return cleaned == null ? null : cleaned.toUpperCase(Locale.ROOT);
+	}
+
+	@SafeVarargs
+	private static <T> T firstNonNull(T... candidates) {
+		for (T candidate : candidates) {
+			if (candidate != null) {
+				return candidate;
+			}
+		}
+		return null;
 	}
 }

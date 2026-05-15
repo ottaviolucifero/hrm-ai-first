@@ -3,12 +3,14 @@ package com.odsoftware.hrm;
 import com.odsoftware.hrm.entity.core.CompanyProfile;
 import com.odsoftware.hrm.entity.core.Tenant;
 import com.odsoftware.hrm.entity.device.Device;
+import com.odsoftware.hrm.entity.device.DeviceAssignment;
 import com.odsoftware.hrm.entity.employee.Employee;
 import com.odsoftware.hrm.entity.master.DeviceBrand;
 import com.odsoftware.hrm.entity.master.DeviceStatus;
 import com.odsoftware.hrm.entity.master.DeviceType;
 import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
+import com.odsoftware.hrm.repository.device.DeviceAssignmentRepository;
 import com.odsoftware.hrm.repository.device.DeviceRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
 import com.odsoftware.hrm.repository.master.CompanyProfileTypeRepository;
@@ -20,6 +22,7 @@ import com.odsoftware.hrm.repository.master.DeviceTypeRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -39,6 +42,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -92,6 +97,9 @@ class DeviceAdministrationControllerTests {
 	private DeviceRepository deviceRepository;
 
 	@Autowired
+	private DeviceAssignmentRepository deviceAssignmentRepository;
+
+	@Autowired
 	private DeviceTypeRepository deviceTypeRepository;
 
 	@Autowired
@@ -102,6 +110,9 @@ class DeviceAdministrationControllerTests {
 
 	@Autowired
 	private EmployeeRepository employeeRepository;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Test
 	@WithMockUser
@@ -224,7 +235,7 @@ class DeviceAdministrationControllerTests {
 				"Katherine",
 				"Johnson");
 
-		mockMvc.perform(postJson("/api/admin/devices", deviceCreateRequest(
+		MvcResult result = mockMvc.perform(postJson("/api/admin/devices", deviceCreateRequest(
 						FOUNDATION_TENANT_ID,
 						FOUNDATION_COMPANY_PROFILE_ID,
 						FOUNDATION_DEVICE_TYPE_ID,
@@ -240,7 +251,16 @@ class DeviceAdministrationControllerTests {
 				.andExpect(jsonPath("$.barcodeValue").value("DEV000001"))
 				.andExpect(jsonPath("$.serialNumber").value("TASK0662-CREATE-001"))
 				.andExpect(jsonPath("$.assignedTo.id").value(employee.getId().toString()))
-				.andExpect(jsonPath("$.active").value(true));
+				.andExpect(jsonPath("$.active").value(true))
+				.andReturn();
+
+		UUID deviceId = UUID.fromString(objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText());
+		List<DeviceAssignment> assignments = deviceAssignmentRepository.findByTenant_IdAndDevice_IdOrderByAssignedFromDescCreatedAtDesc(
+				FOUNDATION_TENANT_ID,
+				deviceId);
+		assertThat(assignments).hasSize(1);
+		assertThat(assignments.getFirst().getAssignedTo()).isNull();
+		assertThat(assignments.getFirst().getEmployee().getId()).isEqualTo(employee.getId());
 	}
 
 	@Test
@@ -328,6 +348,194 @@ class DeviceAdministrationControllerTests {
 		assertThat(reloadedDevice.getActive()).isTrue();
 		assertThat(reloadedDevice.getAssetCode()).isEqualTo(device.getAssetCode());
 		assertThat(reloadedDevice.getBarcodeValue()).isEqualTo(device.getBarcodeValue());
+		List<DeviceAssignment> assignments = deviceAssignmentRepository.findByTenant_IdAndDevice_IdOrderByAssignedFromDescCreatedAtDesc(
+				FOUNDATION_TENANT_ID,
+				device.getId());
+		assertThat(assignments).hasSize(1);
+		assertThat(assignments.getFirst().getEmployee().getId()).isEqualTo(employee.getId());
+		assertThat(assignments.getFirst().getAssignedTo()).isNull();
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationListsAssignmentHistory() throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0664_EMPLOYEE_1",
+				"Alan",
+				"Turing");
+		Device device = saveDevice(
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"Task 066.4 History Device",
+				"TASK0664-HISTORY-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				employee,
+				OffsetDateTime.parse("2026-05-19T09:00:00Z"));
+		saveOpenAssignment(device, employee, OffsetDateTime.parse("2026-05-19T09:00:00Z"));
+
+		mockMvc.perform(get("/api/admin/devices/{deviceId}/assignments", device.getId()).with(deviceTenantCaller()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(1))
+				.andExpect(jsonPath("$[0].deviceId").value(device.getId().toString()))
+				.andExpect(jsonPath("$[0].employeeId").value(employee.getId().toString()))
+				.andExpect(jsonPath("$[0].employee.code").value(employee.getEmployeeCode()))
+				.andExpect(jsonPath("$[0].assignedFrom").value("2026-05-19T09:00:00Z"))
+				.andExpect(jsonPath("$[0].assignedTo").doesNotExist());
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationAssignsDeviceAndCreatesOpenHistory() throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0664_EMPLOYEE_2",
+				"Barbara",
+				"Liskov");
+		Device device = saveDevice(
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"Task 066.4 Assign Device",
+				"TASK0664-ASSIGN-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_AVAILABLE_DEVICE_STATUS_ID).orElseThrow(),
+				null,
+				null);
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments",
+						assignmentRequest(employee.getId(), "2026-05-20T08:30:00Z", "Excellent", "Fresh assignment"))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.deviceId").value(device.getId().toString()))
+				.andExpect(jsonPath("$.employeeId").value(employee.getId().toString()))
+				.andExpect(jsonPath("$.assignedFrom").value("2026-05-20T08:30:00Z"))
+				.andExpect(jsonPath("$.conditionOnAssign").value("Excellent"))
+				.andExpect(jsonPath("$.notes").value("Fresh assignment"))
+				.andExpect(jsonPath("$.assignedTo").doesNotExist());
+
+		Device reloadedDevice = deviceRepository.findById(device.getId()).orElseThrow();
+		assertThat(reloadedDevice.getAssignedTo().getId()).isEqualTo(employee.getId());
+		assertThat(reloadedDevice.getAssignedAt()).isEqualTo(OffsetDateTime.parse("2026-05-20T08:30:00Z"));
+		List<DeviceAssignment> assignments = deviceAssignmentRepository.findByTenant_IdAndDevice_IdOrderByAssignedFromDescCreatedAtDesc(
+				FOUNDATION_TENANT_ID,
+				device.getId());
+		assertThat(assignments).hasSize(1);
+		assertThat(assignments.getFirst().getAssignedTo()).isNull();
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationReassignsDeviceClosingPreviousHistory() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		Employee firstEmployee = saveEmployee(tenant, companyProfile, "TASK0664_EMPLOYEE_3", "Donald", "Knuth");
+		Employee secondEmployee = saveEmployee(tenant, companyProfile, "TASK0664_EMPLOYEE_4", "Edsger", "Dijkstra");
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.4 Reassign Device",
+				"TASK0664-REASSIGN-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				firstEmployee,
+				OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, firstEmployee, OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments",
+						assignmentRequest(secondEmployee.getId(), "2026-05-21T10:15:00Z", "Good", "Reassigned"))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.employeeId").value(secondEmployee.getId().toString()))
+				.andExpect(jsonPath("$.assignedFrom").value("2026-05-21T10:15:00Z"));
+
+		List<DeviceAssignment> assignments = deviceAssignmentRepository.findByTenant_IdAndDevice_IdOrderByAssignedFromDescCreatedAtDesc(
+				FOUNDATION_TENANT_ID,
+				device.getId());
+		assertThat(assignments).hasSize(2);
+		DeviceAssignment latestAssignment = assignments.get(0);
+		DeviceAssignment previousAssignment = assignments.get(1);
+		assertThat(latestAssignment.getEmployee().getId()).isEqualTo(secondEmployee.getId());
+		assertThat(latestAssignment.getAssignedTo()).isNull();
+		assertThat(previousAssignment.getEmployee().getId()).isEqualTo(firstEmployee.getId());
+		assertThat(previousAssignment.getAssignedTo()).isEqualTo(OffsetDateTime.parse("2026-05-21T10:15:00Z"));
+		assertThat(previousAssignment.getReturnedAt()).isNull();
+		Device reloadedDevice = deviceRepository.findById(device.getId()).orElseThrow();
+		assertThat(reloadedDevice.getAssignedTo().getId()).isEqualTo(secondEmployee.getId());
+		assertThat(reloadedDevice.getAssignedAt()).isEqualTo(OffsetDateTime.parse("2026-05-21T10:15:00Z"));
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationReturnsDeviceAndClosesOpenAssignment() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		Employee employee = saveEmployee(tenant, companyProfile, "TASK0664_EMPLOYEE_5", "Frances", "Allen");
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.4 Return Device",
+				"TASK0664-RETURN-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				employee,
+				OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, employee, OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments/return",
+						returnRequest("2026-05-22T16:00:00Z", "Returned intact", "Good", "Desk handover"))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.assignedTo").value("2026-05-22T16:00:00Z"))
+				.andExpect(jsonPath("$.returnedAt").value("2026-05-22T16:00:00Z"))
+				.andExpect(jsonPath("$.returnNote").value("Returned intact"))
+				.andExpect(jsonPath("$.conditionOnReturn").value("Good"))
+				.andExpect(jsonPath("$.notes").value("Desk handover"));
+
+		Device reloadedDevice = deviceRepository.findById(device.getId()).orElseThrow();
+		assertThat(reloadedDevice.getAssignedTo()).isNull();
+		assertThat(reloadedDevice.getAssignedAt()).isNull();
+		List<DeviceAssignment> assignments = deviceAssignmentRepository.findByTenant_IdAndDevice_IdOrderByAssignedFromDescCreatedAtDesc(
+				FOUNDATION_TENANT_ID,
+				device.getId());
+		assertThat(assignments).hasSize(1);
+		assertThat(assignments.getFirst().getReturnedAt()).isEqualTo(OffsetDateTime.parse("2026-05-22T16:00:00Z"));
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationDoesNotCreateDuplicateHistoryForSameEmployee() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		Employee employee = saveEmployee(tenant, companyProfile, "TASK0664_EMPLOYEE_6", "Guido", "van Rossum");
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.4 Same Employee Device",
+				"TASK0664-SAME-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				employee,
+				OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, employee, OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments",
+						assignmentRequest(employee.getId(), null, null, null))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.assignedFrom").value("2026-05-18T07:00:00Z"));
+
+		List<DeviceAssignment> assignments = deviceAssignmentRepository.findByTenant_IdAndDevice_IdOrderByAssignedFromDescCreatedAtDesc(
+				FOUNDATION_TENANT_ID,
+				device.getId());
+		assertThat(assignments).hasSize(1);
+		assertThat(assignments.getFirst().getAssignedTo()).isNull();
 	}
 
 	@Test
@@ -437,6 +645,32 @@ class DeviceAdministrationControllerTests {
 	}
 
 	@Test
+	void deviceAdministrationRejectsAssignWithoutUpdatePermission() throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0664_EMPLOYEE_7",
+				"Hedy",
+				"Lamarr");
+		Device device = saveDevice(
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"Task 066.4 Permission Device",
+				"TASK0664-PERM-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_AVAILABLE_DEVICE_STATUS_ID).orElseThrow(),
+				null,
+				null);
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments",
+						assignmentRequest(employee.getId(), null, null, null))
+						.with(deviceTenantCaller("TENANT.DEVICE.CREATE")))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
 	void deviceAdministrationRejectsCallerWithoutReadPermission() throws Exception {
 		mockMvc.perform(get("/api/admin/devices/form-options")
 						.with(deviceTenantCaller("TENANT.DEVICE.UPDATE")))
@@ -480,6 +714,31 @@ class DeviceAdministrationControllerTests {
 	}
 
 	@Test
+	void deviceAdministrationRejectsAssignWithoutToken() throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0664_EMPLOYEE_8",
+				"John",
+				"McCarthy");
+		Device device = saveDevice(
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"Task 066.4 No Token Assign Device",
+				"TASK0664-NO-TOKEN-ASSIGN",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_AVAILABLE_DEVICE_STATUS_ID).orElseThrow(),
+				null,
+				null);
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments",
+						assignmentRequest(employee.getId(), null, null, null))
+						.with(request -> request))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	void deviceAdministrationRejectsCrossTenantDetailForTenantCaller() throws Exception {
 		Tenant otherTenant = saveTenant("TASK0662_SCOPE_OTHER_TENANT");
 		CompanyProfile otherCompanyProfile = saveCompanyProfile(otherTenant, "TASK0662_SCOPE_OTHER_COMPANY");
@@ -491,6 +750,59 @@ class DeviceAdministrationControllerTests {
 		mockMvc.perform(get("/api/admin/devices/{deviceId}", device.getId()).with(deviceTenantCaller()))
 				.andExpect(status().isForbidden())
 				.andExpect(jsonPath("$.message").value("Cross-tenant device administration is not allowed for caller"));
+	}
+
+	@Test
+	void deviceAdministrationRejectsCrossTenantAssignForTenantCaller() throws Exception {
+		Tenant otherTenant = saveTenant("TASK0664_SCOPE_ASSIGN_TENANT");
+		CompanyProfile otherCompanyProfile = saveCompanyProfile(otherTenant, "TASK0664_SCOPE_ASSIGN_COMPANY");
+		DeviceType otherDeviceType = saveDeviceType(otherTenant, "TASK0664_SCOPE_ASSIGN_TYPE", "Task 066.4 Scope Assign Type");
+		DeviceBrand otherDeviceBrand = saveDeviceBrand(otherTenant, "TASK0664_SCOPE_ASSIGN_BRAND", "Task 066.4 Scope Assign Brand");
+		DeviceStatus otherDeviceStatus = saveDeviceStatus(otherTenant, "TASK0664_SCOPE_ASSIGN_STATUS", "Task 066.4 Scope Assign Status");
+		Employee otherEmployee = saveEmployee(otherTenant, otherCompanyProfile, "TASK0664_EMPLOYEE_9", "Ken", "Thompson");
+		Device device = saveDevice(
+				otherCompanyProfile,
+				"Task 066.4 Cross Tenant Assign Device",
+				"TASK0664-CROSS-ASSIGN-001",
+				otherDeviceType,
+				otherDeviceBrand,
+				otherDeviceStatus,
+				null,
+				null);
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments",
+						assignmentRequest(otherEmployee.getId(), null, null, null))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant device administration is not allowed for caller"));
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationRejectsMultipleOpenAssignmentsForSameDevice() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		Employee firstEmployee = saveEmployee(tenant, companyProfile, "TASK0664_EMPLOYEE_10", "Leslie", "Lamport");
+		Employee secondEmployee = saveEmployee(tenant, companyProfile, "TASK0664_EMPLOYEE_11", "Linus", "Torvalds");
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.4 Double Open Device",
+				"TASK0664-DOUBLE-OPEN-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				firstEmployee,
+				OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, firstEmployee, OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, secondEmployee, OffsetDateTime.parse("2026-05-19T07:00:00Z"));
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments/return",
+						returnRequest("2026-05-22T16:00:00Z", null, null, null))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").value("Device has multiple open assignment history rows: " + device.getId()));
 	}
 
 	@Test
@@ -511,9 +823,37 @@ class DeviceAdministrationControllerTests {
 				.andExpect(jsonPath("$.paths['/api/admin/devices/form-options']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}'].put").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}/assignments']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}/assignments'].get").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}/assignments'].post").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}/assignments/return']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}/activate']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}/deactivate']").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/devices/{deviceId}'].delete").exists());
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationBlocksDeleteWhenHistoryExists() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		Employee employee = saveEmployee(tenant, companyProfile, "TASK0664_EMPLOYEE_12", "Margaret", "Murray");
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.4 Delete History Device",
+				"TASK0664-DELETE-HISTORY-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				employee,
+				OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, employee, OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		entityManager.flush();
+		entityManager.clear();
+
+		mockMvc.perform(delete("/api/admin/devices/{deviceId}", device.getId()).with(deviceTenantCaller()))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.message").value("Device cannot be deleted because it is referenced by one or more records"));
 	}
 
 	private Tenant saveTenant(String code) {
@@ -633,6 +973,15 @@ class DeviceAdministrationControllerTests {
 		return deviceRepository.saveAndFlush(device);
 	}
 
+	private DeviceAssignment saveOpenAssignment(Device device, Employee employee, OffsetDateTime assignedFrom) {
+		DeviceAssignment assignment = new DeviceAssignment();
+		assignment.setTenant(device.getTenant());
+		assignment.setDevice(device);
+		assignment.setEmployee(employee);
+		assignment.setAssignedFrom(assignedFrom);
+		return deviceAssignmentRepository.saveAndFlush(assignment);
+	}
+
 	private Map<String, Object> deviceCreateRequest(
 			UUID tenantId,
 			UUID companyProfileId,
@@ -671,6 +1020,32 @@ class DeviceAdministrationControllerTests {
 				"TASK0662-WARRANTY-001");
 		request.put("purchaseDate", "2026-05-20");
 		request.put("warrantyEndDate", "2026-05-10");
+		return request;
+	}
+
+	private Map<String, Object> assignmentRequest(
+			UUID employeeId,
+			String assignedFrom,
+			String conditionOnAssign,
+			String notes) {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("employeeId", employeeId);
+		request.put("assignedFrom", assignedFrom);
+		request.put("conditionOnAssign", conditionOnAssign);
+		request.put("notes", notes);
+		return request;
+	}
+
+	private Map<String, Object> returnRequest(
+			String returnedAt,
+			String returnNote,
+			String conditionOnReturn,
+			String notes) {
+		Map<String, Object> request = new LinkedHashMap<>();
+		request.put("returnedAt", returnedAt);
+		request.put("returnNote", returnNote);
+		request.put("conditionOnReturn", conditionOnReturn);
+		request.put("notes", notes);
 		return request;
 	}
 

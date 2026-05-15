@@ -134,6 +134,15 @@ public class SecurityConfig {
 								"TENANT.DEVICE.MANAGE",
 								"PLATFORM.DEVICE.READ",
 								"PLATFORM.DEVICE.MANAGE"))
+						.requestMatchers(
+								HttpMethod.POST,
+								"/api/admin/devices/*/assignments",
+								"/api/admin/devices/*/assignments/return")
+						.access(hasAnyAuthority(
+								"TENANT.DEVICE.UPDATE",
+								"TENANT.DEVICE.MANAGE",
+								"PLATFORM.DEVICE.UPDATE",
+								"PLATFORM.DEVICE.MANAGE"))
 						.requestMatchers(HttpMethod.POST, "/api/admin/devices/**")
 						.access(hasAnyAuthority(
 								"TENANT.DEVICE.CREATE",

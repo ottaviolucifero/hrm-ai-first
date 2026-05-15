@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.61
+Versione: 2.62
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -147,11 +147,12 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-066.1 Device governance backlog refinement
 - TASK-066.2 Device backend administration CRUD
 - TASK-066.3 Device asset code and barcode/QR foundation
+- TASK-066.4 Device assignment history foundation
 
 ### Prossimo passo
 
-- TASK-066.4 Device assignment history foundation
-- Sequenza Device pianificata: `TASK-066.5` frontend administration UI, `TASK-066.6` assignment UI, `TASK-066.7` label print UI, `TASK-066.8` shared entity detail header/actions pattern, `TASK-066.9` QA hardening
+- TASK-066.5 Device frontend administration UI
+- Sequenza Device pianificata: `TASK-066.6` assignment UI, `TASK-066.7` label print UI, `TASK-066.8` shared entity detail header/actions pattern, `TASK-066.9` QA hardening
 - Sequenza backlog successiva invariata: `TASK-067` UI HolidayCalendar, `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
@@ -273,10 +274,11 @@ TASK-065 completed the Core HR UI backlog reorganization by moving Employee to `
 TASK-066.1 completed the Device governance backlog refinement by splitting `TASK-066` into backend, frontend, asset-code/barcode, assignment-history, label-print and QA subtask slices without code changes.
 TASK-066.2 completed the backend Device administration CRUD by reusing the existing `Device` model, exposing `/api/admin/devices` list/detail/create/update/activate/deactivate/delete plus lookup form-options, enforcing tenant-scoped validations and reusing existing `DEVICE` permissions already seeded in `V18`.
 TASK-066.3 completed the backend-only Device asset identity foundation by adding tenant-scoped `assetCode` format `DEV000001`, `barcodeValue = assetCode`, vendor-specific Flyway `V35` backfill/unique constraints, admin API exposure on list/detail only and full backend test validation.
+TASK-066.4 completed the backend-only Device assignment history foundation by adding `device_assignments` via Flyway `V36`, backfilling current assignments, extending `/api/admin/devices` with history/assign/return endpoints, enforcing single-open-assignment logic in the service with pessimistic `Device` locking and validating the backend suite end-to-end.
 
 Prossimo passo:
 
-- TASK-066.4 Device assignment history foundation
+- TASK-066.5 Device frontend administration UI
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza immediata Core HR UI post-TASK-064.11:
@@ -287,7 +289,8 @@ Sequenza immediata Core HR UI post-TASK-064.11:
 - TASK-066: UI Device governance, raffinato in subtask `TASK-066.1`..`TASK-066.9`;
 - TASK-066.2: Device backend administration CRUD completato;
 - TASK-066.3: Device asset code and barcode/QR foundation completato;
-- TASK-066.4 -> TASK-066.9: storico assegnazioni, UI frontend, stampa etichetta, pattern dettaglio shared e QA hardening;
+- TASK-066.4: Device assignment history foundation completato;
+- TASK-066.5 -> TASK-066.9: UI frontend, stampa etichetta, pattern dettaglio shared e QA hardening;
 - TASK-067 -> TASK-072: blocco UI/CRUD piu circoscritto per consolidare pattern e verifiche permessi prima di Employee;
 - TASK-073: UI Employee management enterprise, posticipata dopo il consolidamento dei task precedenti.
 
@@ -448,6 +451,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.62 | 2026-05-15 | TASK-066.4 completato come backend-only foundation dello storico assegnazioni `Device`: `device_assignments` via Flyway `V36` PostgreSQL/H2 con backfill, endpoint admin history/assign/return, lock pessimista sul `Device`, nessun cambio Core HR/frontend e prossimo passo spostato a `TASK-066.5`. |
 | 2.61 | 2026-05-15 | TASK-066.3 completato come backend-only foundation per identificazione `Device`: `assetCode` tenant-scoped `DEV000001`, `barcodeValue = assetCode`, migration Flyway `V35` PostgreSQL/H2 con backfill e unique composti, esposizione sui soli DTO/API admin `Device`, nessun cambio Core HR/frontend e prossimo passo spostato a `TASK-066.4`. |
 | 2.60 | 2026-05-15 | TASK-066.2 completato con API amministrative backend `Device` sotto `/api/admin/devices`, filtri/lookup coerenti, endpoint dedicati `activate`/`deactivate`, validazioni tenant-scoped, riuso dei permessi `DEVICE` esistenti in `V18`, test backend reali verdi e prossimo passo spostato a `TASK-066.3`. |
 | 2.59 | 2026-05-15 | TASK-066 raffinato in subtask `TASK-066.1`..`TASK-066.9` per Device governance: `TASK-066.1` documentale completato, prossimo passo spostato a `TASK-066.2` backend administration CRUD, sequenza Device pianificata fino a QA hardening e `TASK-067` HolidayCalendar mantenuto invariato. |

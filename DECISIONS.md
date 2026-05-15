@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.39
+Versione: 1.40
 Ultimo aggiornamento: 2026-05-15
 Stato: Attivo
 
@@ -1689,10 +1689,48 @@ I task `Device` futuri devono trattare `assetCode` come identificatore patrimoni
 
 ---
 
+### DEC-043 - Device assignment open-row uniqueness enforced in service layer
+
+Data: 2026-05-15
+Stato: Approvata
+
+Decisione:
+
+Per la foundation storica `DeviceAssignment`, la regola "al massimo una assegnazione aperta per `Device`" viene garantita lato service, non tramite vincoli DB parziali.
+
+Lo standard approvato e:
+
+- `Device.assignedTo` e `Device.assignedAt` restano lo stato operativo corrente;
+- `device_assignments` e la fonte storica delle assegnazioni;
+- una riga storica aperta e definita da `assigned_to IS NULL`;
+- le operazioni di assign, reassign e return serializzano il punto critico con lock pessimista sul `Device`;
+- in presenza di piu righe aperte incoerenti, il backend deve fallire con `409 Conflict` invece di scegliere implicitamente una riga;
+- non vengono introdotti unique index parziali o altri vincoli vendor-specific non portabili tra PostgreSQL e H2.
+
+Motivazione:
+
+- mantenere coerenza tra PostgreSQL di produzione e H2 di test;
+- evitare divergenze di comportamento tra database per una regola critica del dominio Device;
+- preservare una foundation incrementale che riusa il service admin `Device` esistente senza architetture parallele;
+- tenere il `Device` come stato operativo corrente e `DeviceAssignment` come storico consistente.
+
+Alternative escluse:
+
+- unique index parziale PostgreSQL-only su assegnazioni aperte;
+- logica implicita che tollera piu righe aperte e ne sceglie una automaticamente;
+- spostare lo stato corrente fuori da `Device` su una architettura parallela basata solo sullo storico.
+
+Impatto:
+
+`TASK-066.4` e i futuri task `Device` devono riusare questa regola come baseline: mutate assignment history solo tramite service transazionale con lock del `Device`, mantenendo `Device.assignedTo` / `assignedAt` allineati e lasciando lo storico nel namespace admin `Device`.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.40 | 2026-05-15 | Aggiunta DEC-043 per formalizzare la regola durevole dello storico assegnazioni `Device`: `device_assignments` come fonte storica, `Device.assignedTo` / `assignedAt` come stato operativo corrente, unicita della riga aperta gestita lato service con lock pessimista sul `Device` e nessun vincolo DB parziale PostgreSQL-only. |
 | 1.39 | 2026-05-15 | Aggiunta DEC-042 per formalizzare lo standard durevole dei beni `Device`: `assetCode` tenant-scoped `DEV000001`, progressivo calcolato dal massimo esistente per tenant, `barcodeValue = assetCode`, esclusione di dati variabili dal payload barcode/QR ed eccezione motivata rispetto al default `DEC-039`. |
 | 1.38 | 2026-05-15 | Riallineato il riferimento attivo di `DEC-038` alla nuova numerazione backlog post `TASK-065`: la UI Employee futura passa da `TASK-065` a `TASK-073` senza modificare la decisione architetturale sul modello geografico tenant-aware. |
 | 1.37 | 2026-05-15 | Aggiunta DEC-041 per formalizzare lo standard durevole di persistenza telefono normalizzata: `phoneDialCode`, `phoneNationalNumber`, `phoneFullNumber` derivato, bridge legacy temporaneo `phone`, migrazione conservativa dei dati storici e riuso progressivo sulle future entita di contatto. |

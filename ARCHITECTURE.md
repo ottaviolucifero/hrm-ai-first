@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.3
-Ultimo aggiornamento: 2026-05-12
+Versione: 1.4
+Ultimo aggiornamento: 2026-05-15
 Stato: Bozza
 
 ---
@@ -226,3 +226,18 @@ Restano fuori da questa architettura documentale e sono demandati al backlog:
 - visibility frontend autorizzativa in TASK-054;
 - tenant switching runtime, impersonation runtime e MFA operativa;
 - estensione del mapping permission/resource ad API future oggi ancora negate esplicitamente per mancanza di resource approvata.
+
+---
+
+## 5. Device assignment history foundation
+
+Per il dominio `Device`, l assegnazione corrente e lo storico restano separati ma coerenti.
+
+Regole:
+
+- `Device.assignedTo` e `Device.assignedAt` restano lo stato operativo denormalizzato della assegnazione corrente;
+- `device_assignments` e la fonte storica delle assegnazioni nel tempo;
+- una riga storica e aperta quando `assigned_to` e `NULL`;
+- riassegnazione e restituzione devono chiudere l eventuale riga aperta precedente prima di aggiornare lo stato corrente del `Device`;
+- l unicita logica della assegnazione aperta per `Device` e garantita lato service con lock pessimista sul `Device`, non tramite vincoli DB parziali vendor-specific;
+- le API di mutazione e consultazione dello storico assegnazioni restano nel namespace admin `Device`; nessun endpoint Core HR dedicato viene introdotto da questa foundation.

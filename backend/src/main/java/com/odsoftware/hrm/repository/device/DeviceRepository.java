@@ -4,6 +4,7 @@ import com.odsoftware.hrm.entity.device.Device;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,6 +12,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+
+import static jakarta.persistence.LockModeType.PESSIMISTIC_WRITE;
 
 public interface DeviceRepository extends JpaRepository<Device, UUID>, JpaSpecificationExecutor<Device> {
 
@@ -47,4 +50,16 @@ public interface DeviceRepository extends JpaRepository<Device, UUID>, JpaSpecif
 			"assignedTo"
 	})
 	Optional<Device> findWithAdministrationGraphById(UUID id);
+
+	@Lock(PESSIMISTIC_WRITE)
+	@EntityGraph(attributePaths = {
+			"tenant",
+			"companyProfile",
+			"type",
+			"brand",
+			"deviceStatus",
+			"assignedTo"
+	})
+	@Query("select device from Device device where device.id = :id")
+	Optional<Device> findWithAdministrationGraphByIdForUpdate(UUID id);
 }
