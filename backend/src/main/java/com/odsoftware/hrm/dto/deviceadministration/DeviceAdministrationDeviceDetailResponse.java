@@ -9,6 +9,8 @@ public record DeviceAdministrationDeviceDetailResponse(
 		DeviceAdministrationReferenceResponse tenant,
 		DeviceAdministrationReferenceResponse companyProfile,
 		String name,
+		String assetCode,
+		String barcodeValue,
 		DeviceAdministrationReferenceResponse type,
 		DeviceAdministrationReferenceResponse brand,
 		String model,

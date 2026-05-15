@@ -31,6 +31,7 @@ import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class DeviceAdministrationService {
+
+	private static final String DEVICE_ASSET_CODE_PREFIX = "DEV";
+	private static final int DEVICE_ASSET_CODE_DIGITS = 6;
 
 	private final DeviceRepository deviceRepository;
 	private final TenantRepository tenantRepository;
@@ -155,7 +159,7 @@ public class DeviceAdministrationService {
 	@Transactional
 	public DeviceAdministrationDeviceDetailResponse createDevice(DeviceAdministrationDeviceCreateRequest request) {
 		assertCallerCanManageTenant(request.tenantId());
-		Tenant tenant = findTenant(request.tenantId());
+		Tenant tenant = lockAndFindTenant(request.tenantId());
 		CompanyProfile companyProfile = findCompanyProfileForTenant(request.companyProfileId(), tenant.getId());
 		DeviceType deviceType = findDeviceTypeForTenant(request.deviceTypeId(), tenant.getId());
 		DeviceBrand deviceBrand = findDeviceBrandForTenant(request.deviceBrandId(), tenant.getId());
@@ -163,11 +167,14 @@ public class DeviceAdministrationService {
 		Employee assignedEmployee = findAssignedEmployee(request.assignedToEmployeeId(), tenant.getId(), companyProfile.getId());
 		validateAssignment(request.assignedAt(), assignedEmployee);
 		validateWarrantyDates(request.purchaseDate(), request.warrantyEndDate());
+		String assetCode = generateNextAssetCode(tenant.getId());
 
 		Device device = new Device();
 		device.setTenant(tenant);
 		device.setCompanyProfile(companyProfile);
 		device.setName(cleanRequired(request.name(), "Device name is required"));
+		device.setAssetCode(assetCode);
+		device.setBarcodeValue(assetCode);
 		device.setType(deviceType);
 		device.setBrand(deviceBrand);
 		device.setModel(clean(request.model()));
@@ -247,6 +254,8 @@ public class DeviceAdministrationService {
 		Specification<Device> searchSpecification = MasterDataQuerySupport.searchSpecification(
 				search,
 				"name",
+				"assetCode",
+				"barcodeValue",
 				"model",
 				"serialNumber",
 				"tenant.code",
@@ -307,6 +316,11 @@ public class DeviceAdministrationService {
 				.orElseThrow(() -> new ResourceNotFoundException("Tenant not found: " + tenantId));
 	}
 
+	private Tenant lockAndFindTenant(UUID tenantId) {
+		return tenantRepository.findByIdForUpdate(tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Tenant not found: " + tenantId));
+	}
+
 	private CompanyProfile findCompanyProfileForTenant(UUID companyProfileId, UUID tenantId) {
 		CompanyProfile companyProfile = companyProfileRepository.findById(companyProfileId)
 				.orElseThrow(() -> new ResourceNotFoundException("Company profile not found: " + companyProfileId));
@@ -364,6 +378,8 @@ public class DeviceAdministrationService {
 				toTenantReference(device.getTenant()),
 				toCompanyProfileReference(device.getCompanyProfile()),
 				device.getName(),
+				device.getAssetCode(),
+				device.getBarcodeValue(),
 				toDeviceTypeReference(device.getType()),
 				toDeviceBrandReference(device.getBrand()),
 				device.getModel(),
@@ -383,6 +399,8 @@ public class DeviceAdministrationService {
 				toTenantReference(device.getTenant()),
 				toCompanyProfileReference(device.getCompanyProfile()),
 				device.getName(),
+				device.getAssetCode(),
+				device.getBarcodeValue(),
 				toDeviceTypeReference(device.getType()),
 				toDeviceBrandReference(device.getBrand()),
 				device.getModel(),
@@ -490,5 +508,43 @@ public class DeviceAdministrationService {
 		}
 		String cleaned = value.trim();
 		return cleaned.isEmpty() ? null : cleaned;
+	}
+
+	private String generateNextAssetCode(UUID tenantId) {
+		int maxProgressive = 0;
+		for (String assetCode : deviceRepository.findAssetCodesByTenantIdOrderByAssetCodeDesc(tenantId)) {
+			int parsedProgressive = parseAssetCodeProgressive(assetCode);
+			if (parsedProgressive > maxProgressive) {
+				maxProgressive = parsedProgressive;
+			}
+		}
+
+		if (maxProgressive >= 999999) {
+			throw new ResourceConflictException("Device asset code progressive exhausted for tenant: " + tenantId);
+		}
+
+		return DEVICE_ASSET_CODE_PREFIX + String.format(Locale.ROOT, "%06d", maxProgressive + 1);
+	}
+
+	private int parseAssetCodeProgressive(String assetCode) {
+		String normalizedAssetCode = cleanUpper(assetCode);
+		if (normalizedAssetCode == null || !normalizedAssetCode.startsWith(DEVICE_ASSET_CODE_PREFIX)) {
+			return -1;
+		}
+		if (normalizedAssetCode.length() != DEVICE_ASSET_CODE_PREFIX.length() + DEVICE_ASSET_CODE_DIGITS) {
+			return -1;
+		}
+		String progressive = normalizedAssetCode.substring(DEVICE_ASSET_CODE_PREFIX.length());
+		for (int index = 0; index < progressive.length(); index++) {
+			if (!Character.isDigit(progressive.charAt(index))) {
+				return -1;
+			}
+		}
+		return Integer.parseInt(progressive);
+	}
+
+	private String cleanUpper(String value) {
+		String cleaned = clean(value);
+		return cleaned == null ? null : cleaned.toUpperCase(Locale.ROOT);
 	}
 }

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.55
+Versione: 2.56
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -4966,9 +4966,9 @@ Validazione:
 
 #### TASK-066.3 - Device asset code and barcode/QR foundation
 
-Stato: TODO
+Stato: DONE
 
-Tipo: Backend + Frontend foundation
+Tipo: Backend
 
 Obiettivo:
 
@@ -4978,6 +4978,15 @@ Obiettivo:
 - preferire CODE 128 o QR code rispetto a EAN, perche il codice bene puo essere alfanumerico;
 - non inserire nel barcode dati variabili come dipendente, marca, modello o seriale;
 - predisporre API/DTO per esporre `assetCode`/`barcodeValue`.
+
+Validazione:
+
+- aggiunti `assetCode` e `barcodeValue` su `Device` con migration Flyway vendor-specific `V35` per PostgreSQL e H2;
+- backfill dei record esistenti con progressivo tenant-scoped `DEV000001`, `DEV000002`, ... e vincoli unici composti `tenant_id + asset_code` e `tenant_id + barcode_value`;
+- la creazione `Device` genera il prossimo `assetCode` partendo dal massimo progressivo valido gia presente per lo stesso tenant, senza usare `count + 1`, e inizializza `barcodeValue = assetCode`;
+- l update non modifica `assetCode` o `barcodeValue`, mentre lista e dettaglio admin espongono i nuovi campi senza aggiungerli ai request DTO;
+- nessuna modifica applicata a `/api/core-hr/devices`, frontend, librerie barcode/QR o generazione immagini;
+- eseguita suite backend reale `cd backend && .\mvnw.cmd test` con esito verde.
 
 #### TASK-066.4 - Device assignment history foundation
 
@@ -5161,6 +5170,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.56 | 2026-05-15 | TASK-066.3 completato come foundation backend-only per identificazione `Device`: aggiunti `assetCode`/`barcodeValue`, migration Flyway `V35` PostgreSQL/H2 con backfill tenant-scoped `DEV000001`, generazione backend dal massimo progressivo per tenant, esposizione solo su API admin `Device`, nuova decisione durevole `DEC-042` e suite backend reale verde. |
 | 2.55 | 2026-05-15 | TASK-066.2 completato con CRUD amministrativo backend `Device` sotto `/api/admin/devices`, filtri paginati, lookup/form-options, validazioni tenant/company/master data/employee, endpoint dedicati `activate`/`deactivate`, delete fisico protetto, mapping security su permessi `DEVICE` gia seedati in `V18`, test backend reali verdi e nessun modello parallelo introdotto. |
 | 2.54 | 2026-05-15 | TASK-066 raffinato come epic Device governance con subtask `TASK-066.1`..`TASK-066.9`: CRUD admin, asset code/barcode/QR, storico assegnazioni, UI frontend, stampa etichetta, pattern shared header/actions e QA hardening; `TASK-066.1` documentale completato, subtask implementativi lasciati TODO, `TASK-067` HolidayCalendar invariato e nessuna modifica applicativa. |
 | 2.53 | 2026-05-15 | TASK-065 completato come riorganizzazione documentale del backlog Core HR UI: Employee rinviato a `TASK-073`, anticipati `TASK-066` Device, `TASK-067` HolidayCalendar, `TASK-068` disciplinary, `TASK-069` PayrollDocument foundation, `TASK-070` LeaveRequest foundation, `TASK-071` Audit UI e `TASK-072` Security Admin hardening; blocco Platform/Cross-tenant/Stabilization rinumerato coerentemente fino a `TASK-077` e riferimenti attivi riallineati senza modifiche runtime. |

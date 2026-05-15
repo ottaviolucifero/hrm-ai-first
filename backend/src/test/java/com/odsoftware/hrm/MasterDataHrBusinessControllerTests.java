@@ -35,6 +35,7 @@ import com.odsoftware.hrm.repository.master.WorkModeRepository;
 import com.odsoftware.hrm.repository.payroll.PayrollDocumentRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Locale;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -63,6 +64,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 class MasterDataHrBusinessControllerTests {
+
+	private static int deviceSequence = 910000;
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COMPANY_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
@@ -856,6 +859,9 @@ class MasterDataHrBusinessControllerTests {
 		device.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
 		device.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
 		device.setName(name);
+		String assetCode = nextDeviceAssetCode();
+		device.setAssetCode(assetCode);
+		device.setBarcodeValue(assetCode);
 		device.setType(type);
 		device.setBrand(brand);
 		device.setModel("Task 059 Model");
@@ -864,6 +870,11 @@ class MasterDataHrBusinessControllerTests {
 		device.setWarrantyEndDate(LocalDate.of(2029, 5, 2));
 		device.setDeviceStatus(deviceStatus);
 		return device;
+	}
+
+	private String nextDeviceAssetCode() {
+		deviceSequence++;
+		return "DEV" + String.format(Locale.ROOT, "%06d", deviceSequence);
 	}
 
 	private Tenant ensureSecondaryTenant() {

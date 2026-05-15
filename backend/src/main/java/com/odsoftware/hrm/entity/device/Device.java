@@ -16,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -24,7 +25,12 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "devices")
+@Table(
+		name = "devices",
+		uniqueConstraints = {
+				@UniqueConstraint(name = "uk_devices_tenant_asset_code", columnNames = {"tenant_id", "asset_code"}),
+				@UniqueConstraint(name = "uk_devices_tenant_barcode_value", columnNames = {"tenant_id", "barcode_value"})
+		})
 public class Device {
 
 	@Id
@@ -46,6 +52,16 @@ public class Device {
 	@Size(max = 150)
 	@Column(name = "name", nullable = false, length = 150)
 	private String name;
+
+	@NotBlank
+	@Size(max = 50)
+	@Column(name = "asset_code", nullable = false, length = 50)
+	private String assetCode;
+
+	@NotBlank
+	@Size(max = 50)
+	@Column(name = "barcode_value", nullable = false, length = 50)
+	private String barcodeValue;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -135,6 +151,22 @@ public class Device {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getAssetCode() {
+		return assetCode;
+	}
+
+	public void setAssetCode(String assetCode) {
+		this.assetCode = assetCode;
+	}
+
+	public String getBarcodeValue() {
+		return barcodeValue;
+	}
+
+	public void setBarcodeValue(String barcodeValue) {
+		this.barcodeValue = barcodeValue;
 	}
 
 	public DeviceType getType() {

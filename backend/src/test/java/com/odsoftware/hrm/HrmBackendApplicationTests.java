@@ -79,6 +79,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Locale;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,6 +94,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 class HrmBackendApplicationTests {
+
+	private static int deviceSequence = 900000;
 
 	@Autowired
 	private CountryRepository countryRepository;
@@ -1320,6 +1323,9 @@ class HrmBackendApplicationTests {
 		device.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
 		device.setCompanyProfile(companyProfileRepository.findById(FOUNDATION_COMPANY_ID).orElseThrow());
 		device.setName(name);
+		String assetCode = nextDeviceAssetCode();
+		device.setAssetCode(assetCode);
+		device.setBarcodeValue(assetCode);
 		device.setType(deviceTypeRepository.findById(LAPTOP_DEVICE_TYPE_ID).orElseThrow());
 		device.setBrand(deviceBrandRepository.findById(DELL_DEVICE_BRAND_ID).orElseThrow());
 		device.setModel("Latitude 7450");
@@ -1328,6 +1334,11 @@ class HrmBackendApplicationTests {
 		device.setWarrantyEndDate(LocalDate.of(2029, 5, 2));
 		device.setDeviceStatus(deviceStatusRepository.findById(AVAILABLE_DEVICE_STATUS_ID).orElseThrow());
 		return device;
+	}
+
+	private String nextDeviceAssetCode() {
+		deviceSequence++;
+		return "DEV" + String.format(Locale.ROOT, "%06d", deviceSequence);
 	}
 
 	private PayrollDocument newPayrollDocument(Employee employee, Contract contract, Integer periodYear, Integer periodMonth) {
