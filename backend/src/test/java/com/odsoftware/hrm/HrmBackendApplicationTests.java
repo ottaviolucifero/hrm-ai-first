@@ -397,6 +397,8 @@ class HrmBackendApplicationTests {
 						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.TENANT, PermissionAction.MANAGE),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.USER, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.MASTER_DATA, PermissionAction.MANAGE),
+						PermissionCode.of(PermissionScope.TENANT, PermissionResource.DEVICE, PermissionAction.READ),
+						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.DEVICE, PermissionAction.DELETE),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.PAYROLL_DOCUMENT, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE),
 						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE))

@@ -921,6 +921,90 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Backend QA reports
 
+### TASK-066.2 - Device backend administration CRUD
+
+- Data: 2026-05-15
+- Branch: `task-066-2-device-backend-administration-crud`
+- Task: TASK-066.2 - Device backend administration CRUD
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/DeviceAdministrationController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/DeviceAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/device/DeviceRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/config/SecurityConfig.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/deviceadministration/*`
+  - `backend/src/test/java/com/odsoftware/hrm/DeviceAdministrationControllerTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/HrmBackendApplicationTests.java`
+  - `TASKS.md`
+  - `ROADMAP.md`
+- Analisi eseguita:
+  - verificato il modello `Device` esistente con relazioni verso `Tenant`, `CompanyProfile`, `DeviceType`, `DeviceBrand`, `DeviceStatus` ed `Employee`;
+  - verificati i pattern admin gia presenti per Tenant, User e Company Profile, riusando controller sottili, DTO espliciti, service transazionale e guardrail cross-tenant;
+  - verificato che il catalogo permessi `DEVICE` fosse gia seedato in `V18`, evitando nuove migration RBAC.
+- Patch applicata:
+  - aggiunte API admin backend `Device` sotto `/api/admin/devices` con lista paginata/filtri, dettaglio, create, update, activate, deactivate, delete fisico e `form-options`;
+  - aggiunte DTO request/response dedicate e service amministrativo con validazioni tenant/company/master data/employee coerenti;
+  - mantenuto `active` fuori dai payload create/update e riservato ai soli endpoint dedicati `activate` / `deactivate`;
+  - esteso `DeviceRepository` con supporto specification/entity graph per lista e dettaglio admin;
+  - aggiornato `SecurityConfig` con mapping esplicito GET/POST/PUT/DELETE sui permessi `TENANT|PLATFORM.DEVICE.*`;
+  - aggiunti test backend mirati per CRUD, filtri, validazioni, security, cross-tenant e OpenAPI; aggiornata la bootstrap matrix test per i permessi `DEVICE`.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=DeviceAdministrationControllerTests,HrmBackendApplicationTests" test`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - suite backend mirata: `BUILD SUCCESS`, `77` test eseguiti, `0` failure, `0` error, `0` skipped;
+  - suite backend completa: `BUILD SUCCESS`, `269` test eseguiti, `0` failure, `0` error, `0` skipped.
+- Verifiche funzionali confermate:
+  - `GET /api/admin/devices` supporta paginazione, `search` e filtri coerenti per tenant, company profile, master data, employee assegnato e `active`;
+  - `POST` e `PUT` non consentono modifica diretta di `active`;
+  - `PUT /api/admin/devices/{deviceId}/activate` e `PUT /api/admin/devices/{deviceId}/deactivate` restano endpoint dedicati;
+  - il delete fisico resta protetto lato service e non introduce soft-delete paralleli;
+  - nessuna nuova migration permessi introdotta perche i permessi `DEVICE` esistono gia in `V18`.
+- Limiti/note:
+  - il path `409 Conflict` sul delete fisico e difensivo per referenze future; allo stato attuale del modello non emergono tabelle figlie operative che blocchino realisticamente la cancellazione;
+  - nei log Maven restano warning ambiente non bloccanti gia noti: Mockito/ByteBuddy dynamic agent e rumore shell residuale `'D' n’est pas reconnu...`.
+- Stato finale: PASS
+
+### TASK-066.2 - Device backend administration CRUD (independent QA regression pass)
+
+- Data: 2026-05-15
+- Branch: `task-066-2-device-backend-administration-crud`
+- Task: TASK-066.2 - Device backend administration CRUD
+- Modello usato per QA: GPT-5 Codex (5.3)
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/DeviceAdministrationController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/DeviceAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/config/SecurityConfig.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/device/DeviceRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/deviceadministration/*`
+  - `backend/src/test/java/com/odsoftware/hrm/DeviceAdministrationControllerTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/HrmBackendApplicationTests.java`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `docs/qa/QA-REPORTS.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd "-Dtest=DeviceAdministrationControllerTests,HrmBackendApplicationTests" test`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - suite mirata: `BUILD SUCCESS`, `77` test eseguiti, `0` failure, `0` error, `0` skipped;
+  - suite completa: `BUILD SUCCESS`, `269` test eseguiti, `0` failure, `0` error, `0` skipped.
+- Findings:
+  - `MINOR` - allineamento governance modello: nella sezione QA precedente dello stesso task e riportato `Modello consigliato nel prompt operativo: GPT-5.5 Thinking`, mentre la baseline di governance corrente in `AGENTS.md` indica come riferimenti `5.3 Codex` (prima scelta), `5.3 Spark` e `5.4`. Impatto solo documentale, nessun impatto runtime.
+- Verifiche funzionali confermate:
+  - scope rispettato: backend-only, nessuna modifica frontend;
+  - nessun modello parallelo `Device` introdotto (riuso entity/repository esistenti);
+  - endpoint admin presenti e coerenti: list, `form-options`, detail, create, update, activate, deactivate, delete;
+  - DTO create/update senza campo `active`, con attivazione/disattivazione su endpoint dedicati;
+  - validazioni tenant/company/master-data/employee e guardrail cross-tenant presenti;
+  - validazione `warrantyEndDate >= purchaseDate` presente;
+  - mapping security `GET/POST/PUT/DELETE` coerente su permessi `READ|CREATE|UPDATE|DELETE` + `MANAGE`;
+  - nessuna nuova migration permessi (`DEVICE` gia presente in `V18`);
+  - copertura MockMvc presente per list/search/filtri, detail `200/404`, create, update, activate/deactivate, delete, `400`, `403`, OpenAPI;
+  - `TASKS.md` e `ROADMAP.md` allineati a `TASK-066.2` completato e prossimo passo `TASK-066.3`;
+  - `DECISIONS.md` invariato (nessuna decisione durevole nuova richiesta).
+- Stato finale: PASS WITH NOTES
+
 ### TASK-063 - Address geography backend foundation
 
 - Data: 2026-05-13

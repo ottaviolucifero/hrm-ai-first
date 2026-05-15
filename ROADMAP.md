@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.59
+Versione: 2.60
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -145,11 +145,12 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-064.11 CRUD amministrativo Region e Area nei Dati di base
 - TASK-065 Riorganizzazione backlog Core HR UI prima di Employee
 - TASK-066.1 Device governance backlog refinement
+- TASK-066.2 Device backend administration CRUD
 
 ### Prossimo passo
 
-- TASK-066.2 Device backend administration CRUD
-- Sequenza Device pianificata: `TASK-066.3` asset code and barcode/QR foundation, `TASK-066.4` assignment history foundation, `TASK-066.5` frontend administration UI, `TASK-066.6` assignment UI, `TASK-066.7` label print UI, `TASK-066.8` shared entity detail header/actions pattern, `TASK-066.9` QA hardening
+- TASK-066.3 Device asset code and barcode/QR foundation
+- Sequenza Device pianificata: `TASK-066.4` assignment history foundation, `TASK-066.5` frontend administration UI, `TASK-066.6` assignment UI, `TASK-066.7` label print UI, `TASK-066.8` shared entity detail header/actions pattern, `TASK-066.9` QA hardening
 - Sequenza backlog successiva invariata: `TASK-067` UI HolidayCalendar, `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
@@ -269,10 +270,11 @@ TASK-064.10 completed the progressive adoption of `app-lookup-select` on existin
 TASK-064.11 completed the dedicated `Region` and `Area` administrative CRUD in Master Data by extending the existing `/api/master-data/global` APIs, adding safe physical-delete constraints on references, backend-side auto-code (`RE###`/`AR###`), tenant-aware filters/lookups and Angular CRUD reuse without changes to tenant/security/RBAC or the approved geography model.
 TASK-065 completed the Core HR UI backlog reorganization by moving Employee to `TASK-073` and prioritizing smaller CRUD/UI modules first.
 TASK-066.1 completed the Device governance backlog refinement by splitting `TASK-066` into backend, frontend, asset-code/barcode, assignment-history, label-print and QA subtask slices without code changes.
+TASK-066.2 completed the backend Device administration CRUD by reusing the existing `Device` model, exposing `/api/admin/devices` list/detail/create/update/activate/deactivate/delete plus lookup form-options, enforcing tenant-scoped validations and reusing existing `DEVICE` permissions already seeded in `V18`.
 
 Prossimo passo:
 
-- TASK-066.2 Device backend administration CRUD
+- TASK-066.3 Device asset code and barcode/QR foundation
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza immediata Core HR UI post-TASK-064.11:
@@ -281,7 +283,7 @@ Sequenza immediata Core HR UI post-TASK-064.11:
 - TASK-063: foundation backend geography con tenant scope Region/Area e modello ZIP/CAP ibrido completata;
 - TASK-065: riorganizzazione backlog Core HR UI completata come task documentale;
 - TASK-066: UI Device governance, raffinato in subtask `TASK-066.1`..`TASK-066.9`;
-- TASK-066.2: Device backend administration CRUD, prossimo step operativo;
+- TASK-066.2: Device backend administration CRUD completato;
 - TASK-066.3 -> TASK-066.9: asset code/barcode/QR, storico assegnazioni, UI frontend, stampa etichetta, pattern dettaglio shared e QA hardening;
 - TASK-067 -> TASK-072: blocco UI/CRUD piu circoscritto per consolidare pattern e verifiche permessi prima di Employee;
 - TASK-073: UI Employee management enterprise, posticipata dopo il consolidamento dei task precedenti.
@@ -443,6 +445,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.60 | 2026-05-15 | TASK-066.2 completato con API amministrative backend `Device` sotto `/api/admin/devices`, filtri/lookup coerenti, endpoint dedicati `activate`/`deactivate`, validazioni tenant-scoped, riuso dei permessi `DEVICE` esistenti in `V18`, test backend reali verdi e prossimo passo spostato a `TASK-066.3`. |
 | 2.59 | 2026-05-15 | TASK-066 raffinato in subtask `TASK-066.1`..`TASK-066.9` per Device governance: `TASK-066.1` documentale completato, prossimo passo spostato a `TASK-066.2` backend administration CRUD, sequenza Device pianificata fino a QA hardening e `TASK-067` HolidayCalendar mantenuto invariato. |
 | 2.58 | 2026-05-15 | TASK-065 completato come riorganizzazione documentale del backlog Core HR UI: prossimo passo riallineato a `TASK-066` Device governance, blocco operativo immediato portato a `TASK-067`..`TASK-072`, UI Employee rinviata a `TASK-073` e blocco Platform/Cross-tenant/Stabilization rinumerato coerentemente fino a `TASK-077`, senza modifiche applicative. |
 | 2.57 | 2026-05-15 | TASK-064.11 completato con CRUD amministrativo `Region`/`Area` in Master Data, estensione API/lookup esistenti, delete fisico protetto da referenze, filtri geografici UI e validazione reale backend/frontend senza modifiche security/RBAC. |

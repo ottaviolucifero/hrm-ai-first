@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.54
+Versione: 2.55
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -4941,7 +4941,7 @@ Validazione:
 
 #### TASK-066.2 - Device backend administration CRUD
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend
 
@@ -4954,6 +4954,15 @@ Obiettivo:
 - usare lookup verso `CompanyProfile`, `DeviceType`, `DeviceBrand`, `DeviceStatus` ed eventualmente `Employee`;
 - aggiungere/aggiornare test backend;
 - includere verifica permessi/authorities e matrice ruolo/permessi se vengono introdotte nuove capability admin.
+
+Validazione:
+
+- introdotte API admin backend Device sotto `/api/admin/devices` con lista paginata/filtri, dettaglio, create, update, activate, deactivate, delete fisico e `form-options`;
+- riusato il modello `Device` esistente senza entity o schema paralleli;
+- mantenuto `active` fuori dai payload create/update e gestito solo tramite endpoint dedicati `activate` / `deactivate`;
+- riusati lookup e validazioni coerenti verso `Tenant`, `CompanyProfile`, `DeviceType`, `DeviceBrand`, `DeviceStatus` ed `Employee`;
+- confermato riuso del catalogo permessi `DEVICE` gia presente in `V18`, senza nuove migration RBAC;
+- eseguiti test backend reali mirati e completi con esito verde.
 
 #### TASK-066.3 - Device asset code and barcode/QR foundation
 
@@ -5152,6 +5161,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.55 | 2026-05-15 | TASK-066.2 completato con CRUD amministrativo backend `Device` sotto `/api/admin/devices`, filtri paginati, lookup/form-options, validazioni tenant/company/master data/employee, endpoint dedicati `activate`/`deactivate`, delete fisico protetto, mapping security su permessi `DEVICE` gia seedati in `V18`, test backend reali verdi e nessun modello parallelo introdotto. |
 | 2.54 | 2026-05-15 | TASK-066 raffinato come epic Device governance con subtask `TASK-066.1`..`TASK-066.9`: CRUD admin, asset code/barcode/QR, storico assegnazioni, UI frontend, stampa etichetta, pattern shared header/actions e QA hardening; `TASK-066.1` documentale completato, subtask implementativi lasciati TODO, `TASK-067` HolidayCalendar invariato e nessuna modifica applicativa. |
 | 2.53 | 2026-05-15 | TASK-065 completato come riorganizzazione documentale del backlog Core HR UI: Employee rinviato a `TASK-073`, anticipati `TASK-066` Device, `TASK-067` HolidayCalendar, `TASK-068` disciplinary, `TASK-069` PayrollDocument foundation, `TASK-070` LeaveRequest foundation, `TASK-071` Audit UI e `TASK-072` Security Admin hardening; blocco Platform/Cross-tenant/Stabilization rinumerato coerentemente fino a `TASK-077` e riferimenti attivi riallineati senza modifiche runtime. |
 | 2.52 | 2026-05-15 | TASK-064.11 completato con CRUD amministrativo `Region`/`Area` in Master Data, filtri/lookup geografici estesi, delete fisico protetto da referenze, codice backend-side `RE###`/`AR###`, test backend/frontend reali e aggiornamento QA/reportistica. |

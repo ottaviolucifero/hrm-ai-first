@@ -128,6 +128,30 @@ public class SecurityConfig {
 						.access(hasAnyAuthority(
 								"TENANT.COMPANY_PROFILE.DELETE",
 								"PLATFORM.COMPANY_PROFILE.DELETE"))
+						.requestMatchers(HttpMethod.GET, "/api/admin/devices/**")
+						.access(hasAnyAuthority(
+								"TENANT.DEVICE.READ",
+								"TENANT.DEVICE.MANAGE",
+								"PLATFORM.DEVICE.READ",
+								"PLATFORM.DEVICE.MANAGE"))
+						.requestMatchers(HttpMethod.POST, "/api/admin/devices/**")
+						.access(hasAnyAuthority(
+								"TENANT.DEVICE.CREATE",
+								"TENANT.DEVICE.MANAGE",
+								"PLATFORM.DEVICE.CREATE",
+								"PLATFORM.DEVICE.MANAGE"))
+						.requestMatchers(HttpMethod.PUT, "/api/admin/devices/**")
+						.access(hasAnyAuthority(
+								"TENANT.DEVICE.UPDATE",
+								"TENANT.DEVICE.MANAGE",
+								"PLATFORM.DEVICE.UPDATE",
+								"PLATFORM.DEVICE.MANAGE"))
+						.requestMatchers(HttpMethod.DELETE, "/api/admin/devices/**")
+						.access(hasAnyAuthority(
+								"TENANT.DEVICE.DELETE",
+								"TENANT.DEVICE.MANAGE",
+								"PLATFORM.DEVICE.DELETE",
+								"PLATFORM.DEVICE.MANAGE"))
 						.requestMatchers(HttpMethod.GET, "/api/admin/roles/**")
 						.access(hasAnyAuthority(
 								"TENANT.ROLE.READ",
