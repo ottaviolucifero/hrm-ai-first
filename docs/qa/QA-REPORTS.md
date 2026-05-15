@@ -6,6 +6,43 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-065 - Riorganizzazione backlog Core HR UI prima di Employee
+
+- Data: 2026-05-15
+- Branch: `task-064-11-region-area-admin-crud`
+- Task: TASK-065 - Riorganizzazione backlog Core HR UI prima di Employee
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificata la sezione backlog corrente da `TASK-065` in avanti in `TASKS.md`;
+  - verificati il `Prossimo passo`, le sequenze attive e i range fase in `ROADMAP.md`;
+  - identificati i riferimenti attivi da riallineare alla nuova numerazione futura, lasciando invariati i riferimenti storici nei task gia chiusi e nelle vecchie entry cronologiche;
+  - verificato che il task fosse solo documentale, senza impatti su backend/frontend, migration o test applicativi.
+- Patch applicata:
+  - ridefinito `TASK-065` come task documentale completato di riorganizzazione backlog;
+  - anticipati `TASK-066` Device, `TASK-067` HolidayCalendar, `TASK-068` disciplinary, `TASK-069` PayrollDocument foundation, `TASK-070` LeaveRequest foundation, `TASK-071` Audit UI e `TASK-072` Security Admin hardening;
+  - rinviata la UI Employee a `TASK-073`;
+  - rinumerati coerentemente `TASK-074+` e riallineati `ROADMAP.md`, `DECISIONS.md` e il presente report QA.
+- Comandi eseguiti:
+  - `rg -n "^### TASK-0(6[5-9]|7[0-7])|Prossimo passo|Follow-up gia pianificati|Versione:|Cronologia versioni" TASKS.md ROADMAP.md`
+  - `rg -n "TASK-065|TASK-066|TASK-067|TASK-068|TASK-069|TASK-070|TASK-071|TASK-072|TASK-073|TASK-074|TASK-075|TASK-076|TASK-077" TASKS.md ROADMAP.md DECISIONS.md docs/qa/QA-REPORTS.md`
+  - `git diff -- TASKS.md ROADMAP.md DECISIONS.md docs/qa/QA-REPORTS.md`
+  - `git status --short --branch`
+- Esiti reali:
+  - backlog futuro riallineato in coerenza con il nuovo ordine richiesto;
+  - `ROADMAP.md` ora punta a `TASK-066` come prossimo passo operativo;
+  - nessuna modifica runtime/applicativa introdotta.
+- QA manuale:
+  - non applicabile per task esclusivamente documentale.
+- Limiti/note:
+  - i riferimenti storici presenti nei task `DONE` e nelle vecchie entry di cronologia sono stati lasciati invariati quando descrivono correttamente il contesto della numerazione precedente;
+  - nessun test backend/frontend eseguito in questo passaggio perche non sono stati modificati file applicativi.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base
 
 - Data: 2026-05-15

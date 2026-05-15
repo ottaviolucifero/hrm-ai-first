@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.37
+Versione: 1.38
 Ultimo aggiornamento: 2026-05-14
 Stato: Attivo
 
@@ -1518,7 +1518,7 @@ TASK-062 resta il task documentale/decisionale dedicato a questa scelta.
 
 TASK-063 dovra implementare la foundation backend con migration DB, aggiornamento entity/repository/service/API, tenant scope per `Region` e `Area`, eventuale `tenant_id` nullable sui CAP se viene confermata la tabella ibrida, test backend e verifica impatti su Employee, OfficeLocation, HolidayCalendar e Master Data globali.
 
-TASK-065 Employee UI potra partire solo dopo TASK-062, TASK-063 e TASK-064, in modo da usare select, readonly/freeze fields e riuso dati geografici su un contratto backend stabilizzato.
+TASK-073 Employee UI potra partire solo dopo TASK-062, TASK-063 e TASK-064, in modo da usare select, readonly/freeze fields e riuso dati geografici su un contratto backend stabilizzato.
 
 La decisione non introduce codice, migration o test in questa fase.
 
@@ -1650,6 +1650,7 @@ I futuri task che introdurranno o normalizzeranno campi telefono devono partire 
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.38 | 2026-05-15 | Riallineato il riferimento attivo di `DEC-038` alla nuova numerazione backlog post `TASK-065`: la UI Employee futura passa da `TASK-065` a `TASK-073` senza modificare la decisione architetturale sul modello geografico tenant-aware. |
 | 1.37 | 2026-05-15 | Aggiunta DEC-041 per formalizzare lo standard durevole di persistenza telefono normalizzata: `phoneDialCode`, `phoneNationalNumber`, `phoneFullNumber` derivato, bridge legacy temporaneo `phone`, migrazione conservativa dei dati storici e riuso progressivo sulle future entita di contatto. |
 | 1.36 | 2026-05-14 | Allineato il riferimento backlog della decisione `DEC-040` alla nuova numerazione `TASK-064.9` per la normalizzazione telefono, dopo l'inserimento del nuovo `TASK-064.8` dedicato alla creazione guidata dei dati geografici esteri da form indirizzo. |
 | 1.35 | 2026-05-14 | Aggiunta DEC-040 per rendere durevole la foundation shared dei lookup: response paginata standard, DTO lookup uniforme `id/code/name/extraLabel/metadata`, riuso di `MasterDataQuerySupport` lato backend e `app-lookup-select` lato frontend come pattern di default per lookup remoti futuri. |
