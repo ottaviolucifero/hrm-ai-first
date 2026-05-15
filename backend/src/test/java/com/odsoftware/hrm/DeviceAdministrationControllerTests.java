@@ -20,8 +20,10 @@ import com.odsoftware.hrm.repository.master.DeviceTypeRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class DeviceAdministrationControllerTests {
 
+	private static final AtomicInteger TEST_DEVICE_SEQUENCE = new AtomicInteger(900000);
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COMPANY_PROFILE_ID = UUID.fromString("80000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_COUNTRY_ID = UUID.fromString("20000000-0000-0000-0000-000000000001");
@@ -139,6 +142,8 @@ class DeviceAdministrationControllerTests {
 				.andExpect(jsonPath("$.content[0].tenant.id").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.content[0].companyProfile.id").value(FOUNDATION_COMPANY_PROFILE_ID.toString()))
 				.andExpect(jsonPath("$.content[0].assignedTo.id").value(foundationEmployee.getId().toString()))
+				.andExpect(jsonPath("$.content[0].assetCode").value(foundationDevice.getAssetCode()))
+				.andExpect(jsonPath("$.content[0].barcodeValue").value(foundationDevice.getBarcodeValue()))
 				.andExpect(jsonPath("$.content[0].serialNumber").value("TASK0662-SERIAL-001"))
 				.andExpect(jsonPath("$.content[0].deviceStatus.code").value("DS002"));
 	}
@@ -187,6 +192,8 @@ class DeviceAdministrationControllerTests {
 				.andExpect(jsonPath("$.name").value("Task 066.2 Detail Device"))
 				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.companyProfile.id").value(FOUNDATION_COMPANY_PROFILE_ID.toString()))
+				.andExpect(jsonPath("$.assetCode").value(device.getAssetCode()))
+				.andExpect(jsonPath("$.barcodeValue").value(device.getBarcodeValue()))
 				.andExpect(jsonPath("$.type.code").value("DV001"))
 				.andExpect(jsonPath("$.brand.code").value("DB001"))
 				.andExpect(jsonPath("$.deviceStatus.code").value("DS002"))
@@ -229,9 +236,41 @@ class DeviceAdministrationControllerTests {
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.companyProfile.id").value(FOUNDATION_COMPANY_PROFILE_ID.toString()))
+				.andExpect(jsonPath("$.assetCode").value("DEV000001"))
+				.andExpect(jsonPath("$.barcodeValue").value("DEV000001"))
 				.andExpect(jsonPath("$.serialNumber").value("TASK0662-CREATE-001"))
 				.andExpect(jsonPath("$.assignedTo.id").value(employee.getId().toString()))
 				.andExpect(jsonPath("$.active").value(true));
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationCreatesDeviceUsingNextAssetCodeWithinTenant() throws Exception {
+		Device existingDevice = saveDevice(
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"Task 066.3 Existing Device",
+				"TASK0663-EXISTING-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_AVAILABLE_DEVICE_STATUS_ID).orElseThrow(),
+				null,
+				null,
+				"DEV000123");
+
+		mockMvc.perform(postJson("/api/admin/devices", deviceCreateRequest(
+						FOUNDATION_TENANT_ID,
+						FOUNDATION_COMPANY_PROFILE_ID,
+						FOUNDATION_DEVICE_TYPE_ID,
+						FOUNDATION_DEVICE_BRAND_ID,
+						FOUNDATION_AVAILABLE_DEVICE_STATUS_ID,
+						null,
+						"TASK0663-CREATE-002"))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.assetCode").value("DEV000124"))
+				.andExpect(jsonPath("$.barcodeValue").value("DEV000124"));
+
+		assertThat(existingDevice.getAssetCode()).isEqualTo("DEV000123");
 	}
 
 	@Test
@@ -267,10 +306,14 @@ class DeviceAdministrationControllerTests {
 		request.put("assignedToEmployeeId", employee.getId());
 		request.put("assignedAt", "2026-05-18T08:45:00Z");
 		request.put("active", false);
+		request.put("assetCode", "DEV999999");
+		request.put("barcodeValue", "DEV999999");
 
 		mockMvc.perform(putJson("/api/admin/devices/" + device.getId(), request).with(deviceTenantCaller()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Task 066.2 Updated Device"))
+				.andExpect(jsonPath("$.assetCode").value(device.getAssetCode()))
+				.andExpect(jsonPath("$.barcodeValue").value(device.getBarcodeValue()))
 				.andExpect(jsonPath("$.model").value("Updated Model"))
 				.andExpect(jsonPath("$.serialNumber").value("TASK0662-UPDATE-999"))
 				.andExpect(jsonPath("$.deviceStatus.code").value("DS002"))
@@ -283,6 +326,8 @@ class DeviceAdministrationControllerTests {
 		assertThat(reloadedDevice.getSerialNumber()).isEqualTo("TASK0662-UPDATE-999");
 		assertThat(reloadedDevice.getAssignedTo().getId()).isEqualTo(employee.getId());
 		assertThat(reloadedDevice.getActive()).isTrue();
+		assertThat(reloadedDevice.getAssetCode()).isEqualTo(device.getAssetCode());
+		assertThat(reloadedDevice.getBarcodeValue()).isEqualTo(device.getBarcodeValue());
 	}
 
 	@Test
@@ -547,10 +592,34 @@ class DeviceAdministrationControllerTests {
 			DeviceStatus deviceStatus,
 			Employee assignedEmployee,
 			OffsetDateTime assignedAt) {
+		return saveDevice(
+				companyProfile,
+				name,
+				serialNumber,
+				deviceType,
+				deviceBrand,
+				deviceStatus,
+				assignedEmployee,
+				assignedAt,
+				nextTestAssetCode());
+	}
+
+	private Device saveDevice(
+			CompanyProfile companyProfile,
+			String name,
+			String serialNumber,
+			DeviceType deviceType,
+			DeviceBrand deviceBrand,
+			DeviceStatus deviceStatus,
+			Employee assignedEmployee,
+			OffsetDateTime assignedAt,
+			String assetCode) {
 		Device device = new Device();
 		device.setTenant(companyProfile.getTenant());
 		device.setCompanyProfile(companyProfile);
 		device.setName(name);
+		device.setAssetCode(assetCode);
+		device.setBarcodeValue(assetCode);
 		device.setType(deviceType);
 		device.setBrand(deviceBrand);
 		device.setModel("Task 066.2 Model");
@@ -586,6 +655,8 @@ class DeviceAdministrationControllerTests {
 		request.put("assignedToEmployeeId", assignedToEmployeeId);
 		request.put("assignedAt", assignedToEmployeeId == null ? null : "2026-05-17T10:00:00Z");
 		request.put("active", false);
+		request.put("assetCode", "DEV777777");
+		request.put("barcodeValue", "DEV777777");
 		return request;
 	}
 
@@ -663,5 +734,9 @@ class DeviceAdministrationControllerTests {
 						.claim("tenantId", FOUNDATION_TENANT_ID.toString())
 						.claim("userType", "PLATFORM_SUPER_ADMIN"))
 				.authorities(grantedAuthorities);
+	}
+
+	private String nextTestAssetCode() {
+		return "DEV" + String.format(Locale.ROOT, "%06d", TEST_DEVICE_SEQUENCE.incrementAndGet());
 	}
 }

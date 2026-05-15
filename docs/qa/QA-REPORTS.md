@@ -1005,6 +1005,43 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
   - `DECISIONS.md` invariato (nessuna decisione durevole nuova richiesta).
 - Stato finale: PASS WITH NOTES
 
+### TASK-066.3 - Device asset code and barcode/QR foundation
+
+- Data: 2026-05-15
+- Branch: `task-066-3-device-asset-code-barcode-foundation`
+- Task: TASK-066.3 - Device asset code and barcode/QR foundation
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/resources/db/vendor/postgresql/V35__add_device_asset_code_barcode_foundation.sql`
+  - `backend/src/main/resources/db/vendor/h2/V35__add_device_asset_code_barcode_foundation.sql`
+  - `backend/src/main/java/com/odsoftware/hrm/entity/device/Device.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/core/TenantRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/device/DeviceRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/DeviceAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/deviceadministration/*`
+  - `backend/src/test/java/com/odsoftware/hrm/DeviceAdministrationControllerTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/HrmBackendApplicationTests.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataHrBusinessControllerTests.java`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - suite backend completa: `BUILD SUCCESS`, `270` test eseguiti, `0` failure, `0` error, `0` skipped.
+- Verifiche funzionali confermate:
+  - `Device` ora persiste `assetCode` e `barcodeValue` con migration Flyway `V35` vendor-specific per PostgreSQL/H2;
+  - il backfill assegna codici `DEV000001`, `DEV000002`, ... per tenant e applica i vincoli unici composti `tenant_id + asset_code` e `tenant_id + barcode_value`;
+  - la creazione `Device` calcola il prossimo codice dal massimo progressivo valido gia presente per lo stesso tenant, senza usare `count + 1`, e serializza il punto critico tramite lock pessimista sul `Tenant`;
+  - `barcodeValue` coincide con `assetCode`;
+  - `assetCode` e `barcodeValue` sono esposti solo nei response DTO admin list/detail e restano fuori dai request DTO create/update;
+  - l update non modifica i due campi;
+  - nessuna modifica applicata a `/api/core-hr/devices`, frontend, security/RBAC o librerie barcode/QR.
+- Limiti/note:
+  - la suite reale eseguita usa il profilo test H2; la migration PostgreSQL `V35` e stata verificata staticamente e mantenuta allineata alla variante H2, ma non e stata eseguita contro un database PostgreSQL live in questo turno;
+  - nei log Maven restano warning ambiente gia noti e non bloccanti: Mockito/ByteBuddy dynamic agent e messaggio shell residuale `'D' n’est pas reconnu...`.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-063 - Address geography backend foundation
 
 - Data: 2026-05-13

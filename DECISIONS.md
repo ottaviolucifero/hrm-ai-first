@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.38
-Ultimo aggiornamento: 2026-05-14
+Versione: 1.39
+Ultimo aggiornamento: 2026-05-15
 Stato: Attivo
 
 ---
@@ -1646,10 +1646,54 @@ I futuri task che introdurranno o normalizzeranno campi telefono devono partire 
 
 ---
 
+### DEC-042 - Device asset code and barcode identifier standard
+
+Data: 2026-05-15
+Stato: Approvata
+
+Decisione:
+
+Per il dominio `Device`, l identificatore patrimoniale operativo viene formalizzato tramite due campi dedicati:
+
+- `assetCode` come identificatore automatico del bene;
+- `barcodeValue` come payload testuale da usare in barcode/QR futuri.
+
+Lo standard approvato e:
+
+- `assetCode` usa formato `DEV000001`;
+- il progressivo e tenant-scoped;
+- il prossimo valore deve essere calcolato dal massimo progressivo valido gia presente per lo stesso tenant, non dal numero di record;
+- `assetCode` non e editabile da API/UI operative;
+- `barcodeValue` coincide con `assetCode`;
+- il payload barcode/QR non deve includere dati variabili come dipendente assegnato, marca, modello o seriale.
+
+Questa scelta costituisce una eccezione motivata rispetto a `DEC-039`: non introduce un generico campo `code`, ma un identificatore asset dedicato, con prefisso esplicito `DEV` e progressivo a 6 cifre per supportare una numerazione piu ampia del parco dispositivi.
+
+Motivazione:
+
+- garantire un identificatore stabile e leggibile per i beni `Device`;
+- evitare collisioni o riuso improprio dopo delete, backfill o dati storici preesistenti;
+- mantenere `barcodeValue` semplice, deterministico e compatibile sia con CODE 128 sia con QR code futuri;
+- evitare payload fragili o soggetti a variazione nel tempo.
+
+Alternative escluse:
+
+- usare `count(device) + 1` per generare il prossimo codice;
+- usare EAN come standard principale, non adatto a codici alfanumerici;
+- includere nel barcode dati variabili del dispositivo o dell assegnazione;
+- usare direttamente lo standard `PPNNN` di `DEC-039` per questo identificatore dedicato.
+
+Impatto:
+
+I task `Device` futuri devono trattare `assetCode` come identificatore patrimoniale immutabile e `barcodeValue` come suo alias operativo fino a nuova decisione. Eventuali evoluzioni su rendering grafico barcode/QR, stampa etichetta o payload piu ricchi devono partire da questa baseline ed essere documentate con task o decisioni dedicate.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.39 | 2026-05-15 | Aggiunta DEC-042 per formalizzare lo standard durevole dei beni `Device`: `assetCode` tenant-scoped `DEV000001`, progressivo calcolato dal massimo esistente per tenant, `barcodeValue = assetCode`, esclusione di dati variabili dal payload barcode/QR ed eccezione motivata rispetto al default `DEC-039`. |
 | 1.38 | 2026-05-15 | Riallineato il riferimento attivo di `DEC-038` alla nuova numerazione backlog post `TASK-065`: la UI Employee futura passa da `TASK-065` a `TASK-073` senza modificare la decisione architetturale sul modello geografico tenant-aware. |
 | 1.37 | 2026-05-15 | Aggiunta DEC-041 per formalizzare lo standard durevole di persistenza telefono normalizzata: `phoneDialCode`, `phoneNationalNumber`, `phoneFullNumber` derivato, bridge legacy temporaneo `phone`, migrazione conservativa dei dati storici e riuso progressivo sulle future entita di contatto. |
 | 1.36 | 2026-05-14 | Allineato il riferimento backlog della decisione `DEC-040` alla nuova numerazione `TASK-064.9` per la normalizzazione telefono, dopo l'inserimento del nuovo `TASK-064.8` dedicato alla creazione guidata dei dati geografici esteri da form indirizzo. |
