@@ -15,6 +15,8 @@ public record CompanyProfileResponse(
 		String taxNumber,
 		String email,
 		String pecEmail,
+		String phoneDialCode,
+		String phoneNationalNumber,
 		String phone,
 		String sdiCode,
 		FoundationReferenceResponse country,

@@ -57,6 +57,8 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
         taxNumber: 'TAX-2',
         email: 'info@example.com',
         pecEmail: 'pec@example.com',
+        phoneDialCode: '+33',
+        phoneNationalNumber: '123456',
         phone: '+33 123456',
         sdiCode: 'SDI123',
         country: { id: 'country-2', code: 'FR', name: 'France' },
@@ -95,6 +97,8 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
         taxNumber: 'TAX-3',
         email: 'info3@example.com',
         pecEmail: null,
+        phoneDialCode: '+39',
+        phoneNationalNumber: '123456',
         phone: '+39 123456',
         sdiCode: null,
         country: { id: 'country-1', code: 'IT', name: 'Italy' },
@@ -129,6 +133,42 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Roma (RM)');
+  });
+
+  it('shows a composed structured phone when the legacy bridge field is absent', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService({
+      findCompanyProfileById: vi.fn(() => of({
+        id: 'company-4',
+        tenant: { id: 'tenant-1', code: 'TENANT', name: 'Tenant' },
+        companyProfileType: { id: 'type-1', code: 'CP001', name: 'Legal entity' },
+        code: 'CP004',
+        legalName: 'Legal Four',
+        tradeName: 'Trade Four',
+        vatNumber: 'VAT-4',
+        taxIdentifier: null,
+        taxNumber: 'TAX-4',
+        email: 'info4@example.com',
+        pecEmail: null,
+        phoneDialCode: '+216',
+        phoneNationalNumber: '20123456',
+        phone: null,
+        sdiCode: null,
+        country: { id: 'country-3', code: 'TN', name: 'Tunisia' },
+        region: null,
+        area: null,
+        globalZipCode: null,
+        street: 'Street',
+        streetNumber: '11',
+        active: true,
+        createdAt: '2026-05-13T09:00:00Z',
+        updatedAt: '2026-05-13T10:00:00Z'
+      }))
+    }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('+216 20123456');
   });
 
   it('navigates back and edit', async () => {
@@ -258,6 +298,8 @@ function createService(overrides: Partial<CompanyProfileAdministrationService> =
     taxNumber: 'TAX-1',
     email: 'info@example.com',
     pecEmail: 'pec@example.com',
+    phoneDialCode: '+39',
+    phoneNationalNumber: '123456',
     phone: '+39 123456',
     sdiCode: 'SDI123',
     country: { id: 'country-1', code: 'IT', name: 'Italy' },

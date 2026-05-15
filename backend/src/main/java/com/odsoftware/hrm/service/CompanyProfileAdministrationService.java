@@ -37,6 +37,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -49,6 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CompanyProfileAdministrationService {
 
 	private static final String COMPANY_PROFILE_CODE_PREFIX = "CP";
+	private static final Pattern LEGACY_PHONE_SPLIT_PATTERN = Pattern.compile("^(\\+\\d+)\\s+(.+)$");
 
 	private final CompanyProfileRepository companyProfileRepository;
 	private final TenantRepository tenantRepository;
@@ -170,7 +173,7 @@ public class CompanyProfileAdministrationService {
 		companyProfile.setTaxNumber(clean(request.taxNumber()));
 		companyProfile.setEmail(cleanLower(request.email()));
 		companyProfile.setPecEmail(cleanLower(request.pecEmail()));
-		companyProfile.setPhone(clean(request.phone()));
+		applyPhoneFields(companyProfile, request.phone(), request.phoneDialCode(), request.phoneNationalNumber());
 		companyProfile.setSdiCode(clean(request.sdiCode()));
 		companyProfile.setCountry(country);
 		companyProfile.setRegion(region);
@@ -208,7 +211,7 @@ public class CompanyProfileAdministrationService {
 		companyProfile.setTaxNumber(clean(request.taxNumber()));
 		companyProfile.setEmail(cleanLower(request.email()));
 		companyProfile.setPecEmail(cleanLower(request.pecEmail()));
-		companyProfile.setPhone(clean(request.phone()));
+		applyPhoneFields(companyProfile, request.phone(), request.phoneDialCode(), request.phoneNationalNumber());
 		companyProfile.setSdiCode(clean(request.sdiCode()));
 		companyProfile.setCountry(country);
 		companyProfile.setRegion(region);
@@ -389,6 +392,8 @@ public class CompanyProfileAdministrationService {
 				companyProfile.getTaxNumber(),
 				companyProfile.getEmail(),
 				companyProfile.getPecEmail(),
+				companyProfile.getPhoneDialCode(),
+				companyProfile.getPhoneNationalNumber(),
 				companyProfile.getPhone(),
 				companyProfile.getSdiCode(),
 				toCountryReference(companyProfile.getCountry()),
@@ -565,6 +570,73 @@ public class CompanyProfileAdministrationService {
 		return cleaned == null ? null : cleaned.toUpperCase(Locale.ROOT);
 	}
 
+	private void applyPhoneFields(
+			CompanyProfile companyProfile,
+			String legacyPhone,
+			String phoneDialCode,
+			String phoneNationalNumber) {
+		NormalizedCompanyProfilePhone normalizedPhone = normalizeCompanyProfilePhone(legacyPhone, phoneDialCode, phoneNationalNumber);
+		companyProfile.setPhoneDialCode(normalizedPhone.phoneDialCode());
+		companyProfile.setPhoneNationalNumber(normalizedPhone.phoneNationalNumber());
+		companyProfile.setPhone(normalizedPhone.legacyPhone());
+	}
+
+	private NormalizedCompanyProfilePhone normalizeCompanyProfilePhone(
+			String legacyPhone,
+			String phoneDialCode,
+			String phoneNationalNumber) {
+		String normalizedNationalNumber = clean(phoneNationalNumber);
+		if (normalizedNationalNumber != null) {
+			String normalizedDialCode = clean(phoneDialCode);
+			return new NormalizedCompanyProfilePhone(
+					composeLegacyPhone(normalizedDialCode, normalizedNationalNumber),
+					normalizedDialCode,
+					normalizedNationalNumber);
+		}
+
+		String normalizedLegacyPhone = clean(legacyPhone);
+		if (normalizedLegacyPhone == null) {
+			throw new InvalidRequestException("Phone number is required");
+		}
+
+		NormalizedLegacyPhoneParts parsedLegacyPhone = splitLegacyPhoneConservatively(normalizedLegacyPhone);
+		if (parsedLegacyPhone == null) {
+			return new NormalizedCompanyProfilePhone(normalizedLegacyPhone, null, normalizedLegacyPhone);
+		}
+
+		return new NormalizedCompanyProfilePhone(
+				composeLegacyPhone(parsedLegacyPhone.phoneDialCode(), parsedLegacyPhone.phoneNationalNumber()),
+				parsedLegacyPhone.phoneDialCode(),
+				parsedLegacyPhone.phoneNationalNumber());
+	}
+
+	private NormalizedLegacyPhoneParts splitLegacyPhoneConservatively(String legacyPhone) {
+		Matcher matcher = LEGACY_PHONE_SPLIT_PATTERN.matcher(legacyPhone);
+		if (!matcher.matches()) {
+			return null;
+		}
+
+		String normalizedDialCode = clean(matcher.group(1));
+		String normalizedNationalNumber = clean(matcher.group(2));
+		if (normalizedDialCode == null || normalizedNationalNumber == null) {
+			return null;
+		}
+
+		return new NormalizedLegacyPhoneParts(normalizedDialCode, normalizedNationalNumber);
+	}
+
+	private String composeLegacyPhone(String phoneDialCode, String phoneNationalNumber) {
+		String normalizedNationalNumber = clean(phoneNationalNumber);
+		if (normalizedNationalNumber == null) {
+			return null;
+		}
+
+		String normalizedDialCode = clean(phoneDialCode);
+		return normalizedDialCode == null
+				? normalizedNationalNumber
+				: normalizedDialCode + " " + normalizedNationalNumber;
+	}
+
 	private void validateFiscalIdentifierByCountry(Country country, String vatNumber, String taxIdentifier) {
 		if (isItalianCountry(country)) {
 			if (clean(vatNumber) == null) {
@@ -593,5 +665,16 @@ public class CompanyProfileAdministrationService {
 		}
 		String cleaned = value.trim();
 		return cleaned.isEmpty() ? null : cleaned;
+	}
+
+	private record NormalizedCompanyProfilePhone(
+			String legacyPhone,
+			String phoneDialCode,
+			String phoneNationalNumber) {
+	}
+
+	private record NormalizedLegacyPhoneParts(
+			String phoneDialCode,
+			String phoneNationalNumber) {
 	}
 }

@@ -13,6 +13,7 @@ import { AppInputComponent } from '../../shared/components/input/app-input.compo
 import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
 import { EmailFieldComponent } from '../../shared/form-fields/email-field.component';
 import { PhoneFieldComponent } from '../../shared/form-fields/phone-field.component';
+import { PhoneFieldValue } from '../../shared/form-fields/phone-field.models';
 import { LookupOption, LookupPage, LookupQuery } from '../../shared/lookup/lookup.models';
 import { LookupService } from '../../shared/lookup/lookup.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
@@ -112,7 +113,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
     taxNumber: ['', [Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(150)]],
     pecEmail: ['', [Validators.email, Validators.maxLength(150)]],
-    phone: ['', [Validators.required]],
+    phone: this.formBuilder.control<PhoneFieldValue>(this.emptyPhoneValue()),
     sdiCode: ['', [Validators.maxLength(50)]],
     countryId: ['', [Validators.required]],
     regionId: [''],
@@ -638,7 +639,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       taxNumber: '',
       email: '',
       pecEmail: '',
-      phone: '',
+      phone: this.emptyPhoneValue(),
       sdiCode: '',
       countryId: '',
       regionId: '',
@@ -681,7 +682,7 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       taxNumber: detail.taxNumber ?? '',
       email: detail.email ?? '',
       pecEmail: detail.pecEmail ?? '',
-      phone: detail.phone ?? '',
+      phone: this.detailPhoneValue(detail),
       sdiCode: detail.sdiCode ?? '',
       countryId: detail.country.id,
       regionId: detail.region?.id ?? '',
@@ -737,7 +738,8 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       ...fiscalValues,
       email: this.optionalValue(value.email),
       pecEmail: this.optionalValue(value.pecEmail),
-      phone: this.optionalValue(value.phone),
+      phoneDialCode: this.optionalValue(value.phone.dialCode),
+      phoneNationalNumber: this.optionalValue(value.phone.nationalNumber),
       sdiCode: this.optionalValue(value.sdiCode),
       countryId: value.countryId,
       regionId: this.optionalValue(value.regionId),
@@ -759,7 +761,8 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
       ...fiscalValues,
       email: this.optionalValue(value.email),
       pecEmail: this.optionalValue(value.pecEmail),
-      phone: this.optionalValue(value.phone),
+      phoneDialCode: this.optionalValue(value.phone.dialCode),
+      phoneNationalNumber: this.optionalValue(value.phone.nationalNumber),
       sdiCode: this.optionalValue(value.sdiCode),
       countryId: value.countryId,
       regionId: this.optionalValue(value.regionId),
@@ -773,6 +776,64 @@ export class CompanyProfileAdministrationFormComponent implements OnDestroy {
   private optionalValue(value: string | null | undefined): string | null {
     const normalized = value?.trim();
     return normalized ? normalized : null;
+  }
+
+  private emptyPhoneValue(): PhoneFieldValue {
+    return {
+      dialCode: null,
+      nationalNumber: null,
+      fullNumber: null
+    };
+  }
+
+  private detailPhoneValue(detail: CompanyProfileAdministrationCompanyProfileDetail): PhoneFieldValue {
+    const phoneDialCode = this.optionalValue(detail.phoneDialCode);
+    const phoneNationalNumber = this.optionalValue(detail.phoneNationalNumber);
+    if (phoneDialCode || phoneNationalNumber) {
+      return {
+        dialCode: phoneDialCode,
+        nationalNumber: phoneNationalNumber,
+        fullNumber: this.composePhone(phoneDialCode, phoneNationalNumber)
+      };
+    }
+
+    return this.legacyPhoneValue(detail.phone);
+  }
+
+  private legacyPhoneValue(legacyPhone: string | null | undefined): PhoneFieldValue {
+    const normalizedLegacyPhone = this.optionalValue(legacyPhone);
+    if (!normalizedLegacyPhone) {
+      return this.emptyPhoneValue();
+    }
+
+    const phoneMatch = normalizedLegacyPhone.match(/^(\+\d+)\s+(.+)$/);
+    if (!phoneMatch) {
+      return {
+        dialCode: null,
+        nationalNumber: normalizedLegacyPhone,
+        fullNumber: normalizedLegacyPhone
+      };
+    }
+
+    const phoneDialCode = this.optionalValue(phoneMatch[1]);
+    const phoneNationalNumber = this.optionalValue(phoneMatch[2]);
+    return {
+      dialCode: phoneDialCode,
+      nationalNumber: phoneNationalNumber,
+      fullNumber: this.composePhone(phoneDialCode, phoneNationalNumber)
+    };
+  }
+
+  private composePhone(phoneDialCode: string | null, phoneNationalNumber: string | null): string | null {
+    const normalizedPhoneNationalNumber = this.optionalValue(phoneNationalNumber);
+    if (!normalizedPhoneNationalNumber) {
+      return null;
+    }
+
+    const normalizedPhoneDialCode = this.optionalValue(phoneDialCode);
+    return normalizedPhoneDialCode
+      ? `${normalizedPhoneDialCode} ${normalizedPhoneNationalNumber}`
+      : normalizedPhoneNationalNumber;
   }
 
   protected selectedCountryCode(): string {

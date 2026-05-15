@@ -127,6 +127,9 @@ class CompanyProfileAdministrationControllerTests {
 				.andExpect(jsonPath("$.code").value("TASK0645_DETAIL"))
 				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
 				.andExpect(jsonPath("$.companyProfileType.id").value(companyProfile.getCompanyProfileType().getId().toString()))
+				.andExpect(jsonPath("$.phoneDialCode").value("+39"))
+				.andExpect(jsonPath("$.phoneNationalNumber").value("3310000000"))
+				.andExpect(jsonPath("$.phone").value("+39 3310000000"))
 				.andExpect(jsonPath("$.country.code").value("IT"))
 				.andExpect(jsonPath("$.active").value(true));
 	}
@@ -166,7 +169,10 @@ class CompanyProfileAdministrationControllerTests {
 				.andExpect(jsonPath("$.code").value("CP001"))
 				.andExpect(jsonPath("$.tenant.id").value(tenant.getId().toString()))
 				.andExpect(jsonPath("$.legalName").value("Task 064.5 Create One Legal"))
-				.andExpect(jsonPath("$.tradeName").value("Task 064.5 Create One"));
+				.andExpect(jsonPath("$.tradeName").value("Task 064.5 Create One"))
+				.andExpect(jsonPath("$.phoneDialCode").value("+39"))
+				.andExpect(jsonPath("$.phoneNationalNumber").value("3310000000"))
+				.andExpect(jsonPath("$.phone").value("+39 3310000000"));
 
 		mockMvc.perform(postJson("/api/admin/company-profiles", companyProfileCreateRequest(tenant.getId(), type.getId(), null, "Task 064.5 Create Two"))
 						.with(companyProfilePlatformCaller()))
@@ -196,7 +202,8 @@ class CompanyProfileAdministrationControllerTests {
 		request.put("tradeName", " Task 064.5 Updated Trade ");
 		request.put("vatNumber", "IT12345678901");
 		request.put("email", "updated@example.com");
-		request.put("phone", "+39 3310000000");
+		request.put("phoneDialCode", "+39");
+		request.put("phoneNationalNumber", "3310000000");
 		request.put("countryId", FOUNDATION_COUNTRY_ID);
 		request.put("globalZipCodeId", foundationGlobalZipCodeIdForCountry(FOUNDATION_COUNTRY_ID));
 		request.put("street", " Updated Street ");
@@ -208,13 +215,36 @@ class CompanyProfileAdministrationControllerTests {
 				.andExpect(jsonPath("$.code").value("TASK0645_UPDATE"))
 				.andExpect(jsonPath("$.legalName").value("Task 064.5 Updated Legal"))
 				.andExpect(jsonPath("$.tradeName").value("Task 064.5 Updated Trade"))
+				.andExpect(jsonPath("$.phoneDialCode").value("+39"))
+				.andExpect(jsonPath("$.phoneNationalNumber").value("3310000000"))
+				.andExpect(jsonPath("$.phone").value("+39 3310000000"))
 				.andExpect(jsonPath("$.active").value(true));
 
 		CompanyProfile reloaded = companyProfileRepository.findById(companyProfile.getId()).orElseThrow();
 		assertThat(reloaded.getCode()).isEqualTo("TASK0645_UPDATE");
 		assertThat(reloaded.getLegalName()).isEqualTo("Task 064.5 Updated Legal");
 		assertThat(reloaded.getTradeName()).isEqualTo("Task 064.5 Updated Trade");
+		assertThat(reloaded.getPhoneDialCode()).isEqualTo("+39");
+		assertThat(reloaded.getPhoneNationalNumber()).isEqualTo("3310000000");
+		assertThat(reloaded.getPhone()).isEqualTo("+39 3310000000");
 		assertThat(reloaded.getActive()).isTrue();
+	}
+
+	@Test
+	@WithMockUser
+	void companyProfileAdministrationAcceptsLegacyPhoneFallbackWithoutAggressiveSplit() throws Exception {
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		CompanyProfileType type = foundFirstCompanyProfileType(FOUNDATION_TENANT_ID);
+		Map<String, Object> request = companyProfileCreateRequest(tenant.getId(), type.getId(), null, "Task 064.9 Legacy Phone");
+		request.remove("phoneDialCode");
+		request.remove("phoneNationalNumber");
+		request.put("phone", "+393310000000");
+
+		mockMvc.perform(postJson("/api/admin/company-profiles", request).with(companyProfileTenantCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.phoneDialCode").value(org.hamcrest.Matchers.nullValue()))
+				.andExpect(jsonPath("$.phoneNationalNumber").value("+393310000000"))
+				.andExpect(jsonPath("$.phone").value("+393310000000"));
 	}
 
 	@Test
@@ -263,6 +293,21 @@ class CompanyProfileAdministrationControllerTests {
 
 		mockMvc.perform(postJson("/api/admin/company-profiles", request).with(companyProfileTenantCaller()))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser
+	void companyProfileAdministrationRejectsCreateWithoutStructuredOrLegacyPhone() throws Exception {
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		CompanyProfileType type = foundFirstCompanyProfileType(FOUNDATION_TENANT_ID);
+		Map<String, Object> request = companyProfileCreateRequest(tenant.getId(), type.getId(), null, "Task 064.9 Missing Phone");
+		request.remove("phone");
+		request.remove("phoneDialCode");
+		request.remove("phoneNationalNumber");
+
+		mockMvc.perform(postJson("/api/admin/company-profiles", request).with(companyProfileTenantCaller()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Phone number is required"));
 	}
 
 	@Test
@@ -380,6 +425,9 @@ class CompanyProfileAdministrationControllerTests {
 		companyProfile.setCode(code);
 		companyProfile.setLegalName(code + " Legal");
 		companyProfile.setTradeName(code);
+		companyProfile.setPhoneDialCode("+39");
+		companyProfile.setPhoneNationalNumber("3310000000");
+		companyProfile.setPhone("+39 3310000000");
 		companyProfile.setCountry(country);
 		companyProfile.setStreet("Task 064.5 Street");
 		companyProfile.setStreetNumber("1");
@@ -398,7 +446,8 @@ class CompanyProfileAdministrationControllerTests {
 		request.put("tradeName", tradeName);
 		request.put("vatNumber", "IT12345678901");
 		request.put("email", "company.profile@example.com");
-		request.put("phone", "+39 3310000000");
+		request.put("phoneDialCode", "+39");
+		request.put("phoneNationalNumber", "3310000000");
 		request.put("countryId", FOUNDATION_COUNTRY_ID);
 		request.put("globalZipCodeId", foundationGlobalZipCodeIdForCountry(FOUNDATION_COUNTRY_ID));
 		request.put("street", "Task 064.5 Street");

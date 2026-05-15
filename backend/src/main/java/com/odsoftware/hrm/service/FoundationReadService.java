@@ -105,6 +105,8 @@ public class FoundationReadService {
 				companyProfile.getTaxNumber(),
 				companyProfile.getEmail(),
 				companyProfile.getPecEmail(),
+				companyProfile.getPhoneDialCode(),
+				companyProfile.getPhoneNationalNumber(),
 				companyProfile.getPhone(),
 				companyProfile.getSdiCode(),
 				toCountryReference(companyProfile.getCountry()),

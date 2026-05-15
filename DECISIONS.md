@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.36
+Versione: 1.37
 Ultimo aggiornamento: 2026-05-14
 Stato: Attivo
 
@@ -1599,7 +1599,50 @@ Alternative escluse:
 
 Impatto:
 
-I futuri task che richiedono lookup remoti devono partire da questo pattern come default. Nuovi endpoint lookup dovranno motivare eventuali eccezioni su shape, paginazione o UX. La normalizzazione persistente dei telefoni non e coperta da questa decisione e resta demandata al follow-up `TASK-064.9`.
+I futuri task che richiedono lookup remoti devono partire da questo pattern come default. Nuovi endpoint lookup dovranno motivare eventuali eccezioni su shape, paginazione o UX. La normalizzazione persistente dei telefoni non e coperta da questa decisione ed e stata formalizzata successivamente in `DEC-041` tramite l implementazione di `TASK-064.9`.
+
+---
+
+### DEC-041 - Normalized phone persistence standard for CompanyProfile and future contact entities
+
+Data: 2026-05-15
+Stato: Approvata
+
+Decisione:
+
+Lo standard durevole per la persistenza dei telefoni applicativi viene formalizzato a partire da `CompanyProfile` e deve essere riusato progressivamente, con task dedicati, per future entita di contatto come `OfficeLocation`, `Employee`, `UserAccount` e altre entita che esporranno un recapito telefonico.
+
+Lo standard approvato e:
+
+- persistere `phoneDialCode` come prefisso internazionale, comprensivo del simbolo `+`, quando noto e affidabile;
+- persistere `phoneNationalNumber` come numero nazionale/locale o, nei casi legacy non deducibili, come contenitore conservativo dell intero valore telefono esistente;
+- non persistere `phoneFullNumber` come colonna separata quando non serve a query o integrazioni specifiche; il full number deve essere derivato applicativamente da `phoneDialCode + " " + phoneNationalNumber` oppure dal solo `phoneNationalNumber` se il prefisso non e disponibile;
+- mantenere temporaneamente il campo legacy `phone` come bridge di compatibilita per lettura e fallback di write durante la transizione, evitando rotture immediate dei contratti esistenti;
+- per i nuovi payload strutturati richiedere `phoneNationalNumber`; `phoneDialCode` puo restare `null` solo nei casi di compatibilita legacy o quando il prefisso non e deducibile con confidenza.
+
+Per i dati legacy gia presenti, la strategia approvata e conservativa:
+
+- eseguire lo split solo quando il valore trim inizia con `+`, contiene almeno uno spazio dopo il prefisso e il prefisso contiene solo `+` e cifre;
+- in tutti gli altri casi copiare l intero valore legacy in `phoneNationalNumber` e lasciare `phoneDialCode = null`;
+- evitare parsing aggressivi o inferenze implicite non verificabili sui numeri storici.
+
+Motivazione:
+
+- allineare DB, API e frontend al modello strutturato gia introdotto nel componente shared `app-phone-field`;
+- preservare compatibilita temporanea con dati e client legacy senza bloccare il refactoring progressivo;
+- evitare nuove divergenze tra entita di contatto che oggi usano pattern eterogenei;
+- mantenere esplicita la semantica del prefisso internazionale rispetto al numero nazionale/locale.
+
+Alternative escluse:
+
+- continuare a persistere una sola stringa `phone` senza campi strutturati;
+- introdurre subito una nuova entita telefono cross-domain fuori scope;
+- persistere sempre anche `phoneFullNumber` senza una necessita reale di query o integrazione;
+- applicare parsing aggressivi ai dati legacy per dedurre prefissi non affidabili.
+
+Impatto:
+
+I futuri task che introdurranno o normalizzeranno campi telefono devono partire da questo standard come default. L adozione su altre entita resta progressiva e deve avvenire con task dedicati, evitando rollout impliciti fuori scope.
 
 ---
 
@@ -1607,6 +1650,7 @@ I futuri task che richiedono lookup remoti devono partire da questo pattern come
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.37 | 2026-05-15 | Aggiunta DEC-041 per formalizzare lo standard durevole di persistenza telefono normalizzata: `phoneDialCode`, `phoneNationalNumber`, `phoneFullNumber` derivato, bridge legacy temporaneo `phone`, migrazione conservativa dei dati storici e riuso progressivo sulle future entita di contatto. |
 | 1.36 | 2026-05-14 | Allineato il riferimento backlog della decisione `DEC-040` alla nuova numerazione `TASK-064.9` per la normalizzazione telefono, dopo l'inserimento del nuovo `TASK-064.8` dedicato alla creazione guidata dei dati geografici esteri da form indirizzo. |
 | 1.35 | 2026-05-14 | Aggiunta DEC-040 per rendere durevole la foundation shared dei lookup: response paginata standard, DTO lookup uniforme `id/code/name/extraLabel/metadata`, riuso di `MasterDataQuerySupport` lato backend e `app-lookup-select` lato frontend come pattern di default per lookup remoti futuri. |
 | 1.34 | 2026-05-13 | Aggiunta DEC-039 per rendere durevole lo standard dei nuovi campi `code`: auto-code `prime due lettere + progressivo 3 cifre`, generazione backend, UI non editabile ed eccezioni solo se documentate. |

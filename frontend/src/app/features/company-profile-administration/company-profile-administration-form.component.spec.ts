@@ -7,6 +7,7 @@ import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { PhoneFieldComponent } from '../../shared/form-fields/phone-field.component';
+import { PhoneFieldValue } from '../../shared/form-fields/phone-field.models';
 import { LookupOption } from '../../shared/lookup/lookup.models';
 import { LookupService } from '../../shared/lookup/lookup.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
@@ -36,7 +37,7 @@ interface CompanyProfileFormHandle {
       globalZipCodeId: { setValue: (value: string) => void };
       cityLabel: { value: string };
       provinceLabel: { value: string };
-      phone: { setValue: (value: string) => void; value: string };
+      phone: { setValue: (value: PhoneFieldValue) => void; value: PhoneFieldValue };
       street: { setValue: (value: string) => void };
       streetNumber: { setValue: (value: string) => void };
     };
@@ -227,7 +228,7 @@ describe('CompanyProfileAdministrationFormComponent', () => {
     );
   });
 
-  it('submits create payload with backend-compatible phone string and without code or active', async () => {
+  it('submits create payload with structured phone fields and without code or active', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const service = createService();
@@ -263,7 +264,8 @@ describe('CompanyProfileAdministrationFormComponent', () => {
       taxNumber: 'IT-CF-1',
       email: 'legal@example.com',
       pecEmail: null,
-      phone: '+39 0941123456',
+      phoneDialCode: '+39',
+      phoneNationalNumber: '0941123456',
       sdiCode: null,
       countryId: 'country-1',
       regionId: null,
@@ -591,7 +593,8 @@ describe('CompanyProfileAdministrationFormComponent', () => {
       taxNumber: null,
       email: 'updated@example.com',
       pecEmail: null,
-      phone: '+39 123456',
+      phoneDialCode: '+39',
+      phoneNationalNumber: '123456',
       sdiCode: null,
       countryId: 'country-1',
       regionId: null,
@@ -749,6 +752,8 @@ function createService(overrides: Partial<CompanyProfileAdministrationService> =
     taxNumber: null,
     email: null,
     pecEmail: null,
+    phoneDialCode: '+39',
+    phoneNationalNumber: '111222333',
     phone: '+39 111222333',
     sdiCode: null,
     country: { id: 'country-1', code: 'IT', name: 'Italy' },

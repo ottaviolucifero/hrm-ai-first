@@ -99,6 +99,8 @@ export interface CompanyProfileAdministrationCompanyProfileDetail extends Compan
   readonly taxIdentifier: string | null;
   readonly email: string | null;
   readonly pecEmail: string | null;
+  readonly phoneDialCode: string | null;
+  readonly phoneNationalNumber: string | null;
   readonly phone: string | null;
   readonly sdiCode: string | null;
   readonly region: CompanyProfileAdministrationReference | null;
@@ -125,7 +127,8 @@ export interface CompanyProfileAdministrationCreateRequest {
   readonly taxNumber: string | null;
   readonly email: string | null;
   readonly pecEmail: string | null;
-  readonly phone: string | null;
+  readonly phoneDialCode: string | null;
+  readonly phoneNationalNumber: string | null;
   readonly sdiCode: string | null;
   readonly countryId: string;
   readonly regionId: string | null;
@@ -170,7 +173,8 @@ export interface CompanyProfileAdministrationUpdateRequest {
   readonly taxNumber: string | null;
   readonly email: string | null;
   readonly pecEmail: string | null;
-  readonly phone: string | null;
+  readonly phoneDialCode: string | null;
+  readonly phoneNationalNumber: string | null;
   readonly sdiCode: string | null;
   readonly countryId: string;
   readonly regionId: string | null;

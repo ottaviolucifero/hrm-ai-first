@@ -203,7 +203,7 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
   protected contactFields(detail: CompanyProfileAdministrationCompanyProfileDetail): readonly ReadOnlyField[] {
     return [
       { labelKey: 'userAdministration.columns.email', value: this.displayValue(detail.email) },
-      { labelKey: 'companyProfileAdministration.fields.phone', value: this.displayValue(detail.phone) }
+      { labelKey: 'companyProfileAdministration.fields.phone', value: this.displayValue(this.phoneValue(detail)) }
     ];
   }
 
@@ -400,6 +400,23 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
   private displayValue(value: string | null | undefined): string {
     const normalized = value?.trim();
     return normalized || this.i18n.t('companyProfileAdministration.values.none');
+  }
+
+  private phoneValue(detail: CompanyProfileAdministrationCompanyProfileDetail): string | null {
+    const legacyPhone = detail.phone?.trim();
+    if (legacyPhone) {
+      return legacyPhone;
+    }
+
+    const phoneNationalNumber = detail.phoneNationalNumber?.trim();
+    if (!phoneNationalNumber) {
+      return null;
+    }
+
+    const phoneDialCode = detail.phoneDialCode?.trim();
+    return phoneDialCode
+      ? `${phoneDialCode} ${phoneNationalNumber}`
+      : phoneNationalNumber;
   }
 
   private booleanValue(value: boolean): string {

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.49
+Versione: 2.50
 Ultimo aggiornamento: 2026-05-15
 Stato: In avanzamento
 
@@ -4742,33 +4742,33 @@ Note:
 - `Region.code` e `Area.code` restano input manuali nei popup perche l API esistente li richiede e il task non autorizza una nuova regola auto-code su entita gia governate;
 - il rilancio del test backend mirato ha richiesto quoting PowerShell corretto e autorizzazione elevata per superare il blocco sandbox Maven, senza evidenza di regressioni applicative.
 
-### TASK-064.9 - Normalize phone fields for Company Profile and future contact entities
+### TASK-064.9 - CompanyProfile phone persistence normalization + compatibility bridge
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
-Normalizzare la persistenza telefono separando prefisso internazionale e numero nazionale/locale nel database e nelle API, invece di affidarsi solo a una stringa unica.
+Normalizzare la persistenza telefono di `CompanyProfile` separando prefisso internazionale e numero nazionale/locale nel database e nelle API, mantenendo un bridge legacy temporaneo sul campo `phone`.
 
 Motivazione:
 
 Una singola stringa telefono e utile nel breve periodo, ma puo creare problemi per future integrazioni con provider SMS, WhatsApp, telefonia o notifiche che richiedono numeri normalizzati e strutturati.
 
-Scope:
+Completato:
 
-- valutare i campi telefono attuali in `CompanyProfile` e nelle future entita di contatto;
-- aggiungere campi separati dove appropriato, ad esempio:
-  - `phoneDialCode`
-  - `phoneNationalNumber`
-  - `phoneFullNumber`, opzionale o calcolato se utile
-- aggiornare migration database;
-- aggiornare contratti DTO/API;
-- aggiornare i form frontend per inviare e ricevere dati telefono strutturati;
-- mantenere backward compatibility o definire una strategia di migrazione per i valori telefono esistenti;
-- definire lo standard da riusare piu avanti per `Employee`, `User`, `OfficeLocation` e altre entita di contatto;
-- aggiungere test backend e frontend;
-- aggiornare `docs/qa/QA-REPORTS.md`;
-- aggiornare `DECISIONS.md` se il modello telefono normalizzato diventa uno standard durevole di progetto.
+- scope limitato a `CompanyProfile`, senza normalizzare `OfficeLocation`, `Employee`, `UserAccount` o altre entita in questo task;
+- aggiunti i campi persistenti `phoneDialCode` e `phoneNationalNumber` su `CompanyProfile`; `phoneFullNumber` resta derivato e non viene persistito;
+- mantenuto il campo legacy `phone` come bridge temporaneo di compatibilita, con lunghezza estesa per contenere il valore derivato dai nuovi campi strutturati;
+- introdotte migration Flyway vendor-specific `V34` per PostgreSQL e H2:
+  - aggiunta colonne `phone_dial_code` e `phone_national_number`;
+  - allargamento del legacy `phone`;
+  - backfill conservativo dei dati legacy: split solo se il valore trim inizia con `+`, contiene almeno uno spazio dopo il prefisso e il prefisso contiene solo `+` e cifre; in tutti gli altri casi il valore legacy viene copiato integralmente in `phoneNationalNumber` con `phoneDialCode = null`;
+- aggiornati entity, DTO request/response, service e mapping backend per accettare payload strutturati e mantenere `phone` solo come fallback legacy temporaneo;
+- il backend ora richiede `phoneNationalNumber` per i nuovi payload strutturati; `phone` legacy viene accettato solo come fallback di compatibilita;
+- aggiornate le response admin/detail/foundation per esporre `phoneDialCode`, `phoneNationalNumber` e `phone` legacy;
+- aggiornato il form frontend `CompanyProfile` per usare `app-phone-field` in modalita strutturata e inviare solo `phoneDialCode` e `phoneNationalNumber`;
+- aggiornata la detail/view frontend per mostrare il valore legacy o ricomporre il full number dai campi strutturati;
+- aggiornati i18n `it/fr/en`, test backend/frontend, `DECISIONS.md`, `ROADMAP.md` e `docs/qa/QA-REPORTS.md`.
 
 ### TASK-064.10 - Apply shared lookup select to existing administration forms
 
@@ -4927,6 +4927,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.50 | 2026-05-15 | TASK-064.9 completato: normalizzata la persistenza telefono di `CompanyProfile` con campi strutturati `phoneDialCode` e `phoneNationalNumber`, migration vendor-specific `V34` con backfill legacy conservativo, bridge temporaneo `phone`, aggiornamenti backend/frontend cross-stack, nuova decisione durevole su standard telefono e test reali verdi. |
 | 2.49 | 2026-05-15 | Aggiunto il nuovo follow-up documentale `TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base`, con scope, regole funzionali, vincoli ed esclusioni coerenti al modello geografico tenant-aware approvato (`TASK-062`/`TASK-063`) e senza modifiche runtime/backend/frontend. |
 | 2.48 | 2026-05-15 | TASK-064.8 chiuso come DONE nel working tree del branch dedicato: `CompanyProfileAdministrationForm` supporta la creazione guidata estera di `Region`, `Area` e `GlobalZipCode` tramite `app-lookup-select` con pulsante `+` esterno, popup locali di feature e auto-code backend tenant-aware `RE###`/`AR###`, senza modificare schema/security/RBAC; test backend/frontend reali verdi e QA aggiornata con sola nota residua sulla verifica manuale browser. |
 | 2.47 | 2026-05-14 | Inserito `TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo` come nuovo follow-up documentale dopo `TASK-064.7`, con rinumerazione coerente dei successivi task telefono e lookup (`TASK-064.9` e `TASK-064.10`) e aggiornamento dei riferimenti interni. |
