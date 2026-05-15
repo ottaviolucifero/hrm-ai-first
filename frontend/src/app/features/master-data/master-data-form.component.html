@@ -26,7 +26,23 @@
               [label]="i18n.t(field.labelKey)"
               [labelRequired]="!!field.required"
               [required]="!!field.required"
-              [disabled]="isFieldReadOnly(field)"
+              [disabled]="isFieldDisabled(field)"
+              [formControlName]="field.key" />
+          </div>
+        } @else if (fieldType(field) === 'lookup') {
+          <div class="master-data-form-field">
+            <app-lookup-select
+              [label]="i18n.t(field.labelKey)"
+              [labelRequired]="!!field.required"
+              [required]="!!field.required"
+              [disabled]="isFieldDisabled(field)"
+              [readonly]="isFieldReadOnly(field)"
+              [placeholder]="field.placeholderKey ? i18n.t(field.placeholderKey) : ''"
+              [searchPlaceholder]="field.searchPlaceholderKey ? i18n.t(field.searchPlaceholderKey) : ''"
+              [errorText]="hasRequiredError(field) ? i18n.t('masterData.form.required') : ''"
+              [clearable]="field.clearable === true"
+              [loadPage]="lookupLoadPage(field)"
+              [initialOption]="initialLookupOption(field)"
               [formControlName]="field.key" />
           </div>
         } @else {
@@ -36,7 +52,7 @@
               [labelRequired]="!!field.required"
               [required]="!!field.required"
               [type]="field.type === 'number' ? 'number' : 'text'"
-              [disabled]="isFieldReadOnly(field)"
+              [disabled]="isFieldDisabled(field)"
               [errorText]="hasRequiredError(field) ? i18n.t('masterData.form.required') : ''"
               [formControlName]="field.key" />
           </div>

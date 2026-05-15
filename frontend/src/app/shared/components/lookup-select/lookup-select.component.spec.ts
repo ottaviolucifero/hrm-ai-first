@@ -133,7 +133,7 @@ describe('LookupSelectComponent', () => {
     expect(component.renderedOptions).toEqual([]);
   });
 
-  it('triggers remote lookup from autocomplete input after 700 ms without blur', async () => {
+  it('triggers remote lookup from autocomplete input after 200 ms without blur', async () => {
     vi.useFakeTimers();
     host.loadPage = vi.fn(() => of({
       content: [],
@@ -151,7 +151,7 @@ describe('LookupSelectComponent', () => {
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    await vi.advanceTimersByTimeAsync(699);
+    await vi.advanceTimersByTimeAsync(199);
     expect(host.loadPage).not.toHaveBeenCalled();
 
     await vi.advanceTimersByTimeAsync(1);
@@ -183,7 +183,7 @@ describe('LookupSelectComponent', () => {
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    await vi.advanceTimersByTimeAsync(700);
+    await vi.advanceTimersByTimeAsync(200);
     await flushLookupAsync();
     fixture.detectChanges();
 
@@ -223,7 +223,7 @@ describe('LookupSelectComponent', () => {
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    await vi.advanceTimersByTimeAsync(700);
+    await vi.advanceTimersByTimeAsync(200);
     await flushLookupAsync();
     fixture.detectChanges();
 
@@ -264,7 +264,7 @@ describe('LookupSelectComponent', () => {
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    await vi.advanceTimersByTimeAsync(700);
+    await vi.advanceTimersByTimeAsync(200);
     await flushLookupAsync();
     fixture.detectChanges();
 
@@ -327,14 +327,14 @@ describe('LookupSelectComponent', () => {
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    await vi.advanceTimersByTimeAsync(700);
+    await vi.advanceTimersByTimeAsync(200);
     expect(host.loadPage).not.toHaveBeenCalled();
 
     input.value = 'It';
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    await vi.advanceTimersByTimeAsync(699);
+    await vi.advanceTimersByTimeAsync(199);
     expect(host.loadPage).not.toHaveBeenCalled();
 
     await vi.advanceTimersByTimeAsync(1);

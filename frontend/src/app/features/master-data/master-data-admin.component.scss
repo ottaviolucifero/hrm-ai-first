@@ -140,6 +140,7 @@
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: start;
 }
 
 .master-data-field {
@@ -160,6 +161,62 @@
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1.4;
+}
+
+.master-data-field select.kt-input {
+  min-height: 2.5rem;
+  padding: 0.5625rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--color-foreground, #111827);
+}
+
+.master-data-field select.kt-input:focus-visible {
+  border-color: var(--color-primary, #2563eb);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+  outline: none;
+}
+
+:host ::ng-deep .master-data-filters app-lookup-select {
+  display: block;
+}
+
+:host ::ng-deep .master-data-filters app-lookup-select .lookup-select-field {
+  gap: 0.5rem;
+}
+
+:host ::ng-deep .master-data-filters app-lookup-select .lookup-select-label {
+  color: var(--color-secondary-foreground, #4b5563);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+}
+
+:host ::ng-deep .master-data-filters app-lookup-select .lookup-select-row,
+:host ::ng-deep .master-data-filters app-lookup-select .lookup-select-control {
+  align-items: stretch;
+}
+
+:host ::ng-deep .master-data-filters app-lookup-select .lookup-select-input,
+:host ::ng-deep .master-data-filters app-lookup-select .lookup-select-button {
+  min-height: 2.5rem;
+  padding: 0.5625rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--color-foreground, #111827);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+:host ::ng-deep .master-data-filters app-lookup-select .lookup-select-input:disabled,
+:host ::ng-deep .master-data-filters app-lookup-select .lookup-select-button:disabled {
+  background: var(--color-muted, #f8fafc);
 }
 
 .master-data-table-search {

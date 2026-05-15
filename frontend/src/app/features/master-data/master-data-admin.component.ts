@@ -9,6 +9,8 @@ import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
+import { LookupService } from '../../shared/lookup/lookup.service';
 import { MasterDataFormComponent, MasterDataFormSubmitEvent } from './master-data-form.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import {
@@ -19,6 +21,7 @@ import {
   MasterDataCategoryId,
   MasterDataDeleteMode,
   MasterDataFormConfig,
+  MasterDataFormField,
   MasterDataFormMode,
   MasterDataColumn,
   MasterDataMutationRequest,
@@ -29,10 +32,11 @@ import {
   MasterDataRow
 } from './master-data.models';
 import { MasterDataService } from './master-data.service';
+import { LookupOption } from '../../shared/lookup/lookup.models';
 
 @Component({
   selector: 'app-master-data-admin',
-  imports: [AppButtonComponent, DataTableComponent, MasterDataFormComponent],
+  imports: [AppButtonComponent, DataTableComponent, LookupSelectComponent, MasterDataFormComponent],
   templateUrl: './master-data-admin.component.html',
   styleUrl: './master-data-admin.component.scss'
 })
@@ -40,6 +44,7 @@ export class MasterDataAdminComponent implements OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly permissionSummaryService = inject(PermissionSummaryService);
   private readonly masterDataService = inject(MasterDataService);
+  private readonly lookupService = inject(LookupService);
   private readonly notificationService = inject(NotificationService);
   protected readonly i18n = inject(I18nService);
 
@@ -67,6 +72,15 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly loading = signal(false);
   protected readonly hasError = signal(false);
   protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
+  protected readonly authenticatedUser = signal<{
+    readonly id: string;
+    readonly tenantId: string;
+    readonly email: string;
+    readonly userType: string;
+    readonly permissions?: readonly string[];
+  } | null>(null);
+  protected readonly countryFilterId = signal('');
+  protected readonly regionFilterId = signal('');
   protected readonly lastTriggeredRowAction = signal<MasterDataRowActionEvent | null>(null);
   protected readonly lastFormSubmission = signal<MasterDataFormSubmitEvent | null>(null);
   protected readonly formMode = signal<MasterDataFormMode | null>(null);
@@ -75,7 +89,9 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly deleting = signal(false);
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly formConfig = computed<MasterDataFormConfig | null>(() => this.selectedResource().form ?? null);
-  protected readonly formFields = computed(() => this.formConfig()?.fields ?? []);
+  protected readonly formFields = computed(() =>
+    this.decorateFormFields(this.formConfig()?.fields ?? [])
+  );
   protected readonly visibleColumns = computed<readonly MasterDataColumn[]>(() =>
     this.selectedResource().columns.filter((column) => !this.isTechnicalColumn(column.key))
   );
@@ -101,9 +117,15 @@ export class MasterDataAdminComponent implements OnDestroy {
   protected readonly tableEmptyMessageKey = computed<I18nKey>(
     () => this.appliedSearch() ? 'dataTable.noResults' : 'dataTable.empty'
   );
+  protected readonly showsCountryFilter = computed(
+    () => this.selectedResource().id === 'regions' || this.selectedResource().id === 'areas'
+  );
+  protected readonly showsRegionFilter = computed(
+    () => this.selectedResource().id === 'areas'
+  );
 
   constructor() {
-    this.loadPermissionSummary();
+    this.loadAuthenticatedUserContext();
     this.loadSelectedResource();
   }
 
@@ -123,6 +145,7 @@ export class MasterDataAdminComponent implements OnDestroy {
 
     this.selectedCategoryId.set(nextCategory.id);
     this.selectedResourceId.set(nextCategory.resources[0].id);
+    this.resetGeoFilters();
     this.closeForm();
     this.pageIndex.set(0);
     this.loadSelectedResource();
@@ -130,6 +153,7 @@ export class MasterDataAdminComponent implements OnDestroy {
 
   protected updateResource(event: Event): void {
     this.selectedResourceId.set((event.target as HTMLSelectElement).value);
+    this.resetGeoFilters();
     this.closeForm();
     this.pageIndex.set(0);
     this.loadSelectedResource();
@@ -142,6 +166,23 @@ export class MasterDataAdminComponent implements OnDestroy {
   }
 
   protected refresh(): void {
+    this.loadSelectedResource();
+  }
+
+  protected updateCountryFilter(value: string): void {
+    const nextValue = value.trim();
+    const countryChanged = this.countryFilterId() !== nextValue;
+    this.countryFilterId.set(nextValue);
+    if (countryChanged) {
+      this.regionFilterId.set('');
+    }
+    this.pageIndex.set(0);
+    this.loadSelectedResource();
+  }
+
+  protected updateRegionFilter(value: string): void {
+    this.regionFilterId.set(value.trim());
+    this.pageIndex.set(0);
     this.loadSelectedResource();
   }
 
@@ -296,20 +337,44 @@ export class MasterDataAdminComponent implements OnDestroy {
       });
   }
 
-  private loadPermissionSummary(): void {
+  private loadAuthenticatedUserContext(): void {
     this.authService.loadAuthenticatedUser()
       .pipe(take(1))
       .subscribe({
-        next: (user) => this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'master-data')),
-        error: () => this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY)
+        next: (user) => {
+          this.authenticatedUser.set(user);
+          this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'master-data'));
+          if (this.selectedResource().id === 'regions' || this.selectedResource().id === 'areas') {
+            this.loadSelectedResource();
+          }
+        },
+        error: () => {
+          this.authenticatedUser.set(null);
+          this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY);
+        }
       });
   }
 
   private buildQuery(): MasterDataQuery {
+    const filters: Record<string, string> = {};
+    const resourceId = this.selectedResource().id;
+    const tenantId = this.authenticatedUser()?.tenantId?.trim();
+
+    if ((resourceId === 'regions' || resourceId === 'areas') && tenantId) {
+      filters['tenantId'] = tenantId;
+    }
+    if ((resourceId === 'regions' || resourceId === 'areas') && this.countryFilterId()) {
+      filters['countryId'] = this.countryFilterId();
+    }
+    if (resourceId === 'areas' && this.regionFilterId()) {
+      filters['regionId'] = this.regionFilterId();
+    }
+
     return {
       page: this.pageIndex(),
       size: this.pageSize(),
-      ...(this.appliedSearch() ? { search: this.appliedSearch() } : {})
+      ...(this.appliedSearch() ? { search: this.appliedSearch() } : {}),
+      ...(Object.keys(filters).length > 0 ? { filters } : {})
     };
   }
 
@@ -355,6 +420,37 @@ export class MasterDataAdminComponent implements OnDestroy {
     }
 
     return payload;
+  }
+
+  private decorateFormFields(fields: readonly MasterDataFormField[]): readonly MasterDataFormField[] {
+    return fields.map((field) => {
+      if (field.type !== 'lookup') {
+        return field;
+      }
+
+      if (field.key === 'countryId') {
+        return {
+          ...field,
+          lookupLoadPage: (query: Parameters<LookupService['findCountryLookups']>[0]) => this.lookupService.findCountryLookups(query),
+          initialOptionResolver: (row: MasterDataRow | null) => this.referenceToLookupOption(row?.['country'])
+        };
+      }
+
+      if (field.key === 'regionId') {
+        return {
+          ...field,
+          lookupLoadPageFactory: (getValue: (key: string) => string | null) => (query: Parameters<LookupService['findRegionLookups']>[0]) =>
+            this.lookupService.findRegionLookups(
+              query,
+              this.authenticatedUser()?.tenantId ?? null,
+              getValue('countryId')
+            ),
+          initialOptionResolver: (row: MasterDataRow | null) => this.referenceToLookupOption(row?.['region'])
+        };
+      }
+
+      return field;
+    });
   }
 
   private isTechnicalColumn(key: string): boolean {
@@ -472,5 +568,35 @@ export class MasterDataAdminComponent implements OnDestroy {
       default:
         return true;
     }
+  }
+
+  protected readonly loadCountryFilterOptions = (query: Parameters<LookupService['findCountryLookups']>[0]) =>
+    this.lookupService.findCountryLookups(query);
+
+  protected readonly loadRegionFilterOptions = (query: Parameters<LookupService['findRegionLookups']>[0]) =>
+    this.lookupService.findRegionLookups(
+      query,
+      this.authenticatedUser()?.tenantId ?? null,
+      this.countryFilterId() || null
+    );
+
+  private resetGeoFilters(): void {
+    this.countryFilterId.set('');
+    this.regionFilterId.set('');
+  }
+
+  private referenceToLookupOption(reference: unknown): LookupOption | null {
+    if (!reference || typeof reference !== 'object') {
+      return null;
+    }
+
+    const candidate = reference as Record<string, unknown>;
+    const id = typeof candidate['id'] === 'string' ? candidate['id'] : '';
+    const code = typeof candidate['code'] === 'string' ? candidate['code'] : '';
+    const name = typeof candidate['name'] === 'string' ? candidate['name'] : '';
+
+    return id && code && name
+      ? { id, code, name }
+      : null;
   }
 }

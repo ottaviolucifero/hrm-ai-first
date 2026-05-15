@@ -58,6 +58,44 @@ describe('MasterDataService', () => {
     });
   });
 
+  it('sends custom filter query params for tenant-aware Region and Area lists', () => {
+    masterDataService.fetchRows(
+      {
+        id: 'areas',
+        titleKey: 'masterData.entities.areas',
+        endpoint: '/api/master-data/global/areas',
+        columns: []
+      },
+      {
+        page: 0,
+        size: 20,
+        filters: {
+          tenantId: 'tenant-1',
+          countryId: 'country-1',
+          regionId: 'region-1'
+        }
+      }
+    ).subscribe();
+
+    const request = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/master-data/global/areas' &&
+      httpRequest.params.get('tenantId') === 'tenant-1' &&
+      httpRequest.params.get('countryId') === 'country-1' &&
+      httpRequest.params.get('regionId') === 'region-1'
+    );
+
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      content: [],
+      page: 0,
+      size: 20,
+      totalElements: 0,
+      totalPages: 0,
+      first: true,
+      last: true
+    });
+  });
+
   it('creates a row with the expected payload', () => {
     masterDataService.createRow(
       {

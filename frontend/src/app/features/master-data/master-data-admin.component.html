@@ -67,6 +67,30 @@
             </select>
           </label>
 
+          @if (showsCountryFilter()) {
+            <app-lookup-select
+              [label]="i18n.t('masterData.columns.country')"
+              [placeholder]="i18n.t('masterData.form.selectCountry')"
+              [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
+              [value]="countryFilterId()"
+              [loadPage]="loadCountryFilterOptions"
+              [clearable]="true"
+              [disabled]="deleting()"
+              (valueChange)="updateCountryFilter($event)" />
+          }
+
+          @if (showsRegionFilter()) {
+            <app-lookup-select
+              [label]="i18n.t('masterData.columns.region')"
+              [placeholder]="i18n.t('masterData.form.selectRegion')"
+              [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
+              [value]="regionFilterId()"
+              [loadPage]="loadRegionFilterOptions"
+              [clearable]="true"
+              [disabled]="deleting() || !countryFilterId()"
+              (valueChange)="updateRegionFilter($event)" />
+          }
+
         </div>
       </div>
 

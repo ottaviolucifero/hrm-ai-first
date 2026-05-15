@@ -21,5 +21,9 @@ public interface GlobalZipCodeRepository extends MasterDataRepository<GlobalZipC
 
 	long countByCountry_Id(UUID countryId);
 
+	long countByRegion_Id(UUID regionId);
+
+	long countByArea_Id(UUID areaId);
+
 	List<GlobalZipCode> findByCountry_IdAndCity(UUID countryId, String city);
 }

@@ -35,7 +35,7 @@ import { LookupLoadFn, LookupOption } from '../../lookup/lookup.models';
 })
 export class LookupSelectComponent implements ControlValueAccessor, Validator, OnDestroy {
   private static nextId = 0;
-  private static readonly SEARCH_DEBOUNCE_MS = 700;
+  private static readonly SEARCH_DEBOUNCE_MS = 200;
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);

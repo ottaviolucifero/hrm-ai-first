@@ -5,6 +5,7 @@ import {
   DataTableColumnType,
   DataTableRowActionEvent
 } from '../../shared/components/data-table/data-table.models';
+import { LookupLoadFn, LookupOption } from '../../shared/lookup/lookup.models';
 
 export type MasterDataCategoryId = 'global' | 'hrBusiness' | 'governanceSecurity';
 export type MasterDataColumnKind = DataTableColumnType;
@@ -15,7 +16,7 @@ export type MasterDataRowAction = DataTableAction<MasterDataRow>;
 export type MasterDataRowActionEvent = DataTableRowActionEvent<MasterDataRow>;
 export type MasterDataFormMode = 'create' | 'edit' | 'view';
 export type MasterDataDeleteMode = 'deactivate' | 'physical';
-export type MasterDataFormFieldType = 'text' | 'number' | 'email' | 'boolean';
+export type MasterDataFormFieldType = 'text' | 'number' | 'email' | 'boolean' | 'lookup';
 export type MasterDataMutationScope = 'tenant' | 'global';
 
 export interface MasterDataFormField {
@@ -25,6 +26,13 @@ export interface MasterDataFormField {
   readonly required?: boolean;
   readonly readOnly?: boolean;
   readonly modes?: readonly MasterDataFormMode[];
+  readonly placeholderKey?: I18nKey;
+  readonly searchPlaceholderKey?: I18nKey;
+  readonly clearable?: boolean;
+  readonly dependsOn?: readonly string[];
+  readonly lookupLoadPage?: LookupLoadFn | null;
+  readonly lookupLoadPageFactory?: ((getValue: (key: string) => string | null) => LookupLoadFn | null) | null;
+  readonly initialOptionResolver?: ((row: MasterDataRow | null) => LookupOption | null) | null;
 }
 
 export interface MasterDataFormConfig {
@@ -55,6 +63,7 @@ export interface MasterDataQuery {
   readonly page: number;
   readonly size: number;
   readonly search?: string;
+  readonly filters?: Readonly<Record<string, string>>;
 }
 
 export interface MasterDataPage<T> {
@@ -269,6 +278,78 @@ const STANDARD_CRUD_AUTO_CODE_FORM: MasterDataFormConfig = {
   ]
 } as const;
 
+const REGION_CRUD_AUTO_CODE_FORM: MasterDataFormConfig = {
+  modes: ['create', 'edit', 'view'],
+  fields: [
+    {
+      key: 'countryId',
+      labelKey: 'masterData.columns.country',
+      type: 'lookup',
+      required: true,
+      placeholderKey: 'masterData.form.selectCountry',
+      searchPlaceholderKey: 'lookupSelect.searchPlaceholder',
+      clearable: true
+    },
+    {
+      key: 'code',
+      labelKey: 'masterData.columns.code',
+      readOnly: true,
+      modes: ['edit', 'view']
+    },
+    {
+      key: 'name',
+      labelKey: 'masterData.columns.name',
+      required: true
+    },
+    {
+      key: 'active',
+      labelKey: 'masterData.columns.active',
+      type: 'boolean'
+    }
+  ]
+} as const;
+
+const AREA_CRUD_AUTO_CODE_FORM: MasterDataFormConfig = {
+  modes: ['create', 'edit', 'view'],
+  fields: [
+    {
+      key: 'countryId',
+      labelKey: 'masterData.columns.country',
+      type: 'lookup',
+      required: true,
+      placeholderKey: 'masterData.form.selectCountry',
+      searchPlaceholderKey: 'lookupSelect.searchPlaceholder',
+      clearable: true
+    },
+    {
+      key: 'regionId',
+      labelKey: 'masterData.columns.region',
+      type: 'lookup',
+      required: true,
+      placeholderKey: 'masterData.form.selectRegion',
+      searchPlaceholderKey: 'lookupSelect.searchPlaceholder',
+      clearable: true,
+      dependsOn: ['countryId']
+    },
+    {
+      key: 'code',
+      labelKey: 'masterData.columns.code',
+      readOnly: true,
+      modes: ['edit', 'view']
+    },
+    {
+      key: 'name',
+      labelKey: 'masterData.columns.name',
+      required: true
+    },
+    {
+      key: 'active',
+      labelKey: 'masterData.columns.active',
+      type: 'boolean'
+    }
+  ]
+} as const;
+
 const STANDARD_CRUD_AUTO_CODE_SEVERITY_FORM: MasterDataFormConfig = {
   modes: ['create', 'edit', 'view'],
   fields: [
@@ -316,13 +397,21 @@ export const MASTER_DATA_CATEGORIES: readonly MasterDataCategory[] = [
         id: 'regions',
         titleKey: 'masterData.entities.regions',
         endpoint: '/api/master-data/global/regions',
-        columns: [COUNTRY_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [COUNTRY_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: REGION_CRUD_AUTO_CODE_FORM,
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'areas',
         titleKey: 'masterData.entities.areas',
         endpoint: '/api/master-data/global/areas',
-        columns: [COUNTRY_COLUMN, REGION_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN]
+        columns: [COUNTRY_COLUMN, REGION_COLUMN, CODE_COLUMN, NAME_COLUMN, ACTIVE_COLUMN, UPDATED_AT_COLUMN],
+        rowActions: STANDARD_CRUD_WITH_PHYSICAL_DELETE_ROW_ACTIONS,
+        form: AREA_CRUD_AUTO_CODE_FORM,
+        autoCode: true,
+        mutationScope: 'tenant'
       },
       {
         id: 'zip-codes',

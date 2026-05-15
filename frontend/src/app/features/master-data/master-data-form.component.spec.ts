@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { MasterDataFormComponent } from './master-data-form.component';
 
@@ -140,5 +141,153 @@ describe('MasterDataFormComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('.app-input-control')).toHaveLength(1);
+  });
+
+  it('renders lookup fields for Region and Area forms', () => {
+    component.resourceTitleKey = 'masterData.entities.areas';
+    component.fields = [
+      {
+        key: 'countryId',
+        labelKey: 'masterData.columns.country',
+        type: 'lookup',
+        required: true,
+        lookupLoadPage: () => of({ content: [], page: 0, size: 25, totalElements: 0, totalPages: 0, first: true, last: true })
+      },
+      {
+        key: 'regionId',
+        labelKey: 'masterData.columns.region',
+        type: 'lookup',
+        required: true,
+        dependsOn: ['countryId'],
+        lookupLoadPage: () => of({ content: [], page: 0, size: 25, totalElements: 0, totalPages: 0, first: true, last: true })
+      }
+    ];
+    component.mode = 'create';
+
+    fixture.detectChanges();
+
+    const lookupInputs = fixture.nativeElement.querySelectorAll('app-lookup-select input') as NodeListOf<HTMLInputElement>;
+    expect(lookupInputs).toHaveLength(2);
+  });
+
+  it('disables dependent Area region lookup until country is selected and clears stale values', () => {
+    component.resourceTitleKey = 'masterData.entities.areas';
+    component.fields = [
+      {
+        key: 'countryId',
+        labelKey: 'masterData.columns.country',
+        type: 'lookup',
+        required: true,
+        lookupLoadPage: () => of({ content: [], page: 0, size: 25, totalElements: 0, totalPages: 0, first: true, last: true })
+      },
+      {
+        key: 'regionId',
+        labelKey: 'masterData.columns.region',
+        type: 'lookup',
+        required: true,
+        dependsOn: ['countryId'],
+        lookupLoadPage: () => of({ content: [], page: 0, size: 25, totalElements: 0, totalPages: 0, first: true, last: true })
+      }
+    ];
+    component.mode = 'create';
+
+    fixture.detectChanges();
+    const componentWithForm = component as MasterDataFormComponent & {
+      form: MasterDataFormComponent['form'];
+    };
+
+    expect(componentWithForm.form.controls['regionId'].disabled).toBe(true);
+
+    componentWithForm.form.controls['countryId'].setValue('country-1');
+    fixture.detectChanges();
+
+    expect(componentWithForm.form.controls['regionId'].enabled).toBe(true);
+
+    componentWithForm.form.controls['regionId'].setValue('region-1');
+    componentWithForm.form.controls['countryId'].setValue('country-2');
+    fixture.detectChanges();
+
+    expect(componentWithForm.form.controls['regionId'].value).toBe('');
+  });
+
+  it('hydrates Region country lookup from the nested reference when the id field is absent', () => {
+    component.resourceTitleKey = 'masterData.entities.regions';
+    component.fields = [
+      {
+        key: 'countryId',
+        labelKey: 'masterData.columns.country',
+        type: 'lookup',
+        required: true,
+        initialOptionResolver: (row) => {
+          const country = row?.['country'] as { id: string; code: string; name: string } | undefined;
+          return country ? { id: country.id, code: country.code, name: country.name } : null;
+        },
+        lookupLoadPage: () => of({ content: [], page: 0, size: 25, totalElements: 0, totalPages: 0, first: true, last: true })
+      },
+      { key: 'code', labelKey: 'masterData.columns.code' },
+      { key: 'name', labelKey: 'masterData.columns.name' }
+    ];
+    component.mode = 'edit';
+    component.value = {
+      code: 'RE001',
+      name: 'Lazio',
+      country: { id: 'country-1', code: 'IT', name: 'Italy' }
+    };
+
+    fixture.detectChanges();
+    const componentWithForm = component as MasterDataFormComponent & {
+      form: MasterDataFormComponent['form'];
+    };
+
+    expect(componentWithForm.form.controls['countryId'].value).toBe('country-1');
+    const lookupInput = fixture.nativeElement.querySelector('app-lookup-select input') as HTMLInputElement;
+    expect(lookupInput.value).toContain('IT - Italy');
+  });
+
+  it('hydrates Area country and region lookups from nested references without resetting region on initial load', () => {
+    component.resourceTitleKey = 'masterData.entities.areas';
+    component.fields = [
+      {
+        key: 'countryId',
+        labelKey: 'masterData.columns.country',
+        type: 'lookup',
+        required: true,
+        initialOptionResolver: (row) => {
+          const country = row?.['country'] as { id: string; code: string; name: string } | undefined;
+          return country ? { id: country.id, code: country.code, name: country.name } : null;
+        },
+        lookupLoadPage: () => of({ content: [], page: 0, size: 25, totalElements: 0, totalPages: 0, first: true, last: true })
+      },
+      {
+        key: 'regionId',
+        labelKey: 'masterData.columns.region',
+        type: 'lookup',
+        required: true,
+        dependsOn: ['countryId'],
+        initialOptionResolver: (row) => {
+          const region = row?.['region'] as { id: string; code: string; name: string } | undefined;
+          return region ? { id: region.id, code: region.code, name: region.name } : null;
+        },
+        lookupLoadPage: () => of({ content: [], page: 0, size: 25, totalElements: 0, totalPages: 0, first: true, last: true })
+      }
+    ];
+    component.mode = 'edit';
+    component.value = {
+      country: { id: 'country-1', code: 'IT', name: 'Italy' },
+      region: { id: 'region-1', code: 'RE001', name: 'Lazio' }
+    };
+
+    fixture.detectChanges();
+    const componentWithForm = component as MasterDataFormComponent & {
+      form: MasterDataFormComponent['form'];
+    };
+
+    expect(componentWithForm.form.controls['countryId'].value).toBe('country-1');
+    expect(componentWithForm.form.controls['regionId'].value).toBe('region-1');
+    expect(componentWithForm.form.controls['regionId'].enabled).toBe(true);
+
+    const lookupInputs = fixture.nativeElement.querySelectorAll('app-lookup-select input') as NodeListOf<HTMLInputElement>;
+    expect(lookupInputs[0].value).toContain('IT - Italy');
+    expect(lookupInputs[1].value).toContain('RE001 - Lazio');
   });
 });

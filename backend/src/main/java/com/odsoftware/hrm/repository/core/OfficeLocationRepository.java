@@ -7,4 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface OfficeLocationRepository extends JpaRepository<OfficeLocation, UUID> {
 
 	boolean existsByTenant_IdAndOfficeLocationType_Id(UUID tenantId, UUID officeLocationTypeId);
+
+	boolean existsByRegion_Id(UUID regionId);
+
+	boolean existsByArea_Id(UUID areaId);
 }

@@ -23,6 +23,12 @@ export class MasterDataService {
       params = params.set('search', query.search);
     }
 
+    for (const [key, value] of Object.entries(query.filters ?? {})) {
+      if (value.trim()) {
+        params = params.set(key, value.trim());
+      }
+    }
+
     return this.http.get<MasterDataPage<MasterDataRow>>(resource.endpoint, { params });
   }
 

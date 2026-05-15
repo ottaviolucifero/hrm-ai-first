@@ -6,6 +6,73 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base
+
+- Data: 2026-05-15
+- Branch: `task-064-11-region-area-admin-crud`
+- Task: TASK-064.11 - CRUD amministrativo Region e Area nei Dati di base
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/MasterDataGlobalController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/MasterDataGlobalService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/master/AreaRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/master/RegionRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/master/GlobalZipCodeRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/core/CompanyProfileRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/core/OfficeLocationRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/calendar/HolidayCalendarRepository.java`
+  - `backend/src/test/java/com/odsoftware/hrm/MasterDataGlobalControllerTests.java`
+  - `frontend/src/app/features/master-data/master-data.models.ts`
+  - `frontend/src/app/features/master-data/master-data-admin.component.*`
+  - `frontend/src/app/features/master-data/master-data-form.component.*`
+  - `frontend/src/app/features/master-data/master-data.service.ts`
+  - `frontend/src/app/features/master-data/*.spec.ts`
+  - `frontend/src/app/shared/lookup/lookup.service.ts`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificato il modello esistente `Country`/`Region`/`Area`/`GlobalZipCode` e il perimetro tenant-aware approvato in `TASK-062`/`TASK-063`;
+  - verificato che le API esistenti sotto `/api/master-data/global` fossero estendibili senza endpoint paralleli;
+  - verificati i pattern CRUD amministrativi gia presenti per soft delete, physical delete, paginazione, ricerca, permessi e i18n;
+  - verificato che security/RBAC potessero restare invariati e che i permessi Master Data esistenti coprissero il task.
+- Patch applicata:
+  - estesi gli endpoint backend `Region` e `Area` esistenti con filtri `countryId`/`regionId`, lookup `Region` filtrabile per `countryId` e delete fisici protetti `/physical`;
+  - aggiunti i controlli referenziali backend per bloccare la cancellazione fisica di `Region` e `Area` quando referenziate da `Area`, `GlobalZipCode`, `CompanyProfile`, `OfficeLocation` o `HolidayCalendar`;
+  - mantenuta la generazione backend-side dei codici `RE###` / `AR###`, con `code` non modificabile in UI;
+  - abilitato il CRUD completo `Region`/`Area` nella UI `Master Data` riusando i componenti generici esistenti, con lookup `Country`/`Region` dipendenti e filtri lista coerenti;
+  - aggiornati i test backend/frontend e i messaggi i18n minimi necessari.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=MasterDataGlobalControllerTests test`
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - backend targeted: `BUILD SUCCESS`, `MasterDataGlobalControllerTests` verdi (`26` test, `0` failure, `0` error);
+  - backend completo: `BUILD SUCCESS`;
+  - frontend build: OK con warning noto budget iniziale (`2.18 MB`, sforamento `184.54 kB`);
+  - frontend test completo: OK, `38` file test passed, `292` test passed.
+- Validazione manuale:
+  - non eseguita in questa sessione CLI per assenza di una sessione browser interattiva condivisa.
+- Bug noti:
+  - nessun bug bloccante emerso dai test automatici reali del task.
+- Limiti noti:
+  - il warning budget frontend iniziale resta invariato e non e stato affrontato in questo task;
+  - nei log Maven rimane un rumore ambiente residuale (`'D' n’est pas reconnu...`) senza impatto sul `BUILD SUCCESS`.
+- QA fix follow-up:
+  - data: 2026-05-15
+  - ambito: correzione bug UI emersi in QA manuale su edit `Region`/`Area`
+  - fix applicato: il `MasterDataFormComponent` ora idrata i campi `lookup` dai riferimenti annidati (`country`, `region`) quando gli id flat non sono presenti nella riga sorgente, e il reset dei campi dipendenti avviene solo su cambio reale utente della dipendenza, non durante il caricamento iniziale del form;
+  - fix UI: allineata l'altezza/stile delle select `Categoria` ed `Entita` al pattern della select `Paese` con patch CSS locale minima;
+  - test reali eseguiti: `cd frontend && npm.cmd run build` -> OK con warning budget noto (`2.19 MB`, sforamento `185.22 kB`), `cd frontend && npm.cmd test` -> OK, `38` file test passed, `296` test passed.
+- QA fix follow-up 2:
+  - data: 2026-05-15
+  - ambito: reattivita lookup e coerenza visiva barra filtri `Dati di base`
+  - fix applicato: debounce server-side di `app-lookup-select` ridotto da `700 ms` a `200 ms` con test aggiornati; barra filtri Master Data riallineata con patch CSS locale minima per rendere `Paese` e `Regione` coerenti a `Categoria` ed `Entita` su sfondo, altezza, bordo, padding e allineamento verticale, senza redesign del componente shared;
+  - test reali eseguiti: `cd frontend && npm.cmd run build` -> OK con warning budget noto (`2.19 MB`, sforamento `185.22 kB`), `cd frontend && npm.cmd test` -> OK, `38` file test passed, `296` test passed.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-064.8 - Creazione manuale dati geografici esteri da form indirizzo
 
 - Data: 2026-05-15
