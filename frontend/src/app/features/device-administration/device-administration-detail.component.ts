@@ -31,6 +31,7 @@ import {
   DeviceAdministrationReference,
   DeviceAdministrationReturnRequest
 } from './device-administration.models';
+import { DeviceLabelPrintService } from './device-label-print.service';
 import { DeviceAdministrationService } from './device-administration.service';
 
 interface ReadOnlyField {
@@ -68,6 +69,7 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly deviceAdministrationService = inject(DeviceAdministrationService);
+  private readonly deviceLabelPrintService = inject(DeviceLabelPrintService);
   protected readonly i18n = inject(I18nService);
 
   private contextSubscription?: Subscription;
@@ -81,6 +83,7 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
   protected readonly assignmentHistoryError = signal(false);
   protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly device = signal<DeviceAdministrationDeviceDetail | null>(null);
+  protected readonly labelPreviewDataUrl = signal<string | null>(null);
   protected readonly assignmentHistory = signal<readonly DeviceAdministrationAssignment[]>([]);
   protected readonly employeeLookupOptions = signal<readonly LookupOption[]>([]);
   protected readonly pendingConfirmation = signal<PendingDeviceConfirmation | null>(null);
@@ -175,6 +178,13 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
     }
 
     actions.push({
+      id: 'printLabel',
+      label: this.i18n.t('deviceAdministration.label.printAction'),
+      disabled: this.actionSaving() || this.loading(),
+      icon: 'ki-filled ki-printer'
+    });
+
+    actions.push({
       id: detail.active
         ? DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate
         : DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate,
@@ -228,6 +238,9 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
       case 'reassign':
       case 'return':
         this.openAssignmentAction(actionId);
+        return;
+      case 'printLabel':
+        this.printCurrentLabel();
         return;
       case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate:
       case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate:
@@ -400,8 +413,8 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
       : 'device-detail-badge device-detail-badge-expired';
   }
 
-  protected barcodePreviewValue(device: DeviceAdministrationDeviceDetail): string {
-    return device.barcodeValue?.trim() || device.assetCode?.trim() || this.i18n.t('deviceAdministration.values.none');
+  protected labelAssetCode(device: DeviceAdministrationDeviceDetail): string {
+    return device.assetCode?.trim() || this.i18n.t('deviceAdministration.values.none');
   }
 
   protected assignmentActionTitleKey(): I18nKey {
@@ -557,11 +570,22 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
     return this.referenceValue(assignment.employee);
   }
 
-  protected assignmentHistoryFields(assignment: DeviceAdministrationAssignment): readonly ReadOnlyField[] {
+  protected assignmentHistoryAssignmentFields(assignment: DeviceAdministrationAssignment): readonly ReadOnlyField[] {
     return [
       { labelKey: 'deviceAdministration.assignment.history.period', value: this.assignmentPeriodValue(assignment) },
-      { labelKey: 'deviceAdministration.assignment.history.conditionOnAssign', value: this.valueOrNone(assignment.conditionOnAssign) },
-      { labelKey: 'deviceAdministration.assignment.history.conditionOnReturn', value: this.valueOrNone(assignment.conditionOnReturn) },
+      { labelKey: 'deviceAdministration.assignment.history.conditionOnAssign', value: this.valueOrNone(assignment.conditionOnAssign) }
+    ];
+  }
+
+  protected assignmentHistoryReturnFields(assignment: DeviceAdministrationAssignment): readonly ReadOnlyField[] {
+    return [
+      { labelKey: 'deviceAdministration.assignment.history.returnPeriod', value: this.assignmentReturnPeriodValue(assignment) },
+      { labelKey: 'deviceAdministration.assignment.history.conditionOnReturn', value: this.valueOrNone(assignment.conditionOnReturn) }
+    ];
+  }
+
+  protected assignmentHistoryNoteFields(assignment: DeviceAdministrationAssignment): readonly ReadOnlyField[] {
+    return [
       { labelKey: 'deviceAdministration.assignment.history.notes', value: this.valueOrNone(assignment.notes) },
       { labelKey: 'deviceAdministration.assignment.history.returnNote', value: this.valueOrNone(assignment.returnNote) }
     ];
@@ -588,6 +612,7 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
     this.assignmentHistory.set([]);
     this.assignmentHistoryError.set(false);
     this.assignmentHistoryLoading.set(false);
+    this.labelPreviewDataUrl.set(null);
     this.resetAssignmentActionState();
 
     this.contextSubscription = forkJoin({
@@ -600,12 +625,14 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
         next: ({ authenticatedUser, detail, formOptions }) => {
           this.modulePermissions.set(this.permissionSummaryService.summaryForModule(authenticatedUser, 'devices'));
           this.device.set(detail);
+          this.refreshLabelPreview(detail);
           this.employeeLookupOptions.set(this.employeeLookupOptionsForDevice(formOptions, detail));
           this.loadAssignmentHistory(detail.id);
         },
         error: () => {
           this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY);
           this.device.set(null);
+          this.labelPreviewDataUrl.set(null);
           this.employeeLookupOptions.set([]);
           this.assignmentHistory.set([]);
           this.hasError.set(true);
@@ -624,6 +651,26 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
         error: () => {
           this.assignmentHistory.set([]);
           this.assignmentHistoryError.set(true);
+        }
+      });
+  }
+
+  private refreshLabelPreview(device: DeviceAdministrationDeviceDetail): void {
+    const qrValue = this.labelQrValue(device);
+    if (!qrValue) {
+      this.labelPreviewDataUrl.set(null);
+      return;
+    }
+
+    void this.deviceLabelPrintService.createQrDataUrl(qrValue)
+      .then((dataUrl) => {
+        if (this.device()?.id === device.id) {
+          this.labelPreviewDataUrl.set(dataUrl);
+        }
+      })
+      .catch(() => {
+        if (this.device()?.id === device.id) {
+          this.labelPreviewDataUrl.set(null);
         }
       });
   }
@@ -806,9 +853,59 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
     const end = assignment.returnedAt
       ? this.dateTimeValue(assignment.returnedAt)
       : assignment.assignedTo
-        ? this.dateTimeValue(assignment.assignedTo)
+      ? this.dateTimeValue(assignment.assignedTo)
         : this.i18n.t('deviceAdministration.assignment.history.status.inProgress');
     return `${start} -> ${end}`;
+  }
+
+  protected assignmentReturnPeriodValue(assignment: DeviceAdministrationAssignment): string {
+    if (assignment.returnedAt) {
+      return this.dateTimeValue(assignment.returnedAt);
+    }
+
+    if (assignment.assignedTo) {
+      return this.dateTimeValue(assignment.assignedTo);
+    }
+
+    return this.i18n.t('deviceAdministration.values.none');
+  }
+
+  private labelQrValue(device: DeviceAdministrationDeviceDetail): string | null {
+    const qrValue = device.barcodeValue?.trim() || device.assetCode?.trim();
+    return qrValue || null;
+  }
+
+  private printCurrentLabel(): void {
+    const device = this.device();
+    if (!device || this.actionSaving()) {
+      return;
+    }
+
+    const assetCode = device.assetCode?.trim() || device.barcodeValue?.trim();
+    const qrValue = this.labelQrValue(device);
+    if (!assetCode || !qrValue) {
+      this.notificationService.error(this.i18n.t('deviceAdministration.label.printError'), {
+        titleKey: 'alert.title.danger',
+        dismissible: true
+      });
+      return;
+    }
+
+    void this.deviceLabelPrintService.printLabel({ assetCode, qrValue })
+      .then((opened) => {
+        if (!opened) {
+          this.notificationService.warning(this.i18n.t('deviceAdministration.label.popupBlocked'), {
+            titleKey: 'alert.title.warning',
+            dismissible: true
+          });
+        }
+      })
+      .catch(() => {
+        this.notificationService.error(this.i18n.t('deviceAdministration.label.printError'), {
+          titleKey: 'alert.title.danger',
+          dismissible: true
+        });
+      });
   }
 
   private referenceValue(reference: DeviceAdministrationReference | null | undefined): string {

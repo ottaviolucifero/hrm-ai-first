@@ -341,6 +341,31 @@ class DeviceAdministrationControllerTests {
 
 	@Test
 	@WithMockUser
+	void deviceAdministrationRejectsCreateWhenAssignedEmployeeIsInactive() throws Exception {
+		Employee inactiveEmployee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0669_EMPLOYEE_1",
+				"Inactive",
+				"Create",
+				false);
+
+		mockMvc.perform(postJson("/api/admin/devices", deviceCreateRequest(
+						FOUNDATION_TENANT_ID,
+						FOUNDATION_COMPANY_PROFILE_ID,
+						FOUNDATION_DEVICE_TYPE_ID,
+						FOUNDATION_DEVICE_BRAND_ID,
+						FOUNDATION_AVAILABLE_DEVICE_STATUS_ID,
+						inactiveEmployee.getId(),
+						"TASK0669-CREATE-001"))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value(
+						"Employee is inactive and cannot receive device assignments: " + inactiveEmployee.getId()));
+	}
+
+	@Test
+	@WithMockUser
 	void deviceAdministrationUpdatesEditableFieldsAndPreservesActive() throws Exception {
 		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
 		Employee employee = saveEmployee(
@@ -471,6 +496,36 @@ class DeviceAdministrationControllerTests {
 				device.getId());
 		assertThat(assignments).hasSize(1);
 		assertThat(assignments.getFirst().getAssignedTo()).isNull();
+	}
+
+	@Test
+	@WithMockUser
+	void deviceAdministrationRejectsAssignWhenEmployeeIsInactive() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Employee inactiveEmployee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfile,
+				"TASK0669_EMPLOYEE_2",
+				"Inactive",
+				"Assign",
+				false);
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.9 Inactive Assign Device",
+				"TASK0669-ASSIGN-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_AVAILABLE_DEVICE_STATUS_ID).orElseThrow(),
+				null,
+				null);
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments",
+						assignmentRequest(inactiveEmployee.getId(), "2026-05-20T09:30:00Z", "Excellent", "Blocked inactive employee"))
+						.with(deviceTenantCaller()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value(
+						"Employee is inactive and cannot receive device assignments: " + inactiveEmployee.getId()));
 	}
 
 	@Test
@@ -1103,6 +1158,16 @@ class DeviceAdministrationControllerTests {
 	}
 
 	private Employee saveEmployee(Tenant tenant, CompanyProfile companyProfile, String employeeCode, String firstName, String lastName) {
+		return saveEmployee(tenant, companyProfile, employeeCode, firstName, lastName, true);
+	}
+
+	private Employee saveEmployee(
+			Tenant tenant,
+			CompanyProfile companyProfile,
+			String employeeCode,
+			String firstName,
+			String lastName,
+			boolean active) {
 		Employee employee = new Employee();
 		employee.setTenant(tenant);
 		employee.setCompany(companyProfile);
@@ -1111,7 +1176,7 @@ class DeviceAdministrationControllerTests {
 		employee.setLastName(lastName);
 		employee.setEmail(employeeCode.toLowerCase() + "@example.com");
 		employee.setEmploymentStatus("ACTIVE");
-		employee.setActive(true);
+		employee.setActive(active);
 		return employeeRepository.saveAndFlush(employee);
 	}
 

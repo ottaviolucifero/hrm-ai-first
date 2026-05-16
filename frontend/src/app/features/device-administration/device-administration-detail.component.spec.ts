@@ -6,6 +6,7 @@ import { of, throwError } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { DeviceAdministrationDetailComponent } from './device-administration-detail.component';
+import { DeviceLabelPrintService } from './device-label-print.service';
 import { DeviceAdministrationService } from './device-administration.service';
 
 interface DeviceAdministrationDetailHandle {
@@ -31,6 +32,8 @@ interface DeviceAdministrationDetailHandle {
   };
 }
 
+const DEFAULT_PERMISSIONS = ['TENANT.DEVICE.READ', 'TENANT.DEVICE.UPDATE', 'TENANT.DEVICE.DELETE'] as const;
+
 describe('DeviceAdministrationDetailComponent', () => {
   afterEach(() => {
     window.localStorage.removeItem('hrflow.language');
@@ -41,20 +44,29 @@ describe('DeviceAdministrationDetailComponent', () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const fixture = await createFixture(createService());
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     const textContent = fixture.nativeElement.textContent as string;
     expect(textContent).toContain('Laptop Alpha');
-    expect(textContent).toContain('Identita bene');
+    expect(textContent).toContain('Identità bene');
     expect(textContent).toContain('Assegnazione corrente');
+    expect(textContent).toContain('Etichetta dispositivo');
+    expect(textContent).toContain('Stampa etichetta');
     expect(textContent).toContain('Storico assegnazioni');
     expect(textContent).toContain('Mario Rossi (EMP001)');
+    expect(textContent).toContain('Assegnazione');
+    expect(textContent).toContain('Restituzione');
+    expect(textContent).toContain('Note');
+    expect(textContent).toContain('Periodo restituzione');
     expect(textContent).toContain('Stato alla consegna');
     expect(textContent).toContain('Stato alla restituzione');
+    expect(textContent).toContain('Nota restituzione');
     expect(textContent).toContain('Riassegna');
     expect(textContent).toContain('Restituisci');
     expect(textContent).not.toContain('Assegna dispositivo');
     expect(fixture.nativeElement.querySelectorAll('[data-testid="device-assignment-history-item"]').length).toBe(2);
+    expect(fixture.nativeElement.querySelectorAll('.device-detail-history-column').length).toBe(6);
+    expect(fixture.nativeElement.querySelector('.device-detail-history-subtitle')).toBeNull();
     expect(
       fixture.nativeElement
         .querySelector('[data-testid="device-detail-card-assignment"]')
@@ -62,20 +74,30 @@ describe('DeviceAdministrationDetailComponent', () => {
     ).toBe(true);
   });
 
-  it('falls back to asset code in the barcode preview and shows expired warranty', async () => {
+  it('renders the QR label preview, falls back to asset code, and shows expired warranty', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
+    const printService = createPrintService({
+      createQrDataUrl: vi.fn(async () => 'data:image/png;base64,preview-dv001')
+    });
     const fixture = await createFixture(createService({
       findDeviceById: vi.fn(() => of({
         ...createDetail(),
         barcodeValue: '',
         warrantyEndDate: '2024-05-10'
       }))
-    }));
-    fixture.detectChanges();
+    }), DEFAULT_PERMISSIONS, printService);
+    await stabilizeFixture(fixture);
 
     expect(fixture.nativeElement.textContent).toContain('Garanzia scaduta');
-    expect(fixture.nativeElement.querySelector('[data-testid="device-barcode-preview"]')?.textContent).toContain('DV001');
+    expect(printService.createQrDataUrl).toHaveBeenCalledWith('DV001');
+    expect(fixture.nativeElement.querySelector('[data-testid="device-label-preview-image"]')?.getAttribute('src'))
+      .toContain('data:image/png;base64,preview-dv001');
+    const labelCardText = fixture.nativeElement.querySelector('[data-testid="device-detail-card-label"]')?.textContent ?? '';
+    expect(labelCardText).toContain('DV001');
+    expect(labelCardText).not.toContain('Laptop Alpha');
+    expect(labelCardText).not.toContain('Dell');
+    expect(labelCardText).not.toContain('SN-001');
   });
 
   it('renders assign action and empty states when the device has no current assignment or history', async () => {
@@ -89,7 +111,7 @@ describe('DeviceAdministrationDetailComponent', () => {
       })),
       findDeviceAssignments: vi.fn(() => of([]))
     }));
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     const textContent = fixture.nativeElement.textContent as string;
     expect(fixture.nativeElement.querySelector('[data-testid="device-assignment-empty"]')).not.toBeNull();
@@ -103,7 +125,7 @@ describe('DeviceAdministrationDetailComponent', () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const fixture = await createFixture(createService(), ['TENANT.DEVICE.READ']);
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     const buttonLabels = Array.from(
       fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>
@@ -134,7 +156,7 @@ describe('DeviceAdministrationDetailComponent', () => {
     const fixture = await createFixture(service);
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     const component = fixture.componentInstance as unknown as DeviceAdministrationDetailHandle;
     component.handleDetailAction('assign');
@@ -180,7 +202,7 @@ describe('DeviceAdministrationDetailComponent', () => {
     const fixture = await createFixture(service);
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     const component = fixture.componentInstance as unknown as DeviceAdministrationDetailHandle;
     component.handleDetailAction('return');
@@ -211,7 +233,7 @@ describe('DeviceAdministrationDetailComponent', () => {
     const fixture = await createFixture(createService());
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate');
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     const component = fixture.componentInstance as unknown as DeviceAdministrationDetailHandle;
     component.goBack();
@@ -229,7 +251,7 @@ describe('DeviceAdministrationDetailComponent', () => {
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
     const windowConfirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     clickButtonByText(fixture.nativeElement, 'Disattiva');
     fixture.detectChanges();
@@ -254,7 +276,7 @@ describe('DeviceAdministrationDetailComponent', () => {
     const fixture = await createFixture(service);
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     clickButtonByText(fixture.nativeElement, 'Cancella definitivamente');
     fixture.detectChanges();
@@ -272,7 +294,7 @@ describe('DeviceAdministrationDetailComponent', () => {
     const fixture = await createFixture(service);
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     clickButtonByText(fixture.nativeElement, 'Cancella definitivamente');
     fixture.detectChanges();
@@ -290,15 +312,64 @@ describe('DeviceAdministrationDetailComponent', () => {
     const fixture = await createFixture(createService({
       findDeviceById: vi.fn(() => throwError(() => new Error('load failed')))
     }));
-    fixture.detectChanges();
+    await stabilizeFixture(fixture);
 
     expect(fixture.nativeElement.textContent).toContain('Impossibile caricare il dettaglio dispositivo.');
+  });
+
+  it('prints the current label using assetCode and barcodeValue from the detail action bar', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const printService = createPrintService();
+    const fixture = await createFixture(createService(), DEFAULT_PERMISSIONS, printService);
+    await stabilizeFixture(fixture);
+
+    const component = fixture.componentInstance as unknown as DeviceAdministrationDetailHandle;
+    component.handleDetailAction('printLabel');
+    await fixture.whenStable();
+
+    expect(printService.printLabel).toHaveBeenCalledWith({
+      assetCode: 'DV001',
+      qrValue: 'QR-DV001'
+    });
+  });
+
+  it('uses assetCode as QR fallback and warns when the popup is blocked', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const printService = createPrintService({
+      createQrDataUrl: vi.fn(async () => 'data:image/png;base64,preview-dv001'),
+      printLabel: vi.fn(async () => false)
+    });
+    const fixture = await createFixture(createService({
+      findDeviceById: vi.fn(() => of({
+        ...createDetail(),
+        barcodeValue: ''
+      }))
+    }), DEFAULT_PERMISSIONS, printService);
+    const notificationService = TestBed.inject(NotificationService);
+    const warningSpy = vi.spyOn(notificationService, 'warning');
+    await stabilizeFixture(fixture);
+
+    const component = fixture.componentInstance as unknown as DeviceAdministrationDetailHandle;
+    component.handleDetailAction('printLabel');
+    await fixture.whenStable();
+
+    expect(printService.printLabel).toHaveBeenCalledWith({
+      assetCode: 'DV001',
+      qrValue: 'DV001'
+    });
+    expect(warningSpy).toHaveBeenCalledWith(
+      'Il browser ha bloccato la finestra di stampa etichetta.',
+      expect.objectContaining({ titleKey: 'alert.title.warning' })
+    );
   });
 });
 
 async function createFixture(
   service: DeviceAdministrationService,
-  permissions: readonly string[] = ['TENANT.DEVICE.READ', 'TENANT.DEVICE.UPDATE', 'TENANT.DEVICE.DELETE']
+  permissions: readonly string[] = DEFAULT_PERMISSIONS,
+  printService: Partial<DeviceLabelPrintService> = createPrintService()
 ) {
   await TestBed.configureTestingModule({
     imports: [DeviceAdministrationDetailComponent],
@@ -329,11 +400,23 @@ async function createFixture(
       {
         provide: DeviceAdministrationService,
         useValue: service
+      },
+      {
+        provide: DeviceLabelPrintService,
+        useValue: printService
       }
     ]
   }).compileComponents();
 
   return TestBed.createComponent(DeviceAdministrationDetailComponent);
+}
+
+function createPrintService(overrides: Partial<DeviceLabelPrintService> = {}): DeviceLabelPrintService {
+  return {
+    createQrDataUrl: vi.fn(async () => 'data:image/png;base64,preview-default'),
+    printLabel: vi.fn(async () => true),
+    ...overrides
+  } as DeviceLabelPrintService;
 }
 
 function createService(overrides: Partial<DeviceAdministrationService> = {}): DeviceAdministrationService {
@@ -362,7 +445,7 @@ function createDetail() {
     companyProfile: { id: 'company-1', code: 'CP001', name: 'Legal Entity' },
     name: 'Laptop Alpha',
     assetCode: 'DV001',
-    barcodeValue: 'DV001',
+    barcodeValue: 'QR-DV001',
     type: { id: 'type-1', code: 'LAP', name: 'Laptop' },
     brand: { id: 'brand-1', code: 'DEL', name: 'Dell' },
     model: 'Latitude',
@@ -376,6 +459,12 @@ function createDetail() {
     createdAt: '2026-05-10T09:00:00Z',
     updatedAt: '2026-05-15T10:00:00Z'
   };
+}
+
+async function stabilizeFixture(fixture: Awaited<ReturnType<typeof createFixture>>): Promise<void> {
+  fixture.detectChanges();
+  await fixture.whenStable();
+  fixture.detectChanges();
 }
 
 function createAssignments() {

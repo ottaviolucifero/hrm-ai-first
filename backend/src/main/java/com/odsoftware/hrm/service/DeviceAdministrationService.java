@@ -433,6 +433,9 @@ public class DeviceAdministrationService {
 		if (!companyProfileId.equals(employee.getCompany().getId())) {
 			throw new InvalidRequestException("Employee does not belong to company profile: " + employeeId);
 		}
+		if (!Boolean.TRUE.equals(employee.getActive())) {
+			throw new InvalidRequestException("Employee is inactive and cannot receive device assignments: " + employeeId);
+		}
 		return employee;
 	}
 
