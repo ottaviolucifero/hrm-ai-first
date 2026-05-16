@@ -3,6 +3,7 @@ package com.odsoftware.hrm.entity.calendar;
 import com.odsoftware.hrm.entity.master.Area;
 import com.odsoftware.hrm.entity.master.Country;
 import com.odsoftware.hrm.entity.master.Region;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,15 +11,25 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "holiday_calendars")
+@Table(
+		name = "holiday_calendars",
+		uniqueConstraints = {
+				@UniqueConstraint(name = "uk_holiday_calendars_country_year", columnNames = {"country_id", "calendar_year"})
+		})
 public class HolidayCalendar {
 
 	@Id
@@ -40,12 +51,8 @@ public class HolidayCalendar {
 	private Area area;
 
 	@NotNull
-	@Column(name = "start_date", nullable = false)
-	private LocalDate startDate;
-
-	@NotNull
-	@Column(name = "end_date", nullable = false)
-	private LocalDate endDate;
+	@Column(name = "calendar_year", nullable = false)
+	private Integer year;
 
 	@NotBlank
 	@Size(max = 255)
@@ -55,6 +62,30 @@ public class HolidayCalendar {
 	@NotNull
 	@Column(name = "active", nullable = false)
 	private Boolean active = true;
+
+	@OneToMany(mappedBy = "holidayCalendar", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Holiday> holidays = new ArrayList<>();
+
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private OffsetDateTime createdAt;
+
+	@Column(name = "updated_at", nullable = false)
+	private OffsetDateTime updatedAt;
+
+	@PrePersist
+	void prePersist() {
+		OffsetDateTime now = OffsetDateTime.now();
+		this.createdAt = now;
+		this.updatedAt = now;
+		if (this.active == null) {
+			this.active = true;
+		}
+	}
+
+	@PreUpdate
+	void preUpdate() {
+		this.updatedAt = OffsetDateTime.now();
+	}
 
 	public UUID getId() {
 		return id;
@@ -84,20 +115,12 @@ public class HolidayCalendar {
 		this.area = area;
 	}
 
-	public LocalDate getStartDate() {
-		return startDate;
+	public Integer getYear() {
+		return year;
 	}
 
-	public void setStartDate(LocalDate startDate) {
-		this.startDate = startDate;
-	}
-
-	public LocalDate getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(LocalDate endDate) {
-		this.endDate = endDate;
+	public void setYear(Integer year) {
+		this.year = year;
 	}
 
 	public String getName() {
@@ -114,5 +137,17 @@ public class HolidayCalendar {
 
 	public void setActive(Boolean active) {
 		this.active = active;
+	}
+
+	public List<Holiday> getHolidays() {
+		return holidays;
+	}
+
+	public OffsetDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public OffsetDateTime getUpdatedAt() {
+		return updatedAt;
 	}
 }

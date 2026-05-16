@@ -20,6 +20,8 @@ class PermissionCodeTests {
 				.isEqualTo("TENANT.COMPANY_PROFILE.UPDATE");
 		assertThat(PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE))
 				.isEqualTo("PLATFORM.COMPANY_PROFILE.DELETE");
+		assertThat(PermissionCode.of(PermissionScope.TENANT, PermissionResource.HOLIDAY_CALENDAR, PermissionAction.CREATE))
+				.isEqualTo("TENANT.HOLIDAY_CALENDAR.CREATE");
 	}
 
 	@Test

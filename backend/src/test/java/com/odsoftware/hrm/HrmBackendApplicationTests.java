@@ -6,6 +6,7 @@ import com.odsoftware.hrm.repository.core.SmtpConfigurationRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.entity.audit.AuditLog;
 import com.odsoftware.hrm.entity.calendar.HolidayCalendar;
+import com.odsoftware.hrm.entity.calendar.Holiday;
 import com.odsoftware.hrm.entity.contract.Contract;
 import com.odsoftware.hrm.entity.device.Device;
 import com.odsoftware.hrm.entity.disciplinary.EmployeeDisciplinaryAction;
@@ -28,6 +29,7 @@ import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.entity.master.TimeZone;
 import com.odsoftware.hrm.repository.audit.AuditLogRepository;
 import com.odsoftware.hrm.repository.calendar.HolidayCalendarRepository;
+import com.odsoftware.hrm.repository.calendar.HolidayRepository;
 import com.odsoftware.hrm.repository.contract.ContractRepository;
 import com.odsoftware.hrm.repository.device.DeviceRepository;
 import com.odsoftware.hrm.repository.disciplinary.EmployeeDisciplinaryActionRepository;
@@ -212,6 +214,9 @@ class HrmBackendApplicationTests {
 	private HolidayCalendarRepository holidayCalendarRepository;
 
 	@Autowired
+	private HolidayRepository holidayRepository;
+
+	@Autowired
 	private AuditLogRepository auditLogRepository;
 
 	@Autowired
@@ -309,7 +314,7 @@ class HrmBackendApplicationTests {
 		assertThat(roleRepository.findAll())
 				.extracting(role -> role.getCode())
 				.contains("TENANT_ADMIN", "HR_MANAGER", "SUPERVISOR");
-		assertThat(permissionRepository.count()).isEqualTo(108);
+		assertThat(permissionRepository.count()).isEqualTo(118);
 		assertThat(companyProfileTypeRepository.count()).isEqualTo(5);
 		assertThat(officeLocationTypeRepository.count()).isEqualTo(3);
 	}
@@ -402,6 +407,7 @@ class HrmBackendApplicationTests {
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.MASTER_DATA, PermissionAction.MANAGE),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.DEVICE, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.DEVICE, PermissionAction.DELETE),
+						PermissionCode.of(PermissionScope.TENANT, PermissionResource.HOLIDAY_CALENDAR, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.PAYROLL_DOCUMENT, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE),
 						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE))
@@ -499,6 +505,10 @@ class HrmBackendApplicationTests {
 						"TENANT.COMPANY_PROFILE.CREATE",
 						"TENANT.COMPANY_PROFILE.UPDATE",
 						"TENANT.COMPANY_PROFILE.DELETE",
+						"TENANT.HOLIDAY_CALENDAR.READ",
+						"TENANT.HOLIDAY_CALENDAR.CREATE",
+						"TENANT.HOLIDAY_CALENDAR.UPDATE",
+						"TENANT.HOLIDAY_CALENDAR.DELETE",
 						"TENANT.DEVICE.READ",
 						"TENANT.DEVICE.CREATE",
 						"TENANT.DEVICE.UPDATE",
@@ -523,6 +533,7 @@ class HrmBackendApplicationTests {
 	@Test
 	void flywayMigrationCreatesHolidayCalendarBackendFoundation() {
 		assertThatCode(() -> holidayCalendarRepository.count()).doesNotThrowAnyException();
+		assertThatCode(() -> holidayRepository.count()).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -831,7 +842,9 @@ class HrmBackendApplicationTests {
 		Region region = regionRepository.saveAndFlush(newRegion(country, "TASK_025_REGION_PERSIST"));
 		Area area = areaRepository.saveAndFlush(newArea(country, region, "TASK_025_AREA_PERSIST"));
 
-		HolidayCalendar holidayCalendar = newHolidayCalendar(country, region, area, "TASK 025 Calendar");
+		HolidayCalendar holidayCalendar = newHolidayCalendar(country, 2041, "TASK 025 Calendar");
+		holidayCalendar.setRegion(region);
+		holidayCalendar.setArea(area);
 
 		HolidayCalendar saved = holidayCalendarRepository.saveAndFlush(holidayCalendar);
 
@@ -839,40 +852,56 @@ class HrmBackendApplicationTests {
 		assertThat(saved.getCountry().getId()).isEqualTo(country.getId());
 		assertThat(saved.getRegion().getId()).isEqualTo(region.getId());
 		assertThat(saved.getArea().getId()).isEqualTo(area.getId());
-		assertThat(saved.getStartDate()).isEqualTo(LocalDate.of(2026, 1, 1));
-		assertThat(saved.getEndDate()).isEqualTo(LocalDate.of(2026, 12, 31));
+		assertThat(saved.getYear()).isEqualTo(2041);
 		assertThat(saved.getName()).isEqualTo("TASK 025 Calendar");
 		assertThat(saved.getActive()).isTrue();
+		assertThat(saved.getCreatedAt()).isNotNull();
+		assertThat(saved.getUpdatedAt()).isNotNull();
+		assertThat(holidayCalendarRepository.findByCountry_IdAndYear(country.getId(), 2041))
+				.isPresent()
+				.get()
+				.extracting(HolidayCalendar::getId)
+				.isEqualTo(saved.getId());
 	}
 
 	@Test
-	void holidayCalendarRepositoryFindsByCountryRegionAndArea() {
+	void holidayCalendarRepositoryFindsByCountryYearAndLegacyRegionArea() {
 		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
 		Region region = regionRepository.saveAndFlush(newRegion(country, "TASK_025_REGION_QUERY"));
 		Area area = areaRepository.saveAndFlush(newArea(country, region, "TASK_025_AREA_QUERY"));
-		holidayCalendarRepository.saveAndFlush(newHolidayCalendar(country, region, area, "TASK 025 Query Calendar"));
+		HolidayCalendar holidayCalendar = newHolidayCalendar(country, 2042, "TASK 025 Query Calendar");
+		holidayCalendar.setRegion(region);
+		holidayCalendar.setArea(area);
+		holidayCalendarRepository.saveAndFlush(holidayCalendar);
 
-		assertThat(holidayCalendarRepository.findByCountry_Id(country.getId())).hasSize(1);
-		assertThat(holidayCalendarRepository.findByCountry_IdAndRegion_Id(country.getId(), region.getId())).hasSize(1);
-		assertThat(holidayCalendarRepository.findByCountry_IdAndRegion_IdAndArea_Id(country.getId(), region.getId(), area.getId())).hasSize(1);
-		assertThat(holidayCalendarRepository.findByCountry_IdAndActiveTrue(country.getId())).hasSize(1);
+		assertThat(holidayCalendarRepository.findByCountry_Id(country.getId()))
+				.extracting(HolidayCalendar::getId)
+				.contains(holidayCalendar.getId());
+		assertThat(holidayCalendarRepository.findByCountry_IdAndYear(country.getId(), 2042)).isPresent();
+		assertThat(holidayCalendarRepository.findByCountry_IdAndRegion_Id(country.getId(), region.getId()))
+				.extracting(HolidayCalendar::getId)
+				.contains(holidayCalendar.getId());
+		assertThat(holidayCalendarRepository.findByCountry_IdAndRegion_IdAndArea_Id(country.getId(), region.getId(), area.getId()))
+				.extracting(HolidayCalendar::getId)
+				.contains(holidayCalendar.getId());
+		assertThat(holidayCalendarRepository.findByCountry_IdAndActiveTrue(country.getId()))
+				.extracting(HolidayCalendar::getId)
+				.contains(holidayCalendar.getId());
 	}
 
 	@Test
-	void holidayCalendarRepositoryEnforcesDateRangeConstraint() {
+	void holidayCalendarRepositoryEnforcesUniqueCountryYearConstraint() {
 		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
-		HolidayCalendar holidayCalendar = newHolidayCalendar(country, null, null, "TASK 025 Invalid Range Calendar");
-		holidayCalendar.setStartDate(LocalDate.of(2026, 12, 31));
-		holidayCalendar.setEndDate(LocalDate.of(2026, 1, 1));
+		holidayCalendarRepository.saveAndFlush(newHolidayCalendar(country, 2043, "TASK 025 Existing Calendar"));
 
-		assertThatThrownBy(() -> holidayCalendarRepository.saveAndFlush(holidayCalendar))
+		assertThatThrownBy(() -> holidayCalendarRepository.saveAndFlush(newHolidayCalendar(country, 2043, "TASK 025 Duplicate Calendar")))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
 	@Test
 	void holidayCalendarRepositoryRequiresName() {
 		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
-		HolidayCalendar holidayCalendar = newHolidayCalendar(country, null, null, "TASK 025 Missing Name Calendar");
+		HolidayCalendar holidayCalendar = newHolidayCalendar(country, 2044, "TASK 025 Missing Name Calendar");
 		holidayCalendar.setName(null);
 
 		assertThatThrownBy(() -> holidayCalendarRepository.saveAndFlush(holidayCalendar))
@@ -1098,7 +1127,10 @@ class HrmBackendApplicationTests {
 		Country country = countryRepository.findById(ITALY_COUNTRY_ID).orElseThrow();
 		Region region = regionRepository.saveAndFlush(newRegion(country, "TASK_028_REGION"));
 		Area area = areaRepository.saveAndFlush(newArea(country, region, "TASK_028_AREA"));
-		HolidayCalendar holidayCalendar = holidayCalendarRepository.saveAndFlush(newHolidayCalendar(country, region, area, "TASK 028 Calendar"));
+		HolidayCalendar holidayCalendar = newHolidayCalendar(country, 2045, "TASK 028 Calendar");
+		holidayCalendar.setRegion(region);
+		holidayCalendar.setArea(area);
+		holidayCalendar = holidayCalendarRepository.saveAndFlush(holidayCalendar);
 		AuditLog auditLog = auditLogRepository.saveAndFlush(newAuditLog("EMPLOYEE", employee.getId()));
 		UserAccount issuer = userAccountRepository.saveAndFlush(newUserAccount("core.hr.disciplinary.issuer@example.com"));
 		EmployeeDisciplinaryAction disciplinaryAction = employeeDisciplinaryActionRepository.saveAndFlush(newEmployeeDisciplinaryAction(employee, issuer, WARNING_DISCIPLINARY_ACTION_TYPE_ID));
@@ -1398,13 +1430,10 @@ class HrmBackendApplicationTests {
 		return area;
 	}
 
-	private HolidayCalendar newHolidayCalendar(Country country, Region region, Area area, String name) {
+	private HolidayCalendar newHolidayCalendar(Country country, Integer year, String name) {
 		HolidayCalendar holidayCalendar = new HolidayCalendar();
 		holidayCalendar.setCountry(country);
-		holidayCalendar.setRegion(region);
-		holidayCalendar.setArea(area);
-		holidayCalendar.setStartDate(LocalDate.of(2026, 1, 1));
-		holidayCalendar.setEndDate(LocalDate.of(2026, 12, 31));
+		holidayCalendar.setYear(year);
 		holidayCalendar.setName(name);
 		return holidayCalendar;
 	}

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.72
+Versione: 2.73
 Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
@@ -157,8 +157,9 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-066.8 completato: `DetailActionBar` consolidato come pattern shared ufficiale delle action bar di dettaglio, applicato solo a Device, con follow-up migrazione completa demandato a `TASK-066.10`.
 - TASK-066.10 completato: `DetailActionBar` applicato a `User Detail` e `Company Profile Detail`, con fix regressivo sulle azioni `activate` / `deactivate` / `deletePhysical` di `User Detail` e adozione di `app-confirm-dialog` shared per `deactivate` e `deletePhysical`.
 - TASK-067.1 completato come refinement documentale Holiday Calendar: `TASK-067` ora e suddiviso in backend operational foundation, BusinessDayService foundation, frontend UI foundation e QA, preservando `TASK-019` e `TASK-020` storici gia completati.
-- Prossimo passo operativo: `TASK-066.9` QA hardening Device
-- Sequenza backlog successiva invariata: `TASK-067.2` backend Holiday Calendar operational foundation, `TASK-067.3` BusinessDayService foundation, `TASK-067.4` frontend Holiday Calendar UI foundation, `TASK-067.5` QA Holiday Calendar, poi `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- TASK-067.2 completato: backend Holiday Calendar operational foundation con CRUD admin, entity `Holiday`, migration Flyway `V38`, RBAC `HOLIDAY_CALENDAR`, regola `Country + Year` e anti-overlap validate, test backend Maven verdi.
+- Prossimo passo operativo: `TASK-067.3` BusinessDayService foundation
+- Sequenza backlog successiva aggiornata: `TASK-067.3` BusinessDayService foundation, `TASK-067.4` frontend Holiday Calendar UI foundation, `TASK-067.5` QA Holiday Calendar, poi `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---

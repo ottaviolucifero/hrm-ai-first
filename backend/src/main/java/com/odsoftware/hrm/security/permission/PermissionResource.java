@@ -10,6 +10,7 @@ public enum PermissionResource {
 	EMPLOYEE,
 	CONTRACT,
 	DEVICE,
+	HOLIDAY_CALENDAR,
 	PAYROLL_DOCUMENT,
 	LEAVE_REQUEST
 }
