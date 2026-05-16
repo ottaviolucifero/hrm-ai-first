@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.71
+Versione: 2.72
 Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
@@ -156,8 +156,9 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-066.7 completato: label print Device validata con build/test frontend e verifica manuale browser.
 - TASK-066.8 completato: `DetailActionBar` consolidato come pattern shared ufficiale delle action bar di dettaglio, applicato solo a Device, con follow-up migrazione completa demandato a `TASK-066.10`.
 - TASK-066.10 completato: `DetailActionBar` applicato a `User Detail` e `Company Profile Detail`, con fix regressivo sulle azioni `activate` / `deactivate` / `deletePhysical` di `User Detail` e adozione di `app-confirm-dialog` shared per `deactivate` e `deletePhysical`.
+- TASK-067.1 completato come refinement documentale Holiday Calendar: `TASK-067` ora e suddiviso in backend operational foundation, BusinessDayService foundation, frontend UI foundation e QA, preservando `TASK-019` e `TASK-020` storici gia completati.
 - Prossimo passo operativo: `TASK-066.9` QA hardening Device
-- Sequenza backlog successiva invariata: `TASK-067` UI HolidayCalendar, `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- Sequenza backlog successiva invariata: `TASK-067.2` backend Holiday Calendar operational foundation, `TASK-067.3` BusinessDayService foundation, `TASK-067.4` frontend Holiday Calendar UI foundation, `TASK-067.5` QA Holiday Calendar, poi `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -302,7 +303,8 @@ Sequenza immediata Core HR UI post-TASK-064.11:
 - TASK-066.8: shared entity detail header/actions pattern completato;
 - TASK-066.9: QA hardening finale Device governance;
 - TASK-066.10: applicazione shared detail action bar a `User Detail` e `Company Profile Detail` completata;
-- TASK-067 -> TASK-072: blocco UI/CRUD piu circoscritto per consolidare pattern e verifiche permessi prima di Employee;
+- TASK-067: Holiday Calendar governance raffinato in `TASK-067.1`..`TASK-067.5`, con backend operational foundation, BusinessDayService foundation, frontend UI foundation e QA;
+- TASK-068 -> TASK-072: blocco UI/CRUD piu circoscritto per consolidare pattern e verifiche permessi prima di Employee;
 - TASK-073: UI Employee management enterprise, posticipata dopo il consolidamento dei task precedenti.
 
 Sequenza funzionale prevista per il blocco Super Admin / permessi:
@@ -440,6 +442,12 @@ Profili Spring Boot configurati:
 
 - TASK-036 -> TASK-073
 
+Nota Holiday Calendar:
+
+- il documento corrente non usa una "Fase 8" numerata; l'allineamento Holiday Calendar avviene nella Fase 2H esistente;
+- `TASK-067` e il contenitore ufficiale Holiday Calendar nella numerazione attiva;
+- gli alias operativi `TASK-019.1`, `TASK-019.2`, `TASK-019.3`, `TASK-020.1` e `TASK-020.2` non rinumerano i task storici gia completati.
+
 ### Fase 2I - Platform Operations
 
 - TASK-074 -> TASK-075
@@ -462,6 +470,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.72 | 2026-05-16 | TASK-067 riallineato come Holiday Calendar governance con `TASK-067.1` documentale completato e subtask successivi per backend operational foundation, BusinessDayService, frontend UI e QA; chiarito che la roadmap corrente usa Fase 2H, non una Fase 8 numerata, e che gli alias `TASK-019.x`/`TASK-020.x` non rinumerano task storici. |
 | 2.71 | 2026-05-16 | TASK-066.10 rifinito dopo validazione manuale: corretto il dettaglio utenti ripristinando `activate` / `deactivate` e `deletePhysical` nella `DetailActionBar`, riallineato `User Detail` e `Company Profile Detail` a `app-confirm-dialog` shared per `deactivate` e `deletePhysical`, con build/test frontend reali verdi. |
 | 2.70 | 2026-05-16 | TASK-066.10 completato lato frontend: migrata la action/header bar shared `DetailActionBar` su `User Detail` e `Company Profile Detail`, mantenendo permessi, i18n, azioni e conferme inline esistenti; roadmap riallineata con prossimo passo operativo su `TASK-066.9`. |
 | 2.69 | 2026-05-16 | Allineamento documentale stato Device governance: `TASK-066.7` e `TASK-066.8` confermati completati su `main`; roadmap aggiornata spostando il prossimo passo a `TASK-066.9` e mantenendo `TASK-066.10` come follow-up di migrazione User/Company Profile. |
