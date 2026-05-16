@@ -2,7 +2,21 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { AppButtonComponent, AppButtonVariant } from '../button/app-button.component';
 
+export const DETAIL_ACTION_BAR_STANDARD_ACTION_IDS = {
+  activate: 'activate',
+  back: 'back',
+  cancel: 'cancel',
+  deactivate: 'deactivate',
+  deletePhysical: 'deletePhysical',
+  edit: 'edit',
+  save: 'save'
+} as const;
+
+export type DetailActionBarStandardActionId =
+  (typeof DETAIL_ACTION_BAR_STANDARD_ACTION_IDS)[keyof typeof DETAIL_ACTION_BAR_STANDARD_ACTION_IDS];
+
 export interface DetailActionBarAction {
+  // `id` stays open for domain-specific actions, while standard ids are formalized above.
   readonly id: string;
   readonly label: string;
   readonly loadingLabel?: string;

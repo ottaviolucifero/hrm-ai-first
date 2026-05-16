@@ -1901,6 +1901,47 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-066.8 - Shared entity detail header/actions pattern
+
+- Data: 2026-05-16
+- Branch: `task-066-8-shared-entity-detail-actions-pattern`
+- Task: TASK-066.8 - Shared entity detail header/actions pattern
+- Modello consigliato nel prompt operativo: GPT-5.5 Thinking
+- Aree/file verificati:
+  - `frontend/src/app/shared/components/detail-action-bar/detail-action-bar.component.ts`
+  - `frontend/src/app/shared/components/detail-action-bar/detail-action-bar.component.spec.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.ts`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `frontend/src/app/shared/feedback/alert-message.component.ts`
+  - `frontend/src/app/shared/feedback/alert-message.component.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+- Fix prerequisiti build preesistenti:
+  - aggiunte le chiavi i18n mancanti `deviceAdministration.label.printDocumentTitle`, `deviceAdministration.label.previewAlt` e `deviceAdministration.label.title` in `it` / `fr` / `en`, gia usate dal service di stampa etichetta Device;
+  - riallineato il typing timer browser-side di `AlertMessageComponent` e del relativo spec per rimuovere il blocker TypeScript su `window.setTimeout`;
+  - nessun refactoring funzionale o ampliamento di scope oltre il minimo necessario per ripristinare `build` e `test`.
+- Patch TASK-066.8:
+  - consolidato il componente shared esistente `DetailActionBar` come pattern ufficiale della barra azioni dei dettagli entita, senza introdurre componenti paralleli;
+  - formalizzati gli id azione standard `back`, `edit`, `save`, `cancel`, `activate`, `deactivate`, `deletePhysical`, mantenendo gli id custom per azioni di dominio;
+  - estesi i test shared per coprire `visible`, `backDisabled`, varianti bottone e mancata emissione delle azioni non cliccabili;
+  - applicato il pattern solo a Device, riallineando l action bar a id espliciti `activate` / `deactivate` e mantenendo `assign` / `reassign` / `return` come azioni custom;
+  - nessuna migrazione di `Company Profile` o `User Administration` in questo task; follow-up confermato su `TASK-066.10`.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+- Esiti reali:
+  - build frontend: OK con warning noto budget iniziale (`2.33 MB`, sforamento `329.84 kB`);
+  - test frontend: OK, `46` file test passed, `359` test passed.
+- Validazione manuale:
+  - non eseguita in questa sessione CLI;
+  - da verificare in browser il dettaglio Device con back action, edit, activate/deactivate, delete e visibilita coerente di `assign` / `reassign` / `return`.
+- Limiti/note:
+  - `TASK-066.7` resta aperto per la sola validazione manuale browser della label print;
+  - la migrazione completa di `User Detail` e `Company Profile Detail` resta fuori scope e demandata a `TASK-066.10`;
+  - nessuna modifica backend, API o security/RBAC.
+- Stato finale: PASS
+
 ### TASK-066.6 - Device assignment UI
 
 - Data: 2026-05-16

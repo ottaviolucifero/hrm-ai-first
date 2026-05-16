@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.59
+Versione: 2.62
 Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
@@ -5143,7 +5143,7 @@ Validazione:
 
 #### TASK-066.8 - Shared entity detail header/actions pattern
 
-Stato: TODO
+Stato: COMPLETATO
 
 Tipo: Frontend shared component / UX governance
 
@@ -5161,6 +5161,20 @@ Obiettivo:
 - evitare duplicazioni tra Device, Company Profile, User Administration e futuri Employee;
 - non migrare massivamente tutte le pagine se non sostenibile nello stesso task;
 - se necessario, applicare il nuovo pattern prima a Device e documentare follow-up per Company Profile e Utenti.
+
+Completato:
+
+- consolidato il componente shared esistente `DetailActionBar` come pattern ufficiale per le action bar dei dettagli entita, senza creare componenti paralleli;
+- formalizzato il contratto shared per le azioni standard `back`, `edit`, `save`, `cancel`, `activate`, `deactivate`, `deletePhysical`, mantenendo `id: string` aperto per azioni custom di dominio;
+- estesi i test del componente per coprire visibilita, back disabled, varianti bottone e assenza di emissione per azioni non visibili o non cliccabili;
+- applicato il pattern solo al dettaglio Device, riallineando l action bar a id espliciti `activate` / `deactivate` e mantenendo le azioni custom `assign` / `reassign` / `return`;
+- lasciata fuori scope la migrazione completa di `Company Profile`, `User Administration` ed `Employee`, demandandola rispettivamente a `TASK-066.10` e `TASK-073`;
+- eseguiti fix prerequisiti build preesistenti e minimi per poter validare il task: chiavi i18n mancanti per `deviceAdministration.label.*` e typing browser-safe del timer in `AlertMessageComponent`, senza refactoring o cambi funzionali fuori scope.
+
+Validazione:
+
+- `cd frontend && npm.cmd run build` OK con warning noto budget iniziale (`2.33 MB`, +`329.84 kB`);
+- `cd frontend && npm.cmd test -- --watch=false` OK, `46` file test passed, `359` test passed.
 
 #### TASK-066.9 - Device governance QA hardening
 
@@ -5253,6 +5267,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.62 | 2026-05-16 | TASK-066.8 completato lato frontend: consolidato `DetailActionBar` come pattern shared ufficiale per i dettagli entita, applicato solo a Device con id azione standardizzati `activate` / `deactivate`, test shared estesi e fix prerequisiti build minimi su i18n label Device e timer `AlertMessageComponent`; nessuna modifica backend/API/security e follow-up migrazione completa demandato a `TASK-066.10`. |
 | 2.61 | 2026-05-16 | TASK-066.7 implementato lato frontend come MVP label print Device: nuova card `Etichetta dispositivo`, QR reale browser-side via `qrcode`, stampa single-label `60 x 40 mm` con CSS print e limitazioni Zebra/ZPL/PDF complesso formalizzate; build/test reali verdi e task mantenuto `IN_PROGRESS` fino a validazione manuale browser. |
 | 2.60 | 2026-05-16 | TASK-066.6 completato come UI frontend dello storico assegnazioni Device: dettaglio admin esteso con card `Storico assegnazioni`, azioni `Assegna` / `Restituisci` / `Riassegna` sui soli endpoint backend gia esistenti, pannelli inline coerenti con i pattern admin, i18n `it/fr/en`, build/test frontend reali verdi e prossimo passo riallineato a `TASK-066.7`. |
 | 2.59 | 2026-05-16 | Aggiornamento documentale post-validazione manuale positiva di `TASK-066.5`: QA report allineato con esito manuale OK sul dettaglio Device e aggiunto nuovo follow-up `TASK-066.10` per applicare la shared detail action/header bar a User Detail e Company Profile Detail senza cambi backend/security. |

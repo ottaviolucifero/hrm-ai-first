@@ -13,7 +13,11 @@ import { AppButtonComponent } from '../../shared/components/button/app-button.co
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ConfirmDialogConfig } from '../../shared/components/confirm-dialog/confirm-dialog.models';
 import { AppDateTimeFieldComponent } from '../../shared/components/date-time-field/app-date-time-field.component';
-import { DetailActionBarAction, DetailActionBarComponent } from '../../shared/components/detail-action-bar/detail-action-bar.component';
+import {
+  DETAIL_ACTION_BAR_STANDARD_ACTION_IDS,
+  DetailActionBarAction,
+  DetailActionBarComponent
+} from '../../shared/components/detail-action-bar/detail-action-bar.component';
 import { AppInputComponent } from '../../shared/components/input/app-input.component';
 import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
@@ -171,7 +175,9 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
     }
 
     actions.push({
-      id: 'toggleActive',
+      id: detail.active
+        ? DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate
+        : DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate,
       label: this.i18n.t(this.activeActionLabelKey(detail)),
       loadingLabel: this.i18n.t(this.activeActionLoadingLabelKey(detail)),
       loading: this.actionSaving(),
@@ -223,7 +229,8 @@ export class DeviceAdministrationDetailComponent implements OnDestroy {
       case 'return':
         this.openAssignmentAction(actionId);
         return;
-      case 'toggleActive':
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate:
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate:
         this.triggerActiveAction();
         return;
       case 'deletePhysical':
