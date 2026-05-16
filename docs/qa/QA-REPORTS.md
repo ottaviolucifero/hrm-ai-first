@@ -6,6 +6,84 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-066.7 follow-up - Device detail layout and label flow refinement
+
+- Data: 2026-05-16
+- Branch: `task-066-9-device-governance-qa-fixes`
+- Task collegato: TASK-066.7 / TASK-066.9 frontend follow-up
+- Modello consigliato nel prompt operativo: GPT-5.3 Codex
+- Ambito del follow-up:
+  - sola rifinitura frontend del dettaglio Device;
+  - nessuna modifica a backend, API, security, RBAC o logiche dati;
+  - include follow-up UI sulla card `Storico assegnazioni`, senza variazioni a dati o comportamento applicativo.
+- File verificati/modificati:
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.html`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.scss`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.spec.ts`
+  - `frontend/src/app/features/device-administration/device-administration-form.component.spec.ts`
+  - `docs/qa/QA-REPORTS.md`
+- Patch applicata:
+  - corretto via i18n il titolo italiano `Identità bene` e riallineate le label correlate;
+  - integrata la mini-sezione `Acquisto e garanzia` dentro la card `Identità bene` con layout piu compatto;
+  - integrata la sezione `Audit e info tecniche` dentro `Azienda e tenant` con box piu leggero e meno separato visivamente;
+  - sostituita la preview barcode placeholder con preview QR reale centrata, mostrando solo `assetCode` sotto il QR;
+  - ricollegato il dettaglio Device a `DeviceLabelPrintService` per preview e azione `Stampa etichetta` nella shared `DetailActionBar`;
+  - confermato il payload stampa `assetCode` + `qrValue`, con fallback `qrValue = barcodeValue || assetCode`;
+  - aggiunto feedback coerente se il popup stampa viene bloccato dal browser;
+  - follow-up UI storico assegnazioni: rimossa la subtitle periodo duplicata sotto il nome dipendente, mantenuto badge stato in alto a destra e riorganizzato ogni card in due colonne compatte `Assegnazione` / `Restituzione`, responsive su mobile.
+- Test frontend aggiunti/aggiornati:
+  - rendering titolo `Identità bene`;
+  - rendering preview card `Etichetta dispositivo`;
+  - chiamata a `DeviceLabelPrintService.printLabel(...)`;
+  - fallback `barcodeValue || assetCode`;
+  - warning su popup stampa bloccato;
+  - rendering storico assegnazioni con colonne `Assegnazione` / `Restituzione` e assenza della subtitle duplicata;
+  - aggiornato anche il test del form che verificava ancora la label italiana senza accento.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+- Esiti reali:
+  - build frontend: OK con warning noto budget iniziale (`2.36 MB`, +`361.14 kB`) e warning CommonJS della libreria `qrcode`;
+  - test frontend: OK, `46` file test passed, `361` test passed.
+- Limiti/note:
+  - validazione manuale browser della stampa reale `60 x 40 mm` non eseguita in CLI;
+  - questo follow-up non chiude da solo il task cross-stack finale `TASK-066.9`.
+- Stato finale: PASS WITH NOTES
+
+### TASK-066.9 - Backend fix employee inattivo
+
+- Data: 2026-05-16
+- Branch: `task-066-9-device-governance-qa-fixes`
+- Task: TASK-066.9 - Device governance QA hardening
+- Modello consigliato nel prompt operativo: GPT-5.3 Codex
+- Ambito del follow-up:
+  - fix mirato del finding `MAJOR` emerso in QA su `DeviceAdministrationService.findAssignedEmployee(...)`;
+  - nessuna modifica a API, DTO, security, RBAC o frontend.
+- File verificati/modificati:
+  - `backend/src/main/java/com/odsoftware/hrm/service/DeviceAdministrationService.java`
+  - `backend/src/test/java/com/odsoftware/hrm/DeviceAdministrationControllerTests.java`
+  - `docs/qa/QA-REPORTS.md`
+- Patch applicata:
+  - mantenuti i controlli esistenti su tenant e company profile dell employee assegnato;
+  - aggiunto controllo su `employee.active`;
+  - se l employee e inattivo, il backend rifiuta create/assign con `InvalidRequestException` coerente ai pattern esistenti e messaggio `Employee is inactive and cannot receive device assignments: {employeeId}`.
+- Test backend aggiunti/aggiornati:
+  - rifiuto create device quando `assignedToEmployeeId` punta a employee inattivo ma corretto per tenant/company;
+  - rifiuto `POST /api/admin/devices/{deviceId}/assignments` quando `employeeId` punta a employee inattivo ma corretto per tenant/company;
+  - helper test esteso con overload minimo per creare employee inattivi senza alterare i casi validi esistenti.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - backend test: OK, aggregate surefire `285` test, `0` failure, `0` error, `0` skipped;
+  - `DeviceAdministrationControllerTests`: OK, `34` test, `0` failure, `0` error, `0` skipped.
+- Limiti/note:
+  - questo follow-up valida solo il finding backend su employee inattivi;
+  - non rappresenta da solo la chiusura finale end-to-end del task cross-stack `TASK-066.9`;
+  - il rumore ambiente Maven (`'D' n’est pas reconnu...`) resta non bloccante e non altera l esito verde dei test.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-066.7 - Device label print UI
 
 - Data: 2026-05-16
@@ -3642,6 +3720,34 @@ Nota operativa:
   - lo scope runtime resta limitato a `CompanyProfile`; `OfficeLocation`, `Employee`, `UserAccount` e altre entita non sono state modificate in questo task
   - il warning budget frontend resta non bloccante e preesistente come vincolo di bundle
   - durante i comandi Maven compare in coda un rumore ambiente (`'D' n’est pas reconnu...`) non bloccante: i processi terminano comunque con `BUILD SUCCESS`
+- Stato finale: PASS
+
+### UI Refinement - Device assignment history cards (3-column responsive compact layout)
+
+- Data: 2026-05-16
+- Branch: `main`
+- Task: rifinitura UI card storico assegnazioni Device (solo frontend)
+- Agente/Modello usato:
+  - Analisi/planning: GPT-5.3 Codex
+  - Sviluppo: GPT-5.3 Codex
+  - QA/regressione: validazione reale frontend (build + test)
+- Aree/file verificati:
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.html`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.scss`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.spec.ts`
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale (`2.36 MB`, +`363.85 kB`) e warning CommonJS `qrcode` preesistente
+  - `cd frontend && npm.cmd test -- --watch=false` -> OK, 46 file test passed, 361 test passed
+- Verifiche funzionali:
+  - header card storico mantenuto con dipendente (`nome + codice`) e badge stato in alto a destra
+  - corpo card riorganizzato in 3 colonne responsive: `Assegnazione`, `Restituzione`, `Note`
+  - `Assegnazione`: mantiene periodo assegnazione e stato alla consegna
+  - `Restituzione`: mantiene periodo/data restituzione e stato alla restituzione
+  - `Note`: separa note assegnazione e nota restituzione per ridurre altezza percepita delle altre colonne
+  - ridotti padding/gap della card storico per densita piu compatta; su viewport mobile le colonne collassano a una per riga
+  - nessuna modifica backend/API/security/RBAC/logica dati
+  - i18n invariato (riuso chiavi esistenti)
 - Stato finale: PASS
 
 

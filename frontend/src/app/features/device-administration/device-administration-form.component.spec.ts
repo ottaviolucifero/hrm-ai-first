@@ -73,7 +73,7 @@ describe('DeviceAdministrationFormComponent', () => {
 
     expect(normalizedTitles).toEqual([
       'Dati asset',
-      'Identita bene',
+      'Identità bene',
       'Azienda e tenant',
       'Acquisto e garanzia'
     ]);
