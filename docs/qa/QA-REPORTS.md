@@ -1979,6 +1979,57 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Frontend QA reports
 
+### TASK-066.10 - Applicazione nuovo componente header dettaglio a User e Company Profile
+
+- Data: 2026-05-16
+- Branch: `main`
+- Task: TASK-066.10 - Applicazione nuovo componente header dettaglio a User e Company Profile
+- Modello consigliato nel prompt operativo: GPT-5.4
+- Aree/file verificati:
+  - `frontend/src/app/shared/components/detail-action-bar/detail-action-bar.component.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.html`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.ts`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.html`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.scss`
+  - `frontend/src/app/features/user-administration/user-administration-detail.component.spec.ts`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-detail.component.ts`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-detail.component.html`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-detail.component.scss`
+  - `frontend/src/app/features/company-profile-administration/company-profile-administration-detail.component.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificato il pattern condiviso gia adottato in `Device Detail`: header minimale con titolo e `app-detail-action-bar` immediatamente dopo, con action builder TypeScript e dispatch centralizzato per `actionPressed`;
+  - verificato che `User Detail` avesse una regressione post-migrazione: nella `DetailActionBar` risultavano assenti `activate` / `deactivate` e `deletePhysical`, mentre gli handler lato detail/service erano ancora presenti;
+  - verificato che `Company Profile Detail` usasse ancora una conferma inline locale/string-based per `deactivate` e `deletePhysical`;
+  - verificati permessi, visibility, loading/error state, back navigation, chiavi i18n esistenti e compatibilita del componente shared `app-confirm-dialog`.
+- Patch applicata:
+  - corretto `User Detail` estendendo la `DetailActionBar` con `activate` / `deactivate` e `deletePhysical`, mantenendo `activate` immediata e riusando i service/handler/livelli permesso esistenti;
+  - introdotto in `User Detail` il pattern shared `pendingConfirmation + ConfirmDialogConfig + app-confirm-dialog` per `deactivate` e `deletePhysical`, con mapping errori delete coerente alla lista utenti;
+  - mantenute invariate in `User Detail` le sezioni interne per reset password, gestione ruoli e `lock` / `unlock`; il lifecycle interno `activate` / `deactivate` riusa ora lo stesso flusso shared di conferma del detail;
+  - sostituita in `Company Profile Detail` la conferma inline/string-based con `app-confirm-dialog` shared per `deactivate` e `deletePhysical`, mantenendo `activate` immediata;
+  - mantenuti invariati permessi, handler, loading state, feedback, error mapping, chiavi i18n e assenza di modifiche backend/security/API;
+  - aggiornati i test detail frontend per coprire presenza azioni, apertura/annullamento/conferma dialog, retry in errore e assenza di pannelli inline residui.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+- Esiti reali:
+  - build frontend: OK con warning noto budget iniziale (`2.37 MB`, sforamento `366.08 kB`) e warning CommonJS della libreria `qrcode`;
+  - test frontend: OK, `46` file test passed, `370` test passed.
+- Validazione manuale:
+  - non eseguita in questa sessione CLI;
+  - bug rilevato in validazione manuale precedente: su `/admin/users/:id` mancavano `activate` / `deactivate` e `deletePhysical` nella `DetailActionBar`;
+  - suggerita verifica browser su `/admin/users/:id` per visibilita `activate` / `deactivate` e `deletePhysical` secondo permessi, `activate` immediata e dialog shared su `deactivate` / `deletePhysical`;
+  - suggerita verifica browser su `/admin/company-profiles/:id` per `activate` immediata e dialog shared su `deactivate` / `deletePhysical`;
+  - suggerita ricontrollo browser su `Device Detail` per escludere regressioni del pattern shared.
+- Limiti/note:
+  - nessun redesign generale del dettaglio: scope limitato al fix regressivo di `User Detail` e all allineamento shared delle conferme critiche nei detail migrati;
+  - nessuna modifica a `DECISIONS.md`, coerentemente con `DEC-044` gia sufficiente;
+  - il warning budget frontend e il warning CommonJS `qrcode` restano preesistenti e non bloccanti per il task.
+- Stato finale: PASS
+
 ### TASK-066.8 - Shared entity detail header/actions pattern
 
 - Data: 2026-05-16

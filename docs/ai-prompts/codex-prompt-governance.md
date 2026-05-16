@@ -149,6 +149,29 @@ Prima di modificare file, verificare:
 
 Non fidarsi solo del prompt se il repository mostra uno stato diverso. In caso di divergenza, segnalarla e limitare la patch allo scope autorizzato.
 
+## Regola branch nei prompt operativi
+
+Ogni prompt operativo di sviluppo o QA deve includere sempre:
+
+- verifica iniziale del branch corrente;
+- creazione del branch dedicato al task, se non gia presente;
+- divieto di lavorare direttamente su `main`, salvo task puramente documentale autorizzato esplicitamente.
+
+Esempio comandi Windows cmd da includere nel prompt quando il branch non esiste ancora:
+
+```cmd
+git status --short --branch
+git checkout main
+git pull
+git checkout -b nome-branch-task
+```
+
+Se il branch del task e gia stato creato, il prompt deve richiedere solo:
+
+```cmd
+git status --short --branch
+```
+
 ## Regola minima per task Angular
 
 Ogni task Angular deve dichiarare:

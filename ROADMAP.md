@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.69
+Versione: 2.71
 Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
@@ -155,7 +155,8 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 
 - TASK-066.7 completato: label print Device validata con build/test frontend e verifica manuale browser.
 - TASK-066.8 completato: `DetailActionBar` consolidato come pattern shared ufficiale delle action bar di dettaglio, applicato solo a Device, con follow-up migrazione completa demandato a `TASK-066.10`.
-- Sequenza Device pianificata: `TASK-066.9` QA hardening, `TASK-066.10` applicazione componente shared header dettaglio a User/Company Profile
+- TASK-066.10 completato: `DetailActionBar` applicato a `User Detail` e `Company Profile Detail`, con fix regressivo sulle azioni `activate` / `deactivate` / `deletePhysical` di `User Detail` e adozione di `app-confirm-dialog` shared per `deactivate` e `deletePhysical`.
+- Prossimo passo operativo: `TASK-066.9` QA hardening Device
 - Sequenza backlog successiva invariata: `TASK-067` UI HolidayCalendar, `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
@@ -299,7 +300,8 @@ Sequenza immediata Core HR UI post-TASK-064.11:
 - TASK-066.6: Device assignment UI completato;
 - TASK-066.7: Device label print UI completato;
 - TASK-066.8: shared entity detail header/actions pattern completato;
-- TASK-066.9 e TASK-066.10: QA hardening e applicazione shared detail action bar a User/Company Profile;
+- TASK-066.9: QA hardening finale Device governance;
+- TASK-066.10: applicazione shared detail action bar a `User Detail` e `Company Profile Detail` completata;
 - TASK-067 -> TASK-072: blocco UI/CRUD piu circoscritto per consolidare pattern e verifiche permessi prima di Employee;
 - TASK-073: UI Employee management enterprise, posticipata dopo il consolidamento dei task precedenti.
 
@@ -460,6 +462,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.71 | 2026-05-16 | TASK-066.10 rifinito dopo validazione manuale: corretto il dettaglio utenti ripristinando `activate` / `deactivate` e `deletePhysical` nella `DetailActionBar`, riallineato `User Detail` e `Company Profile Detail` a `app-confirm-dialog` shared per `deactivate` e `deletePhysical`, con build/test frontend reali verdi. |
+| 2.70 | 2026-05-16 | TASK-066.10 completato lato frontend: migrata la action/header bar shared `DetailActionBar` su `User Detail` e `Company Profile Detail`, mantenendo permessi, i18n, azioni e conferme inline esistenti; roadmap riallineata con prossimo passo operativo su `TASK-066.9`. |
 | 2.69 | 2026-05-16 | Allineamento documentale stato Device governance: `TASK-066.7` e `TASK-066.8` confermati completati su `main`; roadmap aggiornata spostando il prossimo passo a `TASK-066.9` e mantenendo `TASK-066.10` come follow-up di migrazione User/Company Profile. |
 | 2.68 | 2026-05-16 | TASK-066.8 completato lato frontend: consolidato `DetailActionBar` come pattern shared ufficiale per i dettagli entita, applicato solo a Device con id azione standardizzati `activate` / `deactivate`, test shared estesi e fix prerequisiti build minimi su i18n label Device e timer `AlertMessageComponent`; `TASK-066.7` resta aperto solo per validazione manuale browser e la migrazione completa di User/Company Profile resta demandata a `TASK-066.10`. |
 | 2.67 | 2026-05-16 | TASK-066.7 implementato lato frontend come MVP label print Device: nuova card `Etichetta dispositivo` nel dettaglio admin, QR reale browser-side con libreria `qrcode`, stampa single-label `60 x 40 mm` via CSS print senza Zebra/ZPL o PDF complesso, build/test frontend verdi e chiusura task subordinata alla validazione manuale browser. |

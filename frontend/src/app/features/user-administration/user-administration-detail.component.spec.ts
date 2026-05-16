@@ -33,6 +33,7 @@ describe('UserAdministrationDetailComponent', () => {
     const title = fixture.nativeElement.querySelector('#user-detail-title') as HTMLElement;
     const headerSubtitle = fixture.nativeElement.querySelector('.user-detail-subtitle') as HTMLElement;
     const headerDescription = fixture.nativeElement.querySelector('.user-detail-description') as HTMLElement;
+    const detailActionBar = fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement;
     const identitySection = fixture.nativeElement.querySelector('[aria-labelledby="user-detail-identity"]') as HTMLElement;
     const tenantSection = fixture.nativeElement.querySelector('[aria-labelledby="user-detail-tenant"]') as HTMLElement;
     const securitySection = fixture.nativeElement.querySelector('[aria-labelledby="user-detail-security"]') as HTMLElement;
@@ -40,6 +41,9 @@ describe('UserAdministrationDetailComponent', () => {
 
     expect(service.findUserById).toHaveBeenCalledWith('user-1');
     expect(title.textContent?.trim()).toBe('Ada Lovelace');
+    expect(detailActionBar).toBeTruthy();
+    expect(detailActionBar.textContent).toContain('Disattiva');
+    expect(detailActionBar.textContent).toContain('Cancella definitivamente');
     expect(headerSubtitle.textContent?.trim()).toBe('ada@example.com');
     expect(headerDescription.textContent).toContain('sicurezza');
     expect(headerDescription.textContent).not.toContain('accessi tenant');
@@ -163,6 +167,20 @@ describe('UserAdministrationDetailComponent', () => {
 
     expect(editButton).toBeTruthy();
     expect(editButton.disabled).toBe(true);
+  });
+
+  it('disables deletePhysical without delete permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), ['TENANT.USER.READ', 'TENANT.USER.UPDATE']);
+    fixture.detectChanges();
+
+    const deleteButton = findButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Cancella definitivamente'
+    );
+
+    expect(deleteButton.disabled).toBe(true);
   });
 
   it('shows the tenant selector when multiple tenant options are available', async () => {
@@ -324,7 +342,7 @@ describe('UserAdministrationDetailComponent', () => {
     );
   });
 
-  it('confirms and deactivates an active user', async () => {
+  it('opens confirm dialog and deactivates an active user from the detail action bar', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const service = createService();
@@ -332,17 +350,17 @@ describe('UserAdministrationDetailComponent', () => {
     fixture.detectChanges();
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
-    const component = fixture.componentInstance as unknown as {
-      triggerActiveAction: () => void;
-      confirmLifecycleAction: () => void;
-    };
-
-    component.triggerActiveAction();
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Disattiva utente'
+    );
     fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Conferma disattivazione utente');
     expect(fixture.nativeElement.textContent).toContain('Vuoi disattivare questo utente?');
 
-    component.confirmLifecycleAction();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Disattiva');
     fixture.detectChanges();
 
     expect(service.deactivateUser).toHaveBeenCalledWith('user-1');
@@ -350,6 +368,25 @@ describe('UserAdministrationDetailComponent', () => {
       'Utente disattivato correttamente.',
       expect.objectContaining({ titleKey: 'alert.title.success' })
     );
+  });
+
+  it('cancels deactivate without invoking the handler', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Disattiva utente'
+    );
+    fixture.detectChanges();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Annulla');
+    fixture.detectChanges();
+
+    expect(service.deactivateUser).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).toBeNull();
   });
 
   it('activates an inactive user without confirmation', async () => {
@@ -369,20 +406,20 @@ describe('UserAdministrationDetailComponent', () => {
     fixture.detectChanges();
     const notificationService = TestBed.inject(NotificationService);
     const successSpy = vi.spyOn(notificationService, 'success');
-    const component = fixture.componentInstance as unknown as UserAdministrationDetailComponentTestHandle & {
-      triggerActiveAction: () => void;
-    };
-
-    component.triggerActiveAction();
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Attiva utente'
+    );
     fixture.detectChanges();
 
     expect(service.activateUser).toHaveBeenCalledWith('user-1');
-    expect(component.user().active).toBe(true);
+    expect((fixture.componentInstance as unknown as UserAdministrationDetailComponentTestHandle).user().active).toBe(true);
     expect(successSpy).toHaveBeenCalledWith(
       'Utente attivato correttamente.',
       expect.objectContaining({ titleKey: 'alert.title.success' })
     );
     expect(fixture.nativeElement.textContent).not.toContain('Conferma disattivazione utente');
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).toBeNull();
   });
 
   it('unlocks a locked user without confirmation', async () => {
@@ -427,22 +464,115 @@ describe('UserAdministrationDetailComponent', () => {
     fixture.detectChanges();
     const notificationService = TestBed.inject(NotificationService);
     const errorSpy = vi.spyOn(notificationService, 'error');
-    const component = fixture.componentInstance as unknown as UserAdministrationDetailComponentTestHandle & {
-      triggerActiveAction: () => void;
-      confirmLifecycleAction: () => void;
-    };
-
-    component.triggerActiveAction();
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Disattiva utente'
+    );
     fixture.detectChanges();
-    component.confirmLifecycleAction();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Disattiva');
     fixture.detectChanges();
 
     expect(service.deactivateUser).toHaveBeenCalledWith('user-1');
-    expect(component.lifecycleSaving()).toBe(false);
+    expect((fixture.componentInstance as unknown as UserAdministrationDetailComponentTestHandle).lifecycleSaving()).toBe(false);
     expect(errorSpy).toHaveBeenCalledWith(
       'Impossibile disattivare l utente.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })
     );
+  });
+
+  it('opens confirm dialog and deletes the user from the detail action bar', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service, ['TENANT.USER.READ', 'TENANT.USER.UPDATE', 'TENANT.USER.DELETE']);
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    fixture.detectChanges();
+
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Cancella definitivamente'
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).not.toBeNull();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Cancella definitivamente');
+    fixture.detectChanges();
+
+    expect(service.deleteUser).toHaveBeenCalledWith('user-1');
+    expect(successSpy).toHaveBeenCalledWith(
+      'Utente cancellato correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+    expect(navigateSpy).toHaveBeenCalledWith(['/admin/users']);
+  });
+
+  it('cancels deletePhysical without invoking the handler', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service, ['TENANT.USER.READ', 'TENANT.USER.UPDATE', 'TENANT.USER.DELETE']);
+    fixture.detectChanges();
+
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Cancella definitivamente'
+    );
+    fixture.detectChanges();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Annulla');
+    fixture.detectChanges();
+
+    expect(service.deleteUser).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).toBeNull();
+  });
+
+  it('shows the translated delete conflict message on 409 from the detail action bar', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      deleteUser: vi.fn(() => throwError(() => new HttpErrorResponse({ status: 409 })))
+    });
+    const fixture = await createFixture(service, ['TENANT.USER.READ', 'TENANT.USER.UPDATE', 'TENANT.USER.DELETE']);
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
+    fixture.detectChanges();
+
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Cancella definitivamente'
+    );
+    fixture.detectChanges();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Cancella definitivamente');
+    fixture.detectChanges();
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Utente non cancellabile perche gia referenziato. Puoi disattivarlo.',
+      expect.objectContaining({ titleKey: 'alert.title.danger' })
+    );
+  });
+
+  it('retries loading from the detail action bar after an error', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      findUserById: vi.fn()
+        .mockReturnValueOnce(throwError(() => new Error('detail failed')))
+        .mockReturnValueOnce(of(createUser()))
+    });
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Impossibile caricare il dettaglio utente.');
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Riprova'
+    );
+    fixture.detectChanges();
+
+    expect(service.findUserById).toHaveBeenCalledTimes(2);
+    expect(fixture.nativeElement.textContent).toContain('Ada Lovelace');
   });
 
   it('blocks password reset when confirmation does not match', async () => {
@@ -543,6 +673,7 @@ function createService(overrides: Partial<UserAdministrationService> = {}): User
   return {
     findUsers: vi.fn(),
     findUserById: vi.fn(() => of(user)),
+    deleteUser: vi.fn(() => of(void 0)),
     activateUser: vi.fn(() => of({
       ...user,
       active: true
@@ -595,6 +726,21 @@ function createService(overrides: Partial<UserAdministrationService> = {}): User
     })),
     ...overrides
   } as UserAdministrationService;
+}
+
+function findButtonByExactText(container: HTMLElement, label: string): HTMLButtonElement {
+  const button = Array.from(container.querySelectorAll('button'))
+    .find((candidate) => candidate.textContent?.trim() === label) as HTMLButtonElement | undefined;
+
+  if (!button) {
+    throw new Error(`Button not found: ${label}`);
+  }
+
+  return button;
+}
+
+function clickButtonByExactText(container: HTMLElement, label: string): void {
+  findButtonByExactText(container, label).click();
 }
 
 function createUser() {

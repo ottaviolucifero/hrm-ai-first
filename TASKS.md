@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.63
+Versione: 2.65
 Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
@@ -5191,7 +5191,7 @@ Obiettivo:
 
 #### TASK-066.10 - Applicazione nuovo componente header dettaglio a User e Company Profile
 
-Stato: TODO
+Stato: COMPLETATO
 
 Tipo: Frontend
 
@@ -5203,6 +5203,21 @@ Obiettivo:
 - mantenere comportamento, permessi, i18n e azioni esistenti;
 - non introdurre redesign generale;
 - non modificare backend/security.
+
+Completato:
+
+- corretto il bug emerso in validazione manuale successiva alla migrazione: in `User Detail` la `DetailActionBar` aveva perso le azioni `activate` / `deactivate` e `deletePhysical`;
+- ripristinate in `User Detail` le azioni header `back`, `edit`, `activate` / `deactivate`, `deletePhysical` e `retry`, mantenendo `activate` immediata e i permessi/handler preesistenti;
+- migrata la action bar di `Company Profile Detail` al componente shared `DetailActionBar`, mantenendo `back`, `edit`, `activate` / `deactivate`, `deletePhysical` e `retry`;
+- adottato il componente shared `app-confirm-dialog` per `deactivate` e `deletePhysical` nelle detail page migrate `User Detail` e `Company Profile Detail`, riallineando il pattern a `Device Detail`;
+- mantenute invariate le sezioni interne di `User Detail` per reset password, gestione ruoli e `lock` / `unlock`; il bottone lifecycle interno `activate` / `deactivate` riusa ora lo stesso flusso shared di conferma del dettaglio;
+- mantenuti invariati permessi, handler, loading state, chiavi i18n esistenti e assenza di modifiche backend/security/API;
+- aggiornati i test detail frontend per verificare presenza delle azioni ripristinate, apertura/annullamento/conferma di `app-confirm-dialog`, retry in errore e assenza di vecchie action bar locali duplicate.
+
+Validazione:
+
+- `cd frontend && npm.cmd run build` OK con warning noto budget iniziale (`2.37 MB`, +`366.08 kB`) e warning CommonJS della libreria `qrcode`;
+- `cd frontend && npm.cmd test -- --watch=false` OK, `46` file test passed, `370` test passed.
 
 ### TASK-067 - UI HolidayCalendar
 
@@ -5267,6 +5282,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.65 | 2026-05-16 | TASK-066.10 corretto dopo validazione manuale: ripristinate in `User Detail` le azioni `activate` / `deactivate` e `deletePhysical` nella `DetailActionBar`, introdotto `app-confirm-dialog` shared per `deactivate` e `deletePhysical` su `User Detail` e `Company Profile Detail`, build/test frontend reali verdi e nessuna modifica backend/security/API. |
+| 2.64 | 2026-05-16 | TASK-066.10 completato lato frontend: `User Detail` e `Company Profile Detail` migrati al componente shared `DetailActionBar`, mantenendo comportamento, permessi, i18n e sezioni interne esistenti; build/test frontend reali verdi e nessuna modifica backend/security. |
 | 2.63 | 2026-05-16 | Allineamento documentale stato task Device: `TASK-066.7` promosso a `COMPLETATO` dopo verifica QA finale su `main`; `TASK-066.8` confermato `COMPLETATO` senza variazioni di scope o codice. |
 | 2.62 | 2026-05-16 | TASK-066.8 completato lato frontend: consolidato `DetailActionBar` come pattern shared ufficiale per i dettagli entita, applicato solo a Device con id azione standardizzati `activate` / `deactivate`, test shared estesi e fix prerequisiti build minimi su i18n label Device e timer `AlertMessageComponent`; nessuna modifica backend/API/security e follow-up migrazione completa demandato a `TASK-066.10`. |
 | 2.61 | 2026-05-16 | TASK-066.7 implementato lato frontend come MVP label print Device: nuova card `Etichetta dispositivo`, QR reale browser-side via `qrcode`, stampa single-label `60 x 40 mm` con CSS print e limitazioni Zebra/ZPL/PDF complesso formalizzate; build/test reali verdi e task mantenuto `IN_PROGRESS` fino a validazione manuale browser. |

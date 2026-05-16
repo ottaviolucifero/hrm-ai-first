@@ -23,33 +23,16 @@
           <p class="user-detail-subtitle">{{ i18n.t('userAdministration.detail.subtitle') }}</p>
         }
       </div>
-
-      <div class="user-detail-page-actions" role="group" [attr.aria-label]="i18n.t('userAdministration.detail.actions')">
-        <app-button
-          variant="secondary"
-          size="sm"
-          icon="ki-filled ki-arrow-left"
-          [label]="i18n.t('userAdministration.actions.back')"
-          (pressed)="goBack()" />
-        @if (user()) {
-          <app-button
-            variant="primary"
-            size="sm"
-            icon="ki-filled ki-pencil"
-            [label]="i18n.t('userAdministration.actions.edit')"
-            [disabled]="!modulePermissions().canUpdate"
-            (pressed)="editUser()" />
-        }
-        @if (hasError()) {
-          <app-button
-            variant="secondary"
-            size="sm"
-            icon="ki-filled ki-arrows-circle"
-            [label]="i18n.t('rolePermissions.actions.retry')"
-            (pressed)="retry()" />
-        }
-      </div>
     </header>
+
+    <app-detail-action-bar
+      [ariaLabel]="i18n.t('userAdministration.detail.actions')"
+      [backLabel]="i18n.t('userAdministration.actions.back')"
+      [secondaryActions]="detailSecondaryActions()"
+      [primaryAction]="detailPrimaryAction()"
+      [destructiveActions]="detailDestructiveActions()"
+      (backPressed)="goBack()"
+      (actionPressed)="handleDetailAction($event)" />
 
     @if (loading()) {
       <section class="kt-card user-detail-state" role="status" aria-live="polite">
@@ -310,6 +293,13 @@
         </section>
 
       </div>
+    }
+
+    @if (pendingConfirmation(); as confirmation) {
+      <app-confirm-dialog
+        [config]="confirmation.config"
+        (confirmed)="confirmPendingAction()"
+        (cancelled)="cancelPendingAction()" />
     }
   </div>
 </section>

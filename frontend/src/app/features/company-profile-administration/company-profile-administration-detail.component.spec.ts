@@ -12,8 +12,6 @@ interface CompanyProfileDetailHandle {
   goBack: () => void;
   editCompanyProfile: () => void;
   triggerActiveAction: () => void;
-  triggerDeleteAction: () => void;
-  confirmPendingAction: () => void;
 }
 
 describe('CompanyProfileAdministrationDetailComponent', () => {
@@ -28,6 +26,7 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
     const fixture = await createFixture(createService());
     fixture.detectChanges();
 
+    expect(fixture.nativeElement.querySelector('app-detail-action-bar')).toBeTruthy();
     expect(fixture.nativeElement.textContent).toContain('Trade One');
     expect(fixture.nativeElement.textContent).toContain('Dati principali');
     expect(fixture.nativeElement.textContent).toContain('Tenant e tipo');
@@ -39,6 +38,7 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Codice fiscale');
     expect(fixture.nativeElement.textContent).not.toContain('Identificativo fiscale');
     expect(fixture.nativeElement.textContent).toContain('Modifica');
+    expect(fixture.nativeElement.querySelector('.company-profile-detail-confirm')).toBeNull();
   });
 
   it('shows only tax identifier fiscal field for non-italian profiles', async () => {
@@ -187,7 +187,7 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/admin/company-profiles', 'company-1', 'edit']);
   });
 
-  it('deactivates the company profile after inline confirmation', async () => {
+  it('opens confirm dialog and deactivates the company profile from the detail action bar', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const service = createService();
@@ -196,13 +196,17 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
     const successSpy = vi.spyOn(notificationService, 'success');
     fixture.detectChanges();
 
-    const component = fixture.componentInstance as unknown as CompanyProfileDetailHandle;
-    component.triggerActiveAction();
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Disattiva'
+    );
     fixture.detectChanges();
 
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Conferma disattivazione profilo aziendale');
 
-    component.confirmPendingAction();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Disattiva');
+    fixture.detectChanges();
 
     expect(service.deactivateCompanyProfile).toHaveBeenCalledWith('company-1');
     expect(successSpy).toHaveBeenCalledWith(
@@ -211,7 +215,58 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
     );
   });
 
-  it('shows the translated delete conflict message on 409', async () => {
+  it('cancels deactivate without invoking the handler', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Disattiva'
+    );
+    fixture.detectChanges();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Annulla');
+    fixture.detectChanges();
+
+    expect(service.deactivateCompanyProfile).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).toBeNull();
+  });
+
+  it('activates the company profile without confirmation', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService({
+      findCompanyProfileById: vi.fn(() => of({
+        ...createActiveDetail(),
+        active: false
+      })),
+      activateCompanyProfile: vi.fn(() => of({
+        ...createActiveDetail(),
+        active: true
+      }))
+    });
+    const fixture = await createFixture(service);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    fixture.detectChanges();
+
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Attiva'
+    );
+    fixture.detectChanges();
+
+    expect(service.activateCompanyProfile).toHaveBeenCalledWith('company-1');
+    expect(successSpy).toHaveBeenCalledWith(
+      'Profilo aziendale attivato correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).toBeNull();
+  });
+
+  it('opens confirm dialog and shows the translated delete conflict message on 409', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const service = createService({
@@ -222,14 +277,38 @@ describe('CompanyProfileAdministrationDetailComponent', () => {
     const errorSpy = vi.spyOn(notificationService, 'error');
     fixture.detectChanges();
 
-    const component = fixture.componentInstance as unknown as CompanyProfileDetailHandle;
-    component.triggerDeleteAction();
-    component.confirmPendingAction();
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Cancella definitivamente'
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).not.toBeNull();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Cancella definitivamente');
+    fixture.detectChanges();
 
     expect(errorSpy).toHaveBeenCalledWith(
       'Profilo aziendale non cancellabile perche gia referenziato. Puoi disattivarlo.',
       expect.objectContaining({ titleKey: 'alert.title.danger' })
     );
+  });
+
+  it('cancels deletePhysical without invoking the handler', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    fixture.detectChanges();
+
+    clickButtonByExactText(
+      fixture.nativeElement.querySelector('app-detail-action-bar') as HTMLElement,
+      'Cancella definitivamente'
+    );
+    fixture.detectChanges();
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Annulla');
+    fixture.detectChanges();
+
+    expect(service.deleteCompanyProfile).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('app-confirm-dialog')).toBeNull();
   });
 
   it('shows the error state when the detail fails to load', async () => {
@@ -286,7 +365,30 @@ async function createFixture(service: CompanyProfileAdministrationService) {
 }
 
 function createService(overrides: Partial<CompanyProfileAdministrationService> = {}): CompanyProfileAdministrationService {
-  const activeDetail = {
+  const activeDetail = createActiveDetail();
+
+  return {
+    findCompanyProfiles: vi.fn(),
+    findFormOptions: vi.fn(() => of({
+      tenants: [{ id: 'tenant-1', code: 'TENANT', name: 'Tenant' }],
+      companyProfileTypes: [{ id: 'type-1', tenantId: 'tenant-1', code: 'CP001', name: 'Legal entity' }],
+      countries: [{ id: 'country-1', code: 'IT', name: 'Italy' }],
+      regions: [{ id: 'region-1', tenantId: 'tenant-1', countryId: 'country-1', code: 'RG001', name: 'Lazio' }],
+      areas: [{ id: 'area-1', tenantId: 'tenant-1', countryId: 'country-1', regionId: 'region-1', code: 'RM', name: 'Rome' }],
+      globalZipCodes: [{ id: 'zip-1', tenantId: 'tenant-1', countryId: 'country-1', regionId: 'region-1', areaId: 'area-1', code: '00100', name: 'Roma' }]
+    })),
+    createCompanyProfile: vi.fn(),
+    updateCompanyProfile: vi.fn(),
+    findCompanyProfileById: vi.fn(() => of(activeDetail)),
+    activateCompanyProfile: vi.fn(() => of({ ...activeDetail, active: true })),
+    deactivateCompanyProfile: vi.fn(() => of({ ...activeDetail, active: false })),
+    deleteCompanyProfile: vi.fn(() => of(void 0)),
+    ...overrides
+  } as CompanyProfileAdministrationService;
+}
+
+function createActiveDetail() {
+  return {
     id: 'company-1',
     tenant: { id: 'tenant-1', code: 'TENANT', name: 'Tenant' },
     companyProfileType: { id: 'type-1', code: 'CP001', name: 'Legal entity' },
@@ -312,23 +414,19 @@ function createService(overrides: Partial<CompanyProfileAdministrationService> =
     createdAt: '2026-05-13T09:00:00Z',
     updatedAt: '2026-05-13T10:00:00Z'
   };
+}
 
-  return {
-    findCompanyProfiles: vi.fn(),
-    findFormOptions: vi.fn(() => of({
-      tenants: [{ id: 'tenant-1', code: 'TENANT', name: 'Tenant' }],
-      companyProfileTypes: [{ id: 'type-1', tenantId: 'tenant-1', code: 'CP001', name: 'Legal entity' }],
-      countries: [{ id: 'country-1', code: 'IT', name: 'Italy' }],
-      regions: [{ id: 'region-1', tenantId: 'tenant-1', countryId: 'country-1', code: 'RG001', name: 'Lazio' }],
-      areas: [{ id: 'area-1', tenantId: 'tenant-1', countryId: 'country-1', regionId: 'region-1', code: 'RM', name: 'Rome' }],
-      globalZipCodes: [{ id: 'zip-1', tenantId: 'tenant-1', countryId: 'country-1', regionId: 'region-1', areaId: 'area-1', code: '00100', name: 'Roma' }]
-    })),
-    createCompanyProfile: vi.fn(),
-    updateCompanyProfile: vi.fn(),
-    findCompanyProfileById: vi.fn(() => of(activeDetail)),
-    activateCompanyProfile: vi.fn(() => of({ ...activeDetail, active: true })),
-    deactivateCompanyProfile: vi.fn(() => of({ ...activeDetail, active: false })),
-    deleteCompanyProfile: vi.fn(() => of(void 0)),
-    ...overrides
-  } as CompanyProfileAdministrationService;
+function findButtonByExactText(container: HTMLElement, label: string): HTMLButtonElement {
+  const button = Array.from(container.querySelectorAll('button'))
+    .find((candidate) => candidate.textContent?.trim() === label) as HTMLButtonElement | undefined;
+
+  if (!button) {
+    throw new Error(`Button not found: ${label}`);
+  }
+
+  return button;
+}
+
+function clickButtonByExactText(container: HTMLElement, label: string): void {
+  findButtonByExactText(container, label).click();
 }

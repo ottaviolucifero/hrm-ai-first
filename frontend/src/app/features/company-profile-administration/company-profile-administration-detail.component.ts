@@ -8,7 +8,13 @@ import { AuthService } from '../../core/auth/auth.service';
 import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
-import { AppButtonComponent } from '../../shared/components/button/app-button.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogConfig } from '../../shared/components/confirm-dialog/confirm-dialog.models';
+import {
+  DETAIL_ACTION_BAR_STANDARD_ACTION_IDS,
+  DetailActionBarAction,
+  DetailActionBarComponent
+} from '../../shared/components/detail-action-bar/detail-action-bar.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import {
   CompanyProfileAdministrationAreaOption,
@@ -24,9 +30,14 @@ interface ReadOnlyField {
 
 type CompanyProfilePendingAction = 'deactivate' | 'deletePhysical';
 
+interface PendingCompanyProfileConfirmation {
+  readonly action: CompanyProfilePendingAction;
+  readonly config: ConfirmDialogConfig;
+}
+
 @Component({
   selector: 'app-company-profile-administration-detail',
-  imports: [AppButtonComponent],
+  imports: [ConfirmDialogComponent, DetailActionBarComponent],
   templateUrl: './company-profile-administration-detail.component.html',
   styleUrl: './company-profile-administration-detail.component.scss'
 })
@@ -47,7 +58,7 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
   protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly companyProfile = signal<CompanyProfileAdministrationCompanyProfileDetail | null>(null);
   protected readonly formOptions = signal<CompanyProfileAdministrationFormOptions | null>(null);
-  protected readonly pendingAction = signal<CompanyProfilePendingAction | null>(null);
+  protected readonly pendingConfirmation = signal<PendingCompanyProfileConfirmation | null>(null);
 
   constructor() {
     this.load();
@@ -83,6 +94,81 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
     this.load();
   }
 
+  protected detailSecondaryActions(): readonly DetailActionBarAction[] {
+    if (this.hasError()) {
+      return [{
+        id: 'retry',
+        label: this.i18n.t('rolePermissions.actions.retry'),
+        icon: 'ki-filled ki-arrows-circle'
+      }];
+    }
+
+    const detail = this.companyProfile();
+    if (!detail) {
+      return [];
+    }
+
+    return [{
+      id: detail.active
+        ? DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate
+        : DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate,
+      label: this.i18n.t(this.activeActionLabelKey(detail)),
+      loadingLabel: this.i18n.t(this.activeActionLoadingLabelKey(detail)),
+      loading: this.actionSaving(),
+      disabled: this.actionSaving() || !this.modulePermissions().canUpdate,
+      icon: detail.active ? 'ki-filled ki-cross-circle' : 'ki-filled ki-check-circle',
+      variant: detail.active ? 'outline' : 'secondary'
+    }];
+  }
+
+  protected detailPrimaryAction(): DetailActionBarAction | null {
+    if (this.hasError() || !this.companyProfile()) {
+      return null;
+    }
+
+    return {
+      id: DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.edit,
+      label: this.i18n.t('companyProfileAdministration.actions.edit'),
+      disabled: !this.modulePermissions().canUpdate,
+      icon: 'ki-filled ki-pencil'
+    };
+  }
+
+  protected detailDestructiveActions(): readonly DetailActionBarAction[] {
+    if (this.hasError() || !this.companyProfile()) {
+      return [];
+    }
+
+    return [{
+      id: DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deletePhysical,
+      label: this.i18n.t('companyProfileAdministration.actions.deletePhysical'),
+      loadingLabel: this.i18n.t('companyProfileAdministration.deletePhysical.processing'),
+      loading: this.actionSaving(),
+      disabled: this.actionSaving() || !this.canDelete(),
+      icon: 'ki-filled ki-trash'
+    }];
+  }
+
+  protected handleDetailAction(actionId: string): void {
+    switch (actionId) {
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.edit:
+        this.editCompanyProfile();
+        return;
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate:
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate:
+        this.triggerActiveAction();
+        return;
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deletePhysical:
+        this.triggerDeleteAction();
+        return;
+      case 'retry':
+        this.retry();
+        return;
+      default:
+        return;
+    }
+  }
+
   protected canDelete(): boolean {
     return this.modulePermissions().canDelete;
   }
@@ -99,34 +185,6 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
       : 'companyProfileAdministration.lifecycle.activate.processing';
   }
 
-  protected hasPendingAction(): boolean {
-    return this.pendingAction() !== null;
-  }
-
-  protected pendingActionTitle(): string {
-    return this.i18n.t(this.pendingAction() === 'deletePhysical'
-      ? 'companyProfileAdministration.deletePhysical.confirmTitle'
-      : 'companyProfileAdministration.deactivate.confirmTitle');
-  }
-
-  protected pendingActionMessage(): string {
-    return this.i18n.t(this.pendingAction() === 'deletePhysical'
-      ? 'companyProfileAdministration.deletePhysical.confirmMessage'
-      : 'companyProfileAdministration.deactivate.confirmMessage');
-  }
-
-  protected pendingActionConfirmKey(): I18nKey {
-    return this.pendingAction() === 'deletePhysical'
-      ? 'companyProfileAdministration.deletePhysical.confirmAction'
-      : 'companyProfileAdministration.deactivate.confirmAction';
-  }
-
-  protected pendingActionLoadingKey(): I18nKey {
-    return this.pendingAction() === 'deletePhysical'
-      ? 'companyProfileAdministration.deletePhysical.processing'
-      : 'companyProfileAdministration.lifecycle.deactivate.processing';
-  }
-
   protected triggerActiveAction(): void {
     const detail = this.companyProfile();
     if (!detail || this.actionSaving() || !this.modulePermissions().canUpdate) {
@@ -134,7 +192,7 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
     }
 
     if (detail.active) {
-      this.pendingAction.set('deactivate');
+      this.pendingConfirmation.set(this.confirmationConfigForAction('deactivate'));
       return;
     }
 
@@ -146,7 +204,7 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
       return;
     }
 
-    this.pendingAction.set('deletePhysical');
+    this.pendingConfirmation.set(this.confirmationConfigForAction('deletePhysical'));
   }
 
   protected cancelPendingAction(): void {
@@ -154,11 +212,18 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
       return;
     }
 
-    this.pendingAction.set(null);
+    this.pendingConfirmation.set(null);
   }
 
   protected confirmPendingAction(): void {
-    if (this.pendingAction() === 'deletePhysical') {
+    const pending = this.pendingConfirmation();
+    if (!pending) {
+      return;
+    }
+
+    this.pendingConfirmation.set(null);
+
+    if (pending.action === 'deletePhysical') {
       this.deleteCompanyProfile();
       return;
     }
@@ -237,7 +302,7 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
     this.loadSubscription?.unsubscribe();
     this.loading.set(true);
     this.hasError.set(false);
-    this.pendingAction.set(null);
+    this.pendingConfirmation.set(null);
 
     this.loadSubscription = forkJoin({
       authenticatedUser: this.authService.loadAuthenticatedUser().pipe(take(1)),
@@ -276,7 +341,7 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
       .pipe(finalize(() => this.actionSaving.set(false)))
       .subscribe({
         next: (updatedDetail) => {
-          this.pendingAction.set(null);
+          this.pendingConfirmation.set(null);
           this.companyProfile.set(updatedDetail);
           this.notificationService.success(this.i18n.t(active
             ? 'companyProfileAdministration.feedback.activateSuccess'
@@ -307,7 +372,7 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
       .pipe(finalize(() => this.actionSaving.set(false)))
       .subscribe({
         next: () => {
-          this.pendingAction.set(null);
+          this.pendingConfirmation.set(null);
           this.notificationService.success(this.i18n.t('companyProfileAdministration.feedback.deleteSuccess'), {
             titleKey: 'alert.title.success'
           });
@@ -442,5 +507,44 @@ export class CompanyProfileAdministrationDetailComponent implements OnDestroy {
     statusKeys?: Partial<Record<number, I18nKey>>
   ): string {
     return resolveApiErrorMessage(this.i18n, error, { fallbackKey, statusKeys });
+  }
+
+  private confirmationConfigForAction(action: PendingCompanyProfileConfirmation['action']): PendingCompanyProfileConfirmation {
+    const detail = this.companyProfile();
+    const targetValue = detail?.tradeName?.trim() || detail?.legalName?.trim() || detail?.code?.trim() || null;
+
+    switch (action) {
+      case 'deletePhysical':
+        return {
+          action,
+          config: {
+            titleKey: 'companyProfileAdministration.deletePhysical.confirmTitle',
+            messageKey: 'companyProfileAdministration.deletePhysical.confirmMessage',
+            confirmLabelKey: 'companyProfileAdministration.deletePhysical.confirmAction',
+            cancelLabelKey: 'masterData.form.cancel',
+            severity: 'danger',
+            mode: 'confirm',
+            targetLabelKey: 'confirmDialog.target.selectedEntity',
+            targetValue,
+            loading: this.actionSaving()
+          }
+        };
+      case 'deactivate':
+      default:
+        return {
+          action: 'deactivate',
+          config: {
+            titleKey: 'companyProfileAdministration.deactivate.confirmTitle',
+            messageKey: 'companyProfileAdministration.deactivate.confirmMessage',
+            confirmLabelKey: 'companyProfileAdministration.deactivate.confirmAction',
+            cancelLabelKey: 'masterData.form.cancel',
+            severity: 'warning',
+            mode: 'confirm',
+            targetLabelKey: 'confirmDialog.target.selectedEntity',
+            targetValue,
+            loading: this.actionSaving()
+          }
+        };
+    }
   }
 }

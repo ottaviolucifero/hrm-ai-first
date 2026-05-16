@@ -10,6 +10,13 @@ import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogConfig } from '../../shared/components/confirm-dialog/confirm-dialog.models';
+import {
+  DETAIL_ACTION_BAR_STANDARD_ACTION_IDS,
+  DetailActionBarAction,
+  DetailActionBarComponent
+} from '../../shared/components/detail-action-bar/detail-action-bar.component';
 import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
 import { PasswordFieldComponent } from '../../shared/form-fields/password-field.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
@@ -34,10 +41,23 @@ interface SecurityStatusField extends ReadOnlyField {
 }
 
 type UserLifecycleAction = 'activate' | 'deactivate' | 'lock' | 'unlock';
+type UserHeaderPendingAction = 'deactivate' | 'deletePhysical';
+
+interface PendingUserConfirmation {
+  readonly action: UserHeaderPendingAction;
+  readonly config: ConfirmDialogConfig;
+}
 
 @Component({
   selector: 'app-user-administration-detail',
-  imports: [AppButtonComponent, LookupSelectComponent, PasswordFieldComponent, ReactiveFormsModule],
+  imports: [
+    AppButtonComponent,
+    ConfirmDialogComponent,
+    DetailActionBarComponent,
+    LookupSelectComponent,
+    PasswordFieldComponent,
+    ReactiveFormsModule
+  ],
   templateUrl: './user-administration-detail.component.html',
   styleUrl: './user-administration-detail.component.scss'
 })
@@ -69,6 +89,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
   protected readonly passwordSaving = signal(false);
   protected readonly lifecycleSaving = signal(false);
   protected readonly pendingLifecycleAction = signal<UserLifecycleAction | null>(null);
+  protected readonly pendingConfirmation = signal<PendingUserConfirmation | null>(null);
   protected readonly assignedRoles = signal<readonly UserAdministrationRole[]>([]);
   protected readonly availableRoles = signal<readonly UserAdministrationRole[]>([]);
   protected readonly roleTenantOptions = computed(() => this.buildTenantOptions(this.user()));
@@ -161,6 +182,80 @@ export class UserAdministrationDetailComponent implements OnDestroy {
 
   protected retry(): void {
     this.loadUser();
+  }
+
+  protected detailSecondaryActions(): readonly DetailActionBarAction[] {
+    if (this.hasError()) {
+      return [{
+        id: 'retry',
+        label: this.i18n.t('rolePermissions.actions.retry'),
+        icon: 'ki-filled ki-arrows-circle'
+      }];
+    }
+
+    const user = this.user();
+    if (!user) {
+      return [];
+    }
+
+    return [{
+      id: user.active
+        ? DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate
+        : DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate,
+      label: this.activeActionLabel(user),
+      loadingLabel: this.activeActionLoadingLabel(user),
+      loading: this.lifecycleSaving(),
+      disabled: this.lifecycleSaving() || !this.modulePermissions().canUpdate,
+      icon: this.activeActionIcon(user),
+      variant: user.active ? 'outline' : 'secondary'
+    }];
+  }
+
+  protected detailPrimaryAction(): DetailActionBarAction | null {
+    if (this.hasError() || !this.user()) {
+      return null;
+    }
+
+    return {
+      id: DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.edit,
+      label: this.i18n.t('userAdministration.actions.edit'),
+      disabled: !this.modulePermissions().canUpdate,
+      icon: 'ki-filled ki-pencil'
+    };
+  }
+
+  protected detailDestructiveActions(): readonly DetailActionBarAction[] {
+    if (this.hasError() || !this.user()) {
+      return [];
+    }
+
+    return [{
+      id: DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deletePhysical,
+      label: this.i18n.t('userAdministration.actions.deletePhysical'),
+      loading: this.lifecycleSaving(),
+      disabled: this.lifecycleSaving() || !this.modulePermissions().canDelete,
+      icon: 'ki-filled ki-trash'
+    }];
+  }
+
+  protected handleDetailAction(actionId: string): void {
+    switch (actionId) {
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.edit:
+        this.editUser();
+        return;
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate:
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate:
+        this.triggerActiveAction();
+        return;
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deletePhysical:
+        this.triggerDeleteAction();
+        return;
+      case 'retry':
+        this.retry();
+        return;
+      default:
+        return;
+    }
   }
 
   protected selectRoleTenant(value: string | Event | LookupOption | null): void {
@@ -268,17 +363,25 @@ export class UserAdministrationDetailComponent implements OnDestroy {
 
   protected triggerActiveAction(): void {
     const user = this.user();
-    if (!user || this.lifecycleSaving()) {
+    if (!user || this.lifecycleSaving() || !this.modulePermissions().canUpdate) {
       return;
     }
 
     const action: UserLifecycleAction = user.active ? 'deactivate' : 'activate';
-    if (this.requiresLifecycleConfirmation(action)) {
-      this.pendingLifecycleAction.set(action);
+    if (action === 'deactivate') {
+      this.pendingConfirmation.set(this.confirmationConfigForAction('deactivate'));
       return;
     }
 
     this.executeLifecycleAction(action);
+  }
+
+  protected triggerDeleteAction(): void {
+    if (!this.user() || this.lifecycleSaving() || !this.modulePermissions().canDelete) {
+      return;
+    }
+
+    this.pendingConfirmation.set(this.confirmationConfigForAction('deletePhysical'));
   }
 
   protected triggerLockAction(): void {
@@ -300,6 +403,14 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     this.pendingLifecycleAction.set(null);
   }
 
+  protected cancelPendingAction(): void {
+    if (this.lifecycleSaving()) {
+      return;
+    }
+
+    this.pendingConfirmation.set(null);
+  }
+
   protected confirmLifecycleAction(): void {
     const action = this.pendingLifecycleAction();
     if (!action) {
@@ -307,6 +418,25 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     }
 
     this.executeLifecycleAction(action);
+  }
+
+  protected confirmPendingAction(): void {
+    const pending = this.pendingConfirmation();
+    if (!pending) {
+      return;
+    }
+
+    this.pendingConfirmation.set(null);
+
+    switch (pending.action) {
+      case 'deletePhysical':
+        this.deleteUserPhysically();
+        return;
+      case 'deactivate':
+      default:
+        this.executeLifecycleAction('deactivate');
+        return;
+    }
   }
 
   protected activeActionLabel(user: UserAdministrationUserDetail): string {
@@ -453,6 +583,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     this.loadSubscription?.unsubscribe();
     this.loading.set(true);
     this.hasError.set(false);
+    this.pendingConfirmation.set(null);
 
     this.loadSubscription = this.userAdministrationService.findUserById(userId)
       .pipe(finalize(() => this.loading.set(false)))
@@ -530,6 +661,7 @@ export class UserAdministrationDetailComponent implements OnDestroy {
       .pipe(finalize(() => this.lifecycleSaving.set(false)))
       .subscribe({
         next: (updatedUser) => {
+          this.pendingConfirmation.set(null);
           this.user.set(updatedUser);
           this.pendingLifecycleAction.set(null);
           this.notificationService.success(this.i18n.t(this.lifecycleKey(action, 'success')), {
@@ -538,6 +670,38 @@ export class UserAdministrationDetailComponent implements OnDestroy {
         },
         error: (error) => {
           this.notificationService.error(this.resolveApiMessage(error, this.lifecycleKey(action, 'error')), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
+  private deleteUserPhysically(): void {
+    const user = this.user();
+    if (!user) {
+      return;
+    }
+
+    this.lifecycleSaving.set(true);
+    this.lifecycleMutationSubscription?.unsubscribe();
+    this.lifecycleMutationSubscription = this.userAdministrationService.deleteUser(user.id)
+      .pipe(finalize(() => this.lifecycleSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.pendingConfirmation.set(null);
+          this.notificationService.success(this.i18n.t('userAdministration.deletePhysical.feedback.success'), {
+            titleKey: 'alert.title.success'
+          });
+          void this.router.navigate(['/admin/users']);
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveApiMessage(error, 'userAdministration.deletePhysical.error.generic', {
+            401: 'userAdministration.deletePhysical.error.unauthorized',
+            403: 'userAdministration.deletePhysical.error.forbidden',
+            404: 'userAdministration.deletePhysical.error.notFound',
+            409: 'userAdministration.deletePhysical.error.conflict'
+          }), {
             titleKey: 'alert.title.danger',
             dismissible: true
           });
@@ -624,6 +788,45 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     return action === 'deactivate' || action === 'lock';
   }
 
+  private confirmationConfigForAction(action: PendingUserConfirmation['action']): PendingUserConfirmation {
+    const user = this.user();
+    const targetValue = user?.displayName?.trim() || user?.email?.trim() || null;
+
+    switch (action) {
+      case 'deletePhysical':
+        return {
+          action,
+          config: {
+            titleKey: 'userAdministration.deletePhysical.confirmTitle',
+            messageKey: 'userAdministration.deletePhysical.confirmMessage',
+            confirmLabelKey: 'userAdministration.deletePhysical.confirmAction',
+            cancelLabelKey: 'masterData.form.cancel',
+            severity: 'danger',
+            mode: 'confirm',
+            targetLabelKey: 'confirmDialog.target.selectedEntity',
+            targetValue,
+            loading: this.lifecycleSaving()
+          }
+        };
+      case 'deactivate':
+      default:
+        return {
+          action: 'deactivate',
+          config: {
+            titleKey: 'userAdministration.lifecycle.deactivate.confirmTitle',
+            messageKey: 'userAdministration.lifecycle.deactivate.confirmMessage',
+            confirmLabelKey: 'userAdministration.lifecycle.deactivate.confirmAction',
+            cancelLabelKey: 'masterData.form.cancel',
+            severity: 'warning',
+            mode: 'confirm',
+            targetLabelKey: 'confirmDialog.target.selectedEntity',
+            targetValue,
+            loading: this.lifecycleSaving()
+          }
+        };
+    }
+  }
+
   private lifecycleKey(
     action: UserLifecycleAction,
     suffix: 'confirmAction' | 'confirmMessage' | 'confirmTitle' | 'error' | 'processing' | 'success'
@@ -631,8 +834,8 @@ export class UserAdministrationDetailComponent implements OnDestroy {
     return `userAdministration.lifecycle.${action}.${suffix}` as I18nKey;
   }
 
-  private resolveApiMessage(error: unknown, fallbackKey: I18nKey): string {
-    return resolveApiErrorMessage(this.i18n, error, { fallbackKey });
+  private resolveApiMessage(error: unknown, fallbackKey: I18nKey, statusKeys?: Partial<Record<number, I18nKey>>): string {
+    return resolveApiErrorMessage(this.i18n, error, { fallbackKey, statusKeys });
   }
 
   private userTypeValue(reference: { code: string; name: string } | null): string {
