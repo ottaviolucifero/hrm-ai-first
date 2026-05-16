@@ -35,17 +35,25 @@
 }
 
 .role-admin-list-card {
-  display: grid;
-  gap: 1rem;
-  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border, #e9ecef);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
 }
 
 .role-admin-list-toolbar {
-  align-items: flex-end;
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border, #e9ecef);
+  background: var(--color-background, #ffffff);
 }
 
 .role-admin-list-heading {
@@ -114,5 +122,9 @@
 
   .role-admin-table-search {
     min-width: 0;
+  }
+
+  .role-admin-list-toolbar {
+    padding: 1rem;
   }
 }
