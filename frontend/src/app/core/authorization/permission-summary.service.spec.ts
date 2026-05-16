@@ -102,6 +102,28 @@ describe('PermissionSummaryService', () => {
     expect(summary.isFrozen).toBe(false);
   });
 
+  it('supports device administration permissions', () => {
+    const summary = service.summaryForModule({
+      id: 'user-1',
+      tenantId: 'tenant-1',
+      email: 'qa@example.com',
+      userType: 'TENANT_ADMIN',
+      permissions: [
+        'TENANT.DEVICE.READ',
+        'TENANT.DEVICE.CREATE',
+        'TENANT.DEVICE.UPDATE',
+        'TENANT.DEVICE.DELETE'
+      ]
+    }, 'devices');
+
+    expect(summary.canView).toBe(true);
+    expect(summary.canCreate).toBe(true);
+    expect(summary.canUpdate).toBe(true);
+    expect(summary.canDelete).toBe(true);
+    expect(summary.hasAnyPermission).toBe(true);
+    expect(summary.isFrozen).toBe(false);
+  });
+
   it('ignores USER_TYPE authorities and invalid codes', () => {
     const summary = service.summaryForModule({
       id: 'user-1',

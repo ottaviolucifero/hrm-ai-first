@@ -1,0 +1,213 @@
+<section class="kt-container-fixed py-4 device-form-page" aria-labelledby="device-form-title">
+  <div class="device-form-layout">
+    <header class="device-form-page-header">
+      <div class="device-form-heading">
+        <span class="device-form-eyebrow">{{ i18n.t('nav.assets') }}</span>
+        <h1 id="device-form-title" class="text-xl font-semibold text-mono">{{ i18n.t(titleKey()) }}</h1>
+        <p class="device-form-subtitle">{{ i18n.t(subtitleKey()) }}</p>
+      </div>
+
+      <div class="device-form-page-actions" role="group" [attr.aria-label]="i18n.t('deviceAdministration.form.actions.toolbar')">
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrow-left"
+          [label]="i18n.t('deviceAdministration.actions.back')"
+          (pressed)="goBack()" />
+        @if (hasError()) {
+          <app-button
+            variant="secondary"
+            size="sm"
+            icon="ki-filled ki-arrows-circle"
+            [label]="i18n.t('rolePermissions.actions.retry')"
+            (pressed)="retry()" />
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <section class="kt-card device-form-state" role="status" aria-live="polite">
+        {{ i18n.t('deviceAdministration.form.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card device-form-state device-form-state-error" role="alert">
+        {{ i18n.t('deviceAdministration.form.errors.load') }}
+      </section>
+    } @else {
+      <form class="device-form-grid" [formGroup]="form" (ngSubmit)="submit()">
+        <section class="kt-card device-form-card" aria-labelledby="device-form-asset-data">
+          <h2 id="device-form-asset-data" class="device-form-card-title">
+            {{ i18n.t('deviceAdministration.form.assetData.title') }}
+          </h2>
+
+          <app-input
+            formControlName="assetCodeLabel"
+            [label]="i18n.t('deviceAdministration.fields.assetCode')"
+            [helpText]="mode() === 'create'
+              ? i18n.t('deviceAdministration.form.assetCode.generated')
+              : i18n.t('deviceAdministration.form.assetCode.readonly')" />
+
+          <app-input
+            formControlName="barcodeValueLabel"
+            [label]="i18n.t('deviceAdministration.fields.barcodeValue')"
+            [helpText]="mode() === 'create'
+              ? i18n.t('deviceAdministration.form.barcodeValue.generated')
+              : i18n.t('deviceAdministration.form.barcodeValue.readonly')" />
+
+          <app-input
+            formControlName="name"
+            [label]="i18n.t('masterData.columns.name')"
+            [labelRequired]="true"
+            [required]="true"
+            [errorText]="validationMessage('name')" />
+
+          <app-checkbox
+            [label]="i18n.t('masterData.columns.active')"
+            [checked]="activeValue()"
+            [disabled]="true"
+            [helpText]="i18n.t('deviceAdministration.form.activeReadonly')" />
+        </section>
+
+        <section class="kt-card device-form-card" aria-labelledby="device-form-identity">
+          <h2 id="device-form-identity" class="device-form-card-title">
+            {{ i18n.t('deviceAdministration.form.identity.title') }}
+          </h2>
+
+          <app-lookup-select
+            formControlName="deviceTypeId"
+            [label]="i18n.t('deviceAdministration.fields.deviceType')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('deviceAdministration.form.placeholders.deviceType')"
+            [options]="deviceTypeLookupOptions()"
+            [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+            [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+            [errorText]="validationMessage('deviceTypeId')" />
+
+          <app-lookup-select
+            formControlName="deviceBrandId"
+            [label]="i18n.t('deviceAdministration.fields.deviceBrand')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('deviceAdministration.form.placeholders.deviceBrand')"
+            [options]="deviceBrandLookupOptions()"
+            [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+            [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+            [errorText]="validationMessage('deviceBrandId')" />
+
+          <app-input
+            formControlName="model"
+            [label]="i18n.t('deviceAdministration.fields.model')"
+            [errorText]="validationMessage('model')" />
+
+          <app-input
+            formControlName="serialNumber"
+            [label]="i18n.t('deviceAdministration.fields.serialNumber')"
+            [labelRequired]="true"
+            [required]="true"
+            [errorText]="validationMessage('serialNumber')" />
+
+          <app-lookup-select
+            formControlName="deviceStatusId"
+            [label]="i18n.t('deviceAdministration.fields.deviceStatus')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('deviceAdministration.form.placeholders.deviceStatus')"
+            [options]="deviceStatusLookupOptions()"
+            [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+            [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+            [errorText]="validationMessage('deviceStatusId')" />
+        </section>
+
+        <section class="kt-card device-form-card" aria-labelledby="device-form-ownership">
+          <h2 id="device-form-ownership" class="device-form-card-title">
+            {{ i18n.t('deviceAdministration.form.ownership.title') }}
+          </h2>
+
+          @if (canEditTenant()) {
+            <app-lookup-select
+              formControlName="tenantId"
+              [label]="i18n.t('deviceAdministration.fields.tenant')"
+              [labelRequired]="true"
+              [required]="true"
+              [placeholder]="i18n.t('deviceAdministration.form.placeholders.tenant')"
+              [options]="tenantLookupOptions()"
+              [closedLabelBuilder]="tenantLookupClosedLabelBuilder"
+              [optionLabelBuilder]="tenantLookupOptionLabelBuilder"
+              [errorText]="validationMessage('tenantId')"
+              (valueChange)="selectTenant($event)" />
+          } @else {
+            <app-input
+              formControlName="tenantLabel"
+              [label]="i18n.t('deviceAdministration.fields.tenant')"
+              [required]="true" />
+          }
+
+          <app-lookup-select
+            formControlName="companyProfileId"
+            [label]="i18n.t('deviceAdministration.fields.companyProfile')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('deviceAdministration.form.placeholders.companyProfile')"
+            [options]="companyProfileLookupOptions()"
+            [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+            [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+            [errorText]="validationMessage('companyProfileId')"
+            (valueChange)="selectCompanyProfile($event)" />
+
+          <app-lookup-select
+            formControlName="assignedToEmployeeId"
+            [label]="i18n.t('deviceAdministration.fields.assignedTo')"
+            [clearable]="true"
+            [placeholder]="i18n.t('deviceAdministration.form.placeholders.assignedToEmployee')"
+            [options]="employeeLookupOptions()"
+            [closedLabelBuilder]="employeeLookupClosedLabelBuilder"
+            [optionLabelBuilder]="employeeLookupOptionLabelBuilder"
+            (valueChange)="selectAssignedEmployee($event)" />
+
+          <app-date-time-field
+            formControlName="assignedAt"
+            [label]="i18n.t('deviceAdministration.fields.assignedAt')"
+            [mode]="'datetime'"
+            [disabled]="assignedAtDisabled()"
+            [errorText]="validationMessage('assignedAt')" />
+        </section>
+
+        <section class="kt-card device-form-card" aria-labelledby="device-form-lifecycle">
+          <h2 id="device-form-lifecycle" class="device-form-card-title">
+            {{ i18n.t('deviceAdministration.form.lifecycle.title') }}
+          </h2>
+
+          <app-date-time-field
+            formControlName="purchaseDate"
+            [label]="i18n.t('deviceAdministration.fields.purchaseDate')"
+            [mode]="'date'"
+            [errorText]="validationMessage('purchaseDate')" />
+
+          <app-date-time-field
+            formControlName="warrantyEndDate"
+            [label]="i18n.t('deviceAdministration.fields.warrantyEndDate')"
+            [mode]="'date'"
+            [errorText]="validationMessage('warrantyEndDate')" />
+        </section>
+
+        <div class="device-form-actions">
+          <app-button
+            variant="secondary"
+            type="button"
+            [label]="i18n.t('deviceAdministration.form.actions.cancel')"
+            [disabled]="saving()"
+            (pressed)="goBack()" />
+          <app-button
+            type="submit"
+            variant="primary"
+            icon="ki-filled ki-check"
+            [label]="i18n.t(submitLabelKey())"
+            [loadingLabel]="i18n.t(submitLoadingLabelKey())"
+            [loading]="saving()"
+            [disabled]="submitDisabled()" />
+        </div>
+      </form>
+    }
+  </div>
+</section>

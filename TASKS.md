@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.57
-Ultimo aggiornamento: 2026-05-15
+Versione: 2.59
+Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
 ---
@@ -5030,7 +5030,7 @@ Validazione:
 
 #### TASK-066.5 - Device frontend administration UI
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend
 
@@ -5049,9 +5049,28 @@ Dettaglio UI desiderato:
 - card identita bene: nome, asset code, tipo, marca, modello, seriale, stato;
 - card azienda/tenant: tenant, company profile, active;
 - card acquisto/garanzia: purchase date, warranty end date, badge garanzia valida/scaduta se semplice;
-- card assegnazione corrente: dipendente assegnato, `assignedAt`, azioni assegna/restituisci se gia disponibili;
-- card QR/barcode: anteprima elegante del codice, asset code visibile, azione stampa etichetta;
+- card assegnazione corrente: dipendente assegnato, `assignedAt`, solo stato informativo in questo task;
+- card QR/barcode: anteprima semplice del codice e asset code visibile; stampa avanzata rimandata al task dedicato;
 - card audit/info tecniche se coerente con pattern esistenti.
+
+Completato:
+
+- aggiunte le rotte protette `/admin/devices`, `/admin/devices/new`, `/admin/devices/:id/edit` e `/admin/devices/:id` riusando il routing admin esistente;
+- collegata la voce sidebar esistente `Asset aziendali -> Dispositivi` (`nav.devices`) alla rotta `/admin/devices`, mantenendo i titoli header coerenti con la lingua selezionata;
+- esteso il mapping frontend permessi con il modulo `devices -> DEVICE`, riusando le summary/guard gia presenti senza modifiche backend o security runtime;
+- implementata la lista Device con `app-data-table`, colonne coerenti con il backend reale, azioni `view` / `edit` / `activate` / `deactivate` / `deletePhysical`, loading/error/empty state e conferme riusando il dialog shared gia in uso;
+- implementato il service frontend `/api/admin/devices` con list/detail/form-options/create/update/activate/deactivate/delete, senza introdurre endpoint paralleli o workaround lato UI;
+- implementato il form create/edit Device riusando `app-input`, `app-checkbox`, `app-lookup-select` e il pattern card responsive gia adottato nelle administration UI esistenti;
+- mantenuti `assetCode` e `barcodeValue` come generati dal backend in create e readonly in edit; il tenant resta selezionabile solo per platform user;
+- applicato il vincolo di usare solo i dati realmente esposti da `/api/admin/devices/form-options`: nessun filtro tenant-side deduttivo su company profile/master data oltre al solo filtro employee per `companyProfileId`, che e realmente disponibile nel DTO;
+- implementato il dettaglio Device a card con sezioni identita bene, azienda/tenant, acquisto/garanzia, assegnazione corrente informativa, QR/barcode preview semplice e audit/info tecniche;
+- mantenuta fuori scope l UI di assign/return/reassign, la stampa etichetta avanzata e il QR grafico, demandando i follow-up rispettivamente a `TASK-066.6` e `TASK-066.7`;
+- aggiunte tutte le chiavi i18n necessarie in `it` / `fr` / `en` e aggiornati i test frontend su service, route, permission mapping, sidebar/header, lista, form, dettaglio, badge garanzia e barcode preview.
+
+Validazione:
+
+- `cd frontend && npm.cmd run build` OK con warning noto budget iniziale (`2.27 MB`, +`265.05 kB`);
+- `cd frontend && npm.cmd test` OK, `43` file test passed, `325` test passed.
 
 #### TASK-066.6 - Device assignment UI
 
@@ -5118,6 +5137,21 @@ Obiettivo:
 - aggiornare `docs/qa/QA-REPORTS.md`;
 - verificare che non siano stati introdotti componenti duplicati o architetture parallele.
 
+#### TASK-066.10 - Applicazione nuovo componente header dettaglio a User e Company Profile
+
+Stato: TODO
+
+Tipo: Frontend
+
+Obiettivo:
+
+- applicare il componente shared introdotto per la action/header bar di dettaglio alle interfacce:
+  - User Detail;
+  - Company Profile Detail;
+- mantenere comportamento, permessi, i18n e azioni esistenti;
+- non introdurre redesign generale;
+- non modificare backend/security.
+
 ### TASK-067 - UI HolidayCalendar
 
 Stato: TODO
@@ -5181,6 +5215,8 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.59 | 2026-05-16 | Aggiornamento documentale post-validazione manuale positiva di `TASK-066.5`: QA report allineato con esito manuale OK sul dettaglio Device e aggiunto nuovo follow-up `TASK-066.10` per applicare la shared detail action/header bar a User Detail e Company Profile Detail senza cambi backend/security. |
+| 2.58 | 2026-05-15 | TASK-066.5 completato come UI frontend amministrativa Device: route `/admin/devices`, collegamento sidebar esistente `nav.devices`, mapping permessi frontend `devices -> DEVICE`, lista con `app-data-table`, form create/edit e dettaglio a card con i18n `it/fr/en`, nessuna modifica backend e validazione reale `npm.cmd run build` + `npm.cmd test` verde. |
 | 2.57 | 2026-05-15 | TASK-066.4 completato con foundation backend-only dello storico assegnazioni `Device`: nuova tabella `device_assignments` via Flyway `V36` PostgreSQL/H2 con backfill, entity/repository dedicati, endpoint admin per history/assign/return, integrazione create/update con chiusura/apertura storico, lock pessimista sul `Device`, decisione durevole `DEC-043` e suite backend reale verde. |
 | 2.56 | 2026-05-15 | TASK-066.3 completato come foundation backend-only per identificazione `Device`: aggiunti `assetCode`/`barcodeValue`, migration Flyway `V35` PostgreSQL/H2 con backfill tenant-scoped `DEV000001`, generazione backend dal massimo progressivo per tenant, esposizione solo su API admin `Device`, nuova decisione durevole `DEC-042` e suite backend reale verde. |
 | 2.55 | 2026-05-15 | TASK-066.2 completato con CRUD amministrativo backend `Device` sotto `/api/admin/devices`, filtri paginati, lookup/form-options, validazioni tenant/company/master data/employee, endpoint dedicati `activate`/`deactivate`, delete fisico protetto, mapping security su permessi `DEVICE` gia seedati in `V18`, test backend reali verdi e nessun modello parallelo introdotto. |

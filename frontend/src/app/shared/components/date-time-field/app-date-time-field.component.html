@@ -1,0 +1,162 @@
+<div class="app-date-time-field" [class.app-date-time-field-open]="panelOpen">
+  <label class="app-date-time-label" [for]="inputId">
+    {{ label }}
+    @if (labelRequired) {
+      <span aria-hidden="true">*</span>
+    }
+  </label>
+
+  <div class="app-date-time-shell">
+    <input
+      #inputElement
+      [id]="inputId"
+      class="app-date-time-control"
+      type="text"
+      inputmode="numeric"
+      [disabled]="disabledState"
+      [readOnly]="readonlyState"
+      [required]="required"
+      [attr.placeholder]="placeholderText"
+      [attr.aria-describedby]="describedByAttribute"
+      [attr.aria-invalid]="hasError"
+      [attr.aria-expanded]="panelOpen"
+      [attr.aria-controls]="panelId"
+      autocomplete="off"
+      (focus)="openPanel()"
+      (click)="openPanel()"
+      (input)="onManualInput($event)"
+      (blur)="onBlur($event)" />
+
+    <button
+      class="app-date-time-toggle"
+      type="button"
+      [disabled]="readonlyState"
+      [attr.aria-label]="i18n.t('dateTimeField.aria.toggle')"
+      (click)="togglePanel()">
+      <span class="ki-filled ki-calendar" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  @if (panelOpen) {
+    <div class="app-date-time-panel" [id]="panelId" role="dialog" [attr.aria-label]="label">
+      <div class="app-date-time-picker" [class.app-date-time-picker-date-only]="!showTimePicker">
+        <section class="app-date-time-calendar" aria-live="polite">
+          <header class="app-date-time-calendar-header">
+            <div class="app-date-time-calendar-heading">
+              <div class="app-date-time-month">{{ monthLabel }}</div>
+              <label class="app-date-time-year-label" [for]="yearSelectId">
+                <span class="visually-hidden">{{ i18n.t('dateTimeField.aria.year') }}</span>
+                <select
+                  [id]="yearSelectId"
+                  class="app-date-time-year-select"
+                  [value]="displayedYear"
+                  [attr.aria-label]="i18n.t('dateTimeField.aria.year')"
+                  (change)="changeDisplayedYear($event)">
+                  @for (year of yearOptions; track year) {
+                    <option [value]="year">{{ year }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+
+            <div class="app-date-time-month-actions">
+              <button
+                class="app-date-time-icon-button"
+                type="button"
+                [attr.aria-label]="i18n.t('dateTimeField.aria.previousMonth')"
+                (click)="previousMonth()">
+                <span class="ki-filled ki-left" aria-hidden="true"></span>
+              </button>
+              <button
+                class="app-date-time-icon-button"
+                type="button"
+                [attr.aria-label]="i18n.t('dateTimeField.aria.nextMonth')"
+                (click)="nextMonth()">
+                <span class="ki-filled ki-right" aria-hidden="true"></span>
+              </button>
+            </div>
+          </header>
+
+          <div class="app-date-time-weekdays" aria-hidden="true">
+            @for (weekday of weekdayLabels; track weekday) {
+              <span>{{ weekday }}</span>
+            }
+          </div>
+
+          <div class="app-date-time-days" role="grid">
+            @for (cell of calendarCells; track cell.isoDate) {
+              <button
+                class="app-date-time-day"
+                type="button"
+                role="gridcell"
+                [class.app-date-time-day-outside]="cell.outsideMonth"
+                [class.app-date-time-day-today]="cell.today"
+                [class.app-date-time-day-selected]="cell.selected"
+                [attr.aria-selected]="cell.selected"
+                (click)="selectDate(cell)">
+                {{ cell.day }}
+              </button>
+            }
+          </div>
+        </section>
+
+        @if (showTimePicker) {
+          <section class="app-date-time-time" [attr.aria-label]="i18n.t('dateTimeField.time.label')">
+            <div class="app-date-time-time-icon">
+              <span class="ki-filled ki-time" aria-hidden="true"></span>
+            </div>
+            <div class="app-date-time-time-columns">
+              <div class="app-date-time-time-column" [attr.aria-label]="i18n.t('dateTimeField.time.hours')">
+                @for (hour of hours; track hour) {
+                  <button
+                    class="app-date-time-time-option"
+                    type="button"
+                    [class.app-date-time-time-option-selected]="isSelectedHour(hour)"
+                    [attr.aria-pressed]="isSelectedHour(hour)"
+                    (click)="selectHour(hour)">
+                    {{ formatNumber(hour) }}
+                  </button>
+                }
+              </div>
+
+              <div class="app-date-time-time-column" [attr.aria-label]="i18n.t('dateTimeField.time.minutes')">
+                @for (minute of minutes; track minute) {
+                  <button
+                    class="app-date-time-time-option"
+                    type="button"
+                    [class.app-date-time-time-option-selected]="isSelectedMinute(minute)"
+                    [attr.aria-pressed]="isSelectedMinute(minute)"
+                    (click)="selectMinute(minute)">
+                    {{ formatNumber(minute) }}
+                  </button>
+                }
+              </div>
+            </div>
+          </section>
+        }
+      </div>
+
+      <footer class="app-date-time-footer">
+        <button class="app-date-time-action app-date-time-action-secondary" type="button" (click)="cancelSelection()">
+          {{ i18n.t('dateTimeField.actions.cancel') }}
+        </button>
+        <div class="app-date-time-footer-main">
+          <button class="app-date-time-action app-date-time-action-ghost" type="button" (click)="useToday()">
+            {{ i18n.t('dateTimeField.actions.today') }}
+          </button>
+          <button class="app-date-time-action app-date-time-action-primary" type="button" (click)="confirmSelection()">
+            {{ i18n.t('dateTimeField.actions.confirm') }}
+          </button>
+        </div>
+      </footer>
+    </div>
+  }
+
+  @if (helpTextToRender) {
+    <p class="app-date-time-help" [id]="helpId">{{ helpTextToRender }}</p>
+  }
+
+  @if (errorTextToRender) {
+    <p class="app-date-time-error" [id]="errorId">{{ errorTextToRender }}</p>
+  }
+</div>

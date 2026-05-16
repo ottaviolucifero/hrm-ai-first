@@ -1,0 +1,39 @@
+import { Route } from '@angular/router';
+
+import { routes } from './app.routes';
+
+describe('app routes', () => {
+  it('registers device administration routes with device permissions', () => {
+    const rootChildren = findChildren(routes, '');
+    const adminChildren = findChildren(rootChildren, 'admin');
+    const devicesRoute = findRoute(adminChildren, 'devices');
+    const devicesCreateRoute = findRoute(adminChildren, 'devices/new');
+    const devicesEditRoute = findRoute(adminChildren, 'devices/:id/edit');
+    const devicesDetailRoute = findRoute(adminChildren, 'devices/:id');
+
+    expect(devicesRoute?.data).toEqual({
+      permissionModule: 'devices',
+      requiredAction: 'view'
+    });
+    expect(devicesCreateRoute?.data).toEqual({
+      permissionModule: 'devices',
+      requiredAction: 'create'
+    });
+    expect(devicesEditRoute?.data).toEqual({
+      permissionModule: 'devices',
+      requiredAction: 'update'
+    });
+    expect(devicesDetailRoute?.data).toEqual({
+      permissionModule: 'devices',
+      requiredAction: 'view'
+    });
+  });
+});
+
+function findChildren(routeList: readonly Route[], path: string): readonly Route[] {
+  return routeList.find((route) => route.path === path)?.children ?? [];
+}
+
+function findRoute(routeList: readonly Route[], path: string): Route | undefined {
+  return routeList.find((route) => route.path === path);
+}

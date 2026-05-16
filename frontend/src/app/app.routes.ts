@@ -7,6 +7,9 @@ import { LoginComponent } from './features/login/login.component';
 import { CompanyProfileAdministrationComponent } from './features/company-profile-administration/company-profile-administration.component';
 import { CompanyProfileAdministrationDetailComponent } from './features/company-profile-administration/company-profile-administration-detail.component';
 import { CompanyProfileAdministrationFormComponent } from './features/company-profile-administration/company-profile-administration-form.component';
+import { DeviceAdministrationComponent } from './features/device-administration/device-administration.component';
+import { DeviceAdministrationDetailComponent } from './features/device-administration/device-administration-detail.component';
+import { DeviceAdministrationFormComponent } from './features/device-administration/device-administration-form.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
 import { RoleAdministrationComponent } from './features/role-administration/role-administration.component';
 import { RolePermissionMatrixComponent } from './features/role-permissions/role-permission-matrix.component';
@@ -130,6 +133,42 @@ export const routes: Routes = [
             canActivate: [permissionGuard],
             data: {
               permissionModule: 'users',
+              requiredAction: 'view'
+            }
+          },
+          {
+            path: 'devices',
+            component: DeviceAdministrationComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'devices',
+              requiredAction: 'view'
+            }
+          },
+          {
+            path: 'devices/new',
+            component: DeviceAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'devices',
+              requiredAction: 'create'
+            }
+          },
+          {
+            path: 'devices/:id/edit',
+            component: DeviceAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'devices',
+              requiredAction: 'update'
+            }
+          },
+          {
+            path: 'devices/:id',
+            component: DeviceAdministrationDetailComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'devices',
               requiredAction: 'view'
             }
           },

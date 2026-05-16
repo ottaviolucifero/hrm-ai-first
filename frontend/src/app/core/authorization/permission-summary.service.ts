@@ -141,7 +141,8 @@ export class PermissionSummaryService {
       || value === 'MASTER_DATA'
       || value === 'ROLE'
       || value === 'PERMISSION'
-      || value === 'USER';
+      || value === 'USER'
+      || value === 'DEVICE';
   }
 
   private isPermissionCodeAction(value: string): value is PermissionCodeAction {

@@ -1,0 +1,71 @@
+<section class="kt-container-fixed py-4 device-admin-page" aria-labelledby="device-admin-title">
+  <div class="device-admin-layout">
+    <header class="device-admin-page-header">
+      <div class="device-admin-heading">
+        <span class="device-admin-eyebrow">{{ i18n.t('nav.assets') }}</span>
+        <h1 id="device-admin-title" class="text-xl font-semibold text-mono">
+          {{ i18n.t('deviceAdministration.title') }}
+        </h1>
+        <p class="device-admin-subtitle">{{ i18n.t('deviceAdministration.subtitle') }}</p>
+      </div>
+
+      <div class="device-admin-page-actions" role="group" [attr.aria-label]="i18n.t('deviceAdministration.actions.toolbar')">
+        <app-button
+          variant="primary"
+          size="sm"
+          icon="ki-filled ki-plus"
+          [label]="i18n.t('deviceAdministration.actions.create')"
+          [disabled]="loading() || !modulePermissions().canCreate"
+          (pressed)="createDevice()" />
+      </div>
+    </header>
+
+    <section class="kt-card device-admin-list-card" aria-labelledby="device-admin-list-title">
+      <div class="device-admin-list-toolbar">
+        <div class="device-admin-list-heading">
+          <h2 id="device-admin-list-title" class="device-admin-list-title">
+            {{ i18n.t('deviceAdministration.list.title') }}
+          </h2>
+          <div class="device-admin-list-meta-row">
+            <p class="device-admin-list-meta">{{ i18n.t('deviceAdministration.list.subtitle') }}</p>
+            <span class="device-admin-record-count">
+              {{ pageData().totalElements }} {{ i18n.t('dataTable.pagination.results') }}
+            </span>
+          </div>
+        </div>
+
+        <label class="device-admin-table-search">
+          <span class="device-admin-search-label">{{ i18n.t('roleAdministration.searchLabel') }}</span>
+          <input
+            class="kt-input device-admin-search-input"
+            type="search"
+            [disabled]="loading()"
+            [value]="searchInput()"
+            [placeholder]="i18n.t('deviceAdministration.searchPlaceholder')"
+            (input)="updateSearch($event)" />
+        </label>
+      </div>
+
+      <div class="device-admin-note" aria-live="polite">
+        {{ i18n.t(viewScopeKey()) }}
+      </div>
+
+      <app-data-table
+        [columns]="columns()"
+        [rows]="rows()"
+        [rowActions]="rowActions()"
+        [actionsColumnSticky]="'right'"
+        [pageData]="pageData()"
+        [pageSizeOptions]="pageSizeOptions"
+        [loading]="loading()"
+        [hasError]="hasError()"
+        [errorMessageKey]="'deviceAdministration.errors.load'"
+        [emptyMessageKey]="tableEmptyMessageKey()"
+        (rowAction)="handleRowAction($event)"
+        (previousPage)="goToPreviousPage()"
+        (nextPage)="goToNextPage()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="updatePageSize($event)" />
+    </section>
+  </div>
+</section>

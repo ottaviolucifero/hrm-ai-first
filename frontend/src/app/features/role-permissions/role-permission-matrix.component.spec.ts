@@ -25,7 +25,7 @@ describe('RolePermissionMatrixComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Amministratore');
     expect(fixture.nativeElement.textContent).toContain('Ruoli tenant');
     expect(fixture.nativeElement.textContent).toContain('Personalizzato');
-    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli']);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli', 'Dispositivi']);
   });
 
   it('keeps system roles read-only in the permission matrix', async () => {
@@ -94,7 +94,7 @@ describe('RolePermissionMatrixComponent', () => {
     expect(component.canSave()).toBe(false);
     expect(saveButton.disabled).toBe(true);
     expect(checkbox.disabled).toBe(true);
-    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli']);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli', 'Dispositivi']);
   });
 
   it('tracks unsaved changes and restores the initial snapshot', async () => {
@@ -111,7 +111,7 @@ describe('RolePermissionMatrixComponent', () => {
     const inputs = fixture.nativeElement.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
     expect(component.canReset()).toBe(false);
     expect(component.canSave()).toBe(false);
-    expect(inputs.length).toBe(11);
+    expect(inputs.length).toBe(15);
     expect(Array.from(inputs).every((input) => input.disabled === false)).toBe(true);
 
     inputs[1].click();
@@ -177,7 +177,7 @@ describe('RolePermissionMatrixComponent', () => {
     const fixture = await createFixture(createService());
     fixture.detectChanges();
 
-    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli']);
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dati di base', 'Profili aziendali', 'Utenti', 'Ruoli', 'Dispositivi']);
     expect(fixture.nativeElement.textContent).not.toContain('Dipendenti');
     expect(fixture.nativeElement.textContent).not.toContain('Permessi');
   });
@@ -367,6 +367,38 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
         tenantId: 'tenant-1',
         code: 'TENANT.USER.DELETE',
         name: 'User delete',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-device-read',
+        tenantId: 'tenant-1',
+        code: 'TENANT.DEVICE.READ',
+        name: 'Device read',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-device-create',
+        tenantId: 'tenant-1',
+        code: 'TENANT.DEVICE.CREATE',
+        name: 'Device create',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-device-update',
+        tenantId: 'tenant-1',
+        code: 'TENANT.DEVICE.UPDATE',
+        name: 'Device update',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-device-delete',
+        tenantId: 'tenant-1',
+        code: 'TENANT.DEVICE.DELETE',
+        name: 'Device delete',
         systemPermission: true,
         active: true
       }

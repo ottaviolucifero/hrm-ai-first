@@ -1,0 +1,212 @@
+<section class="kt-container-fixed py-4 device-detail-page" aria-labelledby="device-detail-title">
+  <div class="device-detail-layout">
+    <header class="device-detail-page-header">
+      <div class="device-detail-heading">
+        <span class="device-detail-eyebrow">{{ i18n.t('nav.assets') }}</span>
+        <h1 id="device-detail-title" class="text-xl font-semibold text-mono">{{ detailTitle() }}</h1>
+        <p class="device-detail-subtitle">{{ i18n.t('deviceAdministration.detail.subtitle') }}</p>
+      </div>
+    </header>
+
+    <app-detail-action-bar
+      [ariaLabel]="i18n.t('deviceAdministration.detail.actions')"
+      [backLabel]="i18n.t('deviceAdministration.actions.back')"
+      [secondaryActions]="detailSecondaryActions()"
+      [primaryAction]="detailPrimaryAction()"
+      [destructiveActions]="detailDestructiveActions()"
+      (backPressed)="goBack()"
+      (actionPressed)="handleDetailAction($event)" />
+
+    @if (loading()) {
+      <section class="kt-card device-detail-state" role="status" aria-live="polite">
+        {{ i18n.t('deviceAdministration.detail.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card device-detail-state device-detail-state-error" role="alert">
+        {{ i18n.t('deviceAdministration.errors.detailLoad') }}
+      </section>
+    } @else if (device(); as detail) {
+      <div class="device-detail-grid">
+        <section class="kt-card device-detail-card" aria-labelledby="device-detail-identity" data-testid="device-detail-card-identity">
+          <header class="device-detail-card-header">
+            <div class="device-detail-card-heading">
+              <span class="device-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-profile-circle"></i>
+              </span>
+              <h2 id="device-detail-identity" class="device-detail-card-title">
+                {{ i18n.t('deviceAdministration.detail.identity') }}
+              </h2>
+            </div>
+          </header>
+          <div class="device-detail-card-body">
+            <dl class="device-detail-fields">
+              @for (field of identityFields(detail); track field.labelKey) {
+                <div class="device-detail-field">
+                  <dt>{{ i18n.t(field.labelKey) }}</dt>
+                  <dd>{{ field.value }}</dd>
+                </div>
+              }
+              <div class="device-detail-field">
+                <dt>{{ i18n.t('deviceAdministration.fields.deviceStatus') }}</dt>
+                <dd>
+                  <span class="device-detail-badge device-detail-badge-neutral">
+                    {{ deviceStatusLabel(detail) }}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="kt-card device-detail-card" aria-labelledby="device-detail-ownership" data-testid="device-detail-card-ownership">
+          <header class="device-detail-card-header">
+            <div class="device-detail-card-heading">
+              <span class="device-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-information-2"></i>
+              </span>
+              <h2 id="device-detail-ownership" class="device-detail-card-title">
+                {{ i18n.t('deviceAdministration.detail.ownership') }}
+              </h2>
+            </div>
+          </header>
+          <div class="device-detail-card-body">
+            <dl class="device-detail-fields">
+              @for (field of ownershipFields(detail); track field.labelKey) {
+                <div class="device-detail-field">
+                  <dt>{{ i18n.t(field.labelKey) }}</dt>
+                  <dd>{{ field.value }}</dd>
+                </div>
+              }
+              <div class="device-detail-field">
+                <dt>{{ i18n.t('masterData.columns.active') }}</dt>
+                <dd>
+                  <span [class]="activeBadgeClass(detail)">
+                    {{ activeBadgeLabel(detail) }}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="kt-card device-detail-card" aria-labelledby="device-detail-lifecycle" data-testid="device-detail-card-lifecycle">
+          <header class="device-detail-card-header">
+            <div class="device-detail-card-heading">
+              <span class="device-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-calendar"></i>
+              </span>
+              <h2 id="device-detail-lifecycle" class="device-detail-card-title">
+                {{ i18n.t('deviceAdministration.detail.lifecycle') }}
+              </h2>
+            </div>
+            <span [class]="warrantyBadgeClass(detail)">{{ warrantyBadgeLabel(detail) }}</span>
+          </header>
+          <div class="device-detail-card-body">
+            <dl class="device-detail-fields">
+              @for (field of lifecycleFields(detail); track field.labelKey) {
+                <div class="device-detail-field">
+                  <dt>{{ i18n.t(field.labelKey) }}</dt>
+                  <dd>{{ field.value }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </section>
+
+        <section class="kt-card device-detail-card" aria-labelledby="device-detail-assignment" data-testid="device-detail-card-assignment">
+          <header class="device-detail-card-header">
+            <div class="device-detail-card-heading">
+              <span class="device-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-profile-circle"></i>
+              </span>
+              <h2 id="device-detail-assignment" class="device-detail-card-title">
+                {{ i18n.t('deviceAdministration.detail.assignment') }}
+              </h2>
+            </div>
+          </header>
+          <div class="device-detail-card-body">
+            @if (hasAssignment(detail)) {
+              <dl class="device-detail-fields">
+                @for (field of assignmentFields(detail); track field.labelKey) {
+                  <div class="device-detail-field">
+                    <dt>{{ i18n.t(field.labelKey) }}</dt>
+                    <dd>{{ field.value }}</dd>
+                  </div>
+                }
+              </dl>
+            } @else {
+              <div class="device-detail-empty-state" data-testid="device-assignment-empty">
+                <span class="device-detail-empty-icon" aria-hidden="true">
+                  <i class="ki-filled ki-profile-circle"></i>
+                </span>
+                <div class="device-detail-empty-copy">
+                  <h3 class="device-detail-empty-title">{{ i18n.t('deviceAdministration.assignment.emptyTitle') }}</h3>
+                  <p class="device-detail-empty-description">{{ i18n.t('deviceAdministration.assignment.emptyDescription') }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="kt-card device-detail-card" aria-labelledby="device-detail-barcode" data-testid="device-detail-card-barcode">
+          <header class="device-detail-card-header">
+            <div class="device-detail-card-heading">
+              <span class="device-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-key"></i>
+              </span>
+              <h2 id="device-detail-barcode" class="device-detail-card-title">
+                {{ i18n.t('deviceAdministration.detail.barcode') }}
+              </h2>
+            </div>
+          </header>
+          <div class="device-detail-card-body">
+            <div class="device-detail-barcode-preview" data-testid="device-barcode-preview">
+              <div class="device-detail-barcode-lines" aria-hidden="true"></div>
+              <div class="device-detail-barcode-code">{{ barcodePreviewValue(detail) }}</div>
+            </div>
+            <dl class="device-detail-fields">
+              <div class="device-detail-field">
+                <dt>{{ i18n.t('deviceAdministration.fields.barcodeValue') }}</dt>
+                <dd>{{ valueOrNone(detail.barcodeValue) }}</dd>
+              </div>
+              <div class="device-detail-field">
+                <dt>{{ i18n.t('deviceAdministration.fields.assetCode') }}</dt>
+                <dd>{{ valueOrNone(detail.assetCode) }}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="kt-card device-detail-card" aria-labelledby="device-detail-audit" data-testid="device-detail-card-audit">
+          <header class="device-detail-card-header">
+            <div class="device-detail-card-heading">
+              <span class="device-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-time"></i>
+              </span>
+              <h2 id="device-detail-audit" class="device-detail-card-title">
+                {{ i18n.t('deviceAdministration.detail.audit') }}
+              </h2>
+            </div>
+          </header>
+          <div class="device-detail-card-body">
+            <dl class="device-detail-fields">
+              @for (field of auditFields(detail); track field.labelKey) {
+                <div class="device-detail-field">
+                  <dt>{{ i18n.t(field.labelKey) }}</dt>
+                  <dd>{{ field.value }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </section>
+      </div>
+
+      @if (pendingConfirmation(); as confirmation) {
+        <app-confirm-dialog
+          [config]="confirmation.config"
+          (confirmed)="confirmPendingAction()"
+          (cancelled)="cancelPendingAction()" />
+      }
+    }
+  </div>
+</section>

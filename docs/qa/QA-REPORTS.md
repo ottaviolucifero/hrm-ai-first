@@ -6,6 +6,177 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-066.5 - Fix access permissions for Device Administration UI
+
+- Data: 2026-05-16
+- Branch: `task-066-5-device-frontend-administration-ui`
+- Task: TASK-066.5 - Fix access permissions for Device Administration UI
+- Modello consigliato nel prompt operativo: GPT-5.5
+- Aree/file verificati:
+  - `AGENTS.md`
+  - `backend/AGENTS.md`
+  - `frontend/AGENTS.md`
+  - `ARCHITECTURE.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `backend/src/main/resources/db/migration/V18__seed_permission_model_scope_resource_action.sql`
+  - `backend/src/main/resources/db/vendor/postgresql/V20__bootstrap_tenant_admin_rbac.sql`
+  - `backend/src/main/resources/db/vendor/h2/V20__bootstrap_tenant_admin_rbac.sql`
+  - `backend/src/main/java/com/odsoftware/hrm/config/SecurityConfig.java`
+  - `frontend/src/app/features/role-permissions/role-permission-matrix.component.ts`
+  - `frontend/src/app/features/role-permissions/role-permission-matrix.service.ts`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.ts`
+  - `frontend/src/app/core/authorization/permission-summary.service.ts`
+- Causa individuata:
+  - il catalogo backend `DEVICE` esiste gia dal seed `V18` e il mapping frontend `devices -> DEVICE` era gia presente;
+  - il ruolo seed `TENANT_ADMIN` non riceveva al bootstrap i permessi `TENANT.DEVICE.READ/CREATE/UPDATE/DELETE`, quindi l utente QA tenant non poteva aprire `/admin/devices`;
+  - la matrice ruoli/permessi frontend nascondeva localmente `DEVICE` perche `RESOURCE_ORDER` e `VISIBLE_RESOURCES` includevano solo `MASTER_DATA`, `COMPANY_PROFILE`, `USER`, `ROLE`.
+- Patch applicata:
+  - aggiunte migration vendor-specific `V37` PostgreSQL/H2 per assegnare i permessi `TENANT.DEVICE.READ/CREATE/UPDATE/DELETE` al ruolo seed `TENANT_ADMIN`, con pattern idempotente coerente alle migration RBAC esistenti;
+  - estesa la matrice frontend ruoli/permessi per includere la risorsa `DEVICE` tra i moduli visibili/configurabili;
+  - aggiornati i test backend di bootstrap RBAC e i test frontend della matrice per coprire la visibilita del modulo `Dispositivi`.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test`
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - backend completo: OK, exit code `0`, aggregate surefire `280` test, `0` failure, `0` error, `0` skipped;
+  - frontend build: OK con warning noto budget iniziale (`2.27 MB`, sforamento `265.06 kB`);
+  - frontend test completo: OK, `43` file test passed, `325` test passed.
+- Validazione manuale:
+  - non eseguita in questa sessione CLI per assenza di una sessione browser interattiva condivisa.
+- Limiti/note:
+  - non e stato modificato il backend security model generale; la patch si limita al bootstrap RBAC del ruolo seed e alla visibilita/configurazione frontend del modulo `DEVICE`;
+  - il warning budget frontend iniziale resta invariato e non e stato affrontato in questo task;
+  - nel working tree locale sono presenti anche modifiche pregresse del task `066.5` non introdotte da questa patch correttiva.
+- Stato finale: PASS
+
+- Follow-up refinement after manual review:
+  - Data: 2026-05-16
+  - Ambito: UI refinement pre-commit su `TASK-066.5`
+  - Findings manual review:
+    - il controllo calendar/date-time nella Device Administration era ancora locale alla feature;
+    - `app-lookup-select` non mostrava i primi valori disponibili su focus/apertura senza digitazione;
+    - il form Device richiedeva una nuova prima card `Dati asset` con riordino dei campi e layout 2x2 su desktop.
+  - Patch applicata:
+    - introdotto il componente shared `app-date-time-field` per campi `date` e `datetime-local`, integrabile in Reactive Forms e usato nella Device Administration al posto degli input locali;
+    - aggiornato `app-lookup-select` per caricare e mostrare la prima pagina di valori all apertura/focus, mantenendo invariata la ricerca successiva;
+    - riorganizzato il form Device in 4 card, con nuova prima card `Dati asset`, campi `assetCode`, `barcodeValue`, `name`, `active`, e grid desktop a due card per riga;
+    - aggiornati i18n `it/fr/en` per `Dati asset`, `Codice Asset` / `Code asset` / `Asset code` e `QR code`;
+    - aggiunti test dedicati per shared date-time field, preload dei lookup su apertura e labels/card del form Device.
+  - Comandi eseguiti:
+    - `cd frontend && npm.cmd run build`
+    - `cd frontend && npm.cmd test`
+  - Esiti reali:
+    - frontend build: OK con warning noto budget iniziale (`2.27 MB`, sforamento `268.70 kB`);
+    - frontend test completo: OK, `44` file test passed, `331` test passed.
+  - Validazione manuale:
+    - non eseguita in questa sessione CLI.
+
+- Follow-up refinement shared date-time visual design:
+  - Data: 2026-05-16
+  - Ambito: miglioramento visuale pre-commit del componente shared `app-date-time-field` usato dalla Device Administration.
+  - Riferimenti verificati:
+    - mock Stitch `code.html` e screenshot allegato;
+    - pattern shared `app-input` e `app-lookup-select`;
+    - i18n runtime `it/fr/en`;
+    - form Device Administration.
+  - Patch applicata:
+    - sostituito il date picker nativo browser con popup custom Angular/SCSS senza nuove librerie, Tailwind, CDN o font esterni;
+    - mantenuto il contratto Reactive Forms/CVA del componente, con supporto a `date`, `datetime`, required, disabled, readonly, help/error text e `valueChange`;
+    - aggiunti calendario localizzato, navigazione mese, evidenza giorno corrente/selezionato, selezione ore/minuti solo per `datetime`, azioni `Annulla`, `Oggi`, `Conferma`;
+    - aggiunte chiavi i18n `dateTimeField.*` in `it/fr/en`;
+    - aggiornati test shared e integrazione form Device per popup, i18n, selezione data/ora, oggi, annulla/conferma e assenza sezione orario nei campi `date`.
+  - Comandi eseguiti:
+    - `cd frontend && npm.cmd run build`
+    - `cd frontend && npm.cmd test`
+  - Esiti reali:
+    - frontend build: OK con warning noto budget iniziale (`2.29 MB`, sforamento `287.00 kB`);
+    - frontend test completo: OK, `44` file test passed, `338` test passed.
+  - Validazione manuale:
+    - non eseguita in questa sessione CLI; validazione automatica copre il comportamento funzionale del popup e l'integrazione nel form Device.
+  - Limiti/note:
+    - nessuna modifica backend/security;
+    - nessuna libreria nuova introdotta;
+    - il warning budget frontend iniziale resta fuori scope.
+
+- Follow-up refinement date-time field usability:
+  - Data: 2026-05-16
+  - Ambito: affinamento usabilita del componente shared `app-date-time-field` dopo validazione manuale.
+  - Findings manual review:
+    - l input era ancora solo display/popup e non consentiva inserimento manuale agevole;
+    - il popup risultava troppo largo nei form amministrativi;
+    - il cambio anno richiedeva navigazione mese per mese.
+  - Patch applicata:
+    - reso l input editabile mantenendo il contratto CVA/Reactive Forms, con parsing manuale di numeri verso formati `dd/mm/yyyy` e `dd/mm/yyyy hh:mm`, sincronizzazione verso il valore ISO interno e aggiornamento coerente di calendario/ora;
+    - introdotta validazione locale del formato con messaggi i18n dedicati `it/fr/en`, senza rompere errori esterni gia passati dal form host;
+    - compattato il popup riducendo larghezza, padding, gap e altezza delle colonne orarie, mantenendo la distinzione `date` vs `datetime`;
+    - aggiunto selettore anno compatto nel header calendario con range `anno corrente - 80` / `anno corrente + 20`;
+    - aggiornati test shared e Device Administration per input manuale valido, input incompleto/non valido, sincronizzazione input/popup, cambio anno e distinzione `date`/`datetime`.
+  - Comandi eseguiti:
+    - `cd frontend && npm.cmd run build`
+    - `cd frontend && npm.cmd test`
+  - Esiti reali:
+    - frontend build: OK con warning noto budget iniziale (`2.29 MB`, sforamento `292.14 kB`);
+    - frontend test completo: OK, `44` file test passed, `343` test passed.
+  - Validazione manuale:
+    - non eseguita in questa sessione CLI; la patch nasce da finding di validazione manuale precedente ma qui e stata verificata solo via build/test reali.
+  - Limiti/note:
+    - nessuna modifica backend/security;
+    - nessuna libreria nuova introdotta;
+    - il formato manuale digitabile resta deliberatamente `dd/mm/yyyy` e `dd/mm/yyyy hh:mm` anche in `en`, per coerenza con la richiesta e con il comportamento del componente.
+
+- Follow-up refinement Device detail visual + shared view action bar:
+  - Data: 2026-05-16
+  - Ambito: miglioramento visuale pre-commit del dettaglio Device e introduzione di un componente shared minimo per la barra azioni in modalita view/detail.
+  - Valutazione componente shared:
+    - verificati i pattern detail esistenti in `User Administration` e `Company Profile Administration`, entrambi con action bar locali ma struttura ripetuta;
+    - creato `app-detail-action-bar` come shared mirato alla sola barra azioni di pagine detail/view, senza generalizzare card, layout o conferme inline;
+    - la migrazione degli altri detail resta esplicitamente fuori scope di questa patch.
+  - Patch applicata:
+    - introdotto `frontend/src/app/shared/components/detail-action-bar/` con supporto a back action, azioni secondarie, primaria e distruttive, layout responsive, stati disabled/loading e click event parent-driven;
+    - applicato il nuovo componente solo a `DeviceAdministrationDetailComponent`, mantenendo i testi i18n `it/fr/en` risolti dal parent;
+    - rifinito il dettaglio Device con sfondo piu neutro, card bianche piu evidenti, header card con icona e separatore, badge piu leggibili e preview `QR/barcode` piu curata senza nuove librerie;
+    - migliorato l empty state di `Assegnazione corrente` con icona e messaggio informativo, senza introdurre azioni `assegna/restituisci/reassign`.
+  - Comandi eseguiti:
+    - `cd frontend && npm.cmd run build`
+    - `cd frontend && npm.cmd test`
+  - Esiti reali:
+    - frontend build: OK con warning noto budget iniziale (`2.30 MB`, sforamento `300.46 kB`);
+    - frontend test completo: OK, `45` file test passed, `348` test passed.
+  - Validazione manuale:
+    - non eseguita in questa sessione CLI.
+  - Limiti/note:
+    - nessuna modifica backend/security/routing;
+    - nessuna libreria nuova introdotta;
+    - `User Detail` e `Company Profile Detail` non sono stati migrati al nuovo shared component in questa patch.
+
+- Follow-up refinement Device detail confirm dialog integration:
+  - Data: 2026-05-16
+  - Ambito: riallineamento delle azioni `Attiva/Disattiva` e `Cancella definitivamente` del dettaglio Device al confirm dialog shared gia usato da `app-data-table`.
+  - Patch applicata:
+    - rimossa la conferma inline locale del dettaglio Device;
+    - introdotto nello state del detail un `pendingConfirmation` con `ConfirmDialogConfig`, seguendo il pattern gia adottato in `app-data-table`;
+    - collegate le azioni della `app-detail-action-bar` a `app-confirm-dialog` per `Attiva`, `Disattiva` e `Cancella definitivamente`;
+    - aggiunte chiavi i18n `it/fr/en` per la conferma di attivazione Device;
+    - aggiornati gli spec per apertura dialog, conferma positiva, annullamento e verifica esplicita di assenza uso `window.confirm`.
+  - Comandi eseguiti:
+    - `cd frontend && npm.cmd run build`
+    - `cd frontend && npm.cmd test`
+  - Esiti reali:
+    - frontend build: OK con warning noto budget iniziale (`2.30 MB`, sforamento `300.85 kB`);
+    - frontend test completo: OK, `45` file test passed, `351` test passed.
+  - Validazione manuale:
+    - eseguita con esito OK sul dettaglio Device;
+    - verificato allineamento visuale card su desktop e responsive base mobile;
+    - verificata apertura confirm dialog su `Attiva/Disattiva` e `Cancella definitivamente`;
+    - verificato che annullamento non esegue azioni e conferma positiva esegue l azione prevista.
+  - Limiti/note:
+    - nessuna modifica backend/security;
+    - nessuna libreria nuova introdotta;
+    - il confirm dialog resta applicato solo al dettaglio Device in questa patch, mentre gli altri detail mantengono per ora i propri pattern locali.
+
 ### TASK-066.1 - Device governance backlog refinement
 
 - Data: 2026-05-15
@@ -1635,6 +1806,62 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: backend test OK (107 test, 0 failure, 0 errori, 0 skipped), fix applicato e validato, nessuna regressione bloccante.
 
 ## Frontend QA reports
+
+### TASK-066.5 - Device frontend administration UI
+
+- Data: 2026-05-15
+- Branch: `task-066-5-device-frontend-administration-ui`
+- Task: TASK-066.5 - Device frontend administration UI
+- Modello consigliato nel prompt operativo: GPT-5.5
+- Area verificata:
+  - `frontend/src/app/app.routes.ts`
+  - `frontend/src/app/app.routes.spec.ts`
+  - `frontend/src/app/core/authorization/permission-summary.models.ts`
+  - `frontend/src/app/core/authorization/permission-summary.service.ts`
+  - `frontend/src/app/core/authorization/permission-summary.service.spec.ts`
+  - `frontend/src/app/core/authorization/permission.guard.spec.ts`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.ts`
+  - `frontend/src/app/layout/sidebar/app-sidebar.component.spec.ts`
+  - `frontend/src/app/layout/header/app-header.component.ts`
+  - `frontend/src/app/layout/header/app-header.component.spec.ts`
+  - `frontend/src/app/features/device-administration/*`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `frontend/src/app/shared/form-fields/phone-field.component.spec.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificati i pattern frontend gia presenti per liste amministrative, form create/edit, detail a card, route protette, permission summary e i18n runtime;
+  - verificati gli endpoint backend admin Device realmente disponibili e il DTO esposto da `/api/admin/devices`, `/api/admin/devices/{id}` e `/api/admin/devices/form-options`;
+  - verificato che il side menu avesse gia la voce `Asset aziendali -> Dispositivi` e che il task richiedesse il collegamento a `/admin/devices` senza nuova voce menu;
+  - verificato il vincolo di non introdurre assignment UI in questo task, lasciando `TASK-066.6` per assign/return/reassign e `TASK-066.7` per label print avanzata.
+- Patch applicata:
+  - aggiunte rotte protette Angular per lista/create/edit/detail Device sotto `/admin/devices`;
+  - esteso il mapping permessi frontend con il modulo `devices -> DEVICE` e collegati guard, header e sidebar;
+  - collegata la voce sidebar esistente `nav.devices` alla route `/admin/devices` mantenendo il titolo tradotto per `it` / `fr` / `en`;
+  - implementata la feature frontend `device-administration` con service HTTP, lista `app-data-table`, form create/edit e detail a card riusando componenti shared gia presenti;
+  - mantenuti `assetCode` e `barcodeValue` come generati backend in create e readonly in edit, senza API o librerie nuove;
+  - mantenuta la card `Assegnazione corrente` solo informativa e la preview QR/barcode solo testuale/visuale semplice;
+  - aggiunte chiavi i18n complete `it` / `fr` / `en` e test frontend dedicati su service, route, permessi, sidebar/header, lista, form, dettaglio, badge garanzia e barcode preview;
+  - riallineato un test preesistente di `phone-field` al debounce reale corrente (`200 ms`) senza cambiare il componente shared.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - frontend build: OK con warning noto budget iniziale (`2.27 MB`, sforamento `265.05 kB`);
+  - frontend test completo: OK, `43` file test passed, `325` test passed.
+- Validazione UI:
+  - verificata via test/component rendering la presenza delle card Device detail, il riuso `app-data-table`, il routing `/admin/devices`, il titolo header, la sidebar e i testi i18n italiani;
+  - badge garanzia verificato con casi `valida` e `scaduta`;
+  - confermata nei test l assenza di azioni assign/return nel dettaglio Device.
+- QA manuale browser:
+  - non eseguita in questa sessione CLI per assenza di una sessione browser condivisa con credenziali QA.
+- Limiti noti:
+  - il build frontend mantiene il warning budget iniziale gia noto e non affrontato in questo task;
+  - `companyProfiles`, `deviceTypes`, `deviceBrands` e `deviceStatuses` usano solo i dati realmente esposti da `/form-options`; non essendo disponibile metadata tenant-side affidabile per tutti i lookup, non viene introdotto filtering deduttivo lato frontend e la validazione finale resta al backend;
+  - `createdBy` / `updatedBy` non sono mostrati nel dettaglio perche non esposti dal backend Device detail DTO;
+  - stampa browser avanzata, QR grafico e label print restano fuori scope e demandati a `TASK-066.7`.
+- Stato finale: PASS WITH NOTES
 
 ### TASK-064.10 - Apply shared lookup select to existing administration forms (completion/correction)
 

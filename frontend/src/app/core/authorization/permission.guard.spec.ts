@@ -48,6 +48,17 @@ describe('permissionGuard', () => {
       expect.objectContaining({ titleKey: 'alert.title.warning' })
     );
   });
+
+  it('allows navigation for device routes when device view permission is available', async () => {
+    await configureTestBed(['TENANT.DEVICE.READ']);
+
+    const result = await runGuard({
+      permissionModule: 'devices',
+      requiredAction: 'view'
+    });
+
+    expect(result).toBe(true);
+  });
 });
 
 async function configureTestBed(permissions: readonly string[]) {

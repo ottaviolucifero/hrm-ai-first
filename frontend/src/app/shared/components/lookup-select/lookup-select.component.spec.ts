@@ -159,6 +159,36 @@ describe('LookupSelectComponent', () => {
     expect(host.loadPage).toHaveBeenCalledWith(expect.objectContaining({ search: 'I' }));
   });
 
+  it('loads the first remote page on focus without requiring a search term', async () => {
+    vi.useFakeTimers();
+    host.loadPage = vi.fn(() => defer(() => Promise.resolve({
+      content: [
+        { id: 'opt-1', code: 'CP001', name: 'Legal Entity' },
+        { id: 'opt-2', code: 'CP002', name: 'Branch Office' }
+      ],
+      page: 0,
+      size: 25,
+      totalElements: 2,
+      totalPages: 1,
+      first: true,
+      last: true
+    })));
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('.lookup-select-input') as HTMLInputElement;
+    input.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+
+    await flushLookupAsync();
+    fixture.detectChanges();
+
+    const options = fixture.nativeElement.querySelectorAll('.lookup-select-option');
+    expect(host.loadPage).toHaveBeenCalledTimes(1);
+    expect(host.loadPage).toHaveBeenCalledWith(expect.objectContaining({ page: 0, size: 25 }));
+    expect(options).toHaveLength(2);
+    expect((options[0] as HTMLButtonElement).textContent).toContain('Legal Entity');
+  });
+
   it('renders returned options without blur and highlights the first result by default', async () => {
     vi.useFakeTimers();
     host.loadPage = vi.fn(() => defer(() => Promise.resolve({
@@ -323,6 +353,8 @@ describe('LookupSelectComponent', () => {
 
     const input = fixture.nativeElement.querySelector('.lookup-select-input') as HTMLInputElement;
     input.dispatchEvent(new Event('focus'));
+    await flushLookupAsync();
+    vi.mocked(host.loadPage).mockClear();
     input.value = 'I';
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -340,6 +372,23 @@ describe('LookupSelectComponent', () => {
     await vi.advanceTimersByTimeAsync(1);
     expect(host.loadPage).toHaveBeenCalledTimes(1);
     expect(host.loadPage).toHaveBeenCalledWith(expect.objectContaining({ search: 'It' }));
+  });
+
+  it('shows the first static options when a non-autocomplete select is opened', () => {
+    host.autocomplete = false;
+    host.options = [
+      { id: 'opt-1', code: 'READY', name: 'Ready' },
+      { id: 'opt-2', code: 'IN_USE', name: 'In use' }
+    ];
+    fixture.detectChanges();
+
+    const toggle = fixture.nativeElement.querySelector('.lookup-select-button') as HTMLButtonElement;
+    toggle.click();
+    fixture.detectChanges();
+
+    const options = fixture.nativeElement.querySelectorAll('.lookup-select-option');
+    expect(options).toHaveLength(2);
+    expect((options[0] as HTMLButtonElement).textContent).toContain('Ready');
   });
 
   it('shows the optional create button and emits createRequested', () => {
