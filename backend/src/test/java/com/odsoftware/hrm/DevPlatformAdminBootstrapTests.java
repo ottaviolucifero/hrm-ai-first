@@ -142,7 +142,11 @@ class DevPlatformAdminBootstrapTests {
 				"PLATFORM.COMPANY_PROFILE.READ",
 				"PLATFORM.COMPANY_PROFILE.CREATE",
 				"PLATFORM.COMPANY_PROFILE.UPDATE",
-				"PLATFORM.COMPANY_PROFILE.DELETE")) {
+				"PLATFORM.COMPANY_PROFILE.DELETE",
+				"PLATFORM.DEVICE.READ",
+				"PLATFORM.DEVICE.CREATE",
+				"PLATFORM.DEVICE.UPDATE",
+				"PLATFORM.DEVICE.DELETE")) {
 			Permission permission = new Permission();
 			setId(permission, UUID.randomUUID());
 			permission.setTenantId(FOUNDATION_TENANT_ID);
@@ -173,7 +177,7 @@ class DevPlatformAdminBootstrapTests {
 		verify(passwordEncoder).encode("Secret1!");
 		verify(roleRepository).saveAndFlush(any(Role.class));
 		verify(userAccountRepository).saveAndFlush(any(UserAccount.class));
-		verify(rolePermissionRepository, times(9)).save(any());
+		verify(rolePermissionRepository, times(13)).save(any());
 		verify(userTenantAccessRepository).saveAndFlush(any());
 		verify(userRoleRepository).saveAndFlush(any());
 		verify(userAccountRepository).findByEmailIgnoreCase("ottavio.lucifero@igesa.it");

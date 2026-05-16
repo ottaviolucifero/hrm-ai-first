@@ -29,8 +29,7 @@
 }
 
 .device-admin-subtitle,
-.device-admin-list-meta,
-.device-admin-note {
+.device-admin-list-meta {
   color: var(--color-text-muted, #64748b);
 }
 
@@ -89,15 +88,6 @@
   min-height: 2.375rem;
 }
 
-.device-admin-note {
-  background: #f8fbff;
-  border: 1px solid #dbe7ff;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  margin: 1rem 1.25rem 0;
-  padding: 0.75rem 0.875rem;
-}
-
 .device-admin-page-actions {
   align-items: center;
   display: flex;
@@ -119,7 +109,4 @@
     padding: 1rem;
   }
 
-  .device-admin-note {
-    margin: 1rem 1rem 0;
-  }
 }

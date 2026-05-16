@@ -120,7 +120,6 @@ export class DeviceAdministrationComponent implements OnDestroy {
   protected readonly hasError = signal(false);
   protected readonly actingDeviceId = signal<string | null>(null);
   protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
-  protected readonly viewScopeKey = signal<I18nKey>('deviceAdministration.scope.tenant');
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly tableEmptyMessageKey = computed<I18nKey>(() =>
     this.appliedSearch() ? 'deviceAdministration.table.noResults' : 'deviceAdministration.table.empty'
@@ -225,9 +224,6 @@ export class DeviceAdministrationComponent implements OnDestroy {
         switchMap((user) => {
           this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'devices'));
           const platformScope = user.userType.startsWith('PLATFORM_');
-          this.viewScopeKey.set(platformScope
-            ? 'deviceAdministration.scope.platform'
-            : 'deviceAdministration.scope.tenant');
           return this.deviceAdministrationService.findDevices(platformScope ? null : user.tenantId, this.buildQuery());
         }),
         finalize(() => this.loading.set(false))

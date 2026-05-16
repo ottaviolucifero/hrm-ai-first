@@ -30,7 +30,6 @@
 
 .role-admin-subtitle,
 .role-admin-list-meta,
-.role-admin-note,
 .role-admin-confirm-message {
   color: var(--color-text-muted, #64748b);
 }
@@ -80,14 +79,6 @@
 
 .role-admin-search-input {
   min-height: 2.375rem;
-}
-
-.role-admin-note {
-  background: #f8fbff;
-  border: 1px solid #dbe7ff;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  padding: 0.75rem 0.875rem;
 }
 
 .role-admin-page-actions {

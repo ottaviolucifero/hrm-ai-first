@@ -6,6 +6,46 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-066.6 QA fix - datetime-local must be sent as OffsetDateTime
+
+- Data: 2026-05-16
+- Branch: `task-066-6-device-assignment-ui`
+- Task: TASK-066.6 QA fix - datetime-local must be sent as OffsetDateTime
+- Modello consigliato nel prompt operativo: GPT-5.5
+- Aree/file verificati:
+  - `AGENTS.md`
+  - `backend/AGENTS.md`
+  - `frontend/AGENTS.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `docs/qa/QA-REPORTS.md`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.spec.ts`
+- Causa individuata:
+  - la UI assignment device usava campi `datetime-local` e inoltrava al backend stringhe senza offset, ad esempio `2026-05-16T13:15`;
+  - il backend deserializza `returnedAt` e `assignedFrom` come `OffsetDateTime`, quindi il formato senza timezone non e valido, mentre il payload con offset locale e valido, ad esempio `2026-05-16T13:15:00+02:00`;
+  - il 403 osservato in UI era un sintomo secondario del forwarding Spring verso `/error` dopo il fallimento di deserializzazione, non la causa reale del problema applicativo;
+  - il backend risponde correttamente quando il frontend invia una stringa ISO OffsetDateTime completa.
+- Patch applicata:
+  - introdotta nel frontend Device detail una conversione locale `datetime-local -> ISO OffsetDateTime` prima delle chiamate `assignDevice` e `returnDevice`;
+  - la conversione e applicata almeno a `returnedAt` e anche a `assignedFrom`, coprendo quindi Assign, Reassign e Return;
+  - aggiornati i test frontend del componente per verificare che i payload inviati al service includano ora l offset locale.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test -- --watch=false`
+- Esiti reali:
+  - build frontend: OK;
+  - test frontend: OK.
+- Validazione manuale:
+  - aprire il dettaglio di un device assegnato e verificare `Restituisci`;
+  - aprire un device non assegnato e verificare `Assegna`, poi ripetere su `Riassegna`;
+  - controllare nel payload browser che `returnedAt` / `assignedFrom` siano serializzati come `YYYY-MM-DDTHH:mm:ss+HH:mm`.
+- Limiti/note:
+  - nessuna modifica backend o security in questa patch;
+  - la correzione resta volutamente circoscritta alla Device assignment UI per evitare scope creep sul componente shared `app-date-time-field`.
+- Stato finale: PASS
+
 ### TASK-066.5 - Fix access permissions for Device Administration UI
 
 - Data: 2026-05-16
@@ -1806,6 +1846,61 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 - Stato finale: backend test OK (107 test, 0 failure, 0 errori, 0 skipped), fix applicato e validato, nessuna regressione bloccante.
 
 ## Frontend QA reports
+
+### TASK-066.6 - Device assignment UI
+
+- Data: 2026-05-16
+- Branch: `task-066-6-device-assignment-ui`
+- Task: TASK-066.6 - Device assignment UI
+- Modello consigliato nel prompt operativo: GPT-5.5
+- Area verificata:
+  - `frontend/src/app/features/device-administration/device-administration.models.ts`
+  - `frontend/src/app/features/device-administration/device-administration.service.ts`
+  - `frontend/src/app/features/device-administration/device-administration.service.spec.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.*`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `docs/qa/QA-REPORTS.md`
+- Analisi eseguita:
+  - verificati gli endpoint backend realmente disponibili per il task: `GET /api/admin/devices/{deviceId}/assignments`, `POST /api/admin/devices/{deviceId}/assignments` e `POST /api/admin/devices/{deviceId}/assignments/return`;
+  - verificato che non esista un endpoint separato di reassign e che la riassegnazione debba riusare `POST /assignments`;
+  - verificati i pattern frontend gia presenti per detail action bar, loading/error state, lookup dipendenti, date-time field, notifiche e i18n runtime;
+  - verificato il vincolo frontend-only senza modifiche backend/security/RBAC.
+- Patch applicata:
+  - estesi i DTO/frontend service Device per leggere storico assegnazioni ed eseguire assign/reassign/return sui soli endpoint backend gia esistenti;
+  - aggiornato il dettaglio Device con card full-width `Storico assegnazioni`, rendering delle righe storiche e badge stato `In corso` / `Restituito` / `Riassegnato`;
+  - aggiunte azioni `Assegna`, `Restituisci`, `Riassegna` nel `detail-action-bar`, visibili solo quando coerenti con stato corrente e permessi `DEVICE.UPDATE`;
+  - introdotti pannelli inline minimali nel dettaglio per assegnazione/reassegnazione e restituzione, riusando `app-lookup-select`, `app-date-time-field`, `app-input` e `app-button`;
+  - gestiti refresh completo del dettaglio dopo mutation riuscita, loading/error dedicati per lo storico e feedback tramite `NotificationService`;
+  - aggiunte chiavi i18n complete `it` / `fr` / `en` e aggiornati test frontend su service e detail component.
+- Endpoint backend usati:
+  - `GET /api/admin/devices/{deviceId}`
+  - `GET /api/admin/devices/form-options`
+  - `GET /api/admin/devices/{deviceId}/assignments`
+  - `POST /api/admin/devices/{deviceId}/assignments`
+  - `POST /api/admin/devices/{deviceId}/assignments/return`
+  - `PUT /api/admin/devices/{deviceId}/activate`
+  - `PUT /api/admin/devices/{deviceId}/deactivate`
+  - `DELETE /api/admin/devices/{deviceId}`
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build`
+  - `cd frontend && npm.cmd test`
+- Esiti reali:
+  - frontend build: OK con warning noto budget iniziale (`2.33 MB`, sforamento `329.09 kB`);
+  - frontend test completo: OK, `45` file test passed, `353` test passed.
+- Validazione UI:
+  - verificata via test/component rendering la presenza della card `Storico assegnazioni`, delle azioni toolbar coerenti con lo stato del Device e del refresh dopo assign/return;
+  - verificata la visibilita condizionale delle azioni quando manca `DEVICE.UPDATE`;
+  - verificata la continuita delle azioni preesistenti `activate` / `deactivate` / `deletePhysical`.
+- QA manuale browser:
+  - non eseguita in questa sessione CLI per assenza di una sessione browser condivisa con credenziali QA.
+- Limiti noti:
+  - il build frontend mantiene il warning budget iniziale gia noto e non affrontato in questo task;
+  - il dettaglio Device ricarica l intero contesto dopo assign/reassign/return, soluzione volutamente semplice e coerente col task, senza ottimizzazioni speculative di cache locale;
+  - `assignedByUserEmail` e metadata tecnici dello storico non vengono esposti in UI per mantenere la schermata essenziale;
+  - label print avanzata e QR grafico restano demandati a `TASK-066.7`.
+- Stato finale: PASS WITH NOTES
 
 ### TASK-066.5 - Device frontend administration UI
 

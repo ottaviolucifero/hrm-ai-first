@@ -125,7 +125,6 @@ export class CompanyProfileAdministrationComponent implements OnDestroy {
   protected readonly hasError = signal(false);
   protected readonly actingCompanyProfileId = signal<string | null>(null);
   protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
-  protected readonly viewScopeKey = signal<I18nKey>('companyProfileAdministration.scope.tenant');
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly tableEmptyMessageKey = computed<I18nKey>(() =>
     this.appliedSearch() ? 'companyProfileAdministration.table.noResults' : 'companyProfileAdministration.table.empty'
@@ -230,9 +229,6 @@ export class CompanyProfileAdministrationComponent implements OnDestroy {
         switchMap((user) => {
           this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'company-profiles'));
           const platformScope = user.userType.startsWith('PLATFORM_');
-          this.viewScopeKey.set(platformScope
-            ? 'companyProfileAdministration.scope.platform'
-            : 'companyProfileAdministration.scope.tenant');
           return this.companyProfileAdministrationService.findCompanyProfiles(
             platformScope ? null : user.tenantId,
             this.buildQuery()

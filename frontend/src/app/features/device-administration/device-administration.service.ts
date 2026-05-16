@@ -3,12 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
+  DeviceAdministrationAssignment,
+  DeviceAdministrationAssignmentRequest,
   DeviceAdministrationCreateRequest,
   DeviceAdministrationDeviceDetail,
   DeviceAdministrationDeviceListItem,
   DeviceAdministrationFormOptions,
   DeviceAdministrationPage,
   DeviceAdministrationQuery,
+  DeviceAdministrationReturnRequest,
   DeviceAdministrationUpdateRequest
 } from './device-administration.models';
 
@@ -43,12 +46,24 @@ export class DeviceAdministrationService {
     return this.http.get<DeviceAdministrationDeviceDetail>(`/api/admin/devices/${deviceId}`);
   }
 
+  findDeviceAssignments(deviceId: string): Observable<readonly DeviceAdministrationAssignment[]> {
+    return this.http.get<readonly DeviceAdministrationAssignment[]>(`/api/admin/devices/${deviceId}/assignments`);
+  }
+
   createDevice(payload: DeviceAdministrationCreateRequest): Observable<DeviceAdministrationDeviceDetail> {
     return this.http.post<DeviceAdministrationDeviceDetail>('/api/admin/devices', payload);
   }
 
   updateDevice(deviceId: string, payload: DeviceAdministrationUpdateRequest): Observable<DeviceAdministrationDeviceDetail> {
     return this.http.put<DeviceAdministrationDeviceDetail>(`/api/admin/devices/${deviceId}`, payload);
+  }
+
+  assignDevice(deviceId: string, payload: DeviceAdministrationAssignmentRequest): Observable<DeviceAdministrationAssignment> {
+    return this.http.post<DeviceAdministrationAssignment>(`/api/admin/devices/${deviceId}/assignments`, payload);
+  }
+
+  returnDevice(deviceId: string, payload: DeviceAdministrationReturnRequest): Observable<DeviceAdministrationAssignment> {
+    return this.http.post<DeviceAdministrationAssignment>(`/api/admin/devices/${deviceId}/assignments/return`, payload);
   }
 
   activateDevice(deviceId: string): Observable<DeviceAdministrationDeviceDetail> {

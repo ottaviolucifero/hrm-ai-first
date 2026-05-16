@@ -5,20 +5,36 @@ import com.odsoftware.hrm.entity.core.Tenant;
 import com.odsoftware.hrm.entity.device.Device;
 import com.odsoftware.hrm.entity.device.DeviceAssignment;
 import com.odsoftware.hrm.entity.employee.Employee;
+import com.odsoftware.hrm.entity.identity.UserAccount;
+import com.odsoftware.hrm.entity.master.AuthenticationMethod;
 import com.odsoftware.hrm.entity.master.DeviceBrand;
 import com.odsoftware.hrm.entity.master.DeviceStatus;
 import com.odsoftware.hrm.entity.master.DeviceType;
+import com.odsoftware.hrm.entity.master.Permission;
+import com.odsoftware.hrm.entity.master.Role;
+import com.odsoftware.hrm.entity.master.UserType;
+import com.odsoftware.hrm.entity.rbac.RolePermission;
+import com.odsoftware.hrm.entity.rbac.UserRole;
+import com.odsoftware.hrm.entity.rbac.UserTenantAccess;
 import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.repository.device.DeviceAssignmentRepository;
 import com.odsoftware.hrm.repository.device.DeviceRepository;
 import com.odsoftware.hrm.repository.employee.EmployeeRepository;
+import com.odsoftware.hrm.repository.identity.UserAccountRepository;
+import com.odsoftware.hrm.repository.master.AuthenticationMethodRepository;
 import com.odsoftware.hrm.repository.master.CompanyProfileTypeRepository;
 import com.odsoftware.hrm.repository.master.CountryRepository;
 import com.odsoftware.hrm.repository.master.CurrencyRepository;
 import com.odsoftware.hrm.repository.master.DeviceBrandRepository;
 import com.odsoftware.hrm.repository.master.DeviceStatusRepository;
 import com.odsoftware.hrm.repository.master.DeviceTypeRepository;
+import com.odsoftware.hrm.repository.master.PermissionRepository;
+import com.odsoftware.hrm.repository.master.RoleRepository;
+import com.odsoftware.hrm.repository.master.UserTypeRepository;
+import com.odsoftware.hrm.repository.rbac.RolePermissionRepository;
+import com.odsoftware.hrm.repository.rbac.UserRoleRepository;
+import com.odsoftware.hrm.repository.rbac.UserTenantAccessRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
@@ -35,6 +51,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -68,6 +85,8 @@ class DeviceAdministrationControllerTests {
 	private static final UUID FOUNDATION_DEVICE_BRAND_ID = UUID.fromString("63000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_AVAILABLE_DEVICE_STATUS_ID = UUID.fromString("64000000-0000-0000-0000-000000000001");
 	private static final UUID FOUNDATION_ASSIGNED_DEVICE_STATUS_ID = UUID.fromString("64000000-0000-0000-0000-000000000002");
+	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
+	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_CALLER_USER_ID = UUID.fromString("90000000-0000-0000-0000-000000000031");
 	private static final UUID PLATFORM_CALLER_USER_ID = UUID.fromString("90000000-0000-0000-0000-000000000032");
 	private static final UUID MISSING_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");
@@ -110,6 +129,33 @@ class DeviceAdministrationControllerTests {
 
 	@Autowired
 	private EmployeeRepository employeeRepository;
+
+	@Autowired
+	private UserAccountRepository userAccountRepository;
+
+	@Autowired
+	private UserTypeRepository userTypeRepository;
+
+	@Autowired
+	private AuthenticationMethodRepository authenticationMethodRepository;
+
+	@Autowired
+	private PermissionRepository permissionRepository;
+
+	@Autowired
+	private RoleRepository roleRepository;
+
+	@Autowired
+	private RolePermissionRepository rolePermissionRepository;
+
+	@Autowired
+	private UserRoleRepository userRoleRepository;
+
+	@Autowired
+	private UserTenantAccessRepository userTenantAccessRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -671,6 +717,86 @@ class DeviceAdministrationControllerTests {
 	}
 
 	@Test
+	void deviceAdministrationAllowsReturnWithUpdatePermissionOnly() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		Employee employee = saveEmployee(tenant, companyProfile, "TASK0666_EMPLOYEE_1", "Radia", "Perlman");
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.6 Permission Return Device",
+				"TASK0666-PERM-RETURN-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				employee,
+				OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, employee, OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments/return",
+						returnRequest("2026-05-22T16:00:00Z", null, null, null))
+						.with(deviceTenantCaller("TENANT.DEVICE.UPDATE")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.assignedTo").value("2026-05-22T16:00:00Z"))
+				.andExpect(jsonPath("$.returnedAt").value("2026-05-22T16:00:00Z"));
+	}
+
+	@Test
+	void deviceAdministrationRejectsReturnWithoutUpdatePermission() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		Employee employee = saveEmployee(tenant, companyProfile, "TASK0666_EMPLOYEE_2", "Mary", "Jackson");
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.6 Return Permission Denied Device",
+				"TASK0666-PERM-RETURN-002",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				employee,
+				OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, employee, OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments/return",
+						returnRequest("2026-05-22T16:00:00Z", null, null, null))
+						.with(deviceTenantCaller("TENANT.DEVICE.CREATE")))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
+	void deviceAdministrationAllowsReturnWithTenantAdminJwtAndUpdatePermission() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow();
+		Tenant tenant = tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow();
+		Employee employee = saveEmployee(tenant, companyProfile, "TASK0666_EMPLOYEE_3", "Adele", "Goldberg");
+		Device device = saveDevice(
+				companyProfile,
+				"Task 066.6 JWT Return Device",
+				"TASK0666-JWT-RETURN-001",
+				deviceTypeRepository.findById(FOUNDATION_DEVICE_TYPE_ID).orElseThrow(),
+				deviceBrandRepository.findById(FOUNDATION_DEVICE_BRAND_ID).orElseThrow(),
+				deviceStatusRepository.findById(FOUNDATION_ASSIGNED_DEVICE_STATUS_ID).orElseThrow(),
+				employee,
+				OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+		saveOpenAssignment(device, employee, OffsetDateTime.parse("2026-05-18T07:00:00Z"));
+
+		UserAccount userAccount = saveTenantAdminUser(
+				"task0666.jwt.return@example.com",
+				"Secret1!",
+				"TENANT.DEVICE.UPDATE");
+		String accessToken = loginAndReadToken(userAccount.getEmail(), "Secret1!");
+
+		mockMvc.perform(postJson(
+						"/api/admin/devices/" + device.getId() + "/assignments/return",
+						returnRequest("2026-05-22T16:00:00Z", null, null, null))
+						.header("Authorization", "Bearer " + accessToken))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.assignedTo").value("2026-05-22T16:00:00Z"))
+				.andExpect(jsonPath("$.returnedAt").value("2026-05-22T16:00:00Z"));
+	}
+
+	@Test
 	void deviceAdministrationRejectsCallerWithoutReadPermission() throws Exception {
 		mockMvc.perform(get("/api/admin/devices/form-options")
 						.with(deviceTenantCaller("TENANT.DEVICE.UPDATE")))
@@ -854,6 +980,72 @@ class DeviceAdministrationControllerTests {
 		mockMvc.perform(delete("/api/admin/devices/{deviceId}", device.getId()).with(deviceTenantCaller()))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.message").value("Device cannot be deleted because it is referenced by one or more records"));
+	}
+
+	private String loginAndReadToken(String email, String password) throws Exception {
+		MvcResult result = mockMvc.perform(post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(loginRequest(email, password))))
+				.andExpect(status().isOk())
+				.andReturn();
+		return objectMapper.readTree(result.getResponse().getContentAsString()).get("accessToken").asText();
+	}
+
+	private Map<String, String> loginRequest(String email, String password) {
+		Map<String, String> request = new LinkedHashMap<>();
+		request.put("email", email);
+		request.put("password", password);
+		return request;
+	}
+
+	private UserAccount saveTenantAdminUser(String email, String password, String... permissionCodes) {
+		UserAccount userAccount = new UserAccount();
+		userAccount.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		userAccount.setUserType(userTypeRepository.findById(TENANT_ADMIN_USER_TYPE_ID).orElseThrow());
+		userAccount.setAuthenticationMethod(authenticationMethodRepository.findById(PASSWORD_ONLY_AUTHENTICATION_METHOD_ID).orElseThrow());
+		userAccount.setEmail(email);
+		userAccount.setPasswordHash(passwordEncoder.encode(password));
+		userAccount.setActive(true);
+		userAccount.setLocked(false);
+		UserAccount savedUserAccount = userAccountRepository.saveAndFlush(userAccount);
+		assignPermissions(savedUserAccount, permissionCodes);
+		return savedUserAccount;
+	}
+
+	private void assignPermissions(UserAccount userAccount, String... permissionCodes) {
+		UserTenantAccess tenantAccess = new UserTenantAccess();
+		tenantAccess.setUserAccount(userAccount);
+		tenantAccess.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		tenantAccess.setAccessRole("TENANT_ADMIN");
+		tenantAccess.setActive(true);
+		userTenantAccessRepository.saveAndFlush(tenantAccess);
+
+		Role role = new Role();
+		role.setTenantId(FOUNDATION_TENANT_ID);
+		role.setCode("DEVICE_TEST_" + userAccount.getId().toString().replace("-", "").substring(0, 12).toUpperCase(Locale.ROOT));
+		role.setName("Device test role");
+		role.setSystemRole(false);
+		role.setActive(true);
+		role = roleRepository.saveAndFlush(role);
+
+		UserRole userRole = new UserRole();
+		userRole.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		userRole.setUserAccount(userAccount);
+		userRole.setRole(role);
+		userRoleRepository.saveAndFlush(userRole);
+
+		for (String permissionCode : permissionCodes) {
+			Permission permission = permissionRepository.findAll().stream()
+					.filter(candidate -> FOUNDATION_TENANT_ID.equals(candidate.getTenantId()))
+					.filter(candidate -> permissionCode.equals(candidate.getCode()))
+					.findFirst()
+					.orElseThrow();
+			RolePermission rolePermission = new RolePermission();
+			rolePermission.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+			rolePermission.setRole(role);
+			rolePermission.setPermission(permission);
+			rolePermissionRepository.saveAndFlush(rolePermission);
+		}
 	}
 
 	private Tenant saveTenant(String code) {

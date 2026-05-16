@@ -25,7 +25,7 @@ describe('UserAdministrationComponent', () => {
     expect(service.findUsers).toHaveBeenCalledWith('tenant-1', expect.objectContaining({ page: 0, size: 20 }));
     expect(fixture.nativeElement.textContent).toContain('Utenti');
     expect(fixture.nativeElement.textContent).toContain('Nuovo utente');
-    expect(fixture.nativeElement.textContent).toContain('Vista tenant');
+    expect(fixture.nativeElement.textContent).not.toContain('Vista tenant');
     expect(fixture.nativeElement.textContent).toContain('Ada Lovelace');
     expect(fixture.nativeElement.textContent).toContain('Collegamento dipendente');
     expect(fixture.nativeElement.textContent).toContain('Nessun dipendente associato');
@@ -41,7 +41,7 @@ describe('UserAdministrationComponent', () => {
     fixture.detectChanges();
 
     expect(service.findUsers).toHaveBeenCalledWith(null, expect.objectContaining({ page: 0, size: 20 }));
-    expect(fixture.nativeElement.textContent).toContain('Vista platform');
+    expect(fixture.nativeElement.textContent).not.toContain('Vista platform');
   });
 
   it('keeps the create action visible but disabled without create permission', async () => {

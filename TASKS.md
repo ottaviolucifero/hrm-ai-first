@@ -5074,7 +5074,7 @@ Validazione:
 
 #### TASK-066.6 - Device assignment UI
 
-Stato: TODO
+Stato: COMPLETATO
 
 Tipo: Frontend
 
@@ -5084,6 +5084,22 @@ Obiettivo:
 - introdurre azioni "Assegna", "Restituisci", "Riassegna" se supportate dal backend;
 - visualizzare dipendente, periodo, stato alla consegna, stato alla restituzione e note;
 - mantenere UX semplice e coerente con il resto dell'app.
+
+Completato:
+
+- esteso il service frontend `DeviceAdministrationService` riusando solo gli endpoint backend gia disponibili `GET /api/admin/devices/{deviceId}/assignments`, `POST /api/admin/devices/{deviceId}/assignments` e `POST /api/admin/devices/{deviceId}/assignments/return`;
+- aggiunti DTO frontend dedicati per storico assegnazioni, assegnazione/reassegnazione e restituzione senza introdurre endpoint paralleli o cambi backend;
+- aggiornato il dettaglio amministrativo Device con card full-width `Storico assegnazioni`, rendering storico con dipendente, periodo, stato alla consegna, stato alla restituzione, note e nota restituzione;
+- introdotte le azioni `Assegna`, `Restituisci`, `Riassegna` nel `detail-action-bar`, visibili solo quando coerenti con lo stato corrente del Device e con i permessi `DEVICE.UPDATE`;
+- implementati pannelli inline minimali nel dettaglio per assegnazione/reassegnazione e restituzione, riusando `app-lookup-select`, `app-date-time-field`, `app-input`, `app-button`, `NotificationService` e pattern card/admin esistenti;
+- gestiti loading/error state separati per storico assegnazioni e refresh completo del dettaglio dopo mutation riuscita;
+- aggiunte tutte le nuove chiavi i18n in `it` / `fr` / `en` e aggiornati i test frontend dedicati su service e detail component;
+- follow-up QA fix 2026-05-16: confermato con test backend che `POST /api/admin/devices/{deviceId}/assignments` e `POST /api/admin/devices/{deviceId}/assignments/return` richiedono entrambi `DEVICE.UPDATE`; riallineato il bootstrap dev `DEV_PLATFORM_TENANT_ADMIN_QA` ai permessi `PLATFORM.DEVICE.READ/CREATE/UPDATE/DELETE` per evitare 403 ambientali durante la validazione manuale.
+
+Validazione:
+
+- `cd frontend && npm.cmd run build` OK con warning noto budget iniziale (`2.33 MB`, +`329.09 kB`);
+- `cd frontend && npm.cmd test` OK, `45` file test passed, `353` test passed.
 
 #### TASK-066.7 - Device label print UI
 
@@ -5215,6 +5231,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.60 | 2026-05-16 | TASK-066.6 completato come UI frontend dello storico assegnazioni Device: dettaglio admin esteso con card `Storico assegnazioni`, azioni `Assegna` / `Restituisci` / `Riassegna` sui soli endpoint backend gia esistenti, pannelli inline coerenti con i pattern admin, i18n `it/fr/en`, build/test frontend reali verdi e prossimo passo riallineato a `TASK-066.7`. |
 | 2.59 | 2026-05-16 | Aggiornamento documentale post-validazione manuale positiva di `TASK-066.5`: QA report allineato con esito manuale OK sul dettaglio Device e aggiunto nuovo follow-up `TASK-066.10` per applicare la shared detail action/header bar a User Detail e Company Profile Detail senza cambi backend/security. |
 | 2.58 | 2026-05-15 | TASK-066.5 completato come UI frontend amministrativa Device: route `/admin/devices`, collegamento sidebar esistente `nav.devices`, mapping permessi frontend `devices -> DEVICE`, lista con `app-data-table`, form create/edit e dettaglio a card con i18n `it/fr/en`, nessuna modifica backend e validazione reale `npm.cmd run build` + `npm.cmd test` verde. |
 | 2.57 | 2026-05-15 | TASK-066.4 completato con foundation backend-only dello storico assegnazioni `Device`: nuova tabella `device_assignments` via Flyway `V36` PostgreSQL/H2 con backfill, entity/repository dedicati, endpoint admin per history/assign/return, integrazione create/update con chiusura/apertura storico, lock pessimista sul `Device`, decisione durevole `DEC-043` e suite backend reale verde. |

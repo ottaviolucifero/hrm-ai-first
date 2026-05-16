@@ -168,6 +168,26 @@
   background: var(--data-table-row-background, var(--color-background, #ffffff));
 }
 
+.data-table td.data-table-actions-cell.data-table-sticky-left,
+.data-table td.data-table-actions-cell.data-table-sticky-right {
+  background: var(--color-background, #ffffff);
+}
+
+.data-table tbody tr:hover td.data-table-actions-cell.data-table-sticky-left,
+.data-table tbody tr:hover td.data-table-actions-cell.data-table-sticky-right {
+  background: #f1f6ff;
+}
+
+.data-table tbody tr:nth-child(even) td.data-table-actions-cell.data-table-sticky-left,
+.data-table tbody tr:nth-child(even) td.data-table-actions-cell.data-table-sticky-right {
+  background: #f8f9fa;
+}
+
+.data-table tbody tr:nth-child(even):hover td.data-table-actions-cell.data-table-sticky-left,
+.data-table tbody tr:nth-child(even):hover td.data-table-actions-cell.data-table-sticky-right {
+  background: #edf5ff;
+}
+
 .data-table-actions {
   display: inline-flex;
   align-items: center;

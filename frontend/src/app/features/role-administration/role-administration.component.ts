@@ -109,7 +109,6 @@ export class RoleAdministrationComponent implements OnDestroy {
   protected readonly tableEmptyMessageKey = computed<I18nKey>(
     () => this.appliedSearch() ? 'roleAdministration.table.noResults' : 'roleAdministration.table.empty'
   );
-  protected readonly protectedHint = computed(() => this.i18n.t('roleAdministration.protectedHint'));
   protected readonly rowActions = computed<readonly RoleAdministrationRowAction[]>(() => [
     {
       id: 'view',
