@@ -1,0 +1,42 @@
+.detail-action-bar {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dbe4f0;
+  border-radius: 0.95rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+}
+
+.detail-action-bar__back,
+.detail-action-bar__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.detail-action-bar__actions {
+  justify-content: flex-end;
+}
+
+.detail-action-bar__separator {
+  align-self: stretch;
+  background: #dbe4f0;
+  border-radius: 999px;
+  min-height: 2rem;
+  width: 1px;
+}
+
+@media (max-width: 960px) {
+  .detail-action-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .detail-action-bar__actions {
+    justify-content: flex-start;
+  }
+}

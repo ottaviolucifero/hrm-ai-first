@@ -1,0 +1,59 @@
+<section class="detail-action-bar" role="group" [attr.aria-label]="ariaLabel || null">
+  <div class="detail-action-bar__back">
+    <app-button
+      variant="secondary"
+      size="sm"
+      [icon]="backIcon"
+      [label]="backLabel"
+      [disabled]="backDisabled"
+      (pressed)="emitBack()" />
+  </div>
+
+  <div class="detail-action-bar__actions">
+    @for (action of visibleActions(secondaryActions); track action.id) {
+      <app-button
+        size="sm"
+        [variant]="resolvedVariant(action, 'secondary')"
+        [icon]="action.icon ?? null"
+        [label]="action.label"
+        [loadingLabel]="action.loadingLabel ?? null"
+        [loading]="action.loading ?? false"
+        [disabled]="action.disabled ?? false"
+        [ariaLabel]="action.ariaLabel ?? null"
+        [title]="action.title ?? null"
+        (pressed)="emitAction(action)" />
+    }
+
+    @if (visiblePrimaryAction(); as action) {
+      <app-button
+        size="sm"
+        [variant]="resolvedVariant(action, 'primary')"
+        [icon]="action.icon ?? null"
+        [label]="action.label"
+        [loadingLabel]="action.loadingLabel ?? null"
+        [loading]="action.loading ?? false"
+        [disabled]="action.disabled ?? false"
+        [ariaLabel]="action.ariaLabel ?? null"
+        [title]="action.title ?? null"
+        (pressed)="emitAction(action)" />
+    }
+
+    @if (showDestructiveSeparator()) {
+      <span class="detail-action-bar__separator" aria-hidden="true"></span>
+    }
+
+    @for (action of visibleActions(destructiveActions); track action.id) {
+      <app-button
+        size="sm"
+        [variant]="resolvedVariant(action, 'destructive')"
+        [icon]="action.icon ?? null"
+        [label]="action.label"
+        [loadingLabel]="action.loadingLabel ?? null"
+        [loading]="action.loading ?? false"
+        [disabled]="action.disabled ?? false"
+        [ariaLabel]="action.ariaLabel ?? null"
+        [title]="action.title ?? null"
+        (pressed)="emitAction(action)" />
+    }
+  </div>
+</section>

@@ -28,6 +28,7 @@ describe('AppSidebarComponent', () => {
               userType: 'TENANT_ADMIN',
               permissions: [
                 'TENANT.MASTER_DATA.READ',
+                'TENANT.DEVICE.READ',
                 'PLATFORM.TENANT.READ',
                 'TENANT.COMPANY_PROFILE.READ',
                 'TENANT.ROLE.READ',
@@ -43,6 +44,7 @@ describe('AppSidebarComponent', () => {
           {
             path: 'admin',
             children: [
+              { path: 'devices', component: DummyRouteComponent },
               { path: 'tenants', component: DummyRouteComponent },
               { path: 'company-profiles', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },
@@ -65,10 +67,17 @@ describe('AppSidebarComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
+    const assetsButton = Array.from(compiled.querySelectorAll('button'))
+      .find((button) => button.textContent?.includes('Asset aziendali')) as HTMLButtonElement | undefined;
+
+    assetsButton?.click();
+    fixture.detectChanges();
+
     expect(compiled.querySelector('input[type="search"]')).toBeTruthy();
     expect(compiled.textContent).toContain('Home');
     expect(compiled.textContent).toContain('Persone');
     expect(compiled.textContent).toContain('Dati di base');
+    expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/devices"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]')).toBeTruthy();
     const masterDataLink = compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]');
     const companyProfilesLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/company-profiles"]');
@@ -171,6 +180,7 @@ describe('AppSidebarComponent', () => {
           {
             path: 'admin',
             children: [
+              { path: 'devices', component: DummyRouteComponent },
               { path: 'tenants', component: DummyRouteComponent },
               { path: 'company-profiles', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },

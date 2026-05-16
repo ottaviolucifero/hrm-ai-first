@@ -41,6 +41,10 @@ export class AppHeaderComponent {
       return 'nav.users';
     }
 
+    if (normalizedPath.startsWith('/admin/devices')) {
+      return 'nav.devices';
+    }
+
     if (normalizedPath.startsWith('/master-data')) {
       return 'nav.masterData';
     }

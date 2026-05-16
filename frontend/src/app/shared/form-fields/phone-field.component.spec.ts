@@ -156,7 +156,7 @@ describe('PhoneFieldComponent', () => {
     expect(clearButton.getAttribute('aria-label')).toBeTruthy();
   });
 
-  it('triggers the nested dial-code lookup after 700 ms without blur', async () => {
+  it('triggers the nested dial-code lookup after 200 ms without blur', async () => {
     vi.useFakeTimers();
     fixture.detectChanges();
 
@@ -167,7 +167,7 @@ describe('PhoneFieldComponent', () => {
 
     expect(host.dialCodeLookup).not.toHaveBeenCalledWith(expect.objectContaining({ search: 'tunisia' }));
 
-    await vi.advanceTimersByTimeAsync(699);
+    await vi.advanceTimersByTimeAsync(199);
     expect(host.dialCodeLookup).not.toHaveBeenCalledWith(expect.objectContaining({ search: 'tunisia' }));
 
     await vi.advanceTimersByTimeAsync(1);
@@ -186,7 +186,7 @@ describe('PhoneFieldComponent', () => {
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    await vi.advanceTimersByTimeAsync(700);
+    await vi.advanceTimersByTimeAsync(200);
     await flushLookupAsync();
     fixture.detectChanges();
     const lookupSelect = fixture.debugElement.query(By.directive(LookupSelectComponent)).componentInstance as LookupSelectComponent;

@@ -61,7 +61,9 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
     children: [
       {
         id: 'assets-devices',
-        titleKey: 'nav.devices'
+        titleKey: 'nav.devices',
+        route: '/admin/devices',
+        permissionModule: 'devices'
       }
     ]
   },
@@ -487,7 +489,7 @@ export class AppSidebarComponent {
         next: (user) => {
           this.userPermissionState.set({
             modules: new Set(
-              (['master-data', 'tenants', 'company-profiles', 'roles', 'permissions', 'users'] as const)
+              (['master-data', 'tenants', 'company-profiles', 'roles', 'permissions', 'users', 'devices'] as const)
                 .filter((moduleId) => this.permissionSummaryService.hasAnyPermission(user, moduleId))
             )
           });

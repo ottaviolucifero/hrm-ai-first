@@ -205,13 +205,14 @@ export class LookupSelectComponent implements ControlValueAccessor, Validator, O
       return;
     }
 
-    this.panelOpen = true;
-    if (this.autocomplete) {
-      this.markForCheck();
+    if (this.panelOpen) {
       return;
     }
 
-    this.panelSearch = '';
+    this.panelOpen = true;
+    if (!this.autocomplete) {
+      this.panelSearch = '';
+    }
     this.loadOptions('', 0, false);
   }
 
