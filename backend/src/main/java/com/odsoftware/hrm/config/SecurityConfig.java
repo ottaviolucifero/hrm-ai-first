@@ -30,6 +30,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import com.odsoftware.hrm.security.JsonAccessDeniedHandler;
 import com.odsoftware.hrm.security.JsonAuthenticationEntryPoint;
 import com.odsoftware.hrm.security.PermissionAuthorityService;
@@ -135,9 +136,8 @@ public class SecurityConfig {
 								"PLATFORM.DEVICE.READ",
 								"PLATFORM.DEVICE.MANAGE"))
 						.requestMatchers(
-								HttpMethod.POST,
-								"/api/admin/devices/*/assignments",
-								"/api/admin/devices/*/assignments/return")
+								PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/api/admin/devices/{deviceId}/assignments"),
+								PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/api/admin/devices/{deviceId}/assignments/return"))
 						.access(hasAnyAuthority(
 								"TENANT.DEVICE.UPDATE",
 								"TENANT.DEVICE.MANAGE",

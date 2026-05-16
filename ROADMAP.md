@@ -149,11 +149,12 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-066.3 Device asset code and barcode/QR foundation
 - TASK-066.4 Device assignment history foundation
 - TASK-066.5 Device frontend administration UI
+- TASK-066.6 Device assignment UI
 
 ### Prossimo passo
 
-- TASK-066.6 Device assignment UI
-- Sequenza Device pianificata: `TASK-066.6` assignment UI, `TASK-066.7` label print UI, `TASK-066.8` shared entity detail header/actions pattern, `TASK-066.9` QA hardening, `TASK-066.10` applicazione componente shared header dettaglio a User/Company Profile
+- TASK-066.7 Device label print UI
+- Sequenza Device pianificata: `TASK-066.7` label print UI, `TASK-066.8` shared entity detail header/actions pattern, `TASK-066.9` QA hardening, `TASK-066.10` applicazione componente shared header dettaglio a User/Company Profile
 - Sequenza backlog successiva invariata: `TASK-067` UI HolidayCalendar, `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
@@ -277,10 +278,11 @@ TASK-066.2 completed the backend Device administration CRUD by reusing the exist
 TASK-066.3 completed the backend-only Device asset identity foundation by adding tenant-scoped `assetCode` format `DEV000001`, `barcodeValue = assetCode`, vendor-specific Flyway `V35` backfill/unique constraints, admin API exposure on list/detail only and full backend test validation.
 TASK-066.4 completed the backend-only Device assignment history foundation by adding `device_assignments` via Flyway `V36`, backfilling current assignments, extending `/api/admin/devices` with history/assign/return endpoints, enforcing single-open-assignment logic in the service with pessimistic `Device` locking and validating the backend suite end-to-end.
 TASK-066.5 completed the frontend Device administration UI by wiring the existing sidebar item `nav.devices` to `/admin/devices`, extending the frontend permission summary with `devices -> DEVICE`, adding Angular list/create/edit/detail routes, reusing `app-data-table`, `app-lookup-select` and the existing admin card/form patterns, keeping current assignment informational only, and validating build/test with full i18n `it/fr/en`.
+TASK-066.6 completed the frontend Device assignment UI by extending the admin detail with assignment history, wiring assign/reassign/return only to the existing admin endpoints, reusing `detail-action-bar`, `app-lookup-select`, `app-date-time-field` and current admin card patterns, validating build/test with full i18n `it/fr/en`, and then aligning the dev QA bootstrap role `DEV_PLATFORM_TENANT_ADMIN_QA` with `PLATFORM.DEVICE.READ/CREATE/UPDATE/DELETE` after a manual `403` report on `return`.
 
 Prossimo passo:
 
-- TASK-066.6 Device assignment UI
+- TASK-066.7 Device label print UI
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 Sequenza immediata Core HR UI post-TASK-064.11:
@@ -293,7 +295,8 @@ Sequenza immediata Core HR UI post-TASK-064.11:
 - TASK-066.3: Device asset code and barcode/QR foundation completato;
 - TASK-066.4: Device assignment history foundation completato;
 - TASK-066.5: Device frontend administration UI completato;
-- TASK-066.6 -> TASK-066.10: assignment UI, stampa etichetta, pattern dettaglio shared, QA hardening e applicazione shared detail action bar a User/Company Profile;
+- TASK-066.6: Device assignment UI completato;
+- TASK-066.7 -> TASK-066.10: stampa etichetta, pattern dettaglio shared, QA hardening e applicazione shared detail action bar a User/Company Profile;
 - TASK-067 -> TASK-072: blocco UI/CRUD piu circoscritto per consolidare pattern e verifiche permessi prima di Employee;
 - TASK-073: UI Employee management enterprise, posticipata dopo il consolidamento dei task precedenti.
 
@@ -454,6 +457,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.66 | 2026-05-16 | QA fix su `TASK-066.6`: verificato che gli endpoint admin Device `assign` e `return` richiedono entrambi `DEVICE.UPDATE`, nessuna correzione necessaria a controller/frontend gating, e riallineato il bootstrap dev `DEV_PLATFORM_TENANT_ADMIN_QA` ai permessi `PLATFORM.DEVICE.READ/CREATE/UPDATE/DELETE` per evitare `403` ambientali nel test manuale. |
+| 2.65 | 2026-05-16 | TASK-066.6 completato con UI frontend dello storico assegnazioni Device: dettaglio admin esteso con card `Storico assegnazioni`, azioni `Assegna` / `Restituisci` / `Riassegna` sui soli endpoint backend gia esistenti, i18n `it/fr/en`, build/test frontend verdi e prossimo passo aggiornato a `TASK-066.7`. |
 | 2.64 | 2026-05-16 | Aggiornamento documentale post-validazione manuale positiva di `TASK-066.5`: roadmap Device estesa con nuovo follow-up `TASK-066.10` per applicare il componente shared detail action/header bar a User Detail e Company Profile Detail, mantenendo invariato il prossimo passo immediato `TASK-066.6`. |
 | 2.63 | 2026-05-15 | TASK-066.5 completato con UI frontend amministrativa Device: rotte `/admin/devices`, collegamento sidebar `Asset aziendali -> Dispositivi`, mapping permessi frontend `devices -> DEVICE`, lista/form/dettaglio riusando `app-data-table`, `app-lookup-select` e pattern admin esistenti, i18n `it/fr/en`, build/test frontend verdi e prossimo passo aggiornato a `TASK-066.6`. |
 | 2.62 | 2026-05-15 | TASK-066.4 completato come backend-only foundation dello storico assegnazioni `Device`: `device_assignments` via Flyway `V36` PostgreSQL/H2 con backfill, endpoint admin history/assign/return, lock pessimista sul `Device`, nessun cambio Core HR/frontend e prossimo passo spostato a `TASK-066.5`. |

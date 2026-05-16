@@ -41,6 +41,24 @@ export interface DeviceAdministrationDeviceDetail extends DeviceAdministrationDe
   readonly createdAt: string;
 }
 
+export interface DeviceAdministrationAssignment {
+  readonly id: string;
+  readonly deviceId: string;
+  readonly employeeId: string;
+  readonly employee: DeviceAdministrationReference | null;
+  readonly assignedByUserId: string | null;
+  readonly assignedByUserEmail: string | null;
+  readonly assignedFrom: string;
+  readonly assignedTo: string | null;
+  readonly returnedAt: string | null;
+  readonly returnNote: string | null;
+  readonly conditionOnAssign: string | null;
+  readonly conditionOnReturn: string | null;
+  readonly notes: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
 export interface DeviceAdministrationQuery {
   readonly page: number;
   readonly size: number;
@@ -74,6 +92,20 @@ export interface DeviceAdministrationUpdateRequest {
   readonly deviceStatusId: string;
   readonly assignedToEmployeeId: string | null;
   readonly assignedAt: string | null;
+}
+
+export interface DeviceAdministrationAssignmentRequest {
+  readonly employeeId: string;
+  readonly assignedFrom: string | null;
+  readonly conditionOnAssign: string | null;
+  readonly notes: string | null;
+}
+
+export interface DeviceAdministrationReturnRequest {
+  readonly returnedAt: string | null;
+  readonly returnNote: string | null;
+  readonly conditionOnReturn: string | null;
+  readonly notes: string | null;
 }
 
 export interface DeviceAdministrationFormOptions {

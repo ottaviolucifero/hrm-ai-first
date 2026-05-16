@@ -20,7 +20,7 @@ describe('RoleAdministrationComponent', () => {
 
     expect(service.findRoles).toHaveBeenCalledWith('tenant-1', expect.objectContaining({ page: 0, size: 20 }));
     expect(fixture.nativeElement.textContent).toContain('Ruoli');
-    expect(fixture.nativeElement.textContent).toContain('I ruoli di sistema sono protetti');
+    expect(fixture.nativeElement.textContent).not.toContain('I ruoli di sistema sono protetti');
 
     const newButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
       .find((button) => (button as HTMLButtonElement).textContent?.includes('Nuovo ruolo')) as HTMLButtonElement;

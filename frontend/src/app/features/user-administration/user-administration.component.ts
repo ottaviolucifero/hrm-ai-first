@@ -159,7 +159,6 @@ export class UserAdministrationComponent implements OnDestroy {
   protected readonly hasError = signal(false);
   protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly tenantId = signal<string | null>(null);
-  protected readonly viewScopeKey = signal<I18nKey>('userAdministration.scope.tenant');
   protected readonly rows = computed(() => this.pageData().content);
   protected readonly tableEmptyMessageKey = computed<I18nKey>(
     () => this.appliedSearch() ? 'userAdministration.table.noResults' : 'userAdministration.table.empty'
@@ -268,7 +267,6 @@ export class UserAdministrationComponent implements OnDestroy {
           const platformScope = user.userType.startsWith('PLATFORM_');
           const tenantId = platformScope ? null : user.tenantId;
           this.tenantId.set(tenantId);
-          this.viewScopeKey.set(platformScope ? 'userAdministration.scope.platform' : 'userAdministration.scope.tenant');
           return this.userAdministrationService.findUsers(tenantId, this.buildQuery());
         }),
         finalize(() => this.loading.set(false))

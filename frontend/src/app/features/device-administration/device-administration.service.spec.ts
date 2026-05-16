@@ -73,12 +73,15 @@ describe('DeviceAdministrationService', () => {
   it('requests detail and form options', () => {
     service.findDeviceById('device-1').subscribe();
     service.findFormOptions().subscribe();
+    service.findDeviceAssignments('device-1').subscribe();
 
     const detailRequest = httpTestingController.expectOne('/api/admin/devices/device-1');
     const formOptionsRequest = httpTestingController.expectOne('/api/admin/devices/form-options');
+    const assignmentsRequest = httpTestingController.expectOne('/api/admin/devices/device-1/assignments');
 
     expect(detailRequest.request.method).toBe('GET');
     expect(formOptionsRequest.request.method).toBe('GET');
+    expect(assignmentsRequest.request.method).toBe('GET');
 
     detailRequest.flush({ id: 'device-1' });
     formOptionsRequest.flush({
@@ -89,6 +92,7 @@ describe('DeviceAdministrationService', () => {
       deviceStatuses: [],
       employees: []
     });
+    assignmentsRequest.flush([]);
   });
 
   it('creates and updates devices', () => {
@@ -175,5 +179,42 @@ describe('DeviceAdministrationService', () => {
     activateRequest.flush({ id: 'device-1' });
     deactivateRequest.flush({ id: 'device-1' });
     deleteRequest.flush(null);
+  });
+
+  it('assigns, reassigns, and returns devices through assignment endpoints', () => {
+    service.assignDevice('device-1', {
+      employeeId: 'employee-1',
+      assignedFrom: '2026-05-18T09:00:00.000Z',
+      conditionOnAssign: 'Excellent',
+      notes: 'Fresh handover'
+    }).subscribe();
+
+    service.returnDevice('device-1', {
+      returnedAt: '2026-05-20T17:30:00.000Z',
+      returnNote: 'Returned intact',
+      conditionOnReturn: 'Good',
+      notes: 'Desk handover'
+    }).subscribe();
+
+    const assignRequest = httpTestingController.expectOne('/api/admin/devices/device-1/assignments');
+    const returnRequest = httpTestingController.expectOne('/api/admin/devices/device-1/assignments/return');
+
+    expect(assignRequest.request.method).toBe('POST');
+    expect(assignRequest.request.body).toEqual({
+      employeeId: 'employee-1',
+      assignedFrom: '2026-05-18T09:00:00.000Z',
+      conditionOnAssign: 'Excellent',
+      notes: 'Fresh handover'
+    });
+    expect(returnRequest.request.method).toBe('POST');
+    expect(returnRequest.request.body).toEqual({
+      returnedAt: '2026-05-20T17:30:00.000Z',
+      returnNote: 'Returned intact',
+      conditionOnReturn: 'Good',
+      notes: 'Desk handover'
+    });
+
+    assignRequest.flush({ id: 'assignment-1' });
+    returnRequest.flush({ id: 'assignment-1' });
   });
 });

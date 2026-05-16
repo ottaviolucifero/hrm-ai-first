@@ -28,7 +28,7 @@ describe('DeviceAdministrationComponent', () => {
     expect(service.findDevices).toHaveBeenCalledWith('tenant-1', expect.objectContaining({ page: 0, size: 20 }));
     expect(fixture.nativeElement.textContent).toContain('Dispositivi');
     expect(fixture.nativeElement.textContent).toContain('Nuovo dispositivo');
-    expect(fixture.nativeElement.textContent).toContain('Vista tenant');
+    expect(fixture.nativeElement.textContent).not.toContain('Vista tenant');
     expect(fixture.nativeElement.textContent).toContain('Laptop Alpha');
     expect(fixture.nativeElement.textContent).toContain('DV001');
   });

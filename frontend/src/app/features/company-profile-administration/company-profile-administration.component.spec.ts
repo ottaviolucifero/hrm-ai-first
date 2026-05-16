@@ -28,7 +28,7 @@ describe('CompanyProfileAdministrationComponent', () => {
     expect(service.findCompanyProfiles).toHaveBeenCalledWith('tenant-1', expect.objectContaining({ page: 0, size: 20 }));
     expect(fixture.nativeElement.textContent).toContain('Profili aziendali');
     expect(fixture.nativeElement.textContent).toContain('Nuovo profilo aziendale');
-    expect(fixture.nativeElement.textContent).toContain('Vista tenant');
+    expect(fixture.nativeElement.textContent).not.toContain('Vista tenant');
     expect(fixture.nativeElement.textContent).toContain('CP001');
     expect(fixture.nativeElement.textContent).toContain('Legal One');
     expect(fixture.nativeElement.textContent).toContain('VAT-1');
