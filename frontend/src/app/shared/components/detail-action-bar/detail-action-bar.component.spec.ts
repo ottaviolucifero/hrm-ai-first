@@ -78,6 +78,57 @@ describe('DetailActionBarComponent', () => {
 
     expect(emitSpy).not.toHaveBeenCalled();
   });
+
+  it('does not emit backPressed when the back action is disabled', async () => {
+    const fixture = await createFixture();
+    fixture.componentRef.setInput('backLabel', 'Back to list');
+    fixture.componentRef.setInput('backDisabled', true);
+    const emitSpy = vi.fn();
+    fixture.componentInstance.backPressed.subscribe(emitSpy);
+    fixture.detectChanges();
+
+    clickButtonByText(fixture.nativeElement, 'Back to list');
+
+    expect(emitSpy).not.toHaveBeenCalled();
+  });
+
+  it('hides actions marked as not visible', async () => {
+    const fixture = await createFixture();
+    fixture.componentRef.setInput('backLabel', 'Back to list');
+    fixture.componentRef.setInput('secondaryActions', [
+      { id: 'assign', label: 'Assign', visible: false },
+      { id: 'return', label: 'Return' }
+    ]);
+    fixture.componentRef.setInput('primaryAction', { id: 'save', label: 'Save', visible: false });
+    fixture.componentRef.setInput('destructiveActions', [
+      { id: 'delete', label: 'Delete permanently', visible: false }
+    ]);
+    fixture.detectChanges();
+
+    const textContent = fixture.nativeElement.textContent as string;
+    expect(textContent).not.toContain('Assign');
+    expect(textContent).toContain('Return');
+    expect(textContent).not.toContain('Save');
+    expect(textContent).not.toContain('Delete permanently');
+    expect(fixture.nativeElement.querySelector('.detail-action-bar__separator')).toBeNull();
+  });
+
+  it('applies the configured button variant classes', async () => {
+    const fixture = await createFixture();
+    fixture.componentRef.setInput('backLabel', 'Back to list');
+    fixture.componentRef.setInput('secondaryActions', [
+      { id: 'cancel', label: 'Cancel', variant: 'ghost' }
+    ]);
+    fixture.componentRef.setInput('primaryAction', { id: 'save', label: 'Save', variant: 'outline' });
+    fixture.componentRef.setInput('destructiveActions', [
+      { id: 'delete', label: 'Delete permanently', variant: 'destructive' }
+    ]);
+    fixture.detectChanges();
+
+    expect(buttonByText(fixture.nativeElement, 'Cancel')?.className).toContain('kt-btn-ghost');
+    expect(buttonByText(fixture.nativeElement, 'Save')?.className).toContain('kt-btn-outline');
+    expect(buttonByText(fixture.nativeElement, 'Delete permanently')?.className).toContain('kt-btn-destructive');
+  });
 });
 
 async function createFixture() {
@@ -89,9 +140,13 @@ async function createFixture() {
 }
 
 function clickButtonByText(root: HTMLElement, text: string): void {
-  const button = Array.from(root.querySelectorAll('button')).find((candidate) =>
-    (candidate.textContent ?? '').includes(text)
-  );
+  const button = buttonByText(root, text);
   expect(button).toBeDefined();
   button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+}
+
+function buttonByText(root: HTMLElement, text: string): HTMLButtonElement | undefined {
+  return Array.from(root.querySelectorAll('button')).find((candidate) =>
+    (candidate.textContent ?? '').includes(text)
+  ) as HTMLButtonElement | undefined;
 }

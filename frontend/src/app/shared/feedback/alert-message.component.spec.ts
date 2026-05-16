@@ -80,7 +80,7 @@ describe('AlertMessageComponent', () => {
       .spyOn(window, 'setTimeout')
       .mockImplementation(((callback: () => void) => {
         timeoutCallback = callback;
-        return 0 as ReturnType<typeof window.setTimeout>;
+        return 0;
       }) as typeof window.setTimeout);
 
     fixture.detectChanges();

@@ -32,7 +32,7 @@ export class AlertMessageComponent {
   @Output() dismissedEvent = new EventEmitter<void>();
 
   protected dismissed = false;
-  private autoHideTimer: ReturnType<typeof setTimeout> | null = null;
+  private autoHideTimer: number | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message']) {
@@ -88,7 +88,7 @@ export class AlertMessageComponent {
 
   private clearAutoHide(): void {
     if (this.autoHideTimer !== null) {
-      clearTimeout(this.autoHideTimer);
+      window.clearTimeout(this.autoHideTimer);
       this.autoHideTimer = null;
     }
   }

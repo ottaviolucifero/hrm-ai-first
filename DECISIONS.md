@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.40
-Ultimo aggiornamento: 2026-05-15
+Versione: 1.41
+Ultimo aggiornamento: 2026-05-16
 Stato: Attivo
 
 ---
@@ -1726,10 +1726,47 @@ Impatto:
 
 ---
 
+### DEC-044 - DetailActionBar as the official shared pattern for entity detail action bars
+
+Data: 2026-05-16
+Stato: Approvata
+
+Decisione:
+
+Il componente frontend shared esistente `frontend/src/app/shared/components/detail-action-bar/` viene formalizzato come pattern ufficiale per le action bar delle pagine dettaglio entita.
+
+Lo standard approvato e:
+
+- nessun componente parallelo o alternativa locale per la sola barra azioni di dettaglio;
+- supporto ai gruppi `back`, azioni secondarie, azione primaria e azioni distruttive;
+- supporto ai casi standard `back`, `edit`, `save`, `cancel`, `activate`, `deactivate`, `deletePhysical`;
+- supporto a `id` custom per azioni specifiche del dominio, ad esempio `assign`, `reassign`, `return`;
+- testi, icone, loading, disabled, visible e varianti bottone governati dal container chiamante;
+- conferme distruttive o di lifecycle gestite dal container/feature, non inglobate nel componente shared.
+
+Motivazione:
+
+- evitare duplicazioni gia presenti o imminenti tra `Device`, `Company Profile`, `User Administration` e futuri detail amministrativi;
+- mantenere un pattern shared piccolo, stabile e riusabile senza generalizzare layout, card o logica di dominio;
+- preservare coerenza con `app-button`, i18n runtime e design system Metronic/HRflow gia approvati.
+
+Alternative escluse:
+
+- creare un nuovo componente shared parallelo per detail header/actions;
+- mantenere action bar locali duplicate per ogni dettaglio senza formalizzare il pattern esistente;
+- inglobare nel componente shared logiche di conferma, routing o mutazione specifiche di singola feature.
+
+Impatto:
+
+I task frontend futuri che introducono o rifiniscono detail amministrativi devono partire da `DetailActionBar` come baseline per la barra azioni. La migrazione completa di `User Detail` e `Company Profile Detail` resta follow-up dedicato in `TASK-066.10`, mentre i form create/edit continuano a usare i propri pattern di salvataggio/annullamento gia approvati finche non esiste un task specifico di convergenza.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.41 | 2026-05-16 | Aggiunta DEC-044 per formalizzare `DetailActionBar` come pattern frontend shared ufficiale delle action bar dei dettagli entita: gruppi `back`/secondary/primary/destructive, set standard di action id (`edit`, `save`, `cancel`, `activate`, `deactivate`, `deletePhysical`) e apertura a id custom di dominio senza introdurre componenti paralleli o logiche feature-specific nel shared component. |
 | 1.40 | 2026-05-15 | Aggiunta DEC-043 per formalizzare la regola durevole dello storico assegnazioni `Device`: `device_assignments` come fonte storica, `Device.assignedTo` / `assignedAt` come stato operativo corrente, unicita della riga aperta gestita lato service con lock pessimista sul `Device` e nessun vincolo DB parziale PostgreSQL-only. |
 | 1.39 | 2026-05-15 | Aggiunta DEC-042 per formalizzare lo standard durevole dei beni `Device`: `assetCode` tenant-scoped `DEV000001`, progressivo calcolato dal massimo esistente per tenant, `barcodeValue = assetCode`, esclusione di dati variabili dal payload barcode/QR ed eccezione motivata rispetto al default `DEC-039`. |
 | 1.38 | 2026-05-15 | Riallineato il riferimento attivo di `DEC-038` alla nuova numerazione backlog post `TASK-065`: la UI Employee futura passa da `TASK-065` a `TASK-073` senza modificare la decisione architetturale sul modello geografico tenant-aware. |
