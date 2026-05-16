@@ -6,6 +6,60 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-066.7 - Device label print UI
+
+- Data: 2026-05-16
+- Branch: `main`
+- Task: TASK-066.7 - Device label print UI
+- Modello consigliato nel prompt operativo: GPT-5.5
+- Aree/file verificati:
+  - `AGENTS.md`
+  - `frontend/AGENTS.md`
+  - `ARCHITECTURE.md`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+  - `docs/qa/QA-REPORTS.md`
+  - `frontend/package.json`
+  - `frontend/package-lock.json`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.ts`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.html`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.scss`
+  - `frontend/src/app/features/device-administration/device-administration-detail.component.spec.ts`
+  - `frontend/src/app/features/device-administration/device-label-print.service.ts`
+  - `frontend/src/app/features/device-administration/device-label-print.service.spec.ts`
+- Analisi e causa tecnica:
+  - il dettaglio Device esponeva gia `assetCode`, `barcodeValue`, `name` e `serialNumber`, ma la card `QR e barcode` mostrava solo una preview visuale CSS, non un QR reale stampabile;
+  - il frontend non aveva una libreria QR/barcode gia disponibile;
+  - per mantenere scope minimo e patch solo frontend e stata scelta la libreria browser-side `qrcode`, coerente con `DEC-042` sul payload identificativo `barcodeValue`.
+- Patch applicata:
+  - sostituita la preview barcode semplice con una card `Etichetta dispositivo` nel dettaglio admin Device, con preview QR centrata e icona label dedicata;
+  - semplificata la preview finale MVP a QR reale centrato piu `assetCode` come unico testo di supporto, eliminando brand, nome bene, seriale, valore QR e bordo nero dalla label;
+  - introdotto servizio frontend dedicato per generazione QR e apertura vista stampabile single-label `60 x 40 mm` via CSS print, limitata a QR centrato piu `assetCode`, senza backend, PDF complesso o integrazioni Zebra/ZPL;
+  - spostati `Data acquisto` e `Fine garanzia` dentro la card `Identita bene` e accorpate le info audit nella card `Azienda e tenant`, riducendo il numero totale di card del dettaglio Device senza cambiare dati o API;
+  - follow-up di rifinitura layout `2026-05-16`: corretto il titolo italiano `Identità bene`, compattati i pannelli inline `Acquisto e garanzia` e `Audit e info tecniche`, e riallineate le icone card a Keenicons piu coerenti (`screen`, `bank`, `profile-circle`, `barcode`);
+  - follow-up di rifinitura UI storico assegnazioni `2026-05-16`: rimosso il periodo duplicato sotto il nome dipendente, mantenuto badge stato in alto a destra e riorganizzato ogni item storico in due sezioni compatte `Assegnazione` / `Restituzione`, responsive su mobile;
+  - aggiornato i18n `it` / `fr` / `en`;
+  - aggiunti test frontend per card etichetta, fallback QR e flusso stampa;
+  - applicato fix minimo ai typing timer di `AlertMessageComponent` emerso dopo l'introduzione dei tipi `qrcode`, senza cambi di comportamento.
+- Limiti deliberati MVP:
+  - stampa orientata a una sola etichetta per volta;
+  - formato fisso `60 x 40 mm`;
+  - layout finale volutamente minimale: solo QR piu `assetCode`;
+  - dipendenza dalla label printer configurata nel sistema operativo e dalla finestra di stampa browser;
+  - nessuna selezione formato, nessuna stampa multipla, nessun template configurabile, nessuna Zebra/ZPL, nessuna stampa diretta industriale, nessun PDF complesso.
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd test -- --watch=false`
+  - `cd frontend && npm.cmd run build`
+- Esiti reali:
+  - test frontend: OK, `46` file test passed, `360` test passed;
+  - build frontend: OK con warning noto budget iniziale (`2.37 MB`, +`366.62 kB`) e warning CommonJS della libreria `qrcode`.
+- Validazione manuale:
+  - non eseguita in questa sessione CLI per assenza di browser interattivo condiviso;
+  - da eseguire in browser su dettaglio Device aprendo la card `Etichetta dispositivo`, verificando QR, fallback su `assetCode` e apertura stampa single-label `60 x 40 mm`.
+- Stato finale: PASS WITH NOTES
+
 ### TASK-066.6 QA fix - datetime-local must be sent as OffsetDateTime
 
 - Data: 2026-05-16
