@@ -59,7 +59,11 @@ public class DevPlatformAdminBootstrap implements ApplicationRunner {
 			"PLATFORM.DEVICE.READ",
 			"PLATFORM.DEVICE.CREATE",
 			"PLATFORM.DEVICE.UPDATE",
-			"PLATFORM.DEVICE.DELETE");
+			"PLATFORM.DEVICE.DELETE",
+			"PLATFORM.HOLIDAY_CALENDAR.READ",
+			"PLATFORM.HOLIDAY_CALENDAR.CREATE",
+			"PLATFORM.HOLIDAY_CALENDAR.UPDATE",
+			"PLATFORM.HOLIDAY_CALENDAR.DELETE");
 
 	private final TenantRepository tenantRepository;
 	private final UserAccountRepository userAccountRepository;

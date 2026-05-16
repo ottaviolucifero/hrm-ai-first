@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.42
+Versione: 1.43
 Ultimo aggiornamento: 2026-05-16
 Stato: Attivo
 
@@ -1781,6 +1781,8 @@ Lo standard approvato e:
 - `HolidayType` ha valori iniziali `FIXED` e `MOBILE`;
 - `HolidayGenerationRule` ha valori iniziali `FIXED_DATE`, `MANUAL`, `EASTER_BASED`;
 - le date finali salvate nel DB restano fonte operativa, anche quando in futuro un algoritmo precompila o genera il calendario;
+- per default non sono consentite sovrapposizioni tra festivita dello stesso `HolidayCalendar` quando gli intervalli data si intersecano;
+- in update il controllo sovrapposizioni esclude la festivita corrente;
 - Aid al-Fitr e Aid al-Adha sono festivita mobili multi-giorno;
 - nel MVP Aid resta manuale e non viene calcolato con algoritmo lunare;
 - `BusinessDayService` e un servizio backend separato che usa `holiday_calendars` e `holidays`;
@@ -1816,6 +1818,7 @@ I task `TASK-067.2`, `TASK-067.3`, `TASK-067.4` e `TASK-067.5` dovranno rispetta
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.43 | 2026-05-16 | Estesa DEC-045 con la regola durevole anti-sovrapposizione delle festivita nello stesso `HolidayCalendar`, inclusa l esclusione della festivita corrente nei controlli di update. |
 | 1.42 | 2026-05-16 | Aggiunta DEC-045 per formalizzare il modello Holiday Calendar: `Country + Year`, festivita con `startDate`/`endDate`, `HolidayType` `FIXED`/`MOBILE`, `HolidayGenerationRule`, Aid manuale nel MVP, `BusinessDayService` separato e Leave Request fuori scope. |
 | 1.41 | 2026-05-16 | Aggiunta DEC-044 per formalizzare `DetailActionBar` come pattern frontend shared ufficiale delle action bar dei dettagli entita: gruppi `back`/secondary/primary/destructive, set standard di action id (`edit`, `save`, `cancel`, `activate`, `deactivate`, `deletePhysical`) e apertura a id custom di dominio senza introdurre componenti paralleli o logiche feature-specific nel shared component. |
 | 1.40 | 2026-05-15 | Aggiunta DEC-043 per formalizzare la regola durevole dello storico assegnazioni `Device`: `device_assignments` come fonte storica, `Device.assignedTo` / `assignedAt` come stato operativo corrente, unicita della riga aperta gestita lato service con lock pessimista sul `Device` e nessun vincolo DB parziale PostgreSQL-only. |

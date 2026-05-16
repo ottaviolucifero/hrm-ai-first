@@ -277,10 +277,7 @@ public class CoreHrReadService {
 		return new HolidayCalendarResponse(
 				holidayCalendar.getId(),
 				toReference(holidayCalendar.getCountry()),
-				toReference(holidayCalendar.getRegion()),
-				toReference(holidayCalendar.getArea()),
-				holidayCalendar.getStartDate(),
-				holidayCalendar.getEndDate(),
+				holidayCalendar.getYear(),
 				holidayCalendar.getName(),
 				holidayCalendar.getActive());
 	}

@@ -161,6 +161,57 @@ public class SecurityConfig {
 								"TENANT.DEVICE.MANAGE",
 								"PLATFORM.DEVICE.DELETE",
 								"PLATFORM.DEVICE.MANAGE"))
+						.requestMatchers(
+								HttpMethod.GET,
+								"/api/admin/holiday-calendars",
+								"/api/admin/holiday-calendars/",
+								"/api/admin/holiday-calendars/*",
+								"/api/admin/holiday-calendars/*/holidays",
+								"/api/admin/holiday-calendars/*/holidays/",
+								"/api/admin/holiday-calendars/*/holidays/*")
+						.access(hasAnyAuthority(
+								"TENANT.HOLIDAY_CALENDAR.READ",
+								"TENANT.HOLIDAY_CALENDAR.MANAGE",
+								"PLATFORM.HOLIDAY_CALENDAR.READ",
+								"PLATFORM.HOLIDAY_CALENDAR.MANAGE"))
+						.requestMatchers(
+								HttpMethod.POST,
+								"/api/admin/holiday-calendars/*/holidays",
+								"/api/admin/holiday-calendars/*/holidays/")
+						.access(hasAnyAuthority(
+								"TENANT.HOLIDAY_CALENDAR.UPDATE",
+								"TENANT.HOLIDAY_CALENDAR.MANAGE",
+								"PLATFORM.HOLIDAY_CALENDAR.UPDATE",
+								"PLATFORM.HOLIDAY_CALENDAR.MANAGE"))
+						.requestMatchers(
+								HttpMethod.POST,
+								"/api/admin/holiday-calendars",
+								"/api/admin/holiday-calendars/")
+						.access(hasAnyAuthority(
+								"TENANT.HOLIDAY_CALENDAR.CREATE",
+								"TENANT.HOLIDAY_CALENDAR.MANAGE",
+								"PLATFORM.HOLIDAY_CALENDAR.CREATE",
+								"PLATFORM.HOLIDAY_CALENDAR.MANAGE"))
+						.requestMatchers(
+								HttpMethod.PUT,
+								"/api/admin/holiday-calendars/*",
+								"/api/admin/holiday-calendars/*/activate",
+								"/api/admin/holiday-calendars/*/deactivate",
+								"/api/admin/holiday-calendars/*/holidays/*")
+						.access(hasAnyAuthority(
+								"TENANT.HOLIDAY_CALENDAR.UPDATE",
+								"TENANT.HOLIDAY_CALENDAR.MANAGE",
+								"PLATFORM.HOLIDAY_CALENDAR.UPDATE",
+								"PLATFORM.HOLIDAY_CALENDAR.MANAGE"))
+						.requestMatchers(
+								HttpMethod.DELETE,
+								"/api/admin/holiday-calendars/*",
+								"/api/admin/holiday-calendars/*/holidays/*")
+						.access(hasAnyAuthority(
+								"TENANT.HOLIDAY_CALENDAR.DELETE",
+								"TENANT.HOLIDAY_CALENDAR.MANAGE",
+								"PLATFORM.HOLIDAY_CALENDAR.DELETE",
+								"PLATFORM.HOLIDAY_CALENDAR.MANAGE"))
 						.requestMatchers(HttpMethod.GET, "/api/admin/roles/**")
 						.access(hasAnyAuthority(
 								"TENANT.ROLE.READ",

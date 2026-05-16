@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.66
+Versione: 2.67
 Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
@@ -4019,7 +4019,7 @@ Fuori scope:
 
 ### TASK-058 - Riorganizzazione documentale backlog post TASK-057
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -5342,6 +5342,17 @@ Fuori scope:
 - API esterne festivita ufficiali;
 - import/export massivo;
 - frontend.
+
+Output realizzato:
+
+- riallineata la foundation backend `HolidayCalendar` esistente al modello operativo `Country + Year`;
+- introdotta entity `Holiday` con supporto multi-giorno tramite `startDate` / `endDate`;
+- introdotti enum `HolidayType` e `HolidayGenerationRule`;
+- aggiunte migration Flyway `V38` e bootstrap RBAC `V39` per `HOLIDAY_CALENDAR`;
+- aggiunti repository, DTO, service e controller REST amministrativo;
+- aggiunti permessi `TENANT/PLATFORM.HOLIDAY_CALENDAR.{READ|CREATE|UPDATE|DELETE|MANAGE}` secondo convenzione esistente;
+- aggiunti test backend CRUD/validation/security con esecuzione reale Maven `test`;
+- mantenuta compatibilita conservativa con colonne legacy `region_id`, `area_id`, `start_date`, `end_date` senza drop distruttivi in questo step.
 
 #### TASK-067.3 - Backend BusinessDayService foundation
 
