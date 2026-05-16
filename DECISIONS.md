@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.41
+Versione: 1.42
 Ultimo aggiornamento: 2026-05-16
 Stato: Attivo
 
@@ -1762,10 +1762,61 @@ I task frontend futuri che introducono o rifiniscono detail amministrativi devon
 
 ---
 
+### DEC-045 - Holiday Calendar model and BusinessDayService boundary
+
+Data: 2026-05-16
+Stato: Approvata
+
+Decisione:
+
+Il modulo Holiday Calendar del MVP gestisce calendari festivita per paese e anno.
+
+Lo standard approvato e:
+
+- `HolidayCalendar` e associato a `Country + Year`;
+- `Holiday` rappresenta una festivita dentro un calendario;
+- `Holiday.startDate` e `Holiday.endDate` sono sempre persistite;
+- una festivita di un solo giorno usa `startDate = endDate`;
+- una festivita multi-giorno usa un intervallo `startDate` / `endDate`;
+- `HolidayType` ha valori iniziali `FIXED` e `MOBILE`;
+- `HolidayGenerationRule` ha valori iniziali `FIXED_DATE`, `MANUAL`, `EASTER_BASED`;
+- le date finali salvate nel DB restano fonte operativa, anche quando in futuro un algoritmo precompila o genera il calendario;
+- Aid al-Fitr e Aid al-Adha sono festivita mobili multi-giorno;
+- nel MVP Aid resta manuale e non viene calcolato con algoritmo lunare;
+- `BusinessDayService` e un servizio backend separato che usa `holiday_calendars` e `holidays`;
+- `BusinessDayService` non introduce nuove tabelle nello step foundation;
+- Leave Request non viene integrato nel blocco Holiday Calendar e resta fuori scope o follow-up futuro.
+
+Motivazione:
+
+- supportare calendari festivita multi-country senza hardcode applicativo;
+- gestire correttamente festivita mobili e multi-giorno salvando comunque date esplicite e verificabili;
+- evitare over-engineering nel MVP, in particolare per il calcolo lunare di Aid;
+- preparare una foundation riusabile per futuri calcoli di giorni lavorativi senza accoppiare subito Holiday Calendar a Leave Request;
+- mantenere piccoli e verificabili i task successivi, separando backend CRUD, BusinessDayService, frontend e QA.
+
+Alternative escluse:
+
+- rappresentare una festivita multi-giorno con piu record singoli obbligatori;
+- salvare solo una regola di generazione senza date finali persistite;
+- automatizzare nel MVP il calcolo lunare di Aid;
+- integrare subito Holiday Calendar con Leave Request;
+- introdurre nuove tabelle dedicate al BusinessDayService nello step foundation;
+- usare API esterne per festivita ufficiali nel MVP.
+
+Impatto:
+
+`TASK-067` governa la numerazione attiva del blocco Holiday Calendar. Il refinement richiesto come `TASK-019.1` viene tracciato come `TASK-067.1` per non modificare i task storici gia completati `TASK-019` e `TASK-020`.
+
+I task `TASK-067.2`, `TASK-067.3`, `TASK-067.4` e `TASK-067.5` dovranno rispettare questa decisione e mantenere fuori scope Leave Request, calcolo ferie/assenze, payroll, turni, calendari per singolo dipendente, assegnazione calendario a sede/dipartimento/dipendente, generazione automatica Aid, import/export massivo e API esterne.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.42 | 2026-05-16 | Aggiunta DEC-045 per formalizzare il modello Holiday Calendar: `Country + Year`, festivita con `startDate`/`endDate`, `HolidayType` `FIXED`/`MOBILE`, `HolidayGenerationRule`, Aid manuale nel MVP, `BusinessDayService` separato e Leave Request fuori scope. |
 | 1.41 | 2026-05-16 | Aggiunta DEC-044 per formalizzare `DetailActionBar` come pattern frontend shared ufficiale delle action bar dei dettagli entita: gruppi `back`/secondary/primary/destructive, set standard di action id (`edit`, `save`, `cancel`, `activate`, `deactivate`, `deletePhysical`) e apertura a id custom di dominio senza introdurre componenti paralleli o logiche feature-specific nel shared component. |
 | 1.40 | 2026-05-15 | Aggiunta DEC-043 per formalizzare la regola durevole dello storico assegnazioni `Device`: `device_assignments` come fonte storica, `Device.assignedTo` / `assignedAt` come stato operativo corrente, unicita della riga aperta gestita lato service con lock pessimista sul `Device` e nessun vincolo DB parziale PostgreSQL-only. |
 | 1.39 | 2026-05-15 | Aggiunta DEC-042 per formalizzare lo standard durevole dei beni `Device`: `assetCode` tenant-scoped `DEV000001`, progressivo calcolato dal massimo esistente per tenant, `barcodeValue = assetCode`, esclusione di dati variabili dal payload barcode/QR ed eccezione motivata rispetto al default `DEC-039`. |

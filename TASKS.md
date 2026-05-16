@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.65
+Versione: 2.66
 Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
@@ -5219,9 +5219,226 @@ Validazione:
 - `cd frontend && npm.cmd run build` OK con warning noto budget iniziale (`2.37 MB`, +`366.08 kB`) e warning CommonJS della libreria `qrcode`;
 - `cd frontend && npm.cmd test -- --watch=false` OK, `46` file test passed, `370` test passed.
 
-### TASK-067 - UI HolidayCalendar
+### TASK-067 - Holiday Calendar governance
 
 Stato: TODO
+
+Tipo:
+
+- backlog/documentazione, backend, frontend e QA incrementali.
+
+Nota numerazione:
+
+- nel repository corrente `TASK-019` e `TASK-020` sono task storici gia completati e non riguardano HolidayCalendar;
+- il refinement richiesto come `TASK-019.1` viene registrato nella numerazione attiva come `TASK-067.1`, per non rinumerare o alterare task `DONE`;
+- i riferimenti `TASK-019.1`, `TASK-019.2`, `TASK-019.3`, `TASK-020.1` e `TASK-020.2` restano alias operativi del prompt e non sostituiscono la numerazione ufficiale del repository.
+
+Obiettivo:
+
+- gestire calendari festivita per paese e anno;
+- associare ogni `HolidayCalendar` a `Country + Year`;
+- modellare festivita a uno o piu giorni tramite `Holiday.startDate` e `Holiday.endDate`;
+- distinguere festivita `FIXED` e `MOBILE`;
+- predisporre `generationRule` per generazione futura, salvando sempre le date finali nel DB;
+- introdurre `BusinessDayService` come foundation backend separata da Leave Request;
+- mantenere fuori scope l'integrazione Leave Request e il calcolo reale ferie/assenze.
+
+Decisioni funzionali:
+
+- `HolidayCalendar` e associato a `Country + Year`;
+- `Holiday.startDate` e `Holiday.endDate` sono obbligatorie;
+- una festivita di un solo giorno usa `startDate = endDate`;
+- `HolidayType` ha valori `FIXED` e `MOBILE`;
+- `HolidayGenerationRule` ha valori iniziali `FIXED_DATE`, `MANUAL`, `EASTER_BASED`;
+- le date finali sono sempre persistite nel DB;
+- gli algoritmi futuri servono solo per precompilare o generare il calendario annuale;
+- Aid al-Fitr e Aid al-Adha sono festivita mobili multi-giorno;
+- per MVP Aid resta manuale e non usa calcolo lunare automatico;
+- `BusinessDayService` usa `holiday_calendars` e `holidays`;
+- `BusinessDayService` non introduce nuove tabelle nello step dedicato;
+- Leave Request non viene integrato in questo blocco.
+
+Fuori scope:
+
+- integrazione con Leave Request;
+- calcolo ferie/assenze reale;
+- Payroll;
+- turni;
+- calendari per singolo dipendente;
+- assegnazione calendario a sede, dipartimento o dipendente;
+- generazione automatica Aid con algoritmo lunare;
+- import/export massivo;
+- API esterne per festivita ufficiali.
+
+#### TASK-067.1 - Holiday Calendar backlog refinement
+
+Alias operativo richiesto:
+
+- TASK-019.1
+
+Stato: DONE
+
+Tipo: Documentale / Backlog governance
+
+Obiettivo:
+
+- formalizzare modello funzionale e decisioni Holiday Calendar;
+- aggiornare `TASKS.md`, `ROADMAP.md` e `DECISIONS.md`;
+- confermare `startDate` / `endDate`;
+- confermare `HolidayType` `FIXED` / `MOBILE`;
+- confermare `HolidayGenerationRule`;
+- confermare Aid manuale nel MVP;
+- confermare `BusinessDayService`;
+- confermare Leave Request fuori scope per ora.
+
+Validazione:
+
+- verificato che `TASK-019` e `TASK-020` siano gia `DONE` e non modificabili come task HolidayCalendar;
+- verificato che HolidayCalendar backend persistence foundation esista gia come `TASK-025`;
+- verificato che il backlog attivo usa `TASK-067` per HolidayCalendar;
+- nessuna modifica codice applicativo, migration, backend o frontend.
+
+#### TASK-067.2 - Backend Holiday Calendar operational foundation
+
+Alias operativo richiesto:
+
+- TASK-019.2
+
+Stato: TODO
+
+Tipo: Backend
+
+Obiettivo:
+
+- estendere o migrare in modo controllato la foundation `HolidayCalendar` esistente, senza creare modelli paralleli;
+- introdurre o riallineare entity `HolidayCalendar`;
+- introdurre entity `Holiday`;
+- introdurre enum `HolidayType` con valori `FIXED`, `MOBILE`;
+- introdurre enum `HolidayGenerationRule` con valori `FIXED_DATE`, `MANUAL`, `EASTER_BASED`;
+- aggiungere migration Flyway coerente con schema esistente;
+- aggiungere repository, service, DTO e controller;
+- introdurre CRUD backend amministrativo;
+- verificare o aggiungere permessi/authorities `HOLIDAY_CALENDAR` secondo la regola generale CRUD;
+- aggiornare, se necessario, matrice Ruolo/Permessi;
+- aggiungere test backend.
+
+Validazioni richieste:
+
+- `Country` obbligatorio;
+- `Year` obbligatorio;
+- regola `Country + Year` da documentare e validare;
+- `Holiday.startDate` obbligatoria;
+- `Holiday.endDate` obbligatoria;
+- `Holiday.endDate >= Holiday.startDate`;
+- date della festivita dentro l'anno del calendario;
+- gestione sovrapposizioni da documentare e validare in service;
+- festivita multi-giorno supportate tramite `startDate` / `endDate`;
+- Aid multi-giorno gestito manualmente.
+
+Fuori scope:
+
+- algoritmo lunare per Aid;
+- integrazione Leave Request;
+- API esterne festivita ufficiali;
+- import/export massivo;
+- frontend.
+
+#### TASK-067.3 - Backend BusinessDayService foundation
+
+Alias operativo richiesto:
+
+- TASK-019.3
+
+Stato: TODO
+
+Tipo: Backend
+
+Obiettivo:
+
+- introdurre `BusinessDayService` come servizio applicativo separato;
+- usare i dati di `holiday_calendars` e `holidays`;
+- non introdurre nuove tabelle;
+- esporre metodi foundation:
+  - `isHoliday(date, calendar)`;
+  - `isWorkingDay(date, calendar)`;
+  - `countWorkingDays(from, to, calendar)`;
+- supportare festivita multi-giorno tramite `startDate` / `endDate`;
+- escludere weekend standard sabato/domenica nel MVP.
+
+Test backend richiesti:
+
+- festa singolo giorno;
+- festa multi-giorno;
+- Aid di 2 giorni;
+- weekend;
+- intervalli misti;
+- calendario mancante.
+
+Fuori scope:
+
+- integrazione Leave Request;
+- calcolo saldo ferie;
+- calendari per dipendente, sede o dipartimento;
+- nuove tabelle di calendario lavorativo;
+- holiday generation automatica.
+
+#### TASK-067.4 - Frontend Holiday Calendar UI foundation
+
+Alias operativo richiesto:
+
+- TASK-020.1
+
+Stato: TODO
+
+Tipo: Frontend
+
+Obiettivo:
+
+- implementare lista calendari;
+- implementare form calendario;
+- implementare dettaglio calendario;
+- implementare tabella festivita;
+- implementare form/modal festivita con `startDate` / `endDate`;
+- mostrare tipo `FIXED` / `MOBILE`;
+- gestire stato attivo/disattivo;
+- aggiungere i18n `it` / `fr` / `en`;
+- riusare componenti shared esistenti;
+- riusare pattern admin gia consolidati;
+- non introdurre redesign globale.
+
+Vincoli:
+
+- usare solo API backend approvate da `TASK-067.2`;
+- non anticipare Leave Request;
+- non creare componenti paralleli se esiste un componente shared idoneo;
+- rispettare permessi/visibility frontend come UX, lasciando la sicurezza reale al backend.
+
+#### TASK-067.5 - QA Holiday Calendar
+
+Alias operativo richiesto:
+
+- TASK-020.2
+
+Stato: TODO
+
+Tipo: QA
+
+Obiettivo:
+
+- verificare backend;
+- verificare frontend;
+- verificare calendario Tunisia 2026;
+- verificare Aid multi-giorno;
+- verificare festivita fissa;
+- verificare sovrapposizioni;
+- verificare build/test;
+- aggiornare `docs/qa/QA-REPORTS.md` se previsto dalla governance.
+
+Vincoli QA:
+
+- non introdurre nuove funzionalita;
+- classificare problemi in `BLOCKER`, `MAJOR`, `MINOR`, `NOTE`;
+- proporre fix senza applicarli automaticamente, salvo richiesta esplicita.
 
 ### TASK-068 - UI disciplinary governance
 
@@ -5282,6 +5499,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.66 | 2026-05-16 | TASK-067 raffinato come Holiday Calendar governance con subtask `TASK-067.1`..`TASK-067.5`: backlog refinement documentale, backend operational foundation, BusinessDayService foundation, frontend UI foundation e QA; preservati `TASK-019` e `TASK-020` storici gia completati, documentati alias operativi richiesti dal prompt e nessuna modifica applicativa. |
 | 2.65 | 2026-05-16 | TASK-066.10 corretto dopo validazione manuale: ripristinate in `User Detail` le azioni `activate` / `deactivate` e `deletePhysical` nella `DetailActionBar`, introdotto `app-confirm-dialog` shared per `deactivate` e `deletePhysical` su `User Detail` e `Company Profile Detail`, build/test frontend reali verdi e nessuna modifica backend/security/API. |
 | 2.64 | 2026-05-16 | TASK-066.10 completato lato frontend: `User Detail` e `Company Profile Detail` migrati al componente shared `DetailActionBar`, mantenendo comportamento, permessi, i18n e sezioni interne esistenti; build/test frontend reali verdi e nessuna modifica backend/security. |
 | 2.63 | 2026-05-16 | Allineamento documentale stato task Device: `TASK-066.7` promosso a `COMPLETATO` dopo verifica QA finale su `main`; `TASK-066.8` confermato `COMPLETATO` senza variazioni di scope o codice. |
@@ -5446,4 +5664,3 @@ Stato: TODO
 | 1.2 | 2026-05-01 | Aggiornato stato dopo TASK-005 e aggiunto TASK-006 per integrazione Metronic Angular. |
 | 1.1 | 2026-05-01 | Aggiornato stato task dopo completamento TASK-001, TASK-002, TASK-003 e TASK-004. |
 | 1.0 | 2026-05-01 | Prima versione task operativi MVP. |
-
