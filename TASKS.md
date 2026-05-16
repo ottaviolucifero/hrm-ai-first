@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.62
+Versione: 2.63
 Ultimo aggiornamento: 2026-05-16
 Stato: In avanzamento
 
@@ -4897,7 +4897,7 @@ Nota backlog 065+:
 
 ### TASK-066 - UI Device governance
 
-Stato: TODO
+Stato: DONE
 
 Obiettivo:
 
@@ -5103,7 +5103,7 @@ Validazione:
 
 #### TASK-066.7 - Device label print UI
 
-Stato: IN_PROGRESS
+Stato: COMPLETATO
 
 Tipo: Frontend
 
@@ -5133,13 +5133,13 @@ Implementazione attuale `2026-05-16`:
 - introdotta azione `Stampa etichetta` che apre una vista stampabile dedicata single-label con CSS print MVP, senza modifiche backend o API;
 - adottata la libreria frontend `qrcode` per generare il QR a partire da `barcodeValue`, con fallback su `assetCode`;
 - aggiornate le chiavi i18n `it` / `fr` / `en` e aggiunti test frontend dedicati su preview e stampa;
-- completata la validazione automatica con build/test reali; resta da chiudere la validazione manuale browser della stampa per promuovere il task a `DONE`.
+- completata la validazione automatica con build/test reali e chiusa la validazione manuale browser della stampa.
 
 Validazione:
 
 - `cd frontend && npm.cmd run build` OK con warning noto budget iniziale (`2.37 MB`, +`367.68 kB`) e warning CommonJS della libreria `qrcode`;
 - `cd frontend && npm.cmd test -- --watch=false` OK, `46` file test passed, `358` test passed;
-- validazione manuale browser non eseguibile in questa sessione CLI e quindi ancora pending.
+- validazione manuale browser eseguita con esito positivo.
 
 #### TASK-066.8 - Shared entity detail header/actions pattern
 
@@ -5267,6 +5267,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.63 | 2026-05-16 | Allineamento documentale stato task Device: `TASK-066.7` promosso a `COMPLETATO` dopo verifica QA finale su `main`; `TASK-066.8` confermato `COMPLETATO` senza variazioni di scope o codice. |
 | 2.62 | 2026-05-16 | TASK-066.8 completato lato frontend: consolidato `DetailActionBar` come pattern shared ufficiale per i dettagli entita, applicato solo a Device con id azione standardizzati `activate` / `deactivate`, test shared estesi e fix prerequisiti build minimi su i18n label Device e timer `AlertMessageComponent`; nessuna modifica backend/API/security e follow-up migrazione completa demandato a `TASK-066.10`. |
 | 2.61 | 2026-05-16 | TASK-066.7 implementato lato frontend come MVP label print Device: nuova card `Etichetta dispositivo`, QR reale browser-side via `qrcode`, stampa single-label `60 x 40 mm` con CSS print e limitazioni Zebra/ZPL/PDF complesso formalizzate; build/test reali verdi e task mantenuto `IN_PROGRESS` fino a validazione manuale browser. |
 | 2.60 | 2026-05-16 | TASK-066.6 completato come UI frontend dello storico assegnazioni Device: dettaglio admin esteso con card `Storico assegnazioni`, azioni `Assegna` / `Restituisci` / `Riassegna` sui soli endpoint backend gia esistenti, pannelli inline coerenti con i pattern admin, i18n `it/fr/en`, build/test frontend reali verdi e prossimo passo riallineato a `TASK-066.7`. |
