@@ -41,6 +41,12 @@ describe('HolidayCalendarAdministrationDetailComponent', () => {
     await stabilizeFixture(fixture);
 
     const textContent = fixture.nativeElement.textContent as string;
+    const actionHeader = fixture.nativeElement.querySelector(
+      '.holiday-calendar-holidays-table-shell thead .data-table-actions-header'
+    ) as HTMLTableCellElement | null;
+    const actionCell = fixture.nativeElement.querySelector(
+      '.holiday-calendar-holidays-table-shell tbody .data-table-actions-cell'
+    ) as HTMLTableCellElement | null;
     expect(textContent).toContain('Italy 2026');
     expect(textContent).toContain('Identità');
     expect(textContent).toContain('Contesto e stato');
@@ -49,6 +55,8 @@ describe('HolidayCalendarAdministrationDetailComponent', () => {
     expect(textContent).toContain('Basata su Pasqua');
     expect(textContent).toContain('Disattiva');
     expect(textContent).toContain('Nuova festività');
+    expect(actionHeader?.classList.contains('data-table-sticky-right')).toBe(true);
+    expect(actionCell?.classList.contains('data-table-sticky-right')).toBe(true);
   }, 10000);
 
   it('navigates back to the list', async () => {
