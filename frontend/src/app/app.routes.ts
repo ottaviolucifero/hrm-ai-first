@@ -14,6 +14,7 @@ import { HolidayCalendarAdministrationComponent } from './features/holiday-calen
 import { HolidayCalendarAdministrationDetailComponent } from './features/holiday-calendar-administration/holiday-calendar-administration-detail.component';
 import { HolidayCalendarAdministrationFormComponent } from './features/holiday-calendar-administration/holiday-calendar-administration-form.component';
 import { LeaveRequestAdministrationComponent } from './features/leave-request-administration/leave-request-administration.component';
+import { LeaveRequestAdministrationDetailComponent } from './features/leave-request-administration/leave-request-administration-detail.component';
 import { LeaveRequestAdministrationFormComponent } from './features/leave-request-administration/leave-request-administration-form.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
 import { RoleAdministrationComponent } from './features/role-administration/role-administration.component';
@@ -208,12 +209,11 @@ export const routes: Routes = [
           },
           {
             path: 'leave-requests/:id',
-            component: LeaveRequestAdministrationFormComponent,
+            component: LeaveRequestAdministrationDetailComponent,
             canActivate: [permissionGuard],
             data: {
               permissionModule: 'leave-requests',
-              requiredAction: 'view',
-              formMode: 'view'
+              requiredAction: 'view'
             }
           },
           {
