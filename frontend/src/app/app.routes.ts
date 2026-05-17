@@ -14,6 +14,7 @@ import { HolidayCalendarAdministrationComponent } from './features/holiday-calen
 import { HolidayCalendarAdministrationDetailComponent } from './features/holiday-calendar-administration/holiday-calendar-administration-detail.component';
 import { HolidayCalendarAdministrationFormComponent } from './features/holiday-calendar-administration/holiday-calendar-administration-form.component';
 import { LeaveRequestAdministrationComponent } from './features/leave-request-administration/leave-request-administration.component';
+import { LeaveRequestAdministrationFormComponent } from './features/leave-request-administration/leave-request-administration-form.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
 import { RoleAdministrationComponent } from './features/role-administration/role-administration.component';
 import { RolePermissionMatrixComponent } from './features/role-permissions/role-permission-matrix.component';
@@ -183,6 +184,36 @@ export const routes: Routes = [
             data: {
               permissionModule: 'leave-requests',
               requiredAction: 'view'
+            }
+          },
+          {
+            path: 'leave-requests/new',
+            component: LeaveRequestAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'leave-requests',
+              requiredAction: 'create',
+              formMode: 'create'
+            }
+          },
+          {
+            path: 'leave-requests/:id/edit',
+            component: LeaveRequestAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'leave-requests',
+              requiredAction: 'update',
+              formMode: 'edit'
+            }
+          },
+          {
+            path: 'leave-requests/:id',
+            component: LeaveRequestAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'leave-requests',
+              requiredAction: 'view',
+              formMode: 'view'
             }
           },
           {

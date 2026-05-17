@@ -6,11 +6,13 @@
 
 .leave-request-page {
   display: block;
+  overflow-x: clip;
 }
 
 .leave-request-layout {
   display: grid;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .leave-request-page-header {
@@ -19,6 +21,12 @@
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: space-between;
+}
+
+.leave-request-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .leave-request-heading {
@@ -53,8 +61,9 @@
   flex-direction: column;
   gap: 0;
   padding: 0;
-  overflow: visible;
-  position: relative;
+  min-width: 0;
+  overflow-x: clip;
+  overflow-y: visible;
   border-radius: 1rem;
   border: 1px solid var(--color-border, #e9ecef);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
@@ -96,6 +105,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 0;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--color-border, #e9ecef);
   background: var(--color-muted, #f8f9fa);
@@ -109,6 +119,7 @@
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   align-items: start;
+  min-width: 0;
   overflow: visible;
   position: relative;
 }
@@ -128,6 +139,11 @@
   display: grid;
   gap: 0.35rem;
   min-width: min(100%, 18rem);
+}
+
+.leave-request-list-card > app-data-table {
+  display: block;
+  min-width: 0;
 }
 
 .leave-request-search-label {

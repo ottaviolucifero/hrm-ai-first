@@ -1,16 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize, switchMap, take } from 'rxjs';
 
 import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
 import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { AppDateTimeFieldComponent } from '../../shared/components/date-time-field/app-date-time-field.component';
 import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
+import { NotificationService } from '../../shared/feedback/notification.service';
 import { LookupOption } from '../../shared/lookup/lookup.models';
 import {
   DEFAULT_LEAVE_REQUEST_ADMIN_PAGE_SIZE,
@@ -19,6 +22,8 @@ import {
   LeaveRequestAdministrationListItem,
   LeaveRequestAdministrationPage,
   LeaveRequestAdministrationReference,
+  LeaveRequestAdministrationRowAction,
+  LeaveRequestAdministrationRowActionEvent,
   LeaveRequestAdministrationStatus
 } from './leave-request-administration.models';
 import { LeaveRequestAdministrationService } from './leave-request-administration.service';
@@ -36,6 +41,18 @@ const LEAVE_REQUEST_STATUS_OPTIONS: readonly LeaveRequestStatusOption[] = [
   { id: 'CANCELLED', labelKey: 'leaveRequestAdministration.status.CANCELLED' }
 ] as const;
 
+const LEAVE_REQUEST_STATUS_BADGE_TONES: Record<LeaveRequestAdministrationStatus, 'neutral' | 'info' | 'success' | 'danger' | 'warning'> = {
+  DRAFT: 'neutral',
+  SUBMITTED: 'info',
+  APPROVED: 'success',
+  REJECTED: 'danger',
+  CANCELLED: 'warning'
+};
+
+function isMutableStatus(status: LeaveRequestAdministrationStatus): boolean {
+  return status === 'DRAFT' || status === 'SUBMITTED';
+}
+
 @Component({
   selector: 'app-leave-request-administration',
   imports: [
@@ -50,15 +67,19 @@ const LEAVE_REQUEST_STATUS_OPTIONS: readonly LeaveRequestStatusOption[] = [
 })
 export class LeaveRequestAdministrationComponent {
   private readonly authService = inject(AuthService);
+  private readonly notificationService = inject(NotificationService);
   private readonly permissionSummaryService = inject(PermissionSummaryService);
+  private readonly router = inject(Router);
   private readonly leaveRequestAdministrationService = inject(LeaveRequestAdministrationService);
   protected readonly i18n = inject(I18nService);
 
   protected readonly pageSizeOptions = [10, 20, 50] as const;
   protected readonly loading = signal(false);
+  protected readonly cancelling = signal(false);
   protected readonly hasError = signal(false);
   protected readonly modulePermissions = signal<ModulePermissionSummary>(FROZEN_MODULE_PERMISSION_SUMMARY);
   protected readonly allRows = signal<readonly LeaveRequestAdministrationListItem[]>([]);
+  protected readonly typeFilterOption = signal<LookupOption | null>(null);
   protected readonly pageIndex = signal(0);
   protected readonly pageSize = signal(DEFAULT_LEAVE_REQUEST_ADMIN_PAGE_SIZE);
   protected readonly textFilter = signal('');
@@ -66,6 +87,8 @@ export class LeaveRequestAdministrationComponent {
   protected readonly typeFilter = signal('');
   protected readonly periodFrom = signal('');
   protected readonly periodTo = signal('');
+  protected readonly typeLookupTenantId = signal<string | null>(null);
+  protected readonly actingLeaveRequestId = signal<string | null>(null);
 
   protected readonly columns = computed<readonly LeaveRequestAdministrationColumn[]>(() => [
     {
@@ -95,7 +118,9 @@ export class LeaveRequestAdministrationComponent {
     {
       key: 'status',
       labelKey: 'leaveRequestAdministration.fields.status',
+      type: 'status',
       minWidth: '9rem',
+      badgeTone: (value) => this.statusBadgeTone(String(value ?? '')),
       formatter: (value) => this.statusLabel(String(value ?? ''))
     },
     {
@@ -105,6 +130,45 @@ export class LeaveRequestAdministrationComponent {
       formatter: () => this.i18n.t('leaveRequestAdministration.values.notAvailable')
     }
   ]);
+  protected readonly rowActions = computed<readonly LeaveRequestAdministrationRowAction[]>(() => [
+    {
+      id: 'view',
+      labelKey: 'leaveRequestAdministration.actions.view',
+      visible: (row) => this.canView(row as LeaveRequestAdministrationListItem),
+      disabled: (row) =>
+        this.loading()
+        || this.isBusy((row as LeaveRequestAdministrationListItem).id)
+        || !this.canView(row as LeaveRequestAdministrationListItem)
+    },
+    {
+      id: 'edit',
+      labelKey: 'leaveRequestAdministration.actions.edit',
+      visible: (row) => this.canEdit(row as LeaveRequestAdministrationListItem),
+      disabled: (row) =>
+        this.loading()
+        || this.isBusy((row as LeaveRequestAdministrationListItem).id)
+        || !this.canEdit(row as LeaveRequestAdministrationListItem)
+    },
+    {
+      id: 'cancelRequest',
+      labelKey: 'leaveRequestAdministration.actions.cancelRequest',
+      tone: 'danger',
+      confirmation: {
+        titleKey: 'leaveRequestAdministration.cancel.confirmTitle',
+        messageKey: 'leaveRequestAdministration.cancel.confirmMessage',
+        confirmLabelKey: 'leaveRequestAdministration.cancel.confirmAction',
+        cancelLabelKey: 'confirmDialog.actions.cancel',
+        severity: 'warning',
+        targetLabelKey: 'confirmDialog.target.selectedEntity',
+        targetValue: (row) => this.confirmationTarget(row as LeaveRequestAdministrationListItem)
+      },
+      visible: (row) => this.canCancel(row as LeaveRequestAdministrationListItem),
+      disabled: (row) =>
+        this.loading()
+        || this.isBusy((row as LeaveRequestAdministrationListItem).id)
+        || !this.canCancel(row as LeaveRequestAdministrationListItem)
+    }
+  ]);
   protected readonly statusOptions = computed<readonly LookupOption[]>(() =>
     LEAVE_REQUEST_STATUS_OPTIONS.map((option) => ({
       id: option.id,
@@ -112,20 +176,8 @@ export class LeaveRequestAdministrationComponent {
       name: this.i18n.t(option.labelKey)
     }))
   );
-  protected readonly typeOptions = computed<readonly LookupOption[]>(() =>
-    Array.from(
-      new Map(
-        this.allRows()
-          .filter((row) => row.leaveRequestType?.id)
-          .map((row) => [
-            row.leaveRequestType!.id,
-            this.referenceToLookupOption(row.leaveRequestType)
-          ])
-      ).values()
-    )
-      .filter((option): option is LookupOption => option !== null)
-      .sort((left, right) => left.name.localeCompare(right.name, this.i18n.language()))
-  );
+  protected readonly leaveRequestTypeLookup = (query: { page: number; size: number; search?: string }) =>
+    this.leaveRequestAdministrationService.findLeaveRequestTypeLookups(query, this.typeLookupTenantId());
   protected readonly filteredRows = computed<readonly LeaveRequestAdministrationListItem[]>(() =>
     this.allRows().filter((row) => this.matchesFilters(row))
   );
@@ -169,6 +221,14 @@ export class LeaveRequestAdministrationComponent {
     this.loadLeaveRequests();
   }
 
+  protected createLeaveRequest(): void {
+    if (!this.modulePermissions().canCreate) {
+      return;
+    }
+
+    void this.router.navigate(['/admin/leave-requests/new']);
+  }
+
   protected updateTextFilter(value: string): void {
     this.textFilter.set(value);
     this.pageIndex.set(0);
@@ -188,6 +248,10 @@ export class LeaveRequestAdministrationComponent {
     this.pageIndex.set(0);
   }
 
+  protected rememberTypeFilterOption(option: LookupOption | null): void {
+    this.typeFilterOption.set(option);
+  }
+
   protected updatePeriodFrom(value: string): void {
     this.periodFrom.set(value.trim());
     this.pageIndex.set(0);
@@ -202,9 +266,28 @@ export class LeaveRequestAdministrationComponent {
     this.textFilter.set('');
     this.statusFilter.set('');
     this.typeFilter.set('');
+    this.typeFilterOption.set(null);
     this.periodFrom.set('');
     this.periodTo.set('');
     this.pageIndex.set(0);
+  }
+
+  protected handleRowAction(event: LeaveRequestAdministrationRowActionEvent): void {
+    const row = event.row as LeaveRequestAdministrationListItem;
+
+    if (event.action.id === 'view' && this.canView(row)) {
+      void this.router.navigate(['/admin/leave-requests', row.id]);
+      return;
+    }
+
+    if (event.action.id === 'edit' && this.canEdit(row)) {
+      void this.router.navigate(['/admin/leave-requests', row.id, 'edit']);
+      return;
+    }
+
+    if (event.action.id === 'cancelRequest' && this.canCancel(row)) {
+      this.cancelLeaveRequest(row);
+    }
   }
 
   protected goToPreviousPage(): void {
@@ -249,6 +332,7 @@ export class LeaveRequestAdministrationComponent {
         take(1),
         switchMap((user) => {
           this.modulePermissions.set(this.permissionSummaryService.summaryForModule(user, 'leave-requests'));
+          this.typeLookupTenantId.set(user.userType.startsWith('PLATFORM_') ? null : user.tenantId);
           return this.leaveRequestAdministrationService.findLeaveRequests();
         }),
         finalize(() => this.loading.set(false))
@@ -257,8 +341,34 @@ export class LeaveRequestAdministrationComponent {
         next: (rows) => this.allRows.set(rows),
         error: () => {
           this.modulePermissions.set(FROZEN_MODULE_PERMISSION_SUMMARY);
+          this.typeLookupTenantId.set(null);
           this.allRows.set([]);
           this.hasError.set(true);
+        }
+      });
+  }
+
+  private cancelLeaveRequest(row: LeaveRequestAdministrationListItem): void {
+    this.cancelling.set(true);
+    this.actingLeaveRequestId.set(row.id);
+
+    this.leaveRequestAdministrationService.cancelLeaveRequest(row.id)
+      .pipe(finalize(() => {
+        this.cancelling.set(false);
+        this.actingLeaveRequestId.set(null);
+      }))
+      .subscribe({
+        next: () => {
+          this.notificationService.success(this.i18n.t('leaveRequestAdministration.feedback.cancelSuccess'), {
+            titleKey: 'alert.title.success'
+          });
+          this.loadLeaveRequests();
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveApiMessage(error, 'leaveRequestAdministration.errors.cancel'), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
         }
       });
   }
@@ -331,6 +441,22 @@ export class LeaveRequestAdministrationComponent {
     return this.i18n.t(key);
   }
 
+  private statusBadgeTone(status: string): 'neutral' | 'info' | 'success' | 'danger' | 'warning' {
+    return LEAVE_REQUEST_STATUS_BADGE_TONES[status as LeaveRequestAdministrationStatus] ?? 'neutral';
+  }
+
+  private canView(_row: LeaveRequestAdministrationListItem): boolean {
+    return this.modulePermissions().canView;
+  }
+
+  private canEdit(row: LeaveRequestAdministrationListItem): boolean {
+    return this.modulePermissions().canUpdate && isMutableStatus(row.status);
+  }
+
+  private canCancel(row: LeaveRequestAdministrationListItem): boolean {
+    return this.modulePermissions().canDelete && isMutableStatus(row.status);
+  }
+
   private referenceToLookupOption(reference: LeaveRequestAdministrationReference | null): LookupOption | null {
     if (!reference) {
       return null;
@@ -341,5 +467,18 @@ export class LeaveRequestAdministrationComponent {
       code: reference.code,
       name: reference.name
     };
+  }
+
+  private isBusy(leaveRequestId: string): boolean {
+    return this.cancelling() || this.actingLeaveRequestId() === leaveRequestId;
+  }
+
+  private confirmationTarget(row: LeaveRequestAdministrationListItem): string {
+    const employee = this.formatReference(row.employee);
+    return `${employee} - ${this.formatPeriod(row)}`;
+  }
+
+  private resolveApiMessage(error: unknown, fallbackKey: I18nKey): string {
+    return resolveApiErrorMessage(this.i18n, error, { fallbackKey });
   }
 }

@@ -14,6 +14,7 @@ export type DataTableColumnType =
 
 export type DataTableColumnAlign = 'left' | 'center' | 'right';
 export type DataTableColumnSticky = 'left' | 'right';
+export type DataTableBadgeTone = 'neutral' | 'info' | 'success' | 'danger' | 'warning';
 
 export type DataTableRow = Record<string, unknown>;
 
@@ -46,6 +47,7 @@ export interface DataTableColumn<T extends DataTableRow = DataTableRow> {
   readonly key: string;
   readonly labelKey: I18nKey;
   readonly type?: DataTableColumnType;
+  readonly badgeTone?: DataTableBadgeTone | ((value: unknown, row: T) => DataTableBadgeTone);
   readonly visible?: boolean;
   readonly width?: string;
   readonly minWidth?: string;

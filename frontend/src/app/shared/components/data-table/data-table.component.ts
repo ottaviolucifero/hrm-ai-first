@@ -9,6 +9,7 @@ import { ConfirmDialogConfig } from '../confirm-dialog/confirm-dialog.models';
 import {
   DataTableAction,
   DataTableActionConfirmation,
+  DataTableBadgeTone,
   DataTableColumn,
   DataTableColumnAlign,
   DataTableColumnSticky,
@@ -43,7 +44,8 @@ export class DataTableComponent {
     update: ['ki-filled', 'ki-pencil'],
     deactivate: ['ki-filled', 'ki-minus-circle'],
     delete: ['ki-filled', 'ki-trash'],
-    deletephysical: ['ki-filled', 'ki-trash']
+    deletephysical: ['ki-filled', 'ki-trash'],
+    cancelrequest: ['ki-filled', 'ki-trash']
   };
 
   @Input() columns: readonly DataTableColumn[] = [];
@@ -232,8 +234,31 @@ export class DataTableComponent {
     return this.columnType(column) === 'boolean';
   }
 
+  protected isStatusColumn(column: DataTableColumn): boolean {
+    const type = this.columnType(column);
+    return type === 'status' || type === 'badge';
+  }
+
   protected isBooleanActive(row: DataTableRow, column: DataTableColumn): boolean {
     return this.resolveValue(row, column.key) === true;
+  }
+
+  protected statusBadgeClass(row: DataTableRow, column: DataTableColumn): string {
+    return [
+      'data-table-status-badge',
+      `data-table-status-badge-${this.statusBadgeTone(row, column)}`
+    ].join(' ');
+  }
+
+  protected statusBadgeTone(row: DataTableRow, column: DataTableColumn): DataTableBadgeTone {
+    const tone = column.badgeTone;
+    const value = this.resolveValue(row, column.key);
+
+    if (typeof tone === 'function') {
+      return tone(value, row);
+    }
+
+    return tone ?? 'neutral';
   }
 
   protected isRowActionDisabled(action: DataTableAction, row: DataTableRow): boolean {
