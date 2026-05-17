@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.88
+Versione: 2.89
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -166,10 +166,10 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - `TASK-068.4` completato lato frontend: CRUD amministrativo LeaveRequest con route create/edit, form reactive tenant-aware, lookup reale `LeaveRequestType` condiviso con il filtro lista, azione `Annulla richiesta` via `DELETE` logico, i18n `it` / `fr` / `en` e test/build frontend verdi.
 - `TASK-068.5` completato lato frontend/shared UI: nuovo `app-filter-panel` con toggle `Filtri`, badge conteggio filtri attivi, ARIA corretta, content projection e prima adozione sulla lista LeaveRequest senza cambiare logica dominio o API.
 - `TASK-068.6` completato lato frontend: pagina dettaglio LeaveRequest dedicata con route `/admin/leave-requests/:id`, `DetailActionBar` con `Back` sempre disponibile ed `Edit` solo per stati mutabili con permesso update, notice read-only per `CANCELLED`, nessuna azione `approve/reject/cancel`, i18n `it` / `fr` / `en` e test/build frontend verdi.
-- `TASK-068.7` bloccato dopo verifica repository del 2026-05-17: il backend non espone endpoint reali `approve/reject` per LeaveRequest admin; sono presenti solo detail/create/update/cancel e `DELETE` continua a mappare `CANCELLED`. Il task resta bloccato fino al completamento di `TASK-068.8`.
-- `TASK-068.8` pianificato come nuovo task backend dedicato agli endpoint reali approve/reject LeaveRequest admin, prerequisito per sbloccare il workflow UI di `TASK-068.7`.
+- `TASK-068.8` completato lato backend: aggiunti gli endpoint reali `POST /api/admin/leave-requests/{leaveRequestId}/approve` e `POST /api/admin/leave-requests/{leaveRequestId}/reject`, transizioni `SUBMITTED -> APPROVED/REJECTED`, response detail aggiornata, RBAC baseline `UPDATE/MANAGE` e test backend Maven verdi.
+- `TASK-068.7` ora e tecnicamente sbloccato: la UI approve/reject non e completata, ma il backend reale necessario e disponibile e `DELETE` continua a restare solo cancel logico `CANCELLED`.
 - Prossimi passi operativi: `TASK-067.4` Git worktree workflow foundation come follow-up documentale e `TASK-067.8` QA Holiday Calendar come prossimo step di validazione dedicata.
-- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068.8` backend LeaveRequest approve/reject workflow endpoints, `TASK-068.7` workflow UI approve/reject una volta sbloccato, `TASK-068.9` self-service request form, `TASK-068.10` calendar/absence overview, `TASK-068.11` QA hardening, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068.7` workflow UI approve/reject ora sbloccato, `TASK-068.9` self-service request form, `TASK-068.10` calendar/absence overview, `TASK-068.11` QA hardening, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -481,6 +481,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.89 | 2026-05-17 | `TASK-068.8` completato in roadmap con endpoint backend reali LeaveRequest `POST /approve` e `POST /reject`, transizioni `SUBMITTED -> APPROVED/REJECTED`, RBAC baseline `UPDATE/MANAGE` e test Maven verdi; `TASK-068.7` segnato tecnicamente sbloccato ma ancora non completato lato UI. |
 | 2.88 | 2026-05-17 | Inserito in roadmap il nuovo `TASK-068.8` backend LeaveRequest approve/reject come prerequisito di sblocco per `TASK-068.7`; riallineata la sequenza LeaveRequest successiva con self-service `TASK-068.9`, calendario `TASK-068.10` e QA `TASK-068.11`, senza modifiche applicative. |
 | 2.87 | 2026-05-17 | `TASK-068.7` marcato bloccato in roadmap dopo verifica repository: assenti endpoint backend reali `approve/reject` per LeaveRequest admin, confermato che `DELETE` resta solo cancel logico `CANCELLED`; aggiunta dipendenza documentale verso futuro task backend separato `TASK-068.x`, senza modifiche applicative. |
 | 2.86 | 2026-05-17 | `TASK-068.6` completato lato frontend in roadmap: nuova pagina dettaglio LeaveRequest su route dedicata, `DetailActionBar` coerente con `DEC-044`, stato `CANCELLED` sempre consultabile con notice read-only, nessuna azione workflow fuori scope e validazione reale `npm.cmd run build` + `npm.cmd test` verde. |

@@ -103,6 +103,22 @@ public class LeaveRequestAdministrationService {
 	}
 
 	@Transactional
+	public LeaveRequestAdministrationDetailResponse approveLeaveRequest(UUID leaveRequestId) {
+		LeaveRequest leaveRequest = lockLeaveRequestForAdministration(leaveRequestId);
+		assertLeaveRequestIsSubmittedForWorkflow(leaveRequest, "approved");
+		leaveRequest.setStatus(LeaveRequestStatus.APPROVED);
+		return toDetailResponse(leaveRequestRepository.saveAndFlush(leaveRequest));
+	}
+
+	@Transactional
+	public LeaveRequestAdministrationDetailResponse rejectLeaveRequest(UUID leaveRequestId) {
+		LeaveRequest leaveRequest = lockLeaveRequestForAdministration(leaveRequestId);
+		assertLeaveRequestIsSubmittedForWorkflow(leaveRequest, "rejected");
+		leaveRequest.setStatus(LeaveRequestStatus.REJECTED);
+		return toDetailResponse(leaveRequestRepository.saveAndFlush(leaveRequest));
+	}
+
+	@Transactional
 	public void cancelLeaveRequest(UUID leaveRequestId) {
 		LeaveRequest leaveRequest = lockLeaveRequestForAdministration(leaveRequestId);
 		assertLeaveRequestIsMutable(leaveRequest);
@@ -176,6 +192,14 @@ public class LeaveRequestAdministrationService {
 	private void assertLeaveRequestIsMutable(LeaveRequest leaveRequest) {
 		if (isClosedStatus(leaveRequest.getStatus())) {
 			throw new InvalidRequestException("Leave request is not editable from status: " + leaveRequest.getStatus());
+		}
+	}
+
+	private void assertLeaveRequestIsSubmittedForWorkflow(LeaveRequest leaveRequest, String action) {
+		if (leaveRequest.getStatus() != LeaveRequestStatus.SUBMITTED) {
+			throw new InvalidRequestException(
+					"Leave request can be " + action + " only from status: SUBMITTED. Current status: "
+							+ leaveRequest.getStatus());
 		}
 	}
 

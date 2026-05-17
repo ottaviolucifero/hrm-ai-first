@@ -46,6 +46,18 @@ public class LeaveRequestAdministrationController {
 		return leaveRequestAdministrationService.createLeaveRequest(request);
 	}
 
+	@PostMapping("/{leaveRequestId}/approve")
+	@Operation(summary = "Approve leave request from status SUBMITTED")
+	public LeaveRequestAdministrationDetailResponse approveLeaveRequest(@PathVariable UUID leaveRequestId) {
+		return leaveRequestAdministrationService.approveLeaveRequest(leaveRequestId);
+	}
+
+	@PostMapping("/{leaveRequestId}/reject")
+	@Operation(summary = "Reject leave request from status SUBMITTED")
+	public LeaveRequestAdministrationDetailResponse rejectLeaveRequest(@PathVariable UUID leaveRequestId) {
+		return leaveRequestAdministrationService.rejectLeaveRequest(leaveRequestId);
+	}
+
 	@PutMapping("/{leaveRequestId}")
 	@Operation(summary = "Update leave request")
 	public LeaveRequestAdministrationDetailResponse updateLeaveRequest(
