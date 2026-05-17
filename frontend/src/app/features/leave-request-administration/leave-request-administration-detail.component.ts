@@ -1,6 +1,6 @@
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, finalize, forkJoin, take } from 'rxjs';
+import { Observable, Subscription, finalize, forkJoin, take } from 'rxjs';
 
 import { FROZEN_MODULE_PERMISSION_SUMMARY, ModulePermissionSummary } from '../../core/authorization/permission-summary.models';
 import { PermissionSummaryService } from '../../core/authorization/permission-summary.service';
@@ -29,8 +29,11 @@ interface ReadOnlyField {
 }
 
 interface PendingLeaveRequestConfirmation {
+  readonly action: PendingLeaveRequestAction;
   readonly config: ConfirmDialogConfig;
 }
+
+type PendingLeaveRequestAction = 'approveRequest' | 'cancelRequest' | 'rejectRequest';
 
 const LEAVE_REQUEST_STATUS_BADGE_TONES: Record<
   LeaveRequestAdministrationStatus,
@@ -104,44 +107,78 @@ export class LeaveRequestAdministrationDetailComponent implements OnDestroy {
   }
 
   protected detailSecondaryActions(): readonly DetailActionBarAction[] {
-    if (!this.hasError()) {
+    if (this.hasError()) {
+      return [{
+        id: 'retry',
+        label: this.i18n.t('rolePermissions.actions.retry'),
+        icon: 'ki-filled ki-arrows-circle'
+      }];
+    }
+
+    const detail = this.leaveRequest();
+    if (!detail) {
       return [];
     }
 
-    return [{
-      id: 'retry',
-      label: this.i18n.t('rolePermissions.actions.retry'),
-      icon: 'ki-filled ki-arrows-circle'
-    }];
+    const actions: DetailActionBarAction[] = [];
+    if (this.canEdit(detail)) {
+      actions.push({
+        id: DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.edit,
+        label: this.i18n.t('leaveRequestAdministration.actions.edit'),
+        disabled: this.actionSaving(),
+        icon: 'ki-filled ki-pencil'
+      });
+    }
+
+    if (this.canCancel(detail)) {
+      actions.push({
+        id: 'cancelRequest',
+        label: this.i18n.t('leaveRequestAdministration.actions.cancelRequest'),
+        loadingLabel: this.i18n.t('leaveRequestAdministration.cancel.confirmAction'),
+        disabled: this.actionSaving(),
+        loading: this.isPendingAction('cancelRequest') && this.actionSaving(),
+        icon: 'ki-filled ki-trash',
+        variant: 'outline'
+      });
+    }
+
+    if (this.canReject(detail)) {
+      actions.push({
+        id: 'rejectRequest',
+        label: this.i18n.t('leaveRequestAdministration.actions.reject'),
+        loadingLabel: this.i18n.t('leaveRequestAdministration.reject.confirmAction'),
+        disabled: this.actionSaving(),
+        loading: this.isPendingAction('rejectRequest') && this.actionSaving(),
+        icon: 'ki-filled ki-cross-circle',
+        variant: 'destructive'
+      });
+    }
+
+    return actions;
   }
 
   protected detailPrimaryAction(): DetailActionBarAction | null {
     const detail = this.leaveRequest();
-    if (this.hasError() || !detail || !this.canEdit(detail)) {
+    if (this.hasError() || !detail) {
       return null;
     }
 
-    return {
-      id: DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.edit,
-      label: this.i18n.t('leaveRequestAdministration.actions.edit'),
-      disabled: this.actionSaving(),
-      icon: 'ki-filled ki-pencil'
-    };
+    if (this.canApprove(detail)) {
+      return {
+        id: 'approveRequest',
+        label: this.i18n.t('leaveRequestAdministration.actions.approve'),
+        loadingLabel: this.i18n.t('leaveRequestAdministration.approve.confirmAction'),
+        disabled: this.actionSaving(),
+        loading: this.isPendingAction('approveRequest') && this.actionSaving(),
+        icon: 'ki-filled ki-check-circle'
+      };
+    }
+
+    return null;
   }
 
   protected detailDestructiveActions(): readonly DetailActionBarAction[] {
-    const detail = this.leaveRequest();
-    if (this.hasError() || !detail || !this.canCancel(detail)) {
-      return [];
-    }
-
-    return [{
-      id: 'cancelRequest',
-      label: this.i18n.t('leaveRequestAdministration.actions.cancelRequest'),
-      disabled: this.actionSaving(),
-      loading: this.actionSaving(),
-      icon: 'ki-filled ki-trash'
-    }];
+    return [];
   }
 
   protected handleDetailAction(actionId: string): void {
@@ -151,6 +188,12 @@ export class LeaveRequestAdministrationDetailComponent implements OnDestroy {
         return;
       case 'cancelRequest':
         this.triggerCancelAction();
+        return;
+      case 'approveRequest':
+        this.triggerApproveAction();
+        return;
+      case 'rejectRequest':
+        this.triggerRejectAction();
         return;
       case 'retry':
         this.retry();
@@ -295,14 +338,24 @@ export class LeaveRequestAdministrationDetailComponent implements OnDestroy {
   }
 
   protected confirmPendingAction(): void {
+    const pending = this.pendingConfirmation();
     const detail = this.leaveRequest();
-    if (!detail) {
-      this.pendingConfirmation.set(null);
+    if (!pending || !detail || this.actionSaving()) {
       return;
     }
 
-    this.pendingConfirmation.set(null);
-    this.cancelLeaveRequest(detail.id);
+    switch (pending.action) {
+      case 'approveRequest':
+        this.approveLeaveRequest(detail.id);
+        return;
+      case 'rejectRequest':
+        this.rejectLeaveRequest(detail.id);
+        return;
+      case 'cancelRequest':
+      default:
+        this.cancelLeaveRequest(detail.id);
+        return;
+    }
   }
 
   private load(): void {
@@ -341,8 +394,34 @@ export class LeaveRequestAdministrationDetailComponent implements OnDestroy {
     return this.modulePermissions().canUpdate && isMutableStatus(detail.status);
   }
 
+  private canApprove(detail: LeaveRequestAdministrationDetail): boolean {
+    return this.modulePermissions().canUpdate && detail.status === 'SUBMITTED';
+  }
+
+  private canReject(detail: LeaveRequestAdministrationDetail): boolean {
+    return this.modulePermissions().canUpdate && detail.status === 'SUBMITTED';
+  }
+
   private canCancel(detail: LeaveRequestAdministrationDetail): boolean {
     return this.modulePermissions().canDelete && isMutableStatus(detail.status);
+  }
+
+  private triggerApproveAction(): void {
+    const detail = this.leaveRequest();
+    if (!detail || !this.canApprove(detail) || this.actionSaving()) {
+      return;
+    }
+
+    this.pendingConfirmation.set(this.confirmationConfigForAction('approveRequest'));
+  }
+
+  private triggerRejectAction(): void {
+    const detail = this.leaveRequest();
+    if (!detail || !this.canReject(detail) || this.actionSaving()) {
+      return;
+    }
+
+    this.pendingConfirmation.set(this.confirmationConfigForAction('rejectRequest'));
   }
 
   private triggerCancelAction(): void {
@@ -351,39 +430,138 @@ export class LeaveRequestAdministrationDetailComponent implements OnDestroy {
       return;
     }
 
-    this.pendingConfirmation.set({
-      config: {
-        titleKey: 'leaveRequestAdministration.cancel.confirmTitle',
-        messageKey: 'leaveRequestAdministration.cancel.confirmMessage',
-        confirmLabelKey: 'leaveRequestAdministration.cancel.confirmAction',
-        cancelLabelKey: 'confirmDialog.actions.cancel',
-        severity: 'warning',
-        mode: 'confirm',
-        targetLabelKey: 'confirmDialog.target.selectedEntity',
-        targetValue: this.confirmationTargetValue(detail)
-      }
-    });
+    this.pendingConfirmation.set(this.confirmationConfigForAction('cancelRequest'));
+  }
+
+  private approveLeaveRequest(leaveRequestId: string): void {
+    this.executeMutation(
+      'approveRequest',
+      this.leaveRequestAdministrationService.approveLeaveRequest(leaveRequestId),
+      'leaveRequestAdministration.feedback.approveSuccess',
+      'leaveRequestAdministration.errors.approve'
+    );
+  }
+
+  private rejectLeaveRequest(leaveRequestId: string): void {
+    this.executeMutation(
+      'rejectRequest',
+      this.leaveRequestAdministrationService.rejectLeaveRequest(leaveRequestId),
+      'leaveRequestAdministration.feedback.rejectSuccess',
+      'leaveRequestAdministration.errors.reject'
+    );
   }
 
   private cancelLeaveRequest(leaveRequestId: string): void {
     this.actionSaving.set(true);
+    this.pendingConfirmation.set(this.confirmationConfigForAction('cancelRequest'));
     this.loadSubscription?.unsubscribe();
     this.loadSubscription = this.leaveRequestAdministrationService.cancelLeaveRequest(leaveRequestId)
-      .pipe(finalize(() => this.actionSaving.set(false)))
       .subscribe({
         next: () => {
+          this.actionSaving.set(false);
+          this.pendingConfirmation.set(null);
           this.notificationService.success(this.i18n.t('leaveRequestAdministration.feedback.cancelSuccess'), {
             titleKey: 'alert.title.success'
           });
           void this.router.navigate(['/admin/leave-requests']);
         },
         error: (error) => {
+          this.actionSaving.set(false);
+          this.pendingConfirmation.set(this.confirmationConfigForAction('cancelRequest'));
           this.notificationService.error(this.resolveApiMessage(error, 'leaveRequestAdministration.errors.cancel'), {
             titleKey: 'alert.title.danger',
             dismissible: true
           });
         }
       });
+  }
+
+  private executeMutation(
+    action: PendingLeaveRequestAction,
+    request$: Observable<LeaveRequestAdministrationDetail>,
+    successKey: I18nKey,
+    errorKey: I18nKey
+  ): void {
+    this.actionSaving.set(true);
+    this.pendingConfirmation.set(this.confirmationConfigForAction(action));
+    this.loadSubscription?.unsubscribe();
+    this.loadSubscription = request$
+      .subscribe({
+        next: (detail) => {
+          this.actionSaving.set(false);
+          this.leaveRequest.set(detail);
+          this.pendingConfirmation.set(null);
+          this.notificationService.success(this.i18n.t(successKey), {
+            titleKey: 'alert.title.success'
+          });
+        },
+        error: (error) => {
+          this.actionSaving.set(false);
+          this.pendingConfirmation.set(this.confirmationConfigForAction(action));
+          this.notificationService.error(this.resolveApiMessage(error, errorKey), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
+  private confirmationConfigForAction(action: PendingLeaveRequestAction): PendingLeaveRequestConfirmation {
+    const detail = this.leaveRequest();
+    const targetValue = detail ? this.confirmationTargetValue(detail) : null;
+
+    switch (action) {
+      case 'approveRequest':
+        return {
+          action,
+          config: {
+            titleKey: 'leaveRequestAdministration.approve.confirmTitle',
+            messageKey: 'leaveRequestAdministration.approve.confirmMessage',
+            confirmLabelKey: 'leaveRequestAdministration.approve.confirmAction',
+            cancelLabelKey: 'confirmDialog.actions.cancel',
+            severity: 'success',
+            mode: 'confirm',
+            targetLabelKey: 'confirmDialog.target.selectedEntity',
+            targetValue,
+            loading: this.actionSaving()
+          }
+        };
+      case 'rejectRequest':
+        return {
+          action,
+          config: {
+            titleKey: 'leaveRequestAdministration.reject.confirmTitle',
+            messageKey: 'leaveRequestAdministration.reject.confirmMessage',
+            confirmLabelKey: 'leaveRequestAdministration.reject.confirmAction',
+            cancelLabelKey: 'confirmDialog.actions.cancel',
+            severity: 'danger',
+            mode: 'confirm',
+            targetLabelKey: 'confirmDialog.target.selectedEntity',
+            targetValue,
+            loading: this.actionSaving()
+          }
+        };
+      case 'cancelRequest':
+      default:
+        return {
+          action: 'cancelRequest',
+          config: {
+            titleKey: 'leaveRequestAdministration.cancel.confirmTitle',
+            messageKey: 'leaveRequestAdministration.cancel.confirmMessage',
+            confirmLabelKey: 'leaveRequestAdministration.cancel.confirmAction',
+            cancelLabelKey: 'confirmDialog.actions.cancel',
+            severity: 'warning',
+            mode: 'confirm',
+            targetLabelKey: 'confirmDialog.target.selectedEntity',
+            targetValue,
+            loading: this.actionSaving()
+          }
+        };
+    }
+  }
+
+  private isPendingAction(action: PendingLeaveRequestAction): boolean {
+    return this.pendingConfirmation()?.action === action;
   }
 
   private referenceValue(reference: LeaveRequestAdministrationReference): string {

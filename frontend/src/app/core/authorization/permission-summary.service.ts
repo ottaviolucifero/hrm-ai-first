@@ -35,7 +35,15 @@ export class PermissionSummaryService {
     const actions = new Set<PermissionAction>();
     for (const code of this.permissionCodes(user)) {
       const parsedCode = this.parsePermissionCode(code);
-      if (!parsedCode || parsedCode.resource !== resource || parsedCode.action === 'MANAGE') {
+      if (!parsedCode || parsedCode.resource !== resource) {
+        continue;
+      }
+
+      if (parsedCode.action === 'MANAGE') {
+        actions.add('view');
+        actions.add('create');
+        actions.add('update');
+        actions.add('delete');
         continue;
       }
 

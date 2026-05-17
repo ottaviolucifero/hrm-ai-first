@@ -64,6 +64,14 @@ export class LeaveRequestAdministrationService {
     return this.http.put<LeaveRequestAdministrationDetail>(`/api/admin/leave-requests/${leaveRequestId}`, payload);
   }
 
+  approveLeaveRequest(leaveRequestId: string): Observable<LeaveRequestAdministrationDetail> {
+    return this.http.post<LeaveRequestAdministrationDetail>(`/api/admin/leave-requests/${leaveRequestId}/approve`, null);
+  }
+
+  rejectLeaveRequest(leaveRequestId: string): Observable<LeaveRequestAdministrationDetail> {
+    return this.http.post<LeaveRequestAdministrationDetail>(`/api/admin/leave-requests/${leaveRequestId}/reject`, null);
+  }
+
   cancelLeaveRequest(leaveRequestId: string): Observable<void> {
     return this.http.delete<void>(`/api/admin/leave-requests/${leaveRequestId}`);
   }

@@ -66,17 +66,7 @@ describe('LeaveRequestAdministrationDetailComponent', () => {
     const draftFixture = await createFixture();
     draftFixture.detectChanges();
 
-    const component = draftFixture.componentInstance as unknown as {
-      detailDestructiveActions: () => readonly { id: string; label: string }[];
-    };
-
     expect(buttonLabels(draftFixture.nativeElement)).toContain('Annulla richiesta');
-    expect(component.detailDestructiveActions()).toEqual([
-      expect.objectContaining({
-        id: 'cancelRequest',
-        label: 'Annulla richiesta'
-      })
-    ]);
   });
 
   it('shows cancel request as a destructive action for SUBMITTED when delete permission exists', async () => {
@@ -112,6 +102,52 @@ describe('LeaveRequestAdministrationDetailComponent', () => {
     expect(labels).not.toContain('Rifiuta');
   });
 
+  it('shows Approva and Rifiuta only for submitted requests with update permission', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture({
+      service: createService({
+        findLeaveRequestById: vi.fn(() => of(createDetail({ status: 'SUBMITTED' })))
+      }),
+      permissions: ['TENANT.LEAVE_REQUEST.READ', 'TENANT.LEAVE_REQUEST.UPDATE']
+    });
+    fixture.detectChanges();
+
+    const labels = buttonLabels(fixture.nativeElement);
+    expect(labels).toContain('Approva');
+    expect(labels).toContain('Rifiuta');
+  });
+
+  it('shows Approva and Rifiuta for platform manage authority through the shared permission summary', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture({
+      service: createService({
+        findLeaveRequestById: vi.fn(() => of(createDetail({ status: 'SUBMITTED' })))
+      }),
+      permissions: [],
+      authorities: ['PLATFORM.LEAVE_REQUEST.MANAGE']
+    });
+    fixture.detectChanges();
+
+    const labels = buttonLabels(fixture.nativeElement);
+    expect(labels).toContain('Approva');
+    expect(labels).toContain('Rifiuta');
+  });
+
+  it('does not show Approva or Rifiuta for draft requests', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture({
+      permissions: ['TENANT.LEAVE_REQUEST.READ', 'TENANT.LEAVE_REQUEST.UPDATE']
+    });
+    fixture.detectChanges();
+
+    const labels = buttonLabels(fixture.nativeElement);
+    expect(labels).not.toContain('Approva');
+    expect(labels).not.toContain('Rifiuta');
+  });
+
   it('does not show cancel request for approved leave requests', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -122,7 +158,10 @@ describe('LeaveRequestAdministrationDetailComponent', () => {
       permissions: ['TENANT.LEAVE_REQUEST.READ', 'TENANT.LEAVE_REQUEST.UPDATE', 'TENANT.LEAVE_REQUEST.DELETE']
     });
     approvedFixture.detectChanges();
-    expect(buttonLabels(approvedFixture.nativeElement)).not.toContain('Annulla richiesta');
+    const labels = buttonLabels(approvedFixture.nativeElement);
+    expect(labels).not.toContain('Annulla richiesta');
+    expect(labels).not.toContain('Approva');
+    expect(labels).not.toContain('Rifiuta');
   });
 
   it('does not show cancel request for rejected leave requests', async () => {
@@ -135,7 +174,10 @@ describe('LeaveRequestAdministrationDetailComponent', () => {
       permissions: ['TENANT.LEAVE_REQUEST.READ', 'TENANT.LEAVE_REQUEST.UPDATE', 'TENANT.LEAVE_REQUEST.DELETE']
     });
     rejectedFixture.detectChanges();
-    expect(buttonLabels(rejectedFixture.nativeElement)).not.toContain('Annulla richiesta');
+    const labels = buttonLabels(rejectedFixture.nativeElement);
+    expect(labels).not.toContain('Annulla richiesta');
+    expect(labels).not.toContain('Approva');
+    expect(labels).not.toContain('Rifiuta');
   });
 
   it('navigates back to the list', async () => {
@@ -174,6 +216,74 @@ describe('LeaveRequestAdministrationDetailComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/admin/leave-requests']);
   });
 
+  it('opens approve confirmation with success severity and updates the detail to APPROVED after confirmation', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const notifications = { success: vi.fn(), error: vi.fn() };
+    const approvedDetail = createDetail({ status: 'APPROVED' });
+    const service = createService({
+      findLeaveRequestById: vi.fn(() => of(createDetail({ status: 'SUBMITTED' }))),
+      approveLeaveRequest: vi.fn(() => of(approvedDetail))
+    });
+    const fixture = await createFixture({
+      service,
+      notifications,
+      permissions: ['TENANT.LEAVE_REQUEST.READ', 'TENANT.LEAVE_REQUEST.UPDATE']
+    });
+    fixture.detectChanges();
+
+    clickButtonByText(fixture.nativeElement, 'Approva');
+    fixture.detectChanges();
+
+    const dialog = fixture.nativeElement.querySelector('app-confirm-dialog .confirm-dialog') as HTMLElement | null;
+    expect(dialog?.className).toContain('confirm-dialog-severity-success');
+    expect(fixture.nativeElement.textContent).toContain('Vuoi approvare questa richiesta di assenza?');
+
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Approva');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(service.approveLeaveRequest).toHaveBeenCalledWith('leave-1');
+    expect(notifications.success).toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Approvato');
+    expect(buttonLabels(fixture.nativeElement)).not.toContain('Approva');
+    expect(buttonLabels(fixture.nativeElement)).not.toContain('Rifiuta');
+  });
+
+  it('opens reject confirmation with danger severity and posts reject without body', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const notifications = { success: vi.fn(), error: vi.fn() };
+    const rejectedDetail = createDetail({ status: 'REJECTED' });
+    const service = createService({
+      findLeaveRequestById: vi.fn(() => of(createDetail({ status: 'SUBMITTED' }))),
+      rejectLeaveRequest: vi.fn(() => of(rejectedDetail))
+    });
+    const fixture = await createFixture({
+      service,
+      notifications,
+      permissions: ['TENANT.LEAVE_REQUEST.READ', 'TENANT.LEAVE_REQUEST.UPDATE']
+    });
+    fixture.detectChanges();
+
+    clickButtonByText(fixture.nativeElement, 'Rifiuta');
+    fixture.detectChanges();
+
+    const dialog = fixture.nativeElement.querySelector('app-confirm-dialog .confirm-dialog') as HTMLElement | null;
+    expect(dialog?.className).toContain('confirm-dialog-severity-danger');
+    expect(fixture.nativeElement.textContent).toContain('Vuoi rifiutare questa richiesta di assenza? Al momento non e possibile inserire una motivazione.');
+
+    clickButtonByExactText(fixture.nativeElement.querySelector('app-confirm-dialog') as HTMLElement, 'Rifiuta');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(service.rejectLeaveRequest).toHaveBeenCalledWith('leave-1');
+    expect(notifications.success).toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Rifiutato');
+    expect(buttonLabels(fixture.nativeElement)).not.toContain('Approva');
+    expect(buttonLabels(fixture.nativeElement)).not.toContain('Rifiuta');
+  });
+
   it('does not show Edit when update permission is missing', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -183,6 +293,8 @@ describe('LeaveRequestAdministrationDetailComponent', () => {
     fixture.detectChanges();
 
     expect(buttonLabels(fixture.nativeElement)).not.toContain('Modifica');
+    expect(buttonLabels(fixture.nativeElement)).not.toContain('Approva');
+    expect(buttonLabels(fixture.nativeElement)).not.toContain('Rifiuta');
   });
 
   it('does not show cancel request when delete permission is missing', async () => {
@@ -257,6 +369,7 @@ describe('LeaveRequestAdministrationDetailComponent', () => {
 async function createFixture(options: {
   service?: LeaveRequestAdministrationService;
   permissions?: readonly string[];
+  authorities?: readonly string[];
   router?: { navigate: ReturnType<typeof vi.fn> };
   notifications?: { success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
 } = {}) {
@@ -286,7 +399,8 @@ async function createFixture(options: {
             tenantId: 'tenant-1',
             email: 'qa@example.com',
             userType: 'TENANT_ADMIN',
-            permissions: options.permissions ?? ['TENANT.LEAVE_REQUEST.READ', 'TENANT.LEAVE_REQUEST.UPDATE', 'TENANT.LEAVE_REQUEST.DELETE']
+            permissions: options.permissions ?? ['TENANT.LEAVE_REQUEST.READ', 'TENANT.LEAVE_REQUEST.UPDATE', 'TENANT.LEAVE_REQUEST.DELETE'],
+            authorities: options.authorities
           })
         }
       },
@@ -313,6 +427,8 @@ function createService(
 ): LeaveRequestAdministrationService {
   return {
     findLeaveRequestById: vi.fn(() => of(createDetail())),
+    approveLeaveRequest: vi.fn(() => of(createDetail({ status: 'APPROVED' }))),
+    rejectLeaveRequest: vi.fn(() => of(createDetail({ status: 'REJECTED' }))),
     cancelLeaveRequest: vi.fn(() => of(void 0)),
     ...overrides
   } as LeaveRequestAdministrationService;
@@ -352,6 +468,14 @@ function clickButtonByText(root: HTMLElement, text: string): void {
   const matchingButtons = Array.from(root.querySelectorAll('button'))
     .filter((candidate) => (candidate.textContent ?? '').includes(text));
   const button = matchingButtons.at(-1);
+
+  expect(button).toBeDefined();
+  button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+}
+
+function clickButtonByExactText(root: HTMLElement, text: string): void {
+  const button = Array.from(root.querySelectorAll('button'))
+    .find((candidate) => (candidate.textContent ?? '').trim() === text);
 
   expect(button).toBeDefined();
   button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));

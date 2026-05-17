@@ -163,13 +163,32 @@ describe('PermissionSummaryService', () => {
     expect(summary.isFrozen).toBe(false);
   });
 
-  it('ignores USER_TYPE authorities and invalid codes', () => {
+  it('treats MANAGE as full CRUD access for the module', () => {
     const summary = service.summaryForModule({
       id: 'user-1',
       tenantId: 'tenant-1',
       email: 'qa@example.com',
       userType: 'TENANT_ADMIN',
-      authorities: ['USER_TYPE_TENANT_ADMIN', 'INVALID_CODE', 'TENANT.USER.MANAGE']
+      authorities: ['USER_TYPE_TENANT_ADMIN', 'TENANT.USER.MANAGE']
+    }, 'users');
+
+    expect(summary).toEqual({
+      canView: true,
+      canCreate: true,
+      canUpdate: true,
+      canDelete: true,
+      hasAnyPermission: true,
+      isFrozen: false
+    });
+  });
+
+  it('ignores USER_TYPE authorities and invalid codes when no module permission is present', () => {
+    const summary = service.summaryForModule({
+      id: 'user-1',
+      tenantId: 'tenant-1',
+      email: 'qa@example.com',
+      userType: 'TENANT_ADMIN',
+      authorities: ['USER_TYPE_TENANT_ADMIN', 'INVALID_CODE']
     }, 'users');
 
     expect(summary.canView).toBe(false);
