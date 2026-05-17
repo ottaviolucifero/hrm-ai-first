@@ -8,6 +8,18 @@
         </h1>
         <p class="holiday-calendar-subtitle">{{ i18n.t('holidayCalendar.subtitle') }}</p>
       </div>
+
+      @if (modulePermissions().canCreate) {
+        <div class="holiday-calendar-page-actions">
+          <app-button
+            variant="primary"
+            size="sm"
+            icon="ki-filled ki-plus"
+            [label]="i18n.t('holidayCalendar.actions.new')"
+            [disabled]="loading()"
+            (pressed)="createCalendar()" />
+        </div>
+      }
     </header>
 
     <section class="kt-card holiday-calendar-list-card" aria-labelledby="holiday-calendar-list-title">

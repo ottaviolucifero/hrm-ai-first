@@ -1,0 +1,110 @@
+:host {
+  inset: 0;
+  position: fixed;
+  z-index: 70;
+}
+
+.holiday-calendar-holiday-dialog-overlay {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.48);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+}
+
+.holiday-calendar-holiday-dialog {
+  background: #fff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 0.75rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+  width: min(100%, 44rem);
+}
+
+.holiday-calendar-holiday-dialog-header,
+.holiday-calendar-holiday-dialog-body {
+  padding-inline: 1.25rem;
+}
+
+.holiday-calendar-holiday-dialog-header {
+  align-items: center;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  display: flex;
+  justify-content: space-between;
+  padding-block: 1rem;
+}
+
+.holiday-calendar-holiday-dialog-title {
+  color: var(--color-foreground, #111827);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.holiday-calendar-holiday-dialog-subtitle,
+.holiday-calendar-holiday-dialog-note {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  margin: 0.3rem 0 0;
+}
+
+.holiday-calendar-holiday-dialog-body {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+}
+
+.holiday-calendar-holiday-dialog-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.holiday-calendar-holiday-dialog-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.holiday-calendar-holiday-dialog-field-wide {
+  grid-column: 1 / -1;
+}
+
+.holiday-calendar-holiday-dialog-label {
+  color: var(--color-text-default, #0f172a);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.holiday-calendar-holiday-dialog-textarea {
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 0.75rem;
+  min-height: 7rem;
+  padding: 0.8rem 0.9rem;
+  resize: vertical;
+}
+
+.holiday-calendar-holiday-dialog-error {
+  color: #b91c1c;
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
+.holiday-calendar-holiday-dialog-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .holiday-calendar-holiday-dialog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .holiday-calendar-holiday-dialog-actions {
+    flex-direction: column-reverse;
+  }
+}

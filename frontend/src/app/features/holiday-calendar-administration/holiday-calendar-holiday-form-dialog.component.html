@@ -1,0 +1,125 @@
+<div class="holiday-calendar-holiday-dialog-overlay" role="presentation">
+  <section
+    class="holiday-calendar-holiday-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="holiday-calendar-holiday-dialog-title">
+    <header class="holiday-calendar-holiday-dialog-header">
+      <div>
+        <h2 id="holiday-calendar-holiday-dialog-title" class="holiday-calendar-holiday-dialog-title">
+          {{ i18n.t(titleKey()) }}
+        </h2>
+        <p class="holiday-calendar-holiday-dialog-subtitle">
+          {{ config.calendarName }} - {{ config.calendarYear }}
+        </p>
+      </div>
+
+      <app-button
+        variant="ghost"
+        size="sm"
+        icon="ki-filled ki-cross"
+        [iconOnly]="true"
+        [ariaLabel]="i18n.t('masterData.form.cancel')"
+        [label]="i18n.t('masterData.form.cancel')"
+        [disabled]="submitting"
+        (pressed)="cancelDialog()" />
+    </header>
+
+    <form class="holiday-calendar-holiday-dialog-body" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="holiday-calendar-holiday-dialog-grid">
+        <app-input
+          formControlName="name"
+          [label]="i18n.t('masterData.columns.name')"
+          [labelRequired]="true"
+          [required]="true"
+          [errorText]="fieldError('name')" />
+
+        <app-lookup-select
+          formControlName="type"
+          [label]="i18n.t('holidayCalendar.holidays.type')"
+          [labelRequired]="true"
+          [required]="true"
+          [options]="typeOptions()"
+          [closedLabelBuilder]="lookupClosedLabelBuilder"
+          [optionLabelBuilder]="lookupOptionLabelBuilder"
+          [errorText]="fieldError('type')" />
+
+        <app-date-time-field
+          formControlName="startDate"
+          [label]="i18n.t('holidayCalendar.holidays.startDate')"
+          [labelRequired]="true"
+          [required]="true"
+          [mode]="'date'"
+          [errorText]="fieldError('startDate')" />
+
+        <app-date-time-field
+          formControlName="endDate"
+          [label]="i18n.t('holidayCalendar.holidays.endDate')"
+          [labelRequired]="true"
+          [required]="true"
+          [mode]="'date'"
+          [errorText]="fieldError('endDate')" />
+
+        <div class="holiday-calendar-holiday-dialog-field holiday-calendar-holiday-dialog-field-wide">
+          <app-button
+            variant="secondary"
+            type="button"
+            size="sm"
+            icon="ki-filled ki-setting-2"
+            [label]="i18n.t(showAdvancedOptions()
+              ? 'holidayCalendar.holidays.form.advancedHide'
+              : 'holidayCalendar.holidays.form.advancedShow')"
+            [disabled]="submitting"
+            (pressed)="toggleAdvancedOptions()" />
+        </div>
+
+        @if (showAdvancedOptions()) {
+          <app-lookup-select
+            formControlName="generationRule"
+            [label]="i18n.t('holidayCalendar.holidays.generationRule')"
+            [helpText]="i18n.t('holidayCalendar.holidays.form.generationRuleHelp')"
+            [options]="generationRuleOptions()"
+            [closedLabelBuilder]="lookupClosedLabelBuilder"
+            [optionLabelBuilder]="lookupOptionLabelBuilder"
+            [errorText]="fieldError('generationRule')" />
+        }
+
+        <div class="holiday-calendar-holiday-dialog-field holiday-calendar-holiday-dialog-field-wide">
+          <label class="holiday-calendar-holiday-dialog-label" for="holiday-calendar-description">
+            {{ i18n.t('masterData.columns.description') }}
+          </label>
+          <textarea
+            id="holiday-calendar-description"
+            class="holiday-calendar-holiday-dialog-textarea"
+            formControlName="description"
+            rows="4"
+            [attr.placeholder]="i18n.t('holidayCalendar.holidays.form.placeholders.description')"></textarea>
+          @if (fieldError('description')) {
+            <p class="holiday-calendar-holiday-dialog-error">{{ fieldError('description') }}</p>
+          }
+        </div>
+      </div>
+
+      <p class="holiday-calendar-holiday-dialog-note">
+        {{ i18n.t('holidayCalendar.holidays.form.yearHint') }}
+      </p>
+
+      <div class="holiday-calendar-holiday-dialog-actions">
+        <app-button
+          variant="secondary"
+          type="button"
+          [label]="i18n.t('masterData.form.cancel')"
+          [disabled]="submitting"
+          (pressed)="cancelDialog()" />
+        <app-button
+          type="submit"
+          variant="primary"
+          icon="ki-filled ki-check"
+          [label]="i18n.t(submitLabelKey())"
+          [loadingLabel]="i18n.t(submitLoadingLabelKey())"
+          [loading]="submitting"
+          [disabled]="submitting" />
+      </div>
+    </form>
+  </section>
+</div>

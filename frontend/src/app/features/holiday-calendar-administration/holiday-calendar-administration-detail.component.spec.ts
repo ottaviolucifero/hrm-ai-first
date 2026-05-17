@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
@@ -12,11 +13,20 @@ interface HolidayCalendarDetailHandle {
   goBack: () => void;
   handleDetailAction: (actionId: string) => void;
   confirmPendingAction: () => void;
+  createHoliday: () => void;
+  handleHolidayRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+  submitHolidayDialog: (payload: Record<string, unknown>) => void;
   detailSecondaryActions: () => readonly { id: string; variant?: string }[];
   detailDestructiveActions: () => readonly { id: string; variant?: string }[];
 }
 
-const DEFAULT_PERMISSIONS = ['TENANT.HOLIDAY_CALENDAR.READ', 'TENANT.HOLIDAY_CALENDAR.UPDATE'] as const;
+const DEFAULT_PERMISSIONS = ['TENANT.HOLIDAY_CALENDAR.READ', 'TENANT.HOLIDAY_CALENDAR.UPDATE', 'TENANT.HOLIDAY_CALENDAR.DELETE'] as const;
+
+@Component({
+  standalone: true,
+  template: ''
+})
+class DummyRouteComponent {}
 
 describe('HolidayCalendarAdministrationDetailComponent', () => {
   afterEach(() => {
@@ -24,7 +34,7 @@ describe('HolidayCalendarAdministrationDetailComponent', () => {
     TestBed.resetTestingModule();
   });
 
-  it('renders read-only sections and holidays table without edit action', async () => {
+  it('renders detail actions and holidays table', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const fixture = await createFixture(createService());
@@ -38,8 +48,8 @@ describe('HolidayCalendarAdministrationDetailComponent', () => {
     expect(textContent).toContain('Republic Day');
     expect(textContent).toContain('Basata su Pasqua');
     expect(textContent).toContain('Disattiva');
-    expect(textContent).not.toContain('Modifica');
-  });
+    expect(textContent).toContain('Nuova festività');
+  }, 10000);
 
   it('navigates back to the list', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
@@ -90,7 +100,85 @@ describe('HolidayCalendarAdministrationDetailComponent', () => {
     expect(component.detailSecondaryActions()).toEqual([
       expect.objectContaining({ id: 'deactivate', variant: 'outline' })
     ]);
-    expect(component.detailDestructiveActions()).toEqual([]);
+    expect(component.detailDestructiveActions()).toEqual([
+      expect.objectContaining({ id: 'deletePhysical' })
+    ]);
+  });
+
+  it('navigates to edit screen from detail action bar', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService());
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    await stabilizeFixture(fixture);
+
+    const component = fixture.componentInstance as unknown as HolidayCalendarDetailHandle;
+    component.handleDetailAction('edit');
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/admin/holiday-calendars', 'calendar-1', 'edit']);
+  });
+
+  it('confirms and deletes the calendar', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    await stabilizeFixture(fixture);
+
+    const component = fixture.componentInstance as unknown as HolidayCalendarDetailHandle;
+    component.handleDetailAction('deletePhysical');
+    fixture.detectChanges();
+    component.confirmPendingAction();
+
+    expect(service.deleteHolidayCalendar).toHaveBeenCalledWith('calendar-1');
+    expect(successSpy).toHaveBeenCalledWith(
+      'Calendario festività eliminato correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+  });
+
+  it('creates and deletes holidays from the detail screen', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    await stabilizeFixture(fixture);
+
+    const component = fixture.componentInstance as unknown as HolidayCalendarDetailHandle;
+    component.createHoliday();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-holiday-calendar-holiday-form-dialog')).not.toBeNull();
+
+    component.submitHolidayDialog({
+      name: 'Liberation Day',
+      startDate: '2026-04-25',
+      endDate: '2026-04-25',
+      type: 'FIXED',
+      generationRule: 'FIXED_DATE',
+      description: null
+    });
+
+    component.handleHolidayRowAction({
+      action: { id: 'delete' },
+      row: { id: 'holiday-1', name: 'Republic Day' }
+    });
+
+    expect(service.createHoliday).toHaveBeenCalledWith('calendar-1', expect.objectContaining({ name: 'Liberation Day' }));
+    expect(service.deleteHoliday).toHaveBeenCalledWith('calendar-1', 'holiday-1');
+    expect(successSpy).toHaveBeenCalledWith(
+      'Festività creata correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+    expect(successSpy).toHaveBeenCalledWith(
+      'Festività eliminata correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
   });
 
   it('shows the holiday table error state when holidays fail to load', async () => {
@@ -122,9 +210,13 @@ async function createFixture(
   permissions: readonly string[] = DEFAULT_PERMISSIONS
 ) {
   await TestBed.configureTestingModule({
-    imports: [HolidayCalendarAdministrationDetailComponent],
+    imports: [DummyRouteComponent, HolidayCalendarAdministrationDetailComponent],
     providers: [
-      provideRouter([]),
+      provideRouter([
+        { path: 'admin/holiday-calendars', component: DummyRouteComponent },
+        { path: 'admin/holiday-calendars/:id', component: DummyRouteComponent },
+        { path: 'admin/holiday-calendars/:id/edit', component: DummyRouteComponent }
+      ]),
       {
         provide: ActivatedRoute,
         useValue: {
@@ -209,7 +301,17 @@ function createService(
     findHolidayCalendarById: vi.fn(() => of(calendar)),
     activateHolidayCalendar: vi.fn(() => of({ ...calendar, active: true })),
     deactivateHolidayCalendar: vi.fn(() => of({ ...calendar, active: false })),
+    deleteHolidayCalendar: vi.fn(() => of(undefined)),
     findHolidays: vi.fn(() => of(holidays)),
+    createHoliday: vi.fn(() => of({
+      id: 'holiday-3',
+      holidayCalendarId: 'calendar-1'
+    })),
+    updateHoliday: vi.fn(() => of({
+      id: 'holiday-1',
+      holidayCalendarId: 'calendar-1'
+    })),
+    deleteHoliday: vi.fn(() => of(undefined)),
     ...overrides
   } as HolidayCalendarAdministrationService;
 }

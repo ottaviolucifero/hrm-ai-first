@@ -33,11 +33,21 @@ describe('app routes', () => {
     const rootChildren = findChildren(routes, '');
     const adminChildren = findChildren(rootChildren, 'admin');
     const holidayCalendarsRoute = findRoute(adminChildren, 'holiday-calendars');
+    const holidayCalendarsCreateRoute = findRoute(adminChildren, 'holiday-calendars/new');
+    const holidayCalendarsEditRoute = findRoute(adminChildren, 'holiday-calendars/:id/edit');
     const holidayCalendarsDetailRoute = findRoute(adminChildren, 'holiday-calendars/:id');
 
     expect(holidayCalendarsRoute?.data).toEqual({
       permissionModule: 'holiday-calendars',
       requiredAction: 'view'
+    });
+    expect(holidayCalendarsCreateRoute?.data).toEqual({
+      permissionModule: 'holiday-calendars',
+      requiredAction: 'create'
+    });
+    expect(holidayCalendarsEditRoute?.data).toEqual({
+      permissionModule: 'holiday-calendars',
+      requiredAction: 'update'
     });
     expect(holidayCalendarsDetailRoute?.data).toEqual({
       permissionModule: 'holiday-calendars',

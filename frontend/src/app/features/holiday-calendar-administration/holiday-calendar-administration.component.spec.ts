@@ -10,6 +10,7 @@ import { HolidayCalendarAdministrationService } from './holiday-calendar-adminis
 
 interface HolidayCalendarListHandle {
   handleRowAction: (event: { action: { id: string }; row: Record<string, unknown> }) => void;
+  createCalendar: () => void;
 }
 
 describe('HolidayCalendarAdministrationComponent', () => {
@@ -48,6 +49,30 @@ describe('HolidayCalendarAdministrationComponent', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/admin/holiday-calendars', 'calendar-1']);
   });
 
+  it('navigates to create and edit screens when permissions allow it', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService(), [
+      'TENANT.HOLIDAY_CALENDAR.READ',
+      'TENANT.HOLIDAY_CALENDAR.CREATE',
+      'TENANT.HOLIDAY_CALENDAR.UPDATE'
+    ]);
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as HolidayCalendarListHandle;
+    component.createCalendar();
+    component.handleRowAction({
+      action: { id: 'edit' },
+      row: { id: 'calendar-1' }
+    });
+
+    expect(fixture.nativeElement.textContent).toContain('Nuovo calendario');
+    expect(navigateSpy).toHaveBeenCalledWith(['/admin/holiday-calendars/new']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/admin/holiday-calendars', 'calendar-1', 'edit']);
+  });
+
   it('handles activate and deactivate actions from the list', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
@@ -75,6 +100,31 @@ describe('HolidayCalendarAdministrationComponent', () => {
     );
     expect(successSpy).toHaveBeenCalledWith(
       'Calendario festività disattivato correttamente.',
+      expect.objectContaining({ titleKey: 'alert.title.success' })
+    );
+  });
+
+  it('handles physical delete from the list when delete permission is available', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const service = createService();
+    const fixture = await createFixture(service, [
+      'TENANT.HOLIDAY_CALENDAR.READ',
+      'TENANT.HOLIDAY_CALENDAR.DELETE'
+    ]);
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as HolidayCalendarListHandle;
+    component.handleRowAction({
+      action: { id: 'deletePhysical' },
+      row: { id: 'calendar-1', name: 'Italy 2026', year: 2026, active: true }
+    });
+
+    expect(service.deleteHolidayCalendar).toHaveBeenCalledWith('calendar-1');
+    expect(successSpy).toHaveBeenCalledWith(
+      'Calendario festività eliminato correttamente.',
       expect.objectContaining({ titleKey: 'alert.title.success' })
     );
   });
@@ -192,6 +242,7 @@ function createService(
       active: true
     })),
     deactivateHolidayCalendar: vi.fn(() => of({ ...activeCalendar, active: false })),
+    deleteHolidayCalendar: vi.fn(() => of(undefined)),
     findHolidays: vi.fn(),
     ...overrides
   } as HolidayCalendarAdministrationService;

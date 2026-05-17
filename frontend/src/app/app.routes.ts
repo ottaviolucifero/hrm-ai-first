@@ -12,6 +12,7 @@ import { DeviceAdministrationDetailComponent } from './features/device-administr
 import { DeviceAdministrationFormComponent } from './features/device-administration/device-administration-form.component';
 import { HolidayCalendarAdministrationComponent } from './features/holiday-calendar-administration/holiday-calendar-administration.component';
 import { HolidayCalendarAdministrationDetailComponent } from './features/holiday-calendar-administration/holiday-calendar-administration-detail.component';
+import { HolidayCalendarAdministrationFormComponent } from './features/holiday-calendar-administration/holiday-calendar-administration-form.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
 import { RoleAdministrationComponent } from './features/role-administration/role-administration.component';
 import { RolePermissionMatrixComponent } from './features/role-permissions/role-permission-matrix.component';
@@ -181,6 +182,24 @@ export const routes: Routes = [
             data: {
               permissionModule: 'holiday-calendars',
               requiredAction: 'view'
+            }
+          },
+          {
+            path: 'holiday-calendars/new',
+            component: HolidayCalendarAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'holiday-calendars',
+              requiredAction: 'create'
+            }
+          },
+          {
+            path: 'holiday-calendars/:id/edit',
+            component: HolidayCalendarAdministrationFormComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'holiday-calendars',
+              requiredAction: 'update'
             }
           },
           {
