@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.67
-Ultimo aggiornamento: 2026-05-16
+Versione: 2.70
+Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
 ---
@@ -5225,18 +5225,17 @@ Stato: TODO
 
 Tipo:
 
-- backlog/documentazione, backend, frontend e QA incrementali.
+- backlog/documentazione, backend, workflow operativo, frontend e QA incrementali.
 
 Nota numerazione:
 
 - nel repository corrente `TASK-019` e `TASK-020` sono task storici gia completati e non riguardano HolidayCalendar;
-- il refinement richiesto come `TASK-019.1` viene registrato nella numerazione attiva come `TASK-067.1`, per non rinumerare o alterare task `DONE`;
-- i riferimenti `TASK-019.1`, `TASK-019.2`, `TASK-019.3`, `TASK-020.1` e `TASK-020.2` restano alias operativi del prompt e non sostituiscono la numerazione ufficiale del repository.
+- la numerazione ufficiale del blocco resta `TASK-067.x`, senza riuso o rinumerazione dei task storici gia `DONE`.
 
 Obiettivo:
 
-- gestire calendari festivita per paese e anno;
-- associare ogni `HolidayCalendar` a `Country + Year`;
+- gestire calendari festivita per paese, anno e scope organizzativo;
+- associare ogni `HolidayCalendar` a `Country + Year + Scope`;
 - modellare festivita a uno o piu giorni tramite `Holiday.startDate` e `Holiday.endDate`;
 - distinguere festivita `FIXED` e `MOBILE`;
 - predisporre `generationRule` per generazione futura, salvando sempre le date finali nel DB;
@@ -5245,7 +5244,11 @@ Obiettivo:
 
 Decisioni funzionali:
 
-- `HolidayCalendar` e associato a `Country + Year`;
+- `HolidayCalendar` e associato a `Country + Year + Scope`;
+- `HolidayCalendarScope` ha valori `GLOBAL`, `TENANT`, `COMPANY_PROFILE`;
+- `GLOBAL` usa `tenant_id = null` e `company_profile_id = null`;
+- `TENANT` usa `tenant_id` valorizzato e `company_profile_id = null`;
+- `COMPANY_PROFILE` usa `tenant_id` e `company_profile_id` valorizzati;
 - `Holiday.startDate` e `Holiday.endDate` sono obbligatorie;
 - una festivita di un solo giorno usa `startDate = endDate`;
 - `HolidayType` ha valori `FIXED` e `MOBILE`;
@@ -5272,10 +5275,6 @@ Fuori scope:
 
 #### TASK-067.1 - Holiday Calendar backlog refinement
 
-Alias operativo richiesto:
-
-- TASK-019.1
-
 Stato: DONE
 
 Tipo: Documentale / Backlog governance
@@ -5300,11 +5299,7 @@ Validazione:
 
 #### TASK-067.2 - Backend Holiday Calendar operational foundation
 
-Alias operativo richiesto:
-
-- TASK-019.2
-
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend
 
@@ -5326,7 +5321,7 @@ Validazioni richieste:
 
 - `Country` obbligatorio;
 - `Year` obbligatorio;
-- regola `Country + Year` da documentare e validare;
+- regola `Country + Year + Scope` da documentare e validare;
 - `Holiday.startDate` obbligatoria;
 - `Holiday.endDate` obbligatoria;
 - `Holiday.endDate >= Holiday.startDate`;
@@ -5356,11 +5351,7 @@ Output realizzato:
 
 #### TASK-067.3 - Backend BusinessDayService foundation
 
-Alias operativo richiesto:
-
-- TASK-019.3
-
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend
 
@@ -5385,6 +5376,17 @@ Test backend richiesti:
 - intervalli misti;
 - calendario mancante.
 
+Output realizzato:
+
+- introdotto `BusinessDayService` come servizio backend read-only riusabile dai servizi applicativi;
+- aggiunti metodi foundation per weekend, holiday, working day, prossimo giorno lavorativo, addizione giorni lavorativi e conteggio intervallo inclusivo;
+- esteso `HolidayCalendar` con scope persistito `GLOBAL` / `TENANT` / `COMPANY_PROFILE`, riferimenti nullable `tenant_id` e `company_profile_id` e chiavi tecniche di unicita cross-DB;
+- aggiunte migration Flyway `V40` e `V41` per backfill dei calendari esistenti come `GLOBAL`, vincoli di scope e unicita per contesto;
+- applicata risoluzione contesto/scoping: calendario `COMPANY_PROFILE` attivo, fallback `TENANT`, fallback `GLOBAL`, fallback finale weekend-only;
+- garantita validazione ownership: `companyProfileId` rifiutato se non appartiene al `tenantId`;
+- aggiunte query repository e validazioni admin coerenti con lo scope, senza introdurre nuovi endpoint;
+- aggiunti test backend `BusinessDayServiceTests`, regressione `HolidayCalendarAdministrationControllerTests` e regressione suite backend Maven reale verde.
+
 Fuori scope:
 
 - integrazione Leave Request;
@@ -5393,11 +5395,28 @@ Fuori scope:
 - nuove tabelle di calendario lavorativo;
 - holiday generation automatica.
 
-#### TASK-067.4 - Frontend Holiday Calendar UI foundation
+#### TASK-067.4 - Git worktree workflow foundation
 
-Alias operativo richiesto:
+Stato: TODO
 
-- TASK-020.1
+Tipo: Documentale / Workflow governance
+
+Obiettivo:
+
+- configurare e documentare un workflow locale basato su `git worktree` per consentire sviluppo parallelo su branch diversi;
+- supportare uso combinato di Codex, Cursor, VS Code o altri agenti/IDE senza sporcare la working copy principale;
+- definire regole minime su branch dedicato per worktree, isolamento delle working copy e coerenza con `1 task = 1 branch = 1 PR`;
+- produrre documentazione operativa coerente con la governance del repository, senza implementare codice applicativo.
+
+Vincoli:
+
+- non implementare il workflow in questo task documentale;
+- non modificare backend, frontend o migration;
+- non usare due agenti in parallelo sulla stessa working copy;
+- mantenere branch e PR separati per ogni task;
+- mantenere fuori scope automazioni CI/CD, script helper o tooling addizionale non ancora approvato.
+
+#### TASK-067.5 - Frontend Holiday Calendar UI foundation
 
 Stato: TODO
 
@@ -5424,11 +5443,7 @@ Vincoli:
 - non creare componenti paralleli se esiste un componente shared idoneo;
 - rispettare permessi/visibility frontend come UX, lasciando la sicurezza reale al backend.
 
-#### TASK-067.5 - QA Holiday Calendar
-
-Alias operativo richiesto:
-
-- TASK-020.2
+#### TASK-067.6 - QA Holiday Calendar
 
 Stato: TODO
 
@@ -5510,6 +5525,10 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.70 | 2026-05-17 | Inserito `TASK-067.4 - Git worktree workflow foundation` come task documentale `TODO` per workflow locale multi-agent su branch/worktree dedicati; slittati `TASK-067.4` Holiday Calendar UI a `TASK-067.5` e `TASK-067.5` QA a `TASK-067.6`, con riferimenti e numerazione del blocco riallineati. |
+| 2.69 | 2026-05-17 | Pulizia documentale sezione `TASK-067`: rimossi gli alias operativi obsoleti dai sottotask `TASK-067.1`..`TASK-067.5`, confermati `TASK-067.2` e `TASK-067.3` come `DONE` e riallineata la descrizione del blocco al modello scoped `Country + Year + Scope` gia approvato. |
+| 2.68 | 2026-05-17 | TASK-067.3 riallineato alla decisione di dominio scoped Holiday Calendar: `HolidayCalendar` esteso con scope `GLOBAL` / `TENANT` / `COMPANY_PROFILE`, migration Flyway `V40`/`V41`, risoluzione `BusinessDayService` `COMPANY_PROFILE > TENANT > GLOBAL > weekend-only`, validazioni tenant/company profile ownership, regressione backend completa Maven verde e nessuna modifica frontend/RBAC. |
+| 2.67 | 2026-05-16 | TASK-067.3 completato lato backend: introdotto `BusinessDayService` read-only per weekend, festivita puntuali/multi-day, prossimo giorno lavorativo, addizione e conteggio inclusivo dei giorni lavorativi con tenant/company profile context, senza endpoint, frontend, RBAC o migration; `TASK-067.2` riallineato a `DONE`; test backend reali verdi. |
 | 2.66 | 2026-05-16 | TASK-067 raffinato come Holiday Calendar governance con subtask `TASK-067.1`..`TASK-067.5`: backlog refinement documentale, backend operational foundation, BusinessDayService foundation, frontend UI foundation e QA; preservati `TASK-019` e `TASK-020` storici gia completati, documentati alias operativi richiesti dal prompt e nessuna modifica applicativa. |
 | 2.65 | 2026-05-16 | TASK-066.10 corretto dopo validazione manuale: ripristinate in `User Detail` le azioni `activate` / `deactivate` e `deletePhysical` nella `DetailActionBar`, introdotto `app-confirm-dialog` shared per `deactivate` e `deletePhysical` su `User Detail` e `Company Profile Detail`, build/test frontend reali verdi e nessuna modifica backend/security/API. |
 | 2.64 | 2026-05-16 | TASK-066.10 completato lato frontend: `User Detail` e `Company Profile Detail` migrati al componente shared `DetailActionBar`, mantenendo comportamento, permessi, i18n e sezioni interne esistenti; build/test frontend reali verdi e nessuna modifica backend/security. |

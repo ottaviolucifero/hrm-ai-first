@@ -3773,6 +3773,81 @@ Nota operativa:
   - durante i comandi Maven compare in coda un rumore ambiente (`'D' n’est pas reconnu...`) non bloccante: i processi terminano comunque con `BUILD SUCCESS`
 - Stato finale: PASS
 
+### TASK-067.3 - Backend BusinessDayService foundation
+
+- Data: 2026-05-16
+- Branch: `task-067-3-business-day-service-foundation`
+- Task: TASK-067.3 - Backend BusinessDayService foundation
+- Agente/Modello usato:
+  - Modello consigliato da prompt: GPT-5.5 Thinking
+  - Sviluppo: Codex nel contesto corrente
+  - QA/regressione: validazione reale backend Maven
+- Aree/file verificati:
+  - backend `BusinessDayService`
+  - repository `HolidayCalendarRepository` e `HolidayRepository`
+  - entity esistenti `HolidayCalendar`, `Holiday`, `Tenant`, `CompanyProfile`
+  - test backend `BusinessDayServiceTests`
+  - regressione `HolidayCalendarAdministrationControllerTests` dentro suite completa
+  - documentazione `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd -Dtest=BusinessDayServiceTests test` -> KO iniziale in sandbox per dependency resolution Maven (`Permission denied: getsockopt`); rilanciato con permessi autorizzati
+  - `cd backend && .\mvnw.cmd -Dtest=BusinessDayServiceTests test` -> KO iniziale per due aspettative data errate nel nuovo test; corretto il test, nessuna modifica alla logica di servizio
+  - `cd backend && .\mvnw.cmd -Dtest=BusinessDayServiceTests test` -> OK, `BUILD SUCCESS`, 11 test passed
+  - `cd backend && .\mvnw.cmd test` -> OK, `BUILD SUCCESS`, suite backend completa verde
+- Verifiche funzionali:
+  - sabato e domenica risultano non lavorativi
+  - giorno feriale senza calendario/festivita resta lavorativo
+  - festivita puntuale e multi-day rendono non lavorative tutte le date coperte
+  - weekend e holiday sovrapposti restano non lavorativi
+  - `nextWorkingDay` restituisce il primo giorno lavorativo strettamente successivo
+  - `addWorkingDays` esclude la data iniziale per valori positivi e restituisce la data iniziale con zero
+  - `countWorkingDays` usa intervallo inclusivo e rifiuta intervalli invertiti
+  - tenant scope rispettato tramite `Tenant.defaultCountry` e verifica ownership `CompanyProfile.tenant`
+  - calendario mancante o inattivo produce fallback weekend-only
+  - nessun endpoint REST, frontend, RBAC/security o migration introdotti
+- Limiti/note:
+  - `HolidayCalendar` resta country/year scoped: region/area e assegnazioni a sede/dipendente restano fuori scope come da `DEC-045`
+  - durante i comandi Maven compare il rumore ambiente noto (`'D' n’est pas reconnu...`) non bloccante: i processi finali terminano con `BUILD SUCCESS`
+- Stato finale: PASS
+
+### TASK-067.3 - Correzione scope HolidayCalendar
+
+- Data: 2026-05-17
+- Branch: `task-067-3-business-day-service-foundation`
+- Task: TASK-067.3 - Correzione scope HolidayCalendar
+- Agente/Modello usato:
+  - Modello consigliato da prompt: GPT-5.5 Thinking
+  - Sviluppo: Codex nel contesto corrente
+  - QA/regressione: validazione reale backend Maven
+- Aree/file verificati:
+  - entity `HolidayCalendar` e nuovo enum `HolidayCalendarScope`
+  - migration Flyway `V40__holiday_calendar_scope_foundation` e `V41__holiday_calendar_scope_unique_keys`
+  - service `BusinessDayService` e `HolidayCalendarAdministrationService`
+  - repository `HolidayCalendarRepository`
+  - test `BusinessDayServiceTests`, `HolidayCalendarAdministrationControllerTests`, `HrmBackendApplicationTests`
+  - documentazione `TASKS.md`, `ROADMAP.md`, `DECISIONS.md`
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test` -> KO iniziale per conflitto Flyway di versioni duplicate tra migration base/vendor; corretto durante l'implementazione senza perdita dati
+  - `cd backend && .\mvnw.cmd test` -> KO intermedio per sintassi index H2 non supportata; riallineata strategia DB con chiavi tecniche di unicita cross-DB
+  - `cd backend && .\mvnw.cmd test` -> KO intermedio per 2 aspettative errate in `BusinessDayServiceTests`; corrette le date di test, nessun fix alla logica applicativa
+  - `cd backend && .\mvnw.cmd -Dtest=BusinessDayServiceTests test` -> OK, `BUILD SUCCESS`, 15 test passed
+  - `cd backend && .\mvnw.cmd test` -> OK, `BUILD SUCCESS`, suite backend completa verde
+- Verifiche funzionali:
+  - `HolidayCalendar` supporta scope `GLOBAL`, `TENANT`, `COMPANY_PROFILE`
+  - i calendari legacy vengono migrati come `GLOBAL`
+  - `BusinessDayService` risolve il calendario attivo con priorita `COMPANY_PROFILE > TENANT > GLOBAL > weekend-only`
+  - `companyProfileId` di tenant differente viene rifiutato
+  - un calendario tenant non viene applicato ad altro tenant
+  - un calendario company profile non viene applicato ad altra company profile
+  - il fallback meno specifico viene usato solo quando manca un calendario attivo piu specifico
+  - restano valide le regole weekend, holiday puntuale/multi-day, next working day, add working days e count interval inclusivo
+  - eseguita verifica manuale DB su scope `GLOBAL` / `TENANT` per confermare il backfill/mapping dei calendari e l isolamento dei contesti
+- Limiti/note:
+  - per garantire unicita cross-DB su H2 e PostgreSQL sono state introdotte colonne tecniche di supporto (`global_scope_key`, `tenant_scope_id`, `company_profile_scope_id`) mantenute in sync dall'entity
+  - nessuna modifica frontend, nessun nuovo endpoint, nessuna modifica RBAC/security
+  - durante i comandi Maven compare il rumore ambiente noto (`'D' n’est pas reconnu...`) non bloccante; i run finali terminano con `BUILD SUCCESS`
+- Stato finale: PASS
+
 ### UI Refinement - Device assignment history cards (3-column responsive compact layout)
 
 - Data: 2026-05-16

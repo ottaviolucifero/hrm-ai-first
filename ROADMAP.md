@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.73
-Ultimo aggiornamento: 2026-05-16
+Versione: 2.75
+Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
 ---
@@ -156,10 +156,11 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-066.7 completato: label print Device validata con build/test frontend e verifica manuale browser.
 - TASK-066.8 completato: `DetailActionBar` consolidato come pattern shared ufficiale delle action bar di dettaglio, applicato solo a Device, con follow-up migrazione completa demandato a `TASK-066.10`.
 - TASK-066.10 completato: `DetailActionBar` applicato a `User Detail` e `Company Profile Detail`, con fix regressivo sulle azioni `activate` / `deactivate` / `deletePhysical` di `User Detail` e adozione di `app-confirm-dialog` shared per `deactivate` e `deletePhysical`.
-- TASK-067.1 completato come refinement documentale Holiday Calendar: `TASK-067` ora e suddiviso in backend operational foundation, BusinessDayService foundation, frontend UI foundation e QA, preservando `TASK-019` e `TASK-020` storici gia completati.
-- TASK-067.2 completato: backend Holiday Calendar operational foundation con CRUD admin, entity `Holiday`, migration Flyway `V38`, RBAC `HOLIDAY_CALENDAR`, regola `Country + Year` e anti-overlap validate, test backend Maven verdi.
-- Prossimo passo operativo: `TASK-067.3` BusinessDayService foundation
-- Sequenza backlog successiva aggiornata: `TASK-067.3` BusinessDayService foundation, `TASK-067.4` frontend Holiday Calendar UI foundation, `TASK-067.5` QA Holiday Calendar, poi `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- TASK-067.1 completato come refinement documentale Holiday Calendar: `TASK-067` ora e suddiviso in backend operational foundation, BusinessDayService foundation, workflow `git worktree`, frontend UI foundation e QA, preservando `TASK-019` e `TASK-020` storici gia completati.
+- TASK-067.2 completato: backend Holiday Calendar operational foundation con CRUD admin, entity `Holiday`, migration Flyway `V38`, RBAC `HOLIDAY_CALENDAR`, anti-overlap validate e successivo riallineamento dello scope nel task seguente.
+- TASK-067.3 completato: backend BusinessDayService foundation riallineato a Holiday Calendar scoped `GLOBAL` / `TENANT` / `COMPANY_PROFILE`, con migration Flyway `V40` / `V41`, fallback `COMPANY_PROFILE > TENANT > GLOBAL > weekend-only`, tenant/company profile isolation e test backend Maven verdi.
+- Prossimo passo operativo: `TASK-067.4` Git worktree workflow foundation
+- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.5` frontend Holiday Calendar UI foundation, `TASK-067.6` QA Holiday Calendar, poi `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -304,7 +305,7 @@ Sequenza immediata Core HR UI post-TASK-064.11:
 - TASK-066.8: shared entity detail header/actions pattern completato;
 - TASK-066.9: QA hardening finale Device governance;
 - TASK-066.10: applicazione shared detail action bar a `User Detail` e `Company Profile Detail` completata;
-- TASK-067: Holiday Calendar governance raffinato in `TASK-067.1`..`TASK-067.5`, con backend operational foundation, BusinessDayService foundation, frontend UI foundation e QA;
+- TASK-067: Holiday Calendar governance raffinato in `TASK-067.1`..`TASK-067.6`, con backend operational foundation, BusinessDayService foundation, workflow `git worktree`, frontend UI foundation e QA;
 - TASK-068 -> TASK-072: blocco UI/CRUD piu circoscritto per consolidare pattern e verifiche permessi prima di Employee;
 - TASK-073: UI Employee management enterprise, posticipata dopo il consolidamento dei task precedenti.
 
@@ -446,8 +447,8 @@ Profili Spring Boot configurati:
 Nota Holiday Calendar:
 
 - il documento corrente non usa una "Fase 8" numerata; l'allineamento Holiday Calendar avviene nella Fase 2H esistente;
-- `TASK-067` e il contenitore ufficiale Holiday Calendar nella numerazione attiva;
-- gli alias operativi `TASK-019.1`, `TASK-019.2`, `TASK-019.3`, `TASK-020.1` e `TASK-020.2` non rinumerano i task storici gia completati.
+- `TASK-067` e il contenitore ufficiale del blocco Holiday Calendar nella numerazione attiva, con `TASK-067.4` riservato al follow-up documentale su workflow `git worktree`;
+- la numerazione ufficiale del blocco resta `TASK-067.x`, senza riuso o rinumerazione dei task storici gia completati.
 
 ### Fase 2I - Platform Operations
 
@@ -471,6 +472,9 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.75 | 2026-05-17 | Inserito `TASK-067.4 - Git worktree workflow foundation` come step documentale operativo consigliato dopo `TASK-067.3`; Holiday Calendar UI slitta a `TASK-067.5`, QA Holiday Calendar a `TASK-067.6` e il prossimo passo roadmap viene riallineato al nuovo task `git worktree`. |
+| 2.74 | 2026-05-17 | TASK-067.3 corretto sullo scope Holiday Calendar: `HolidayCalendar` evolve a `GLOBAL` / `TENANT` / `COMPANY_PROFILE`, aggiunte migration Flyway `V40` / `V41`, `BusinessDayService` risolve con fallback `COMPANY_PROFILE > TENANT > GLOBAL > weekend-only`, validata tenant isolation e suite backend Maven completa verde; prossimo passo resta `TASK-067.4`. |
+| 2.73 | 2026-05-16 | TASK-067.3 completato lato backend con `BusinessDayService` foundation per weekend, festivita puntuali/multi-day, tenant/company profile context e conteggio inclusivo dei giorni lavorativi; nessun endpoint/frontend/RBAC/migration introdotto, suite backend Maven verde e prossimo passo spostato a `TASK-067.4`. |
 | 2.72 | 2026-05-16 | TASK-067 riallineato come Holiday Calendar governance con `TASK-067.1` documentale completato e subtask successivi per backend operational foundation, BusinessDayService, frontend UI e QA; chiarito che la roadmap corrente usa Fase 2H, non una Fase 8 numerata, e che gli alias `TASK-019.x`/`TASK-020.x` non rinumerano task storici. |
 | 2.71 | 2026-05-16 | TASK-066.10 rifinito dopo validazione manuale: corretto il dettaglio utenti ripristinando `activate` / `deactivate` e `deletePhysical` nella `DetailActionBar`, riallineato `User Detail` e `Company Profile Detail` a `app-confirm-dialog` shared per `deactivate` e `deletePhysical`, con build/test frontend reali verdi. |
 | 2.70 | 2026-05-16 | TASK-066.10 completato lato frontend: migrata la action/header bar shared `DetailActionBar` su `User Detail` e `Company Profile Detail`, mantenendo permessi, i18n, azioni e conferme inline esistenti; roadmap riallineata con prossimo passo operativo su `TASK-066.9`. |

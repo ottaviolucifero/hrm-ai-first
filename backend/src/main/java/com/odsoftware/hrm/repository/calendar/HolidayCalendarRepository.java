@@ -1,6 +1,7 @@
 package com.odsoftware.hrm.repository.calendar;
 
 import com.odsoftware.hrm.entity.calendar.HolidayCalendar;
+import com.odsoftware.hrm.entity.calendar.HolidayCalendarScope;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,19 +24,58 @@ public interface HolidayCalendarRepository extends JpaRepository<HolidayCalendar
 
 	Optional<HolidayCalendar> findByCountry_IdAndYear(UUID countryId, Integer year);
 
-	boolean existsByCountry_IdAndYear(UUID countryId, Integer year);
+	Optional<HolidayCalendar> findByCountry_IdAndYearAndScope(UUID countryId, Integer year, HolidayCalendarScope scope);
 
-	boolean existsByCountry_IdAndYearAndIdNot(UUID countryId, Integer year, UUID id);
+	Optional<HolidayCalendar> findByCompanyProfile_IdAndCountry_IdAndYearAndActiveTrue(
+			UUID companyProfileId,
+			UUID countryId,
+			Integer year);
+
+	Optional<HolidayCalendar> findByTenant_IdAndCompanyProfileIsNullAndCountry_IdAndYearAndActiveTrue(
+			UUID tenantId,
+			UUID countryId,
+			Integer year);
+
+	Optional<HolidayCalendar> findByScopeAndCountry_IdAndYearAndActiveTrue(
+			HolidayCalendarScope scope,
+			UUID countryId,
+			Integer year);
+
+	boolean existsByScopeAndCountry_IdAndYear(HolidayCalendarScope scope, UUID countryId, Integer year);
+
+	boolean existsByScopeAndCountry_IdAndYearAndIdNot(HolidayCalendarScope scope, UUID countryId, Integer year, UUID id);
+
+	boolean existsByTenant_IdAndCompanyProfileIsNullAndCountry_IdAndYear(
+			UUID tenantId,
+			UUID countryId,
+			Integer year);
+
+	boolean existsByTenant_IdAndCompanyProfileIsNullAndCountry_IdAndYearAndIdNot(
+			UUID tenantId,
+			UUID countryId,
+			Integer year,
+			UUID id);
+
+	boolean existsByCompanyProfile_IdAndCountry_IdAndYear(
+			UUID companyProfileId,
+			UUID countryId,
+			Integer year);
+
+	boolean existsByCompanyProfile_IdAndCountry_IdAndYearAndIdNot(
+			UUID companyProfileId,
+			UUID countryId,
+			Integer year,
+			UUID id);
 
 	boolean existsByRegion_Id(UUID regionId);
 
 	boolean existsByArea_Id(UUID areaId);
 
 	@Override
-	@EntityGraph(attributePaths = {"country"})
+	@EntityGraph(attributePaths = {"country", "tenant", "companyProfile"})
 	Page<HolidayCalendar> findAll(Specification<HolidayCalendar> specification, Pageable pageable);
 
 	@Override
-	@EntityGraph(attributePaths = {"country"})
+	@EntityGraph(attributePaths = {"country", "tenant", "companyProfile"})
 	Optional<HolidayCalendar> findById(UUID id);
 }

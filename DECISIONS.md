@@ -2,8 +2,8 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.43
-Ultimo aggiornamento: 2026-05-16
+Versione: 1.46
+Ultimo aggiornamento: 2026-05-17
 Stato: Attivo
 
 ---
@@ -1764,16 +1764,20 @@ I task frontend futuri che introducono o rifiniscono detail amministrativi devon
 
 ### DEC-045 - Holiday Calendar model and BusinessDayService boundary
 
-Data: 2026-05-16
+Data: 2026-05-17
 Stato: Approvata
 
 Decisione:
 
-Il modulo Holiday Calendar del MVP gestisce calendari festivita per paese e anno.
+Il modulo Holiday Calendar del MVP gestisce calendari festivita per paese, anno e scope organizzativo.
 
 Lo standard approvato e:
 
-- `HolidayCalendar` e associato a `Country + Year`;
+- `HolidayCalendar` e associato a `Country + Year + Scope`;
+- `HolidayCalendarScope` ha valori `GLOBAL`, `TENANT`, `COMPANY_PROFILE`;
+- `GLOBAL` usa `tenant_id = null` e `company_profile_id = null`;
+- `TENANT` usa `tenant_id` valorizzato e `company_profile_id = null`;
+- `COMPANY_PROFILE` usa `tenant_id` e `company_profile_id` valorizzati;
 - `Holiday` rappresenta una festivita dentro un calendario;
 - `Holiday.startDate` e `Holiday.endDate` sono sempre persistite;
 - una festivita di un solo giorno usa `startDate = endDate`;
@@ -1787,12 +1791,21 @@ Lo standard approvato e:
 - nel MVP Aid resta manuale e non viene calcolato con algoritmo lunare;
 - `BusinessDayService` e un servizio backend separato che usa `holiday_calendars` e `holidays`;
 - `BusinessDayService` non introduce nuove tabelle nello step foundation;
+- `BusinessDayService` considera sabato e domenica non lavorativi di default;
+- `BusinessDayService` risolve il calendario attivo per anno e contesto con priorita `COMPANY_PROFILE > TENANT > GLOBAL`;
+- la risoluzione scoped e per calendario, non per singola festivita: se esiste un calendario attivo piu specifico, i fallback meno specifici non vengono combinati nello stesso anno/contesto;
+- `BusinessDayService` rifiuta `companyProfileId` non appartenenti al `tenantId` richiesto;
+- in assenza di un `HolidayCalendar` attivo risolto per il contesto, `BusinessDayService` applica solo la regola weekend e non considera festivita;
+- i conteggi dei giorni lavorativi usano intervalli inclusivi;
+- il prossimo giorno lavorativo e strettamente successivo alla data di input;
+- l'addizione di giorni lavorativi esclude la data di partenza per valori positivi e restituisce la data di input quando il valore e zero;
 - Leave Request non viene integrato nel blocco Holiday Calendar e resta fuori scope o follow-up futuro.
 
 Motivazione:
 
 - supportare calendari festivita multi-country senza hardcode applicativo;
 - gestire correttamente festivita mobili e multi-giorno salvando comunque date esplicite e verificabili;
+- supportare differenze normative o contrattuali per tenant e company profile sullo stesso paese/anno;
 - evitare over-engineering nel MVP, in particolare per il calcolo lunare di Aid;
 - preparare una foundation riusabile per futuri calcoli di giorni lavorativi senza accoppiare subito Holiday Calendar a Leave Request;
 - mantenere piccoli e verificabili i task successivi, separando backend CRUD, BusinessDayService, frontend e QA.
@@ -1800,6 +1813,7 @@ Motivazione:
 Alternative escluse:
 
 - rappresentare una festivita multi-giorno con piu record singoli obbligatori;
+- mantenere `HolidayCalendar` solo `Country + Year` senza scope organizzativo;
 - salvare solo una regola di generazione senza date finali persistite;
 - automatizzare nel MVP il calcolo lunare di Aid;
 - integrare subito Holiday Calendar con Leave Request;
@@ -1808,9 +1822,44 @@ Alternative escluse:
 
 Impatto:
 
-`TASK-067` governa la numerazione attiva del blocco Holiday Calendar. Il refinement richiesto come `TASK-019.1` viene tracciato come `TASK-067.1` per non modificare i task storici gia completati `TASK-019` e `TASK-020`.
+`TASK-067` governa la numerazione attiva del blocco Holiday Calendar senza riuso della numerazione storica gia completata `TASK-019` e `TASK-020`.
 
-I task `TASK-067.2`, `TASK-067.3`, `TASK-067.4` e `TASK-067.5` dovranno rispettare questa decisione e mantenere fuori scope Leave Request, calcolo ferie/assenze, payroll, turni, calendari per singolo dipendente, assegnazione calendario a sede/dipartimento/dipendente, generazione automatica Aid, import/export massivo e API esterne.
+I task `TASK-067.2`, `TASK-067.3`, `TASK-067.5` e `TASK-067.6` dovranno rispettare questa decisione e mantenere fuori scope Leave Request, calcolo ferie/assenze, payroll, turni, calendari per singolo dipendente, assegnazione calendario a sede/dipartimento/dipendente, generazione automatica Aid, import/export massivo e API esterne.
+
+---
+
+### DEC-046 - Git worktree as the recommended local workflow for parallel multi-agent development
+
+Data: 2026-05-17
+Stato: Approvata
+
+Decisione:
+
+Per sviluppo parallelo locale su piu branch e agenti/IDE, `git worktree` viene adottato come workflow consigliato del progetto.
+
+Lo standard approvato e:
+
+- ogni worktree deve lavorare su un branch dedicato;
+- non devono esserci due agenti che modificano contemporaneamente la stessa working copy;
+- il workflow `git worktree` estende ma non sostituisce la regola `1 task = 1 branch = 1 PR`;
+- la working copy principale non deve diventare il punto condiviso di modifiche concorrenti tra Codex, Cursor, VS Code o altri agenti;
+- la documentazione operativa dettagliata del workflow verra prodotta nel task dedicato `TASK-067.4`.
+
+Motivazione:
+
+- ridurre il rischio di conflitti locali, file sporchi e sovrapposizioni tra agenti o IDE diversi;
+- consentire sviluppo parallelo piu sicuro su branch separati senza contaminare la working copy principale;
+- mantenere tracciabilita chiara tra task, branch, patch e PR in un contesto AI-first con piu strumenti operativi.
+
+Alternative escluse:
+
+- far lavorare piu agenti contemporaneamente sulla stessa working copy;
+- usare lo stesso branch locale per task distinti in parallelo;
+- mantenere sviluppo multi-agent parallelo senza isolamento esplicito delle working copy.
+
+Impatto:
+
+Il progetto formalizza `git worktree` come raccomandazione operativa durevole per sviluppo locale parallelo multi-agent. `TASK-067.4` dovra produrre la documentazione di dettaglio coerente con questa decisione, mentre i task futuri continueranno a mantenere separazione tra branch e PR.
 
 ---
 
@@ -1818,6 +1867,9 @@ I task `TASK-067.2`, `TASK-067.3`, `TASK-067.4` e `TASK-067.5` dovranno rispetta
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.46 | 2026-05-17 | Aggiunta DEC-046 per formalizzare `git worktree` come workflow locale consigliato per sviluppo parallelo multi-agent su branch/worktree dedicati, con divieto di modifiche concorrenti sulla stessa working copy e rinvio della documentazione operativa di dettaglio a `TASK-067.4`. |
+| 1.45 | 2026-05-17 | DEC-045 riallineata alla decisione di scope Holiday Calendar: `HolidayCalendar` evolve a `Country + Year + Scope` con `GLOBAL` / `TENANT` / `COMPANY_PROFILE`, `BusinessDayService` risolve con priorita `COMPANY_PROFILE > TENANT > GLOBAL`, rifiuta `companyProfileId` fuori tenant e mantiene fallback finale weekend-only senza combinare calendari di scope diversi nello stesso contesto/anno. |
+| 1.44 | 2026-05-16 | Estesa DEC-045 con le regole durevoli di `BusinessDayService`: weekend sabato/domenica, fallback weekend-only se manca un calendario attivo `Country + Year`, conteggio intervalli inclusivo, prossimo giorno lavorativo strettamente successivo e addizione giorni lavorativi con start date esclusa per valori positivi. |
 | 1.43 | 2026-05-16 | Estesa DEC-045 con la regola durevole anti-sovrapposizione delle festivita nello stesso `HolidayCalendar`, inclusa l esclusione della festivita corrente nei controlli di update. |
 | 1.42 | 2026-05-16 | Aggiunta DEC-045 per formalizzare il modello Holiday Calendar: `Country + Year`, festivita con `startDate`/`endDate`, `HolidayType` `FIXED`/`MOBILE`, `HolidayGenerationRule`, Aid manuale nel MVP, `BusinessDayService` separato e Leave Request fuori scope. |
 | 1.41 | 2026-05-16 | Aggiunta DEC-044 per formalizzare `DetailActionBar` come pattern frontend shared ufficiale delle action bar dei dettagli entita: gruppi `back`/secondary/primary/destructive, set standard di action id (`edit`, `save`, `cancel`, `activate`, `deactivate`, `deletePhysical`) e apertura a id custom di dominio senza introdurre componenti paralleli o logiche feature-specific nel shared component. |
