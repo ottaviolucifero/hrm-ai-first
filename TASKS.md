@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.83
+Versione: 2.84
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -5901,7 +5901,7 @@ Fuori scope:
 
 #### TASK-068.7 - LeaveRequest approve/reject workflow UI foundation
 
-Stato: TODO
+Stato: BLOCKED
 
 Tipo: Frontend
 
@@ -5925,6 +5925,29 @@ Vincoli e dipendenze:
 - dipende da endpoint backend reali approve/reject o da task backend separato;
 - usare `UPDATE` o `MANAGE` su `LEAVE_REQUEST` come baseline autorizzativa finche non viene approvata granularita diversa;
 - se le API non esistono, il task deve restare documentale/UX gated o essere bloccato, senza mockare mutazioni.
+
+Verifica repository del 2026-05-17:
+
+- endpoint backend approve non presente;
+- endpoint backend reject non presente;
+- endpoint amministrativi reali disponibili: `GET /api/admin/leave-requests/{leaveRequestId}`, `POST /api/admin/leave-requests`, `PUT /api/admin/leave-requests/{leaveRequestId}`, `DELETE /api/admin/leave-requests/{leaveRequestId}`;
+- `DELETE /api/admin/leave-requests/{leaveRequestId}` mappa a cancel logico `CANCELLED`, non a reject;
+- nessun DTO request/response dedicato ad approve/reject;
+- nessun supporto backend reale a rejection note.
+
+Esito:
+
+- task frontend bloccato;
+- non introdurre pulsanti approve/reject, metodi service, i18n o test frontend fittizi;
+- mantenere il dettaglio LeaveRequest coerente con le API esistenti.
+
+Task backend proposto prima di sbloccare questo step:
+
+- `TASK-068.x - Backend LeaveRequest approve/reject workflow endpoints`;
+- scope minimo proposto: endpoint reali dedicati per approve e reject su `/api/admin/leave-requests/{leaveRequestId}/approve` e `/api/admin/leave-requests/{leaveRequestId}/reject`;
+- autorizzazione baseline proposta: `TENANT|PLATFORM.LEAVE_REQUEST.UPDATE` oppure `MANAGE`;
+- request reject con nota solo se il backend decide di supportarla esplicitamente;
+- response proposta: dettaglio aggiornato della richiesta o `204 No Content` con refresh frontend successivo.
 
 Fuori scope:
 
@@ -6115,6 +6138,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.84 | 2026-05-17 | `TASK-068.7` marcato `BLOCKED` dopo verifica repository: non esistono endpoint backend reali `approve/reject` per LeaveRequest admin, `DELETE` resta solo `cancel => CANCELLED`; aggiornati task e dipendenza documentale verso futuro task backend separato, senza modifiche frontend/backend. |
 | 2.83 | 2026-05-17 | `TASK-068.6` completato lato frontend con pagina dettaglio dedicata LeaveRequest su route `/admin/leave-requests/:id`, riuso pattern Device detail + `DetailActionBar`, card informative coerenti, stato `CANCELLED` sempre consultabile con notice read-only, nessuna azione `approve/reject/cancel`, i18n `it` / `fr` / `en` e test/build frontend reali verdi. |
 | 2.82 | 2026-05-17 | `TASK-068.3` completato lato backend con nuove API amministrative `GET/POST/PUT/DELETE` sotto `/api/admin/leave-requests`, DTO espliciti, validazioni tenant/employee/type/date/status, `DELETE` riallineato a cancel logico via `LeaveRequestStatus.CANCELLED`, RBAC `TENANT|PLATFORM.LEAVE_REQUEST.*`, decisione durevole documentata in `DEC-047` e test Maven reali verdi. |
 | 2.81 | 2026-05-17 | Backlog `TASK-068` riallineato dopo la validazione della lista LeaveRequest: `TASK-068.4` ora richiede il lookup reale `LeaveRequestType` via `/api/master-data/hr-business/leave-request-types` per form admin e futuro filtro lista, inserito `TASK-068.5 - Shared advanced filters component` e rinumerati dettaglio/workflow/self-service/calendario/QA a `TASK-068.6`..`TASK-068.10`; nessuna modifica codice o decisione architetturale. |
