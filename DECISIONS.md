@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.47
+Versione: 1.50
 Ultimo aggiornamento: 2026-05-17
 Stato: Attivo
 
@@ -1898,10 +1898,56 @@ Impatto:
 
 ---
 
+### DEC-048 - Workflow operativo ChatGPT -> Claude/Cursor -> Codex -> QA
+
+Data: 2026-05-17
+Stato: Approvata
+
+Decisione:
+
+Il progetto formalizza come workflow operativo standard:
+
+`ChatGPT -> Claude/Cursor -> Codex -> QA`
+
+Lo standard approvato e:
+
+- ChatGPT governa il flusso operativo, la preparazione dei prompt, le decisioni, lo scope, la QA, la PR e la coerenza documentale;
+- Claude/Cursor e usato soprattutto per analisi UI/UX, mockup, lettura mirata del repository e piani in Plan mode;
+- Claude/Cursor non deve modificare file salvo richiesta esplicita;
+- Claude/Cursor deve leggere solo i file necessari allo scope richiesto e produrre output sintetici, orientati alla decisione o al prompt operativo successivo;
+- Codex e l agente principale per implementazione controllata;
+- Codex lavora su branch dedicato, esegue test/build reali quando pertinenti, aggiorna la documentazione richiesta e non esegue commit o push salvo richiesta esplicita;
+- QA puo essere separato dall implementazione e deve verificare scope, regressioni, i18n, build/test e rispetto degli `AGENTS.md`;
+- resta confermata la regola `1 task = 1 branch = 1 PR`, applicata un task alla volta;
+- per task piccoli o puramente documentali e ammesso saltare Claude/Cursor e usare direttamente ChatGPT + Codex.
+
+Motivazione:
+
+- mantenere controllo umano e coerenza documentale in un progetto AI-first;
+- separare analisi, implementazione e validazione;
+- ridurre scope creep, modifiche non richieste e letture eccessive del repository;
+- rendere ripetibile il passaggio da decisione/prompt a patch verificata e PR;
+- preservare branch hygiene e tracciabilita tra task, branch, test e QA.
+
+Alternative escluse:
+
+- usare un singolo agente per decidere, implementare e validare senza separazione dei ruoli;
+- permettere a Claude/Cursor di modificare file in autonomia senza richiesta esplicita;
+- delegare a Codex commit o push automatici senza istruzione umana;
+- lavorare su piu task nello stesso branch o nella stessa PR;
+- produrre analisi estese o letture massive del repository quando bastano file mirati.
+
+Impatto:
+
+I prompt operativi futuri devono rispettare questo workflow salvo istruzione umana diversa. Le fasi possono essere compresse per task piccoli o documentali, ma le regole di scope, branch dedicato, assenza di commit/push automatici, QA proporzionata e coerenza con gli `AGENTS.md` restano applicabili.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.50 | 2026-05-17 | Aggiunta DEC-048 per formalizzare il workflow operativo ChatGPT -> Claude/Cursor -> Codex -> QA, con separazione tra governance/prompt, analisi mirata, implementazione controllata e QA, confermando un task per branch/PR e divieto di commit/push senza richiesta esplicita. |
 | 1.49 | 2026-05-17 | Aggiunta DEC-047 per formalizzare il lifecycle amministrativo LeaveRequest nel MVP: `DELETE /api/admin/leave-requests/{id}` mappa a cancel logico via `LeaveRequestStatus.CANCELLED`, il CRUD admin accetta solo `DRAFT` e `SUBMITTED` e gli stati `APPROVED` / `REJECTED` / `CANCELLED` restano read-only. |
 | 1.48 | 2026-05-17 | Riallineati i riferimenti backlog di `DEC-045` dopo l inserimento di `TASK-067.6` per il CRUD frontend del calendario: `TASK-067.7` copre la gestione festivita e `TASK-067.8` la QA finale, senza modifiche alla decisione di dominio. |
 | 1.47 | 2026-05-17 | Riallineata DEC-045 allo split frontend Holiday Calendar: `TASK-067.5` copre lista/dettaglio base, `TASK-067.6` la gestione festivita e `TASK-067.7` la QA finale, senza modifiche alla decisione di dominio. |
