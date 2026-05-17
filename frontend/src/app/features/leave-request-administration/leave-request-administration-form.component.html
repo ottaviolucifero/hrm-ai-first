@@ -1,0 +1,202 @@
+<section class="kt-container-fixed py-4 leave-request-form-page" aria-labelledby="leave-request-form-title">
+  <div class="leave-request-form-layout">
+    <header class="leave-request-form-page-header">
+      <div class="leave-request-form-heading">
+        <span class="leave-request-form-eyebrow">{{ i18n.t('nav.hrOperations') }}</span>
+        <h1 id="leave-request-form-title" class="text-xl font-semibold text-mono">{{ i18n.t(titleKey()) }}</h1>
+        @if (leaveRequest(); as detail) {
+          <span
+            [class]="'leave-request-form-status-badge leave-request-form-status-badge-' + currentStatusTone()"
+            [attr.data-status-tone]="currentStatusTone()">
+            <span class="leave-request-form-status-dot" aria-hidden="true"></span>
+            {{ currentStatusLabel() }}
+          </span>
+        }
+        <p class="leave-request-form-subtitle">{{ i18n.t(subtitleKey()) }}</p>
+      </div>
+
+      <div class="leave-request-form-page-actions" role="group" [attr.aria-label]="i18n.t('leaveRequestAdministration.actions.toolbar')">
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrow-left"
+          [label]="i18n.t('leaveRequestAdministration.actions.back')"
+          (pressed)="goBack()" />
+        @if (hasError()) {
+          <app-button
+            variant="secondary"
+            size="sm"
+            icon="ki-filled ki-arrows-circle"
+            [label]="i18n.t('rolePermissions.actions.retry')"
+            (pressed)="retry()" />
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <section class="kt-card leave-request-form-state" role="status" aria-live="polite">
+        {{ i18n.t('leaveRequestAdministration.form.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card leave-request-form-state leave-request-form-state-error" role="alert">
+        {{ i18n.t('leaveRequestAdministration.form.errors.load') }}
+      </section>
+    } @else {
+      <form class="leave-request-form-grid" [formGroup]="form" (ngSubmit)="submit()">
+        @if (isReadOnlyMode()) {
+          <section class="kt-card leave-request-form-state leave-request-form-state-warning" role="alert">
+            {{ i18n.t(isViewMode() ? 'leaveRequestAdministration.form.readonlyView' : 'leaveRequestAdministration.form.closedReadonly') }}
+          </section>
+        }
+
+        <section class="kt-card leave-request-form-card leave-request-form-card-request" aria-labelledby="leave-request-form-request">
+          <h2 id="leave-request-form-request" class="leave-request-form-card-title">
+            {{ i18n.t('leaveRequestAdministration.form.sections.request') }}
+          </h2>
+
+          <app-lookup-select
+            formControlName="employeeId"
+            [label]="i18n.t('leaveRequestAdministration.fields.employee')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('leaveRequestAdministration.form.placeholders.employee')"
+            [options]="employeeOptions()"
+            [initialOption]="selectedEmployeeOption()"
+            [closedLabelBuilder]="employeeLookupClosedLabelBuilder"
+            [optionLabelBuilder]="employeeLookupOptionLabelBuilder"
+            [errorText]="validationMessage('employeeId')"
+            (valueChange)="selectEmployee($event)" />
+
+          <app-lookup-select
+            formControlName="leaveRequestTypeId"
+            [label]="i18n.t('leaveRequestAdministration.fields.leaveRequestType')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('leaveRequestAdministration.form.placeholders.leaveRequestType')"
+            [loadPage]="leaveRequestTypeLookup"
+            [initialOption]="selectedLeaveRequestTypeOption()"
+            [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+            [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+            [errorText]="validationMessage('leaveRequestTypeId')"
+            (optionChange)="rememberLeaveRequestType($event)" />
+
+          <app-lookup-select
+            formControlName="status"
+            [label]="i18n.t('leaveRequestAdministration.fields.status')"
+            [placeholder]="i18n.t('leaveRequestAdministration.form.placeholders.status')"
+            [options]="statusOptions()"
+            [closedLabelBuilder]="statusLookupClosedLabelBuilder"
+            [optionLabelBuilder]="statusLookupOptionLabelBuilder" />
+        </section>
+
+        <section class="kt-card leave-request-form-card leave-request-form-card-period" aria-labelledby="leave-request-form-period">
+          <h2 id="leave-request-form-period" class="leave-request-form-card-title">
+            {{ i18n.t('leaveRequestAdministration.form.sections.period') }}
+          </h2>
+
+          <div class="leave-request-form-period-layout">
+            <div class="leave-request-form-period-dates">
+              <app-date-time-field
+                formControlName="startDate"
+                mode="date"
+                [label]="i18n.t('leaveRequestAdministration.fields.startDate')"
+                [labelRequired]="true"
+                [required]="true"
+                [errorText]="validationMessage('startDate')" />
+
+              <app-date-time-field
+                formControlName="endDate"
+                mode="date"
+                [label]="i18n.t('leaveRequestAdministration.fields.endDate')"
+                [labelRequired]="true"
+                [required]="true"
+                [errorText]="validationMessage('endDate')" />
+            </div>
+
+            <div class="leave-request-form-period-duration">
+              <app-input
+                formControlName="durationDays"
+                type="number"
+                [label]="i18n.t('leaveRequestAdministration.fields.durationDays')"
+                [placeholder]="i18n.t('leaveRequestAdministration.form.placeholders.durationDays')"
+                [errorText]="validationMessage('durationDays')" />
+            </div>
+
+            <div class="leave-request-form-period-divider" aria-hidden="true"></div>
+
+            <div class="leave-request-form-period-balance">
+              <app-input
+                formControlName="deductedDays"
+                type="number"
+                [label]="i18n.t('leaveRequestAdministration.fields.deductedDays')"
+                [placeholder]="i18n.t('leaveRequestAdministration.form.placeholders.deductedDays')"
+                [helpText]="balanceHelperText()"
+                [errorText]="validationMessage('deductedDays')" />
+
+              <app-checkbox
+                formControlName="deductFromBalance"
+                [label]="i18n.t('leaveRequestAdministration.fields.deductFromBalance')"
+                [helpText]="balanceHelperText()" />
+            </div>
+          </div>
+        </section>
+
+        <section class="kt-card leave-request-form-card leave-request-form-card-wide" aria-labelledby="leave-request-form-notes">
+          <h2 id="leave-request-form-notes" class="leave-request-form-card-title">
+            {{ i18n.t('leaveRequestAdministration.form.sections.notes') }}
+          </h2>
+
+          <app-input
+            formControlName="reason"
+            [label]="i18n.t('leaveRequestAdministration.fields.reason')"
+            [placeholder]="i18n.t('leaveRequestAdministration.form.placeholders.reason')"
+            [errorText]="validationMessage('reason')" />
+
+          <label class="leave-request-form-textarea-field" for="leave-request-comments">
+            <span class="leave-request-form-textarea-label">{{ i18n.t('leaveRequestAdministration.fields.comments') }}</span>
+            <textarea
+              id="leave-request-comments"
+              class="leave-request-form-textarea"
+              formControlName="comments"
+              rows="4"
+              [attr.aria-invalid]="validationMessage('comments').length > 0"
+              [attr.placeholder]="i18n.t('leaveRequestAdministration.form.placeholders.comments')"></textarea>
+            @if (commentsErrorText()) {
+              <p class="leave-request-form-textarea-error">{{ commentsErrorText() }}</p>
+            }
+          </label>
+
+          <app-checkbox
+            formControlName="urgent"
+            [label]="i18n.t('leaveRequestAdministration.fields.urgent')"
+            (checkedChange)="handleUrgentChange($event)" />
+
+          <app-input
+            formControlName="urgentReason"
+            [label]="i18n.t('leaveRequestAdministration.fields.urgentReason')"
+            [placeholder]="i18n.t('leaveRequestAdministration.form.placeholders.urgentReason')"
+            [errorText]="validationMessage('urgentReason')" />
+        </section>
+
+        <div class="leave-request-form-actions">
+          <app-button
+            variant="secondary"
+            type="button"
+            [label]="i18n.t('masterData.form.cancel')"
+            [disabled]="saving()"
+            (pressed)="goBack()" />
+          @if (!isReadOnlyMode()) {
+            <app-button
+              type="submit"
+              variant="primary"
+              icon="ki-filled ki-check"
+              [label]="i18n.t(submitLabelKey())"
+              [loadingLabel]="i18n.t(submitLoadingLabelKey())"
+              [loading]="saving()"
+              [disabled]="submitDisabled()" />
+          }
+        </div>
+      </form>
+    }
+  </div>
+</section>

@@ -255,6 +255,7 @@ class HrmBackendApplicationTests {
 	private static final UUID TENANT_ADMIN_ROLE_ID = UUID.fromString("75000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_READ_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000001");
 	private static final UUID EMPLOYEE_WRITE_PERMISSION_ID = UUID.fromString("76000000-0000-0000-0000-000000000002");
+	private static final UUID PLATFORM_TENANT_READ_PERMISSION_ID = UUID.fromString("76100000-0000-0000-0000-000000000001");
 	private static final UUID LAPTOP_DEVICE_TYPE_ID = UUID.fromString("62000000-0000-0000-0000-000000000001");
 	private static final UUID DELL_DEVICE_BRAND_ID = UUID.fromString("63000000-0000-0000-0000-000000000001");
 	private static final UUID AVAILABLE_DEVICE_STATUS_ID = UUID.fromString("64000000-0000-0000-0000-000000000001");
@@ -505,6 +506,7 @@ class HrmBackendApplicationTests {
 						"TENANT.PERMISSION.CREATE",
 						"TENANT.PERMISSION.UPDATE",
 						"TENANT.PERMISSION.DELETE",
+						"TENANT.EMPLOYEE.READ",
 						"TENANT.COMPANY_PROFILE.READ",
 						"TENANT.COMPANY_PROFILE.CREATE",
 						"TENANT.COMPANY_PROFILE.UPDATE",
@@ -652,7 +654,7 @@ class HrmBackendApplicationTests {
 		UserAccount userAccount = userAccountRepository.saveAndFlush(newUserAccount("rbac.user@example.com"));
 
 		UserRole userRole = userRoleRepository.saveAndFlush(newUserRole(userAccount));
-		RolePermission rolePermission = rolePermissionRepository.saveAndFlush(newRolePermission(EMPLOYEE_READ_PERMISSION_ID));
+		RolePermission rolePermission = rolePermissionRepository.saveAndFlush(newRolePermission(EMPLOYEE_WRITE_PERMISSION_ID));
 		UserTenantAccess userTenantAccess = userTenantAccessRepository.saveAndFlush(newUserTenantAccess(userAccount));
 
 		assertThat(userRole.getId()).isNotNull();
@@ -664,7 +666,7 @@ class HrmBackendApplicationTests {
 		assertThat(userRoleRepository.findByTenant_IdAndUserAccount_Id(FOUNDATION_TENANT_ID, userAccount.getId())).hasSize(1);
 		assertThat(rolePermissionRepository.findByTenant_IdAndRole_Id(FOUNDATION_TENANT_ID, TENANT_ADMIN_ROLE_ID))
 				.extracting((RolePermission assignment) -> assignment.getPermission().getId())
-				.contains(EMPLOYEE_READ_PERMISSION_ID);
+				.contains(EMPLOYEE_READ_PERMISSION_ID, EMPLOYEE_WRITE_PERMISSION_ID);
 		assertThat(userTenantAccessRepository.findByUserAccount_IdAndTenant_Id(userAccount.getId(), FOUNDATION_TENANT_ID)).isPresent();
 	}
 
@@ -676,8 +678,8 @@ class HrmBackendApplicationTests {
 		assertThatThrownBy(() -> userRoleRepository.saveAndFlush(newUserRole(userAccount)))
 				.isInstanceOf(DataIntegrityViolationException.class);
 
-		rolePermissionRepository.saveAndFlush(newRolePermission(EMPLOYEE_WRITE_PERMISSION_ID));
-		assertThatThrownBy(() -> rolePermissionRepository.saveAndFlush(newRolePermission(EMPLOYEE_WRITE_PERMISSION_ID)))
+		rolePermissionRepository.saveAndFlush(newRolePermission(PLATFORM_TENANT_READ_PERMISSION_ID));
+		assertThatThrownBy(() -> rolePermissionRepository.saveAndFlush(newRolePermission(PLATFORM_TENANT_READ_PERMISSION_ID)))
 				.isInstanceOf(DataIntegrityViolationException.class);
 
 		userTenantAccessRepository.saveAndFlush(newUserTenantAccess(userAccount));

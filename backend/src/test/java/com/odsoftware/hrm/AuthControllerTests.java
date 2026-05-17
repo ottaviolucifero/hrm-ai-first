@@ -42,10 +42,12 @@ class AuthControllerTests {
 
 	private static final UUID FOUNDATION_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 	private static final UUID TENANT_ADMIN_USER_TYPE_ID = UUID.fromString("70000000-0000-0000-0000-000000000003");
+	private static final UUID TENANT_ADMIN_ROLE_ID = UUID.fromString("75000000-0000-0000-0000-000000000001");
 	private static final UUID PASSWORD_ONLY_AUTHENTICATION_METHOD_ID = UUID.fromString("71000000-0000-0000-0000-000000000001");
 	private static final String TENANT_USER_READ = "TENANT.USER.READ";
 	private static final String TENANT_USER_UPDATE = "TENANT.USER.UPDATE";
 	private static final String TENANT_MASTER_DATA_READ = "TENANT.MASTER_DATA.READ";
+	private static final String TENANT_EMPLOYEE_READ = "TENANT.EMPLOYEE.READ";
 	private static final String VALID_PASSWORD = "Secret1!";
 
 	@Autowired
@@ -101,10 +103,10 @@ class AuthControllerTests {
 				.andExpect(jsonPath("$.user.email").value("task034.valid@example.com"))
 				.andExpect(jsonPath("$.user.userType").value("TENANT_ADMIN"))
 				.andExpect(jsonPath("$.user.authorities[0]").value("USER_TYPE_TENANT_ADMIN"))
-				.andExpect(jsonPath("$.user.authorities[1]").value(TENANT_USER_READ))
-				.andExpect(jsonPath("$.user.authorities[2]").value(TENANT_USER_UPDATE))
-				.andExpect(jsonPath("$.user.permissions[0]").value("TENANT.USER.VIEW"))
-				.andExpect(jsonPath("$.user.permissions[1]").value("TENANT.USER.UPDATE"));
+				.andExpect(jsonPath("$.user.authorities[?(@ == '" + TENANT_USER_READ + "')]").exists())
+				.andExpect(jsonPath("$.user.authorities[?(@ == '" + TENANT_USER_UPDATE + "')]").exists())
+				.andExpect(jsonPath("$.user.permissions[?(@ == 'TENANT.USER.VIEW')]").exists())
+				.andExpect(jsonPath("$.user.permissions[?(@ == 'TENANT.USER.UPDATE')]").exists());
 	}
 
 	@Test
@@ -237,10 +239,25 @@ class AuthControllerTests {
 				.andExpect(jsonPath("$.email").value("task034.me@example.com"))
 				.andExpect(jsonPath("$.userType").value("TENANT_ADMIN"))
 				.andExpect(jsonPath("$.authorities[0]").value("USER_TYPE_TENANT_ADMIN"))
-				.andExpect(jsonPath("$.authorities[1]").value(TENANT_MASTER_DATA_READ))
-				.andExpect(jsonPath("$.authorities[2]").value(TENANT_USER_READ))
-				.andExpect(jsonPath("$.permissions[0]").value("TENANT.MASTER_DATA.VIEW"))
-				.andExpect(jsonPath("$.permissions[1]").value("TENANT.USER.VIEW"));
+				.andExpect(jsonPath("$.authorities[?(@ == '" + TENANT_MASTER_DATA_READ + "')]").exists())
+				.andExpect(jsonPath("$.authorities[?(@ == '" + TENANT_USER_READ + "')]").exists())
+				.andExpect(jsonPath("$.permissions[?(@ == 'TENANT.MASTER_DATA.VIEW')]").exists())
+				.andExpect(jsonPath("$.permissions[?(@ == 'TENANT.USER.VIEW')]").exists());
+	}
+
+	@Test
+	void loginWithTenantAdminBootstrapIncludesEmployeeReadAuthority() throws Exception {
+		UserAccount userAccount = saveUser("task0684.employee.read@example.com", VALID_PASSWORD, true, false, true);
+		assignTenantAdminAccess(userAccount);
+		String token = loginAndReadToken("task0684.employee.read@example.com", VALID_PASSWORD);
+
+		mockMvc.perform(get("/api/auth/me")
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(userAccount.getId().toString()))
+				.andExpect(jsonPath("$.authorities").isArray())
+				.andExpect(jsonPath("$.authorities[?(@ == '" + TENANT_EMPLOYEE_READ + "')]").exists())
+				.andExpect(jsonPath("$.permissions[?(@ == 'TENANT.EMPLOYEE.VIEW')]").exists());
 	}
 
 	@Test
@@ -265,6 +282,19 @@ class AuthControllerTests {
 						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
 				.andExpect(status().isForbidden())
 				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
+	void tenantAdminBootstrapPermissionAccessesCoreHrEmployeesEndpoint() throws Exception {
+		saveUser("task0684.corehr.employee.allowed@example.com", VALID_PASSWORD, true, false, true);
+		UserAccount userAccount = userAccountRepository.findByEmailIgnoreCase("task0684.corehr.employee.allowed@example.com").orElseThrow();
+		assignTenantAdminAccess(userAccount);
+		String token = loginAndReadToken("task0684.corehr.employee.allowed@example.com", VALID_PASSWORD);
+
+		mockMvc.perform(get("/api/core-hr/employees")
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray());
 	}
 
 	@Test
@@ -335,11 +365,7 @@ class AuthControllerTests {
 	}
 
 	private void assignPermissions(UserAccount userAccount, String... permissionCodes) {
-		UserTenantAccess tenantAccess = new UserTenantAccess();
-		tenantAccess.setUserAccount(userAccount);
-		tenantAccess.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
-		tenantAccess.setAccessRole("TENANT_ADMIN");
-		userTenantAccessRepository.saveAndFlush(tenantAccess);
+		assignTenantAdminAccess(userAccount);
 
 		Role role = new Role();
 		role.setTenantId(FOUNDATION_TENANT_ID);
@@ -367,5 +393,19 @@ class AuthControllerTests {
 			rolePermission.setPermission(permission);
 			rolePermissionRepository.saveAndFlush(rolePermission);
 		}
+	}
+
+	private void assignTenantAdminAccess(UserAccount userAccount) {
+		UserTenantAccess tenantAccess = new UserTenantAccess();
+		tenantAccess.setUserAccount(userAccount);
+		tenantAccess.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		tenantAccess.setAccessRole("TENANT_ADMIN");
+		userTenantAccessRepository.saveAndFlush(tenantAccess);
+
+		UserRole userRole = new UserRole();
+		userRole.setTenant(tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow());
+		userRole.setUserAccount(userAccount);
+		userRole.setRole(roleRepository.findById(TENANT_ADMIN_ROLE_ID).orElseThrow());
+		userRoleRepository.saveAndFlush(userRole);
 	}
 }

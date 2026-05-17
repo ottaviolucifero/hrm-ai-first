@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.76
+Versione: 2.84
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -163,9 +163,9 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - `TASK-067.6` completato lato frontend con gestione Holiday Calendar end-to-end, includendo anche il perimetro holidays management inizialmente previsto per `TASK-067.7`.
 - `TASK-068.2` completato lato frontend: lista amministrativa LeaveRequest read-only su Core HR con route `/admin/leave-requests`, filtri/paginazione client-side foundation, visibility `LEAVE_REQUEST`, i18n `it` / `fr` / `en` e nessuna action column finche non esiste una route dettaglio reale.
 - `TASK-068.3` completato lato backend: API amministrative LeaveRequest sotto `/api/admin/leave-requests` con detail/create/update/cancel, DTO espliciti, validazioni tenant-aware su employee e `LeaveRequestType`, policy conservativa `DELETE => CANCELLED` e test backend Maven verdi.
-- Backlog `TASK-068` riallineato: `TASK-068.4` deve introdurre il lookup reale `LeaveRequestType` per form admin e filtro `Tipo richiesta`, inserito `TASK-068.5 - Shared advanced filters component` e rinumerati i subtask successivi LeaveRequest a `TASK-068.6`..`TASK-068.10`.
+- `TASK-068.4` completato lato frontend: CRUD amministrativo LeaveRequest con route create/edit, form reactive tenant-aware, lookup reale `LeaveRequestType` condiviso con il filtro lista, azione `Annulla richiesta` via `DELETE` logico, i18n `it` / `fr` / `en` e test/build frontend verdi.
 - Prossimi passi operativi: `TASK-067.4` Git worktree workflow foundation come follow-up documentale e `TASK-067.8` QA Holiday Calendar come prossimo step di validazione dedicata.
-- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068` UI LeaveRequest foundation, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068.5` shared advanced filters, `TASK-068.6` detail LeaveRequest, `TASK-068.10` request timestamp exposure, `TASK-068.11` QA hardening, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -477,6 +477,8 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.84 | 2026-05-17 | Backlog `TASK-068` riallineato in roadmap con inserimento di `TASK-068.10 - LeaveRequest request timestamp exposure` prima del QA finale e rinumerazione del QA hardening a `TASK-068.11`; nessuna modifica applicativa. |
+| 2.83 | 2026-05-17 | `TASK-068.4` completato lato frontend con CRUD amministrativo LeaveRequest su route create/edit, DTO create/update differenziati, lookup reale `LeaveRequestType` condiviso con il filtro lista, azione `Annulla richiesta` su `DELETE` logico backend, i18n `it` / `fr` / `en` e test/build frontend verdi. |
 | 2.82 | 2026-05-17 | `TASK-068.3` completato lato backend con API amministrative LeaveRequest `GET/POST/PUT/DELETE` su `/api/admin/leave-requests`, validazioni tenant/employee/type/date/status, scelta durevole `DELETE => CANCELLED`, nessuna lista/form-options/workflow extra e test Maven verdi. |
 | 2.81 | 2026-05-17 | Backlog `TASK-068` riallineato in roadmap: `TASK-068.4` aggiornato con lookup reale `LeaveRequestType` via Master Data HR Business per form admin e futuro filtro lista, inserito `TASK-068.5 - Shared advanced filters component` e rinumerati dettaglio/workflow/self-service/calendario/QA a `TASK-068.6`..`TASK-068.10`. |
 | 2.80 | 2026-05-17 | `TASK-068.2` completato lato frontend con lista amministrativa LeaveRequest read-only su `/api/core-hr/leave-requests`, route `/admin/leave-requests`, filtri e paginazione client-side foundation, visibility `LEAVE_REQUEST`, i18n `it` / `fr` / `en`, assenza volontaria della colonna azioni senza route dettaglio reale e test/frontend build verdi. |

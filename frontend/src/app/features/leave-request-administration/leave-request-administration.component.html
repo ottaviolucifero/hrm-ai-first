@@ -8,6 +8,18 @@
         </h1>
         <p class="leave-request-subtitle">{{ i18n.t('leaveRequestAdministration.subtitle') }}</p>
       </div>
+
+      @if (modulePermissions().canCreate) {
+        <div class="leave-request-page-actions" role="group" [attr.aria-label]="i18n.t('leaveRequestAdministration.actions.toolbar')">
+          <app-button
+            variant="primary"
+            size="sm"
+            icon="ki-filled ki-plus"
+            [label]="i18n.t('leaveRequestAdministration.actions.create')"
+            [disabled]="loading()"
+            (pressed)="createLeaveRequest()" />
+        </div>
+      }
     </header>
 
     <section class="kt-card leave-request-list-card" aria-labelledby="leave-request-list-title">
@@ -55,11 +67,13 @@
               [label]="i18n.t('leaveRequestAdministration.filters.type')"
               [placeholder]="i18n.t('leaveRequestAdministration.filters.placeholders.type')"
               [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
-              [options]="typeOptions()"
+              [loadPage]="leaveRequestTypeLookup"
+              [initialOption]="typeFilterOption()"
               [clearable]="true"
               [disabled]="loading()"
               [ngModel]="typeFilter()"
-              (ngModelChange)="updateTypeFilter($event)" />
+              (ngModelChange)="updateTypeFilter($event)"
+              (optionChange)="rememberTypeFilterOption($event)" />
           </div>
 
           <div class="leave-request-filter-item">
@@ -97,12 +111,15 @@
       <app-data-table
         [columns]="columns()"
         [rows]="rows()"
+        [rowActions]="rowActions()"
+        [actionsColumnSticky]="'right'"
         [pageData]="pageData()"
         [pageSizeOptions]="pageSizeOptions"
         [loading]="loading()"
         [hasError]="hasError()"
         [errorMessageKey]="'leaveRequestAdministration.errors.load'"
         [emptyMessageKey]="tableEmptyMessageKey()"
+        (rowAction)="handleRowAction($event)"
         (previousPage)="goToPreviousPage()"
         (nextPage)="goToNextPage()"
         (pageChange)="goToPage($event)"

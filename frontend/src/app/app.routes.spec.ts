@@ -59,10 +59,28 @@ describe('app routes', () => {
     const rootChildren = findChildren(routes, '');
     const adminChildren = findChildren(rootChildren, 'admin');
     const leaveRequestsRoute = findRoute(adminChildren, 'leave-requests');
+    const leaveRequestsCreateRoute = findRoute(adminChildren, 'leave-requests/new');
+    const leaveRequestsEditRoute = findRoute(adminChildren, 'leave-requests/:id/edit');
+    const leaveRequestsDetailRoute = findRoute(adminChildren, 'leave-requests/:id');
 
     expect(leaveRequestsRoute?.data).toEqual({
       permissionModule: 'leave-requests',
       requiredAction: 'view'
+    });
+    expect(leaveRequestsCreateRoute?.data).toEqual({
+      permissionModule: 'leave-requests',
+      requiredAction: 'create',
+      formMode: 'create'
+    });
+    expect(leaveRequestsEditRoute?.data).toEqual({
+      permissionModule: 'leave-requests',
+      requiredAction: 'update',
+      formMode: 'edit'
+    });
+    expect(leaveRequestsDetailRoute?.data).toEqual({
+      permissionModule: 'leave-requests',
+      requiredAction: 'view',
+      formMode: 'view'
     });
   });
 });

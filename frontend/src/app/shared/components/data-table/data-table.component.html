@@ -121,6 +121,13 @@
                     <span class="data-table-boolean-dot" aria-hidden="true"></span>
                     {{ displayValue(row, column) }}
                   </span>
+                } @else if (isStatusColumn(column)) {
+                  <span
+                    [class]="statusBadgeClass(row, column)"
+                    [attr.data-status-tone]="statusBadgeTone(row, column)">
+                    <span class="data-table-status-dot" aria-hidden="true"></span>
+                    {{ displayValue(row, column) }}
+                  </span>
                 } @else {
                   {{ displayValue(row, column) }}
                 }

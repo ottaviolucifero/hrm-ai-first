@@ -28,6 +28,7 @@ describe('RolePermissionMatrixComponent', () => {
     expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual([
       'Dati di base',
       'Profili aziendali',
+      'Dipendenti',
       'Utenti',
       'Ruoli',
       'Dispositivi',
@@ -104,6 +105,7 @@ describe('RolePermissionMatrixComponent', () => {
     expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual([
       'Dati di base',
       'Profili aziendali',
+      'Dipendenti',
       'Utenti',
       'Ruoli',
       'Dispositivi',
@@ -125,7 +127,7 @@ describe('RolePermissionMatrixComponent', () => {
     const inputs = fixture.nativeElement.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
     expect(component.canReset()).toBe(false);
     expect(component.canSave()).toBe(false);
-    expect(inputs.length).toBe(19);
+    expect(inputs.length).toBe(20);
     expect(Array.from(inputs).every((input) => input.disabled === false)).toBe(true);
 
     inputs[1].click();
@@ -185,7 +187,7 @@ describe('RolePermissionMatrixComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Impossibile caricare ruoli e catalogo permessi.');
   });
 
-  it('shows user administration together with master data role and company profile modules', async () => {
+  it('shows employee administration together with master data role and company profile modules', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const fixture = await createFixture(createService());
@@ -194,16 +196,16 @@ describe('RolePermissionMatrixComponent', () => {
     expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual([
       'Dati di base',
       'Profili aziendali',
+      'Dipendenti',
       'Utenti',
       'Ruoli',
       'Dispositivi',
       'Richieste permessi'
     ]);
-    expect(fixture.nativeElement.textContent).not.toContain('Dipendenti');
     expect(fixture.nativeElement.textContent).not.toContain('Permessi');
   });
 
-  it('shows an empty state when no allowed role-permission modules are available', async () => {
+  it('shows the employee module when only employee permissions are available', async () => {
     window.localStorage.setItem('hrflow.language', 'it');
 
     const service = createService({
@@ -222,7 +224,7 @@ describe('RolePermissionMatrixComponent', () => {
     const fixture = await createFixture(service);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Nessun permesso disponibile per questo ruolo.');
+    expect(moduleNames(fixture.nativeElement as HTMLElement)).toEqual(['Dipendenti']);
   });
 });
 
@@ -340,6 +342,14 @@ function createService(overrides: Partial<RolePermissionMatrixService> = {}): Ro
         tenantId: 'tenant-1',
         code: 'TENANT.MASTER_DATA.MANAGE',
         name: 'Master data manage',
+        systemPermission: true,
+        active: true
+      },
+      {
+        id: 'permission-employee-read',
+        tenantId: 'tenant-1',
+        code: 'TENANT.EMPLOYEE.READ',
+        name: 'Employee read',
         systemPermission: true,
         active: true
       },
