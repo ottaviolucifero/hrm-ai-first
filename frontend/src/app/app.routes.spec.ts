@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 
 import { routes } from './app.routes';
+import { LeaveRequestAdministrationDetailComponent } from './features/leave-request-administration/leave-request-administration-detail.component';
 
 describe('app routes', () => {
   it('registers device administration routes with device permissions', () => {
@@ -77,10 +78,10 @@ describe('app routes', () => {
       requiredAction: 'update',
       formMode: 'edit'
     });
+    expect(leaveRequestsDetailRoute?.component).toBe(LeaveRequestAdministrationDetailComponent);
     expect(leaveRequestsDetailRoute?.data).toEqual({
       permissionModule: 'leave-requests',
-      requiredAction: 'view',
-      formMode: 'view'
+      requiredAction: 'view'
     });
   });
 });

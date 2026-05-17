@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.77
+Versione: 2.83
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -5863,7 +5863,7 @@ Output realizzato:
 
 #### TASK-068.6 - LeaveRequest detail page foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend
 
@@ -6115,6 +6115,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.83 | 2026-05-17 | `TASK-068.6` completato lato frontend con pagina dettaglio dedicata LeaveRequest su route `/admin/leave-requests/:id`, riuso pattern Device detail + `DetailActionBar`, card informative coerenti, stato `CANCELLED` sempre consultabile con notice read-only, nessuna azione `approve/reject/cancel`, i18n `it` / `fr` / `en` e test/build frontend reali verdi. |
 | 2.82 | 2026-05-17 | `TASK-068.3` completato lato backend con nuove API amministrative `GET/POST/PUT/DELETE` sotto `/api/admin/leave-requests`, DTO espliciti, validazioni tenant/employee/type/date/status, `DELETE` riallineato a cancel logico via `LeaveRequestStatus.CANCELLED`, RBAC `TENANT|PLATFORM.LEAVE_REQUEST.*`, decisione durevole documentata in `DEC-047` e test Maven reali verdi. |
 | 2.81 | 2026-05-17 | Backlog `TASK-068` riallineato dopo la validazione della lista LeaveRequest: `TASK-068.4` ora richiede il lookup reale `LeaveRequestType` via `/api/master-data/hr-business/leave-request-types` per form admin e futuro filtro lista, inserito `TASK-068.5 - Shared advanced filters component` e rinumerati dettaglio/workflow/self-service/calendario/QA a `TASK-068.6`..`TASK-068.10`; nessuna modifica codice o decisione architetturale. |
 | 2.78 | 2026-05-17 | `TASK-068.2` completato lato frontend con lista amministrativa LeaveRequest read-only su `/api/core-hr/leave-requests`, filtri e paginazione client-side foundation, route `/admin/leave-requests`, visibility `LEAVE_REQUEST`, i18n `it` / `fr` / `en`, nessuna action column in assenza di route dettaglio reale e test/build frontend verdi. |
