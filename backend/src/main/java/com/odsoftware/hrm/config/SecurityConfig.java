@@ -167,6 +167,15 @@ public class SecurityConfig {
 								"TENANT.LEAVE_REQUEST.MANAGE",
 								"PLATFORM.LEAVE_REQUEST.READ",
 								"PLATFORM.LEAVE_REQUEST.MANAGE"))
+						.requestMatchers(
+								HttpMethod.POST,
+								"/api/admin/leave-requests/*/approve",
+								"/api/admin/leave-requests/*/reject")
+						.access(hasAnyAuthority(
+								"TENANT.LEAVE_REQUEST.UPDATE",
+								"TENANT.LEAVE_REQUEST.MANAGE",
+								"PLATFORM.LEAVE_REQUEST.UPDATE",
+								"PLATFORM.LEAVE_REQUEST.MANAGE"))
 						.requestMatchers(HttpMethod.POST, "/api/admin/leave-requests/**")
 						.access(hasAnyAuthority(
 								"TENANT.LEAVE_REQUEST.CREATE",

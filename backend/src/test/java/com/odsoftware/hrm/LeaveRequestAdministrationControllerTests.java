@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -304,6 +306,134 @@ class LeaveRequestAdministrationControllerTests {
 
 		assertThat(leaveRequestRepository.findById(leaveRequest.getId())).isPresent();
 		assertThat(leaveRequestRepository.findById(leaveRequest.getId()).orElseThrow().getStatus()).isEqualTo(LeaveRequestStatus.CANCELLED);
+	}
+
+	@Test
+	@WithMockUser
+	void leaveRequestAdministrationApprovesSubmittedRequest() throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0688_EMPLOYEE_1",
+				"Adele",
+				"Goldberg",
+				true);
+		LeaveRequestType leaveRequestType = saveLeaveRequestType(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				"TASK0688_TYPE_1",
+				"Task 068.8 Approve",
+				true);
+		LeaveRequest leaveRequest = saveLeaveRequest(employee, leaveRequestType, LeaveRequestStatus.SUBMITTED);
+
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/approve", leaveRequest.getId()).with(leaveRequestTenantCaller()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(leaveRequest.getId().toString()))
+				.andExpect(jsonPath("$.status").value("APPROVED"));
+
+		assertThat(leaveRequestRepository.findById(leaveRequest.getId()).orElseThrow().getStatus()).isEqualTo(LeaveRequestStatus.APPROVED);
+	}
+
+	@Test
+	@WithMockUser
+	void leaveRequestAdministrationRejectsSubmittedRequest() throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0688_EMPLOYEE_2",
+				"Mary",
+				"Keller",
+				true);
+		LeaveRequestType leaveRequestType = saveLeaveRequestType(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				"TASK0688_TYPE_2",
+				"Task 068.8 Reject",
+				true);
+		LeaveRequest leaveRequest = saveLeaveRequest(employee, leaveRequestType, LeaveRequestStatus.SUBMITTED);
+
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/reject", leaveRequest.getId()).with(leaveRequestTenantCaller()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(leaveRequest.getId().toString()))
+				.andExpect(jsonPath("$.status").value("REJECTED"));
+
+		assertThat(leaveRequestRepository.findById(leaveRequest.getId()).orElseThrow().getStatus()).isEqualTo(LeaveRequestStatus.REJECTED);
+	}
+
+	@ParameterizedTest
+	@EnumSource(value = LeaveRequestStatus.class, names = { "DRAFT", "APPROVED", "REJECTED", "CANCELLED" })
+	@WithMockUser
+	void leaveRequestAdministrationRejectsApproveWhenRequestIsNotSubmitted(LeaveRequestStatus initialStatus) throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0688_EMPLOYEE_APPROVE_" + initialStatus.name(),
+				"Approve",
+				initialStatus.name(),
+				true);
+		LeaveRequestType leaveRequestType = saveLeaveRequestType(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				"TASK0688_TYPE_APPROVE_" + initialStatus.name(),
+				"Task 068.8 Approve " + initialStatus.name(),
+				true);
+		LeaveRequest leaveRequest = saveLeaveRequest(employee, leaveRequestType, initialStatus);
+
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/approve", leaveRequest.getId()).with(leaveRequestTenantCaller()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value(
+						"Leave request can be approved only from status: SUBMITTED. Current status: " + initialStatus));
+	}
+
+	@ParameterizedTest
+	@EnumSource(value = LeaveRequestStatus.class, names = { "DRAFT", "APPROVED", "REJECTED", "CANCELLED" })
+	@WithMockUser
+	void leaveRequestAdministrationRejectsRejectWhenRequestIsNotSubmitted(LeaveRequestStatus initialStatus) throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0688_EMPLOYEE_REJECT_" + initialStatus.name(),
+				"Reject",
+				initialStatus.name(),
+				true);
+		LeaveRequestType leaveRequestType = saveLeaveRequestType(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				"TASK0688_TYPE_REJECT_" + initialStatus.name(),
+				"Task 068.8 Reject " + initialStatus.name(),
+				true);
+		LeaveRequest leaveRequest = saveLeaveRequest(employee, leaveRequestType, initialStatus);
+
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/reject", leaveRequest.getId()).with(leaveRequestTenantCaller()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value(
+						"Leave request can be rejected only from status: SUBMITTED. Current status: " + initialStatus));
+	}
+
+	@Test
+	@WithMockUser
+	void leaveRequestAdministrationRejectsApproveForMissingRequest() throws Exception {
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/approve", MISSING_ID).with(leaveRequestTenantCaller()))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("Leave request not found: " + MISSING_ID));
+	}
+
+	@Test
+	@WithMockUser
+	void leaveRequestAdministrationRejectsRejectForMissingRequest() throws Exception {
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/reject", MISSING_ID).with(leaveRequestTenantCaller()))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").value("Leave request not found: " + MISSING_ID));
+	}
+
+	@Test
+	@WithMockUser
+	void leaveRequestAdministrationRejectsCrossTenantApproveForTenantCaller() throws Exception {
+		Tenant otherTenant = saveTenant("TASK0688_OTHER_TENANT_APPROVE");
+		CompanyProfile otherCompanyProfile = saveCompanyProfile(otherTenant, "TASK0688_OTHER_COMPANY_APPROVE");
+		Employee otherEmployee = saveEmployee(otherTenant, otherCompanyProfile, "TASK0688_EMPLOYEE_3", "Cross", "TenantApprove", true);
+		LeaveRequestType otherType = saveLeaveRequestType(otherTenant, "TASK0688_TYPE_3", "Task 068.8 Cross Tenant Approve", true);
+		LeaveRequest leaveRequest = saveLeaveRequest(otherEmployee, otherType, LeaveRequestStatus.SUBMITTED);
+
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/approve", leaveRequest.getId()).with(leaveRequestTenantCaller()))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Cross-tenant leave request administration is not allowed for caller"));
 	}
 
 	@Test
@@ -637,9 +767,26 @@ class LeaveRequestAdministrationControllerTests {
 						.with(leaveRequestTenantCaller("TENANT.LEAVE_REQUEST.READ")))
 				.andExpect(status().isForbidden());
 
+		LeaveRequest submittedForApprove = saveLeaveRequest(employee, leaveRequestType, LeaveRequestStatus.SUBMITTED);
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/approve", submittedForApprove.getId())
+						.with(leaveRequestTenantCaller("TENANT.LEAVE_REQUEST.READ")))
+				.andExpect(status().isForbidden());
+
+		LeaveRequest submittedForUpdate = saveLeaveRequest(employee, leaveRequestType, LeaveRequestStatus.SUBMITTED);
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/approve", submittedForUpdate.getId())
+						.with(leaveRequestTenantCaller("TENANT.LEAVE_REQUEST.UPDATE")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("APPROVED"));
+
 		mockMvc.perform(delete("/api/admin/leave-requests/{leaveRequestId}", leaveRequest.getId())
 						.with(leaveRequestPlatformCaller("PLATFORM.LEAVE_REQUEST.DELETE")))
 				.andExpect(status().isNoContent());
+
+		LeaveRequest submittedForManage = saveLeaveRequest(employee, leaveRequestType, LeaveRequestStatus.SUBMITTED);
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/reject", submittedForManage.getId())
+						.with(leaveRequestPlatformCaller("PLATFORM.LEAVE_REQUEST.MANAGE")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("REJECTED"));
 	}
 
 	@Test
@@ -708,6 +855,60 @@ class LeaveRequestAdministrationControllerTests {
 	}
 
 	@Test
+	void leaveRequestAdministrationAllowsApproveWithTenantJwtAndUpdatePermission() throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0688_EMPLOYEE_4",
+				"Update",
+				"JwtApprove",
+				true);
+		LeaveRequestType leaveRequestType = saveLeaveRequestType(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				"TASK0688_TYPE_4",
+				"Task 068.8 JWT Update Approve",
+				true);
+		LeaveRequest leaveRequest = saveLeaveRequest(employee, leaveRequestType, LeaveRequestStatus.SUBMITTED);
+		UserAccount userAccount = saveTenantAdminUser(
+				"task0688.leave.update@example.com",
+				VALID_PASSWORD,
+				"TENANT.LEAVE_REQUEST.UPDATE");
+		String accessToken = loginAndReadToken(userAccount.getEmail(), VALID_PASSWORD);
+
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/approve", leaveRequest.getId())
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("APPROVED"));
+	}
+
+	@Test
+	void leaveRequestAdministrationRejectsApproveWithTenantJwtWhenCallerHasOnlyCreatePermission() throws Exception {
+		Employee employee = saveEmployee(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				companyProfileRepository.findById(FOUNDATION_COMPANY_PROFILE_ID).orElseThrow(),
+				"TASK0688_EMPLOYEE_5",
+				"Create",
+				"JwtApprove",
+				true);
+		LeaveRequestType leaveRequestType = saveLeaveRequestType(
+				tenantRepository.findById(FOUNDATION_TENANT_ID).orElseThrow(),
+				"TASK0688_TYPE_5",
+				"Task 068.8 JWT Create Approve",
+				true);
+		LeaveRequest leaveRequest = saveLeaveRequest(employee, leaveRequestType, LeaveRequestStatus.SUBMITTED);
+		UserAccount userAccount = saveTenantAdminUser(
+				"task0688.leave.create-only@example.com",
+				VALID_PASSWORD,
+				"TENANT.LEAVE_REQUEST.CREATE");
+		String accessToken = loginAndReadToken(userAccount.getEmail(), VALID_PASSWORD);
+
+		mockMvc.perform(post("/api/admin/leave-requests/{leaveRequestId}/approve", leaveRequest.getId())
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Access denied"));
+	}
+
+	@Test
 	void openApiIncludesLeaveRequestAdministrationEndpoints() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())
@@ -716,7 +917,11 @@ class LeaveRequestAdministrationControllerTests {
 				.andExpect(jsonPath("$.paths['/api/admin/leave-requests'].post").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/leave-requests/{leaveRequestId}'].get").exists())
 				.andExpect(jsonPath("$.paths['/api/admin/leave-requests/{leaveRequestId}'].put").exists())
-				.andExpect(jsonPath("$.paths['/api/admin/leave-requests/{leaveRequestId}'].delete").exists());
+				.andExpect(jsonPath("$.paths['/api/admin/leave-requests/{leaveRequestId}'].delete").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/leave-requests/{leaveRequestId}/approve']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/leave-requests/{leaveRequestId}/reject']").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/leave-requests/{leaveRequestId}/approve'].post").exists())
+				.andExpect(jsonPath("$.paths['/api/admin/leave-requests/{leaveRequestId}/reject'].post").exists());
 	}
 
 	private String loginAndReadToken(String email, String password) throws Exception {
