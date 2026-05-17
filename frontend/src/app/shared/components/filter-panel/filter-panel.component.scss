@@ -1,0 +1,111 @@
+:host {
+  display: block;
+}
+
+.filter-panel {
+  background: var(--color-muted, #f8f9fa);
+  border-bottom: 1px solid var(--color-border, #e9ecef);
+}
+
+.filter-panel-toggle-row {
+  padding: 1rem 1.25rem;
+}
+
+.filter-panel-toggle {
+  align-items: center;
+  appearance: none;
+  background: var(--color-background, #ffffff);
+  border: 1px solid var(--color-border, #dbe1ea);
+  border-radius: 0.875rem;
+  color: var(--color-mono-900, #1a1d21);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  min-height: 2.875rem;
+  padding: 0.75rem 1rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+  width: 100%;
+}
+
+.filter-panel-toggle:hover:not(:disabled) {
+  border-color: rgb(32 48 112 / 24%);
+}
+
+.filter-panel-toggle:focus-visible {
+  border-color: var(--color-primary, #203070);
+  box-shadow: 0 0 0 3px rgb(32 48 112 / 14%);
+  outline: none;
+}
+
+.filter-panel-toggle:disabled {
+  background: #f8fafc;
+  color: var(--color-text-muted, #94a3b8);
+  cursor: not-allowed;
+}
+
+.filter-panel-toggle-content,
+.filter-panel-toggle-label,
+.filter-panel-toggle-meta {
+  align-items: center;
+  display: inline-flex;
+}
+
+.filter-panel-toggle-content {
+  gap: 0.75rem;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.filter-panel-toggle-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  gap: 0.625rem;
+}
+
+.filter-panel-toggle-label i {
+  color: var(--color-primary, #203070);
+  font-size: 1rem;
+}
+
+.filter-panel-toggle:disabled .filter-panel-toggle-label i {
+  color: inherit;
+}
+
+.filter-panel-toggle-meta {
+  gap: 0.625rem;
+}
+
+.filter-panel-active-count {
+  align-items: center;
+  background: rgb(32 48 112 / 8%);
+  border: 1px solid rgb(32 48 112 / 16%);
+  border-radius: 999px;
+  color: var(--color-primary, #203070);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 700;
+  justify-content: center;
+  min-width: 1.625rem;
+  padding: 0.1875rem 0.5rem;
+}
+
+.filter-panel-chevron {
+  color: var(--color-text-muted, #64748b);
+  display: inline-flex;
+  font-size: 0.8125rem;
+}
+
+.filter-panel-content {
+  padding: 0 1.25rem 1rem;
+}
+
+@media (max-width: 960px) {
+  .filter-panel-toggle-row,
+  .filter-panel-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

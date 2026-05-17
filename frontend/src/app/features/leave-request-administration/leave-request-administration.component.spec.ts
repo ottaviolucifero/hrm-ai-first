@@ -25,6 +25,33 @@ describe('LeaveRequestAdministrationComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Richieste permessi');
     expect(fixture.nativeElement.textContent).toContain('Mario Rossi');
     expect(fixture.nativeElement.textContent).toContain('Nuova richiesta');
+    expect(fixture.nativeElement.textContent).toContain('Filtri');
+  });
+
+  it('shows the active filters count in the shared filter panel and keeps reset behavior', async () => {
+    window.localStorage.setItem('hrflow.language', 'it');
+
+    const fixture = await createFixture(createService());
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      updateStatusFilter: (value: string) => void;
+      updatePeriodFrom: (value: string) => void;
+      resetFilters: () => void;
+    };
+
+    component.updateStatusFilter('DRAFT');
+    component.updatePeriodFrom('2026-05-10');
+    fixture.detectChanges();
+
+    const badge = fixture.nativeElement.querySelector('.filter-panel-active-count') as HTMLSpanElement | null;
+    expect(badge?.textContent?.trim()).toBe('2');
+    expect(fixture.nativeElement.textContent).toContain('Reset filtri');
+
+    component.resetFilters();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.filter-panel-active-count')).toBeNull();
   });
 
   it('delegates the request type lookup to the shared service using the current tenant context', async () => {

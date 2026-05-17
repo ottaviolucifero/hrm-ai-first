@@ -48,65 +48,67 @@
         </label>
       </div>
 
-      <div class="leave-request-filters-panel">
-        <div class="leave-request-filters">
-          <div class="leave-request-filter-item">
-            <app-lookup-select
-              [label]="i18n.t('leaveRequestAdministration.filters.status')"
-              [placeholder]="i18n.t('leaveRequestAdministration.filters.placeholders.status')"
-              [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
-              [options]="statusOptions()"
-              [clearable]="true"
-              [disabled]="loading()"
-              [ngModel]="statusFilter()"
-              (ngModelChange)="updateStatusFilter($event)" />
+      <app-filter-panel [activeFilterCount]="activeFilterCount()" [disabled]="loading()">
+        <div class="leave-request-filters-panel">
+          <div class="leave-request-filters">
+            <div class="leave-request-filter-item">
+              <app-lookup-select
+                [label]="i18n.t('leaveRequestAdministration.filters.status')"
+                [placeholder]="i18n.t('leaveRequestAdministration.filters.placeholders.status')"
+                [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
+                [options]="statusOptions()"
+                [clearable]="true"
+                [disabled]="loading()"
+                [ngModel]="statusFilter()"
+                (ngModelChange)="updateStatusFilter($event)" />
+            </div>
+
+            <div class="leave-request-filter-item">
+              <app-lookup-select
+                [label]="i18n.t('leaveRequestAdministration.filters.type')"
+                [placeholder]="i18n.t('leaveRequestAdministration.filters.placeholders.type')"
+                [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
+                [loadPage]="leaveRequestTypeLookup"
+                [initialOption]="typeFilterOption()"
+                [clearable]="true"
+                [disabled]="loading()"
+                [ngModel]="typeFilter()"
+                (ngModelChange)="updateTypeFilter($event)"
+                (optionChange)="rememberTypeFilterOption($event)" />
+            </div>
+
+            <div class="leave-request-filter-item">
+              <app-date-time-field
+                mode="date"
+                [label]="i18n.t('leaveRequestAdministration.filters.periodFrom')"
+                [disabled]="loading()"
+                [ngModel]="periodFrom()"
+                (ngModelChange)="updatePeriodFrom($event)" />
+            </div>
+
+            <div class="leave-request-filter-item">
+              <app-date-time-field
+                mode="date"
+                [label]="i18n.t('leaveRequestAdministration.filters.periodTo')"
+                [disabled]="loading()"
+                [ngModel]="periodTo()"
+                (ngModelChange)="updatePeriodTo($event)" />
+            </div>
           </div>
 
-          <div class="leave-request-filter-item">
-            <app-lookup-select
-              [label]="i18n.t('leaveRequestAdministration.filters.type')"
-              [placeholder]="i18n.t('leaveRequestAdministration.filters.placeholders.type')"
-              [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
-              [loadPage]="leaveRequestTypeLookup"
-              [initialOption]="typeFilterOption()"
-              [clearable]="true"
-              [disabled]="loading()"
-              [ngModel]="typeFilter()"
-              (ngModelChange)="updateTypeFilter($event)"
-              (optionChange)="rememberTypeFilterOption($event)" />
-          </div>
-
-          <div class="leave-request-filter-item">
-            <app-date-time-field
-              mode="date"
-              [label]="i18n.t('leaveRequestAdministration.filters.periodFrom')"
-              [disabled]="loading()"
-              [ngModel]="periodFrom()"
-              (ngModelChange)="updatePeriodFrom($event)" />
-          </div>
-
-          <div class="leave-request-filter-item">
-            <app-date-time-field
-              mode="date"
-              [label]="i18n.t('leaveRequestAdministration.filters.periodTo')"
-              [disabled]="loading()"
-              [ngModel]="periodTo()"
-              (ngModelChange)="updatePeriodTo($event)" />
-          </div>
+          @if (hasActiveFilters()) {
+            <div class="leave-request-filters-actions">
+              <app-button
+                variant="outline"
+                size="sm"
+                icon="ki-filled ki-cross"
+                [label]="i18n.t('leaveRequestAdministration.filters.reset')"
+                [disabled]="loading()"
+                (pressed)="resetFilters()" />
+            </div>
+          }
         </div>
-
-        @if (hasActiveFilters()) {
-          <div class="leave-request-filters-actions">
-            <app-button
-              variant="outline"
-              size="sm"
-              icon="ki-filled ki-cross"
-              [label]="i18n.t('leaveRequestAdministration.filters.reset')"
-              [disabled]="loading()"
-              (pressed)="resetFilters()" />
-          </div>
-        }
-      </div>
+      </app-filter-panel>
 
       <app-data-table
         [columns]="columns()"

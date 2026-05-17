@@ -164,8 +164,9 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - `TASK-068.2` completato lato frontend: lista amministrativa LeaveRequest read-only su Core HR con route `/admin/leave-requests`, filtri/paginazione client-side foundation, visibility `LEAVE_REQUEST`, i18n `it` / `fr` / `en` e nessuna action column finche non esiste una route dettaglio reale.
 - `TASK-068.3` completato lato backend: API amministrative LeaveRequest sotto `/api/admin/leave-requests` con detail/create/update/cancel, DTO espliciti, validazioni tenant-aware su employee e `LeaveRequestType`, policy conservativa `DELETE => CANCELLED` e test backend Maven verdi.
 - `TASK-068.4` completato lato frontend: CRUD amministrativo LeaveRequest con route create/edit, form reactive tenant-aware, lookup reale `LeaveRequestType` condiviso con il filtro lista, azione `Annulla richiesta` via `DELETE` logico, i18n `it` / `fr` / `en` e test/build frontend verdi.
+- `TASK-068.5` completato lato frontend/shared UI: nuovo `app-filter-panel` con toggle `Filtri`, badge conteggio filtri attivi, ARIA corretta, content projection e prima adozione sulla lista LeaveRequest senza cambiare logica dominio o API.
 - Prossimi passi operativi: `TASK-067.4` Git worktree workflow foundation come follow-up documentale e `TASK-067.8` QA Holiday Calendar come prossimo step di validazione dedicata.
-- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068.5` shared advanced filters, `TASK-068.6` detail LeaveRequest, `TASK-068.10` request timestamp exposure, `TASK-068.11` QA hardening, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068.6` detail LeaveRequest, `TASK-068.10` request timestamp exposure, `TASK-068.11` QA hardening, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -477,6 +478,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.85 | 2026-05-17 | `TASK-068.5` completato lato frontend/shared UI con nuovo componente riusabile `app-filter-panel`, badge conteggio filtri attivi, ARIA per toggle/region, content projection persistente e prima adozione sulla lista amministrativa LeaveRequest; build e test frontend reali verdi. |
 | 2.84 | 2026-05-17 | Backlog `TASK-068` riallineato in roadmap con inserimento di `TASK-068.10 - LeaveRequest request timestamp exposure` prima del QA finale e rinumerazione del QA hardening a `TASK-068.11`; nessuna modifica applicativa. |
 | 2.83 | 2026-05-17 | `TASK-068.4` completato lato frontend con CRUD amministrativo LeaveRequest su route create/edit, DTO create/update differenziati, lookup reale `LeaveRequestType` condiviso con il filtro lista, azione `Annulla richiesta` su `DELETE` logico backend, i18n `it` / `fr` / `en` e test/build frontend verdi. |
 | 2.82 | 2026-05-17 | `TASK-068.3` completato lato backend con API amministrative LeaveRequest `GET/POST/PUT/DELETE` su `/api/admin/leave-requests`, validazioni tenant/employee/type/date/status, scelta durevole `DELETE => CANCELLED`, nessuna lista/form-options/workflow extra e test Maven verdi. |

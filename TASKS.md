@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.84
+Versione: 2.77
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -5694,8 +5694,7 @@ Subtask successivi raffinati:
 - `TASK-068.7`: workflow approve/reject UI, solo se API operative esistono o vengono introdotte da task backend separato; fuori scope nuove API backend e nuovi permessi granulari.
 - `TASK-068.8`: form self-service nuova richiesta, solo con API create/update/submit disponibili; mezza giornata/orari e saldo ferie restano fuori scope finche non modellati.
 - `TASK-068.9`: griglia mensile assenze, senza librerie esterne, preferendo componenti nostri; dipende da dati LeaveRequest filtrabili per periodo o accetta esplicitamente una foundation limitata.
-- `TASK-068.10`: esposizione request timestamp (`createdAt` e valutazione `updatedAt`) nei DTO/response LeaveRequest per supportare la colonna UI `Data richiesta` e futuri controlli di preavviso, con mapping/test backend e nessuna nuova API se basta estendere le response esistenti.
-- `TASK-068.11`: QA hardening su build/test frontend, browser manuale, i18n, permessi/stati, sidebar/routing e regressioni `DataTableComponent`.
+- `TASK-068.10`: QA hardening su build/test frontend, browser manuale, i18n, permessi/stati, sidebar/routing e regressioni `DataTableComponent`.
 
 Fuori scope:
 
@@ -5780,7 +5779,7 @@ Fuori scope:
 
 #### TASK-068.4 - UI LeaveRequest administration CRUD
 
-Stato: DONE
+Stato: TODO
 
 Tipo: Frontend
 
@@ -5821,7 +5820,7 @@ Fuori scope:
 
 #### TASK-068.5 - Shared advanced filters component
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend / Shared UI
 
@@ -5853,6 +5852,14 @@ Fuori scope:
 - nuove API backend;
 - logica filtri dominio-specifica;
 - refactoring globale delle pagine admin gia rilasciate.
+
+Output realizzato:
+
+- creato componente shared `app-filter-panel` sotto `frontend/src/app/shared/components/filter-panel/`;
+- gestione locale expanded/collapsed con `aria-expanded`, `aria-controls`, `role="region"` e content projection persistente;
+- badge/count dei filtri attivi demandato al parent tramite input `activeFilterCount`;
+- prima adozione completata su LeaveRequest administration senza cambiare logica filtri o API;
+- i18n `it` / `fr` / `en`, test Angular e build frontend eseguiti con esito positivo.
 
 #### TASK-068.6 - LeaveRequest detail page foundation
 
@@ -6020,46 +6027,7 @@ Fuori scope:
 - librerie calendario esterne, salvo decisione tecnica successiva;
 - gestione turni/pianificazione workforce.
 
-#### TASK-068.10 - LeaveRequest request timestamp exposure
-
-Stato: TODO
-
-Tipo: Backend / API
-
-Obiettivo:
-
-Esporre la data di creazione/aggiornamento delle richieste permesso per consentire alla UI admin di valorizzare correttamente la colonna `Data richiesta` e preparare controlli futuri sul preavviso minimo della richiesta.
-
-Scope:
-
-- esporre `createdAt` nel DTO lista/dettaglio LeaveRequest admin o nel DTO piu adatto alla lista amministrativa;
-- valutare anche esposizione di `updatedAt` se gia presente sull'entity e utile per audit minimo;
-- non usare `startDate` come `Data richiesta`;
-- aggiornare mapping service/DTO;
-- aggiornare test backend;
-- documentare che la `Data richiesta` serve per controlli futuri di preavviso;
-- nessuna UI operativa complessa in questo task, salvo eventuale adeguamento minimo della colonna se gia disponibile nel task frontend successivo.
-
-Vincoli:
-
-- non introdurre workflow approve/reject;
-- non introdurre controlli di preavviso in questo task;
-- non modificare il modello RBAC;
-- non introdurre nuove API se basta estendere DTO/response esistenti;
-- mantenere compatibilita con i pattern DTO/service esistenti.
-
-Motivazione:
-
-La colonna `Data richiesta` e funzionalmente importante per verificare in futuro il preavviso tra data creazione richiesta e data inizio assenza. Oggi il DTO usato dalla lista non espone `createdAt`, quindi la UI non deve valorizzare la colonna usando `startDate`.
-
-Fuori scope:
-
-- nuove API backend non necessarie;
-- UI amministrativa complessa;
-- logiche di preavviso operative;
-- modifiche RBAC o workflow.
-
-#### TASK-068.11 - LeaveRequest QA hardening and documentation
+#### TASK-068.10 - LeaveRequest QA hardening and documentation
 
 Stato: TODO
 
@@ -6147,8 +6115,6 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 2.84 | 2026-05-17 | Backlog `TASK-068` riallineato con inserimento di `TASK-068.10 - LeaveRequest request timestamp exposure` prima del QA finale; `TASK-068.10 - QA hardening` rinumerato a `TASK-068.11` e riferimenti successivi aggiornati senza modifiche codice o decisioni architetturali. |
-| 2.83 | 2026-05-17 | `TASK-068.4` completato lato frontend con CRUD amministrativo LeaveRequest su route `/admin/leave-requests/new` e `/admin/leave-requests/:id/edit`, form create/edit con DTO differenziati create/update, lookup reale `LeaveRequestType` condiviso con il filtro lista, azione `Annulla richiesta` via `DELETE` logico, i18n `it` / `fr` / `en` e test/build frontend verdi. |
 | 2.82 | 2026-05-17 | `TASK-068.3` completato lato backend con nuove API amministrative `GET/POST/PUT/DELETE` sotto `/api/admin/leave-requests`, DTO espliciti, validazioni tenant/employee/type/date/status, `DELETE` riallineato a cancel logico via `LeaveRequestStatus.CANCELLED`, RBAC `TENANT|PLATFORM.LEAVE_REQUEST.*`, decisione durevole documentata in `DEC-047` e test Maven reali verdi. |
 | 2.81 | 2026-05-17 | Backlog `TASK-068` riallineato dopo la validazione della lista LeaveRequest: `TASK-068.4` ora richiede il lookup reale `LeaveRequestType` via `/api/master-data/hr-business/leave-request-types` per form admin e futuro filtro lista, inserito `TASK-068.5 - Shared advanced filters component` e rinumerati dettaglio/workflow/self-service/calendario/QA a `TASK-068.6`..`TASK-068.10`; nessuna modifica codice o decisione architetturale. |
 | 2.78 | 2026-05-17 | `TASK-068.2` completato lato frontend con lista amministrativa LeaveRequest read-only su `/api/core-hr/leave-requests`, filtri e paginazione client-side foundation, route `/admin/leave-requests`, visibility `LEAVE_REQUEST`, i18n `it` / `fr` / `en`, nessuna action column in assenza di route dettaglio reale e test/build frontend verdi. |
