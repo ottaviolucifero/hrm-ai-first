@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.86
+Versione: 2.87
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -166,8 +166,10 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - `TASK-068.4` completato lato frontend: CRUD amministrativo LeaveRequest con route create/edit, form reactive tenant-aware, lookup reale `LeaveRequestType` condiviso con il filtro lista, azione `Annulla richiesta` via `DELETE` logico, i18n `it` / `fr` / `en` e test/build frontend verdi.
 - `TASK-068.5` completato lato frontend/shared UI: nuovo `app-filter-panel` con toggle `Filtri`, badge conteggio filtri attivi, ARIA corretta, content projection e prima adozione sulla lista LeaveRequest senza cambiare logica dominio o API.
 - `TASK-068.6` completato lato frontend: pagina dettaglio LeaveRequest dedicata con route `/admin/leave-requests/:id`, `DetailActionBar` con `Back` sempre disponibile ed `Edit` solo per stati mutabili con permesso update, notice read-only per `CANCELLED`, nessuna azione `approve/reject/cancel`, i18n `it` / `fr` / `en` e test/build frontend verdi.
+- `TASK-068.7` bloccato dopo verifica repository del 2026-05-17: il backend non espone endpoint reali `approve/reject` per LeaveRequest admin; sono presenti solo detail/create/update/cancel e `DELETE` continua a mappare `CANCELLED`.
 - Prossimi passi operativi: `TASK-067.4` Git worktree workflow foundation come follow-up documentale e `TASK-067.8` QA Holiday Calendar come prossimo step di validazione dedicata.
-- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068.10` request timestamp exposure, `TASK-068.11` QA hardening, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- Dipendenza proposta per sblocco: task backend separato `TASK-068.x - Backend LeaveRequest approve/reject workflow endpoints`, con endpoint dedicati approve/reject, baseline autorizzativa `UPDATE`/`MANAGE` e nota di rifiuto solo se supportata esplicitamente lato backend.
+- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068.x` backend LeaveRequest approve/reject workflow endpoints, `TASK-068.10` request timestamp exposure, `TASK-068.11` QA hardening, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -479,6 +481,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.87 | 2026-05-17 | `TASK-068.7` marcato bloccato in roadmap dopo verifica repository: assenti endpoint backend reali `approve/reject` per LeaveRequest admin, confermato che `DELETE` resta solo cancel logico `CANCELLED`; aggiunta dipendenza documentale verso futuro task backend separato `TASK-068.x`, senza modifiche applicative. |
 | 2.86 | 2026-05-17 | `TASK-068.6` completato lato frontend in roadmap: nuova pagina dettaglio LeaveRequest su route dedicata, `DetailActionBar` coerente con `DEC-044`, stato `CANCELLED` sempre consultabile con notice read-only, nessuna azione workflow fuori scope e validazione reale `npm.cmd run build` + `npm.cmd test` verde. |
 | 2.85 | 2026-05-17 | `TASK-068.5` completato lato frontend/shared UI con nuovo componente riusabile `app-filter-panel`, badge conteggio filtri attivi, ARIA per toggle/region, content projection persistente e prima adozione sulla lista amministrativa LeaveRequest; build e test frontend reali verdi. |
 | 2.84 | 2026-05-17 | Backlog `TASK-068` riallineato in roadmap con inserimento di `TASK-068.10 - LeaveRequest request timestamp exposure` prima del QA finale e rinumerazione del QA hardening a `TASK-068.11`; nessuna modifica applicativa. |
