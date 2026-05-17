@@ -34,6 +34,24 @@ export interface HolidayCalendarAdministrationCalendarListItem extends DataTable
 
 export interface HolidayCalendarAdministrationCalendarDetail extends HolidayCalendarAdministrationCalendarListItem {}
 
+export interface HolidayCalendarAdministrationCalendarCreateRequest {
+  readonly countryId: string;
+  readonly year: number;
+  readonly name: string;
+  readonly scope: HolidayCalendarScope;
+  readonly tenantId: string | null;
+  readonly companyProfileId: string | null;
+}
+
+export interface HolidayCalendarAdministrationCalendarUpdateRequest {
+  readonly countryId: string;
+  readonly year: number;
+  readonly name: string;
+  readonly scope: HolidayCalendarScope;
+  readonly tenantId: string | null;
+  readonly companyProfileId: string | null;
+}
+
 export interface HolidayCalendarAdministrationHolidayListItem extends DataTableRow {
   readonly id: string;
   readonly name: string;
@@ -44,6 +62,28 @@ export interface HolidayCalendarAdministrationHolidayListItem extends DataTableR
   readonly description: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+}
+
+export interface HolidayCalendarAdministrationHolidayDetail extends HolidayCalendarAdministrationHolidayListItem {
+  readonly holidayCalendarId: string;
+}
+
+export interface HolidayCalendarAdministrationHolidayCreateRequest {
+  readonly name: string;
+  readonly startDate: string;
+  readonly endDate: string;
+  readonly type: HolidayType;
+  readonly generationRule: HolidayGenerationRule;
+  readonly description: string | null;
+}
+
+export interface HolidayCalendarAdministrationHolidayUpdateRequest {
+  readonly name: string;
+  readonly startDate: string;
+  readonly endDate: string;
+  readonly type: HolidayType;
+  readonly generationRule: HolidayGenerationRule;
+  readonly description: string | null;
 }
 
 export interface HolidayCalendarAdministrationQuery {

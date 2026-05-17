@@ -8,9 +8,11 @@ import { AuthService } from '../../core/auth/auth.service';
 import { resolveApiErrorMessage } from '../../core/i18n/api-error-message.util';
 import { I18nKey } from '../../core/i18n/i18n.messages';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ConfirmDialogConfig } from '../../shared/components/confirm-dialog/confirm-dialog.models';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { DataTableAction, DataTableRow, DataTableRowActionEvent } from '../../shared/components/data-table/data-table.models';
 import {
   DETAIL_ACTION_BAR_STANDARD_ACTION_IDS,
   DetailActionBarAction,
@@ -21,9 +23,14 @@ import {
   DEFAULT_HOLIDAY_PAGE_SIZE,
   HolidayCalendarAdministrationCalendarDetail,
   HolidayCalendarAdministrationColumn,
+  HolidayCalendarAdministrationHolidayCreateRequest,
   HolidayCalendarAdministrationHolidayListItem,
   HolidayCalendarAdministrationPage
 } from './holiday-calendar-administration.models';
+import {
+  HolidayCalendarHolidayFormDialogComponent,
+  HolidayCalendarHolidayFormDialogConfig
+} from './holiday-calendar-holiday-form-dialog.component';
 import { HolidayCalendarAdministrationService } from './holiday-calendar-administration.service';
 
 interface ReadOnlyField {
@@ -31,7 +38,7 @@ interface ReadOnlyField {
   readonly value: string;
 }
 
-type PendingAction = 'activate' | 'deactivate';
+type PendingAction = 'activate' | 'deactivate' | 'delete';
 
 interface PendingHolidayCalendarConfirmation {
   readonly action: PendingAction;
@@ -40,7 +47,13 @@ interface PendingHolidayCalendarConfirmation {
 
 @Component({
   selector: 'app-holiday-calendar-administration-detail',
-  imports: [ConfirmDialogComponent, DataTableComponent, DetailActionBarComponent],
+  imports: [
+    AppButtonComponent,
+    ConfirmDialogComponent,
+    DataTableComponent,
+    DetailActionBarComponent,
+    HolidayCalendarHolidayFormDialogComponent
+  ],
   templateUrl: './holiday-calendar-administration-detail.component.html',
   styleUrl: './holiday-calendar-administration-detail.component.scss'
 })
@@ -56,6 +69,7 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
   private detailSubscription?: Subscription;
   private holidaysSubscription?: Subscription;
   private mutationSubscription?: Subscription;
+  private holidayMutationSubscription?: Subscription;
 
   protected readonly loading = signal(false);
   protected readonly actionSaving = signal(false);
@@ -66,6 +80,8 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
   protected readonly calendar = signal<HolidayCalendarAdministrationCalendarDetail | null>(null);
   protected readonly holidays = signal<readonly HolidayCalendarAdministrationHolidayListItem[]>([]);
   protected readonly pendingConfirmation = signal<PendingHolidayCalendarConfirmation | null>(null);
+  protected readonly holidayDialog = signal<HolidayCalendarHolidayFormDialogConfig | null>(null);
+  protected readonly holidayDialogSaving = signal(false);
   protected readonly holidaysPageIndex = signal(0);
   protected readonly holidaysPageSize = signal(DEFAULT_HOLIDAY_PAGE_SIZE);
   protected readonly holidaysPageSizeOptions = [5, 10, 20] as const;
@@ -88,6 +104,30 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
     },
     { key: 'description', labelKey: 'masterData.columns.description', minWidth: '14rem' },
     { key: 'updatedAt', labelKey: 'masterData.columns.updatedAt', type: 'datetime', minWidth: '10rem' }
+  ]);
+  protected readonly holidayRowActions = computed<readonly DataTableAction[]>(() => [
+    {
+      id: 'edit',
+      labelKey: 'holidayCalendar.actions.edit',
+      visible: () => this.modulePermissions().canUpdate,
+      disabled: () => this.holidayDialogSaving()
+    },
+    {
+      id: 'delete',
+      labelKey: 'holidayCalendar.actions.delete',
+      tone: 'danger' as const,
+      visible: () => this.modulePermissions().canDelete,
+      disabled: () => this.holidayDialogSaving(),
+      confirmation: {
+        titleKey: 'holidayCalendar.holidays.delete.confirmTitle',
+        messageKey: 'holidayCalendar.holidays.delete.confirmMessage',
+        confirmLabelKey: 'holidayCalendar.holidays.delete.confirmAction',
+        cancelLabelKey: 'masterData.form.cancel',
+        severity: 'danger' as const,
+        targetLabelKey: 'confirmDialog.target.selectedEntity',
+        targetValue: (row: DataTableRow) => String(row['name'] ?? '')
+      }
+    }
   ]);
 
   protected readonly pagedHolidays = computed(() => {
@@ -121,6 +161,7 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
     this.detailSubscription?.unsubscribe();
     this.holidaysSubscription?.unsubscribe();
     this.mutationSubscription?.unsubscribe();
+    this.holidayMutationSubscription?.unsubscribe();
   }
 
   protected detailTitle(): string {
@@ -167,20 +208,48 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
   }
 
   protected detailPrimaryAction(): DetailActionBarAction | null {
-    return null;
+    const detail = this.calendar();
+    if (this.hasError() || !detail || !this.modulePermissions().canUpdate) {
+      return null;
+    }
+
+    return {
+      id: DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.edit,
+      label: this.i18n.t('holidayCalendar.actions.edit'),
+      disabled: this.actionSaving(),
+      icon: 'ki-filled ki-pencil'
+    };
   }
 
   protected detailDestructiveActions(): readonly DetailActionBarAction[] {
-    return [];
+    const detail = this.calendar();
+    if (this.hasError() || !detail || !this.modulePermissions().canDelete) {
+      return [];
+    }
+
+    return [{
+      id: DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deletePhysical,
+      label: this.i18n.t('holidayCalendar.actions.delete'),
+      loadingLabel: this.i18n.t('holidayCalendar.delete.processing'),
+      loading: this.actionSaving(),
+      disabled: this.actionSaving(),
+      icon: 'ki-filled ki-trash'
+    }];
   }
 
   protected handleDetailAction(actionId: string): void {
     switch (actionId) {
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.edit:
+        this.editCalendar();
+        return;
       case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.activate:
         this.triggerAction('activate');
         return;
       case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deactivate:
         this.triggerAction('deactivate');
+        return;
+      case DETAIL_ACTION_BAR_STANDARD_ACTION_IDS.deletePhysical:
+        this.triggerAction('delete');
         return;
       case 'retry':
         this.retry();
@@ -203,6 +272,11 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
     }
 
     this.pendingConfirmation.set(null);
+    if (pending.action === 'delete') {
+      this.deleteCalendar();
+      return;
+    }
+
     this.toggleCalendar(pending.action === 'activate');
   }
 
@@ -242,6 +316,88 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
 
   protected holidaysEmpty(): boolean {
     return !this.holidaysLoading() && !this.holidaysError() && this.holidays().length === 0;
+  }
+
+  protected createHoliday(): void {
+    const detail = this.calendar();
+    if (!detail || !this.modulePermissions().canUpdate || this.holidayDialogSaving()) {
+      return;
+    }
+
+    this.holidayDialog.set({
+      mode: 'create',
+      calendarName: detail.name,
+      calendarYear: detail.year
+    });
+  }
+
+  protected handleHolidayRowAction(event: DataTableRowActionEvent): void {
+    const holiday = event.row as HolidayCalendarAdministrationHolidayListItem;
+    const detail = this.calendar();
+    if (!detail) {
+      return;
+    }
+
+    if (event.action.id === 'edit' && this.modulePermissions().canUpdate) {
+      this.holidayDialog.set({
+        mode: 'edit',
+        calendarName: detail.name,
+        calendarYear: detail.year,
+        holiday
+      });
+      return;
+    }
+
+    if (event.action.id === 'delete' && this.modulePermissions().canDelete) {
+      this.deleteHoliday(holiday);
+    }
+  }
+
+  protected cancelHolidayDialog(): void {
+    if (!this.holidayDialogSaving()) {
+      this.holidayDialog.set(null);
+    }
+  }
+
+  protected submitHolidayDialog(payload: HolidayCalendarAdministrationHolidayCreateRequest): void {
+    const detail = this.calendar();
+    const dialog = this.holidayDialog();
+    if (!detail || !dialog) {
+      return;
+    }
+
+    this.holidayDialogSaving.set(true);
+    this.holidayMutationSubscription?.unsubscribe();
+
+    const request$ = dialog.mode === 'create' || !dialog.holiday
+      ? this.holidayCalendarAdministrationService.createHoliday(detail.id, payload)
+      : this.holidayCalendarAdministrationService.updateHoliday(detail.id, dialog.holiday.id, payload);
+
+    this.holidayMutationSubscription = request$
+      .pipe(finalize(() => this.holidayDialogSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.holidayDialog.set(null);
+          this.notificationService.success(this.i18n.t(dialog.mode === 'create'
+            ? 'holidayCalendar.holidays.feedback.createSuccess'
+            : 'holidayCalendar.holidays.feedback.updateSuccess'), {
+            titleKey: 'alert.title.success'
+          });
+          this.loadHolidays(detail.id);
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveApiMessage(error, dialog.mode === 'create'
+            ? 'holidayCalendar.holidays.errors.create'
+            : 'holidayCalendar.holidays.errors.update', {
+            400: 'holidayCalendar.holidays.errors.invalidForm',
+            404: 'holidayCalendar.holidays.errors.notFound',
+            409: 'holidayCalendar.holidays.errors.overlap'
+          }), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
   }
 
   protected goToPreviousHolidayPage(): void {
@@ -333,9 +489,28 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
       });
   }
 
+  private editCalendar(): void {
+    const detail = this.calendar();
+    if (!detail || !this.modulePermissions().canUpdate) {
+      return;
+    }
+
+    void this.router.navigate(['/admin/holiday-calendars', detail.id, 'edit']);
+  }
+
   private triggerAction(action: PendingAction): void {
     const calendar = this.calendar();
     if (!calendar || this.actionSaving() || !this.modulePermissions().canUpdate) {
+      if (action !== 'delete') {
+        return;
+      }
+    }
+
+    if (!calendar || this.actionSaving()) {
+      return;
+    }
+
+    if (action === 'delete' && !this.modulePermissions().canDelete) {
       return;
     }
 
@@ -376,6 +551,63 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
       });
   }
 
+  private deleteCalendar(): void {
+    const detail = this.calendar();
+    if (!detail) {
+      return;
+    }
+
+    this.actionSaving.set(true);
+    this.mutationSubscription?.unsubscribe();
+    this.mutationSubscription = this.holidayCalendarAdministrationService.deleteHolidayCalendar(detail.id)
+      .pipe(finalize(() => this.actionSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.notificationService.success(this.i18n.t('holidayCalendar.feedback.deleteSuccess'), {
+            titleKey: 'alert.title.success'
+          });
+          void this.router.navigate(['/admin/holiday-calendars']);
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveApiMessage(error, 'holidayCalendar.errors.delete', {
+            404: 'holidayCalendar.errors.notFound',
+            409: 'holidayCalendar.errors.deleteConflict'
+          }), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
+  private deleteHoliday(holiday: HolidayCalendarAdministrationHolidayListItem): void {
+    const detail = this.calendar();
+    if (!detail) {
+      return;
+    }
+
+    this.holidayDialogSaving.set(true);
+    this.holidayMutationSubscription?.unsubscribe();
+    this.holidayMutationSubscription = this.holidayCalendarAdministrationService.deleteHoliday(detail.id, holiday.id)
+      .pipe(finalize(() => this.holidayDialogSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.notificationService.success(this.i18n.t('holidayCalendar.holidays.feedback.deleteSuccess'), {
+            titleKey: 'alert.title.success'
+          });
+          this.loadHolidays(detail.id);
+        },
+        error: (error) => {
+          this.notificationService.error(this.resolveApiMessage(error, 'holidayCalendar.holidays.errors.delete', {
+            404: 'holidayCalendar.holidays.errors.notFound'
+          }), {
+            titleKey: 'alert.title.danger',
+            dismissible: true
+          });
+        }
+      });
+  }
+
   private confirmationConfigForAction(action: PendingAction): PendingHolidayCalendarConfirmation {
     const detail = this.calendar();
     const targetValue = detail ? `${detail.name} (${detail.year})` : null;
@@ -388,6 +620,21 @@ export class HolidayCalendarAdministrationDetailComponent implements OnDestroy {
           messageKey: 'holidayCalendar.activate.confirmMessage',
           confirmLabelKey: 'holidayCalendar.activate.confirmAction',
           severity: 'warning',
+          mode: 'confirm',
+          targetLabelKey: 'confirmDialog.target.selectedEntity',
+        targetValue
+        }
+      };
+    }
+
+    if (action === 'delete') {
+      return {
+        action,
+        config: {
+          titleKey: 'holidayCalendar.delete.confirmTitle',
+          messageKey: 'holidayCalendar.delete.confirmMessage',
+          confirmLabelKey: 'holidayCalendar.delete.confirmAction',
+          severity: 'danger',
           mode: 'confirm',
           targetLabelKey: 'confirmDialog.target.selectedEntity',
           targetValue

@@ -1,0 +1,155 @@
+<section class="kt-container-fixed py-4 holiday-calendar-form-page" aria-labelledby="holiday-calendar-form-title">
+  <div class="holiday-calendar-form-layout">
+    <header class="holiday-calendar-form-page-header">
+      <div class="holiday-calendar-form-heading">
+        <span class="holiday-calendar-form-eyebrow">{{ i18n.t('nav.holidayCalendar') }}</span>
+        <h1 id="holiday-calendar-form-title" class="text-xl font-semibold text-mono">{{ i18n.t(titleKey()) }}</h1>
+        <p class="holiday-calendar-form-subtitle">{{ i18n.t(subtitleKey()) }}</p>
+      </div>
+
+      <div class="holiday-calendar-form-page-actions" role="group" [attr.aria-label]="i18n.t('holidayCalendar.actions.toolbar')">
+        <app-button
+          variant="secondary"
+          size="sm"
+          icon="ki-filled ki-arrow-left"
+          [label]="i18n.t('holidayCalendar.actions.back')"
+          (pressed)="goBack()" />
+        @if (hasError()) {
+          <app-button
+            variant="secondary"
+            size="sm"
+            icon="ki-filled ki-arrows-circle"
+            [label]="i18n.t('rolePermissions.actions.retry')"
+            (pressed)="retry()" />
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <section class="kt-card holiday-calendar-form-state" role="status" aria-live="polite">
+        {{ i18n.t('holidayCalendar.form.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card holiday-calendar-form-state holiday-calendar-form-state-error" role="alert">
+        {{ i18n.t('holidayCalendar.form.errors.load') }}
+      </section>
+    } @else {
+      <form class="holiday-calendar-form-grid" [formGroup]="form" (ngSubmit)="submit()">
+        <section class="kt-card holiday-calendar-form-card" aria-labelledby="holiday-calendar-form-identity">
+          <h2 id="holiday-calendar-form-identity" class="holiday-calendar-form-card-title">
+            {{ i18n.t('holidayCalendar.form.sections.identity') }}
+          </h2>
+
+          <app-input
+            formControlName="name"
+            [label]="i18n.t('masterData.columns.name')"
+            [labelRequired]="true"
+            [required]="true"
+            [errorText]="validationMessage('name')" />
+
+          <app-lookup-select
+            formControlName="countryId"
+            [label]="i18n.t('masterData.columns.country')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('holidayCalendar.form.placeholders.country')"
+            [loadPage]="countryLookup"
+            [initialOption]="selectedCountryInitialOption()"
+            [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+            [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+            [errorText]="validationMessage('countryId')" />
+
+          <app-input
+            formControlName="year"
+            type="number"
+            [label]="i18n.t('holidayCalendar.fields.year')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('holidayCalendar.form.placeholders.year')"
+            [errorText]="validationMessage('year')" />
+        </section>
+
+        <section class="kt-card holiday-calendar-form-card" aria-labelledby="holiday-calendar-form-scope">
+          <h2 id="holiday-calendar-form-scope" class="holiday-calendar-form-card-title">
+            {{ i18n.t('holidayCalendar.form.sections.scope') }}
+          </h2>
+
+          <app-lookup-select
+            formControlName="scope"
+            [label]="i18n.t('holidayCalendar.fields.scope')"
+            [labelRequired]="true"
+            [required]="true"
+            [placeholder]="i18n.t('holidayCalendar.form.placeholders.scope')"
+            [options]="scopeOptions()"
+            [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+            [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+            [helpText]="scopeHelpText()"
+            [errorText]="validationMessage('scope')"
+            (valueChange)="selectScope($event)" />
+
+          @if (showsTenantField()) {
+            @if (canEditTenant()) {
+              <app-lookup-select
+                formControlName="tenantId"
+                [label]="i18n.t('masterData.columns.tenant')"
+                [labelRequired]="true"
+                [required]="true"
+                [placeholder]="i18n.t('holidayCalendar.form.placeholders.tenant')"
+                [options]="tenantOptions()"
+                [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+                [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+                [helpText]="tenantHelpText()"
+                [errorText]="validationMessage('tenantId')"
+                (valueChange)="selectTenant($event)" />
+            } @else {
+              <app-input
+                formControlName="tenantLabel"
+                [label]="i18n.t('masterData.columns.tenant')"
+                [helpText]="tenantHelpText()"
+                [errorText]="validationMessage('tenantId')" />
+            }
+          }
+
+          @if (showsCompanyProfileField()) {
+            <app-lookup-select
+              formControlName="companyProfileId"
+              [label]="i18n.t('holidayCalendar.fields.companyProfile')"
+              [labelRequired]="true"
+              [required]="true"
+              [placeholder]="i18n.t('holidayCalendar.form.placeholders.companyProfile')"
+              [options]="companyProfileOptions()"
+              [closedLabelBuilder]="referenceLookupClosedLabelBuilder"
+              [optionLabelBuilder]="referenceLookupOptionLabelBuilder"
+              [helpText]="companyProfileHelpText()"
+              [errorText]="validationMessage('companyProfileId')" />
+          }
+
+          <app-checkbox
+            [label]="i18n.t('masterData.columns.active')"
+            [checked]="activeValue()"
+            [disabled]="true"
+            [helpText]="i18n.t(mode() === 'create'
+              ? 'holidayCalendar.form.activeGenerated'
+              : 'holidayCalendar.form.activeManagedInDetail')" />
+        </section>
+
+        <div class="holiday-calendar-form-actions">
+          <app-button
+            variant="secondary"
+            type="button"
+            [label]="i18n.t('masterData.form.cancel')"
+            [disabled]="saving()"
+            (pressed)="goBack()" />
+          <app-button
+            type="submit"
+            variant="primary"
+            icon="ki-filled ki-check"
+            [label]="i18n.t(submitLabelKey())"
+            [loadingLabel]="i18n.t(submitLoadingLabelKey())"
+            [loading]="saving()"
+            [disabled]="submitDisabled()" />
+        </div>
+      </form>
+    }
+  </div>
+</section>

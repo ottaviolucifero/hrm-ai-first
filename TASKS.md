@@ -5451,7 +5451,7 @@ Fuori scope:
 
 #### TASK-067.6 - Frontend Holiday Calendar calendar management
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend
 
@@ -5472,6 +5472,8 @@ Obiettivo:
 - aggiungere i18n `it` / `fr` / `en`;
 - riusare componenti shared esistenti;
 - riusare pattern admin gia consolidati;
+- integrare gestione festivita nel dettaglio calendario con create/update/delete se supportato dalle API approvate da `TASK-067.2`;
+- coprire stati `loading`, `error`, `empty`, `saving` e conferma azioni distruttive;
 - non introdurre redesign globale.
 
 Componenti shared da considerare:
@@ -5489,7 +5491,6 @@ Vincoli:
 
 - usare solo API backend approvate da `TASK-067.2`;
 - non anticipare Leave Request;
-- non implementare gestione festivita in questo task;
 - non creare componenti paralleli se esiste un componente shared idoneo;
 - non modificare backend;
 - non introdurre nuove librerie UI;
@@ -5497,8 +5498,6 @@ Vincoli:
 
 Fuori scope:
 
-- creazione/modifica/eliminazione festivita;
-- form/modal festivita;
 - BusinessDayService UI;
 - Leave Request;
 - viste calendaristiche mensili/annuali;
@@ -5506,25 +5505,15 @@ Fuori scope:
 
 #### TASK-067.7 - Frontend Holiday Calendar holidays management
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend
 
-Obiettivo:
+Nota:
 
-- implementare form/modal festivita;
-- supportare `startDate` / `endDate`;
-- mostrare e gestire tipo `FIXED` / `MOBILE`;
-- permettere creazione/modifica/eliminazione festivita se supportato dalle API `TASK-067.2`;
-- gestire `active/inactive` festivita se previsto;
-- aggiungere i18n `it` / `fr` / `en`;
-- riusare pattern admin, modal e form esistenti.
-
-Vincoli:
-
-- usare solo API backend approvate da `TASK-067.2`;
-- non anticipare Leave Request;
-- non creare componenti paralleli se esiste un componente shared idoneo.
+- task assorbito e completato dentro `TASK-067.6`;
+- nessuna implementazione separata residua;
+- mantenere `TASK-067.8` come QA dedicata del perimetro Holiday Calendar completo.
 
 #### TASK-067.8 - QA Holiday Calendar
 
@@ -5608,6 +5597,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.74 | 2026-05-17 | `TASK-067.6` completato lato frontend con gestione operativa Holiday Calendar end-to-end: create/edit/delete calendario, attivazione/disattivazione dal dettaglio, CRUD festivita con validazioni, loading/error/empty/saving states, i18n `it` / `fr` / `en` e test frontend verdi; `TASK-067.7` assorbito e marcato `DONE` senza backlog duplicato. |
 | 2.73 | 2026-05-17 | Inserito `TASK-067.6 - Frontend Holiday Calendar calendar management` per il CRUD del calendario; rinumerati `TASK-067.6` holidays management a `TASK-067.7` e `TASK-067.7` QA Holiday Calendar a `TASK-067.8`, senza modifiche applicative. |
 | 2.72 | 2026-05-17 | `TASK-067.5` completato lato frontend con lista admin Holiday Calendar, dettaglio base read-only, azioni `activate` / `deactivate`, tabella festivita read-only, i18n `it` / `fr` / `en`, visibility UX su permessi e build/test frontend verdi senza introdurre form o CRUD festivita. |
 | 2.71 | 2026-05-17 | `TASK-067.5` ristretto alla UI foundation frontend di lista/dettaglio base Holiday Calendar; inserito `TASK-067.6` per la gestione frontend delle festivita e rinumerato il task QA Holiday Calendar da `TASK-067.6` a `TASK-067.7`. |

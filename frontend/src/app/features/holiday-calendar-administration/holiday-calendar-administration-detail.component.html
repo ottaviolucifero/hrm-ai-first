@@ -94,18 +94,29 @@
                 </p>
               </div>
             </div>
+            @if (modulePermissions().canUpdate) {
+              <app-button
+                variant="secondary"
+                size="sm"
+                icon="ki-filled ki-plus"
+                [label]="i18n.t('holidayCalendar.holidays.actions.new')"
+                [disabled]="holidayDialogSaving()"
+                (pressed)="createHoliday()" />
+            }
           </header>
           <div class="holiday-calendar-detail-card-body">
             <div class="holiday-calendar-holidays-table-shell">
               <app-data-table
                 [columns]="holidayColumns()"
                 [rows]="pagedHolidays()"
+                [rowActions]="holidayRowActions()"
                 [pageData]="holidaysPageData()"
                 [pageSizeOptions]="holidaysPageSizeOptions"
                 [loading]="holidaysLoading()"
                 [hasError]="holidaysError()"
                 [errorMessageKey]="'holidayCalendar.holidays.errors.load'"
                 [emptyMessageKey]="'holidayCalendar.holidays.empty'"
+                (rowAction)="handleHolidayRowAction($event)"
                 (previousPage)="goToPreviousHolidayPage()"
                 (nextPage)="goToNextHolidayPage()"
                 (pageChange)="goToHolidayPage($event)"
@@ -120,6 +131,14 @@
           [config]="confirmation.config"
           (confirmed)="confirmPendingAction()"
           (cancelled)="cancelPendingAction()" />
+      }
+
+      @if (holidayDialog(); as dialog) {
+        <app-holiday-calendar-holiday-form-dialog
+          [config]="dialog"
+          [submitting]="holidayDialogSaving()"
+          (cancel)="cancelHolidayDialog()"
+          (submitRequested)="submitHolidayDialog($event)" />
       }
     }
   </div>

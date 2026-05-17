@@ -52,11 +52,75 @@ describe('HolidayCalendarAdministrationService', () => {
     service.findHolidays('calendar-1').subscribe();
     service.activateHolidayCalendar('calendar-1').subscribe();
     service.deactivateHolidayCalendar('calendar-1').subscribe();
+    service.deleteHolidayCalendar('calendar-1').subscribe();
+    service.findHolidayById('calendar-1', 'holiday-1').subscribe();
+    service.createHolidayCalendar({
+      countryId: 'country-1',
+      year: 2026,
+      name: 'Italy 2026',
+      scope: 'GLOBAL',
+      tenantId: null,
+      companyProfileId: null
+    }).subscribe();
+    service.updateHolidayCalendar('calendar-1', {
+      countryId: 'country-1',
+      year: 2026,
+      name: 'Italy 2026',
+      scope: 'GLOBAL',
+      tenantId: null,
+      companyProfileId: null
+    }).subscribe();
+    service.createHoliday('calendar-1', {
+      name: 'Republic Day',
+      startDate: '2026-06-02',
+      endDate: '2026-06-02',
+      type: 'FIXED',
+      generationRule: 'FIXED_DATE',
+      description: null
+    }).subscribe();
+    service.updateHoliday('calendar-1', 'holiday-1', {
+      name: 'Republic Day',
+      startDate: '2026-06-02',
+      endDate: '2026-06-02',
+      type: 'FIXED',
+      generationRule: 'FIXED_DATE',
+      description: null
+    }).subscribe();
+    service.deleteHoliday('calendar-1', 'holiday-1').subscribe();
 
-    const detailRequest = httpTestingController.expectOne('/api/admin/holiday-calendars/calendar-1');
-    const holidaysRequest = httpTestingController.expectOne('/api/admin/holiday-calendars/calendar-1/holidays');
-    const activateRequest = httpTestingController.expectOne('/api/admin/holiday-calendars/calendar-1/activate');
-    const deactivateRequest = httpTestingController.expectOne('/api/admin/holiday-calendars/calendar-1/deactivate');
+    const detailRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1' && httpRequest.method === 'GET'
+    );
+    const holidaysRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1/holidays' && httpRequest.method === 'GET'
+    );
+    const activateRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1/activate' && httpRequest.method === 'PUT'
+    );
+    const deactivateRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1/deactivate' && httpRequest.method === 'PUT'
+    );
+    const deleteCalendarRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1' && httpRequest.method === 'DELETE'
+    );
+    const holidayDetailRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1/holidays/holiday-1' && httpRequest.method === 'GET'
+    );
+    const createCalendarRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars' && httpRequest.method === 'POST'
+    );
+    const updateCalendarRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1' && httpRequest.method === 'PUT'
+    );
+    const createHolidayRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1/holidays' && httpRequest.method === 'POST'
+    );
+    const updateHolidayRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1/holidays/holiday-1' && httpRequest.method === 'PUT'
+    );
+    const deleteHolidayRequest = httpTestingController.expectOne((httpRequest) =>
+      httpRequest.url === '/api/admin/holiday-calendars/calendar-1/holidays/holiday-1' && httpRequest.method === 'DELETE'
+    );
 
     expect(detailRequest.request.method).toBe('GET');
     expect(holidaysRequest.request.method).toBe('GET');
@@ -64,10 +128,24 @@ describe('HolidayCalendarAdministrationService', () => {
     expect(activateRequest.request.body).toEqual({});
     expect(deactivateRequest.request.method).toBe('PUT');
     expect(deactivateRequest.request.body).toEqual({});
+    expect(deleteCalendarRequest.request.method).toBe('DELETE');
+    expect(holidayDetailRequest.request.method).toBe('GET');
+    expect(createCalendarRequest.request.method).toBe('POST');
+    expect(updateCalendarRequest.request.method).toBe('PUT');
+    expect(createHolidayRequest.request.method).toBe('POST');
+    expect(updateHolidayRequest.request.method).toBe('PUT');
+    expect(deleteHolidayRequest.request.method).toBe('DELETE');
 
     detailRequest.flush({ id: 'calendar-1' });
     holidaysRequest.flush([]);
     activateRequest.flush({ id: 'calendar-1' });
     deactivateRequest.flush({ id: 'calendar-1' });
+    deleteCalendarRequest.flush(null);
+    holidayDetailRequest.flush({ id: 'holiday-1' });
+    createCalendarRequest.flush({ id: 'calendar-1' });
+    updateCalendarRequest.flush({ id: 'calendar-1' });
+    createHolidayRequest.flush({ id: 'holiday-1' });
+    updateHolidayRequest.flush({ id: 'holiday-1' });
+    deleteHolidayRequest.flush(null);
   });
 });

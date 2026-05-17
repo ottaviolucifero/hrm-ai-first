@@ -1,0 +1,88 @@
+.holiday-calendar-form-page {
+  display: block;
+}
+
+.holiday-calendar-form-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.holiday-calendar-form-page-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.holiday-calendar-form-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.holiday-calendar-form-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.holiday-calendar-form-subtitle,
+.holiday-calendar-form-state {
+  color: var(--color-text-muted, #64748b);
+}
+
+.holiday-calendar-form-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.holiday-calendar-form-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.holiday-calendar-form-card-title {
+  color: var(--color-text-default, #0f172a);
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.holiday-calendar-form-state {
+  border: 1px solid #dbe4f0;
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+.holiday-calendar-form-state-error {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.holiday-calendar-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
+@media (max-width: 960px) {
+  .holiday-calendar-form-page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .holiday-calendar-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .holiday-calendar-form-actions {
+    flex-direction: column-reverse;
+  }
+}

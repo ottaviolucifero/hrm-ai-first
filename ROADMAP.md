@@ -160,8 +160,9 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-067.2 completato: backend Holiday Calendar operational foundation con CRUD admin, entity `Holiday`, migration Flyway `V38`, RBAC `HOLIDAY_CALENDAR`, anti-overlap validate e successivo riallineamento dello scope nel task seguente.
 - TASK-067.3 completato: backend BusinessDayService foundation riallineato a Holiday Calendar scoped `GLOBAL` / `TENANT` / `COMPANY_PROFILE`, con migration Flyway `V40` / `V41`, fallback `COMPANY_PROFILE > TENANT > GLOBAL > weekend-only`, tenant/company profile isolation e test backend Maven verdi.
 - TASK-067.5 completato: frontend Holiday Calendar UI foundation con lista admin, navigazione al dettaglio, dettaglio base read-only, toggle `active/inactive`, tabella festivita read-only, i18n `it` / `fr` / `en`, riuso pattern Device Administration e test frontend verdi.
-- Prossimi passi operativi: `TASK-067.4` Git worktree workflow foundation come follow-up documentale, `TASK-067.6` frontend Holiday Calendar calendar management come prossimo step applicativo e `TASK-067.7` frontend Holiday Calendar holidays management come step successivo.
-- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.6` frontend Holiday Calendar calendar management, `TASK-067.7` frontend Holiday Calendar holidays management, `TASK-067.8` QA Holiday Calendar, poi `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- `TASK-067.6` completato lato frontend con gestione Holiday Calendar end-to-end, includendo anche il perimetro holidays management inizialmente previsto per `TASK-067.7`.
+- Prossimi passi operativi: `TASK-067.4` Git worktree workflow foundation come follow-up documentale e `TASK-067.8` QA Holiday Calendar come prossimo step di validazione dedicata.
+- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
@@ -473,6 +474,7 @@ Metronic è riferimento UI, non template da copiare integralmente.
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.79 | 2026-05-17 | `TASK-067.6` completato lato frontend con gestione Holiday Calendar completa: create/edit/delete calendario, attivazione/disattivazione da dettaglio, CRUD festivita, validazioni UI, stati operativi e test frontend verdi; `TASK-067.7` assorbito/completato nello stesso task e roadmap riallineata senza duplicazioni. |
 | 2.78 | 2026-05-17 | Inserito `TASK-067.6` per il CRUD frontend del calendario Holiday Calendar; `holidays management` slitta a `TASK-067.7` e `QA Holiday Calendar` a `TASK-067.8`, con roadmap riallineata senza modifiche applicative. |
 | 2.77 | 2026-05-17 | `TASK-067.5` completato lato frontend con lista/dettaglio base Holiday Calendar read-only, attivazione/disattivazione, tabella festivita read-only, i18n `it` / `fr` / `en` e test frontend verdi; roadmap riallineata con `TASK-067.4` come follow-up documentale e `TASK-067.6` come prossimo step applicativo. |
 | 2.76 | 2026-05-17 | `TASK-067.5` ristretto alla UI foundation frontend di lista/dettaglio base Holiday Calendar; inserito `TASK-067.6` per la gestione frontend delle festivita e rinumerato il task QA Holiday Calendar a `TASK-067.7`, con sequenza roadmap riallineata. |

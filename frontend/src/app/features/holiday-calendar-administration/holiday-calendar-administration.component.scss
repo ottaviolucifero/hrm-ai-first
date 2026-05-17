@@ -15,6 +15,11 @@
   justify-content: space-between;
 }
 
+.holiday-calendar-page-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
 .holiday-calendar-heading {
   display: grid;
   gap: 0.35rem;
