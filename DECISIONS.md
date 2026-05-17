@@ -1863,10 +1863,46 @@ Il progetto formalizza `git worktree` come raccomandazione operativa durevole pe
 
 ---
 
+### DEC-047 - LeaveRequest admin delete mapped to cancel lifecycle
+
+Data: 2026-05-17
+Stato: Approvata
+
+Decisione:
+
+Per l amministrazione backend di `LeaveRequest` nel perimetro MVP:
+
+- `DELETE /api/admin/leave-requests/{id}` non esegue cancellazione fisica del record;
+- il backend deve interpretare `DELETE` come annullamento logico, impostando `LeaveRequestStatus.CANCELLED`;
+- le mutation CRUD amministrative accettano solo stati aperti `DRAFT` e `SUBMITTED`;
+- `APPROVED`, `REJECTED` e `CANCELLED` restano read-only nel task CRUD amministrativo;
+- non vengono introdotti in questo step workflow dedicati `approve` / `reject`, delete fisico o soft-delete paralleli.
+
+Motivazione:
+
+- preservare lo storico delle richieste assenza e i riferimenti gia esistenti del dominio;
+- evitare una falsa semantica di delete fisico su un aggregate che possiede gia un lifecycle esplicito;
+- mantenere il task entro MVP e fuori dal workflow approvativo completo;
+- offrire una base coerente alla futura UI admin senza aggiungere stati o endpoint non governati.
+
+Alternative escluse:
+
+- cancellazione fisica del record LeaveRequest tramite endpoint `DELETE`;
+- introduzione di un flag soft-delete aggiuntivo oltre a `LeaveRequestStatus`;
+- permettere in CRUD admin la scrittura diretta di `APPROVED` o `REJECTED`;
+- aggiungere nello stesso task endpoint dedicati `approve`, `reject`, `submit` o integrazioni Holiday Calendar.
+
+Impatto:
+
+`TASK-068.3` implementa detail/create/update/cancel amministrativi sotto `/api/admin/leave-requests` con RBAC `TENANT|PLATFORM.LEAVE_REQUEST.*`, validazioni tenant-aware e regola conservativa sugli stati. `TASK-068.4` e i subtask successivi devono riusare questa semantica, mostrando `delete` come azione di annullamento e trattando i record `APPROVED` / `REJECTED` / `CANCELLED` come non editabili finche non esiste una decisione successiva.
+
+---
+
 ## 4. Cronologia versioni
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.49 | 2026-05-17 | Aggiunta DEC-047 per formalizzare il lifecycle amministrativo LeaveRequest nel MVP: `DELETE /api/admin/leave-requests/{id}` mappa a cancel logico via `LeaveRequestStatus.CANCELLED`, il CRUD admin accetta solo `DRAFT` e `SUBMITTED` e gli stati `APPROVED` / `REJECTED` / `CANCELLED` restano read-only. |
 | 1.48 | 2026-05-17 | Riallineati i riferimenti backlog di `DEC-045` dopo l inserimento di `TASK-067.6` per il CRUD frontend del calendario: `TASK-067.7` copre la gestione festivita e `TASK-067.8` la QA finale, senza modifiche alla decisione di dominio. |
 | 1.47 | 2026-05-17 | Riallineata DEC-045 allo split frontend Holiday Calendar: `TASK-067.5` copre lista/dettaglio base, `TASK-067.6` la gestione festivita e `TASK-067.7` la QA finale, senza modifiche alla decisione di dominio. |
 | 1.46 | 2026-05-17 | Aggiunta DEC-046 per formalizzare `git worktree` come workflow locale consigliato per sviluppo parallelo multi-agent su branch/worktree dedicati, con divieto di modifiche concorrenti sulla stessa working copy e rinvio della documentazione operativa di dettaglio a `TASK-067.4`. |

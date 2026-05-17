@@ -6,6 +6,54 @@ Questo file raccoglie solo QA eseguiti realmente; non includere report fittizi.
 
 ## Cross-stack QA reports
 
+### TASK-068.3 - Backend LeaveRequest administration CRUD
+
+- Data: 2026-05-17
+- Branch: `task-068-3-leave-request-admin-crud`
+- Task: TASK-068.3 - Backend LeaveRequest administration CRUD
+- Modello consigliato nel prompt operativo: GPT-5.5
+- Area verificata:
+  - `backend/src/main/java/com/odsoftware/hrm/controller/LeaveRequestAdministrationController.java`
+  - `backend/src/main/java/com/odsoftware/hrm/service/LeaveRequestAdministrationService.java`
+  - `backend/src/main/java/com/odsoftware/hrm/repository/leave/LeaveRequestRepository.java`
+  - `backend/src/main/java/com/odsoftware/hrm/config/SecurityConfig.java`
+  - `backend/src/main/java/com/odsoftware/hrm/dto/leaverequestadministration/*`
+  - `backend/src/test/java/com/odsoftware/hrm/LeaveRequestAdministrationControllerTests.java`
+  - `TASKS.md`
+  - `ROADMAP.md`
+  - `DECISIONS.md`
+- Analisi eseguita:
+  - verificato il dominio `LeaveRequest` esistente con relazioni verso `Tenant`, `CompanyProfile`, `Employee`, `LeaveRequestType` e `LeaveRequestStatus`;
+  - verificati i pattern backend admin gia in uso su `Device`, `HolidayCalendar` e `UserAdministration`, riusando controller sottili, DTO espliciti, service transazionale e guardrail cross-tenant;
+  - verificato che catalogo permessi `LEAVE_REQUEST` e bootstrap tenant admin/dev platform admin fossero gia presenti, limitando la patch al solo mapping security sugli endpoint admin.
+- Patch applicata:
+  - aggiunte API admin backend `GET /api/admin/leave-requests/{id}`, `POST /api/admin/leave-requests`, `PUT /api/admin/leave-requests/{id}` e `DELETE /api/admin/leave-requests/{id}`;
+  - aggiunti DTO request/response dedicati con dettaglio completo, inclusi `comments`, `urgentReason`, `createdAt` e `updatedAt`;
+  - aggiunta service administration con validazioni tenant-aware su employee e `LeaveRequestType`, controllo date, stati ammessi `DRAFT|SUBMITTED`, enforcement della policy `DELETE => CANCELLED` e blocco mutation su `APPROVED|REJECTED|CANCELLED`;
+  - esteso `LeaveRequestRepository` con entity graph e lock pessimista per lettura/detail e mutation admin;
+  - aggiornato `SecurityConfig` con mapping esplicito `GET/POST/PUT/DELETE` su `TENANT|PLATFORM.LEAVE_REQUEST.READ|CREATE|UPDATE|DELETE|MANAGE`;
+  - aggiornati `TASKS.md`, `ROADMAP.md` e `DECISIONS.md` con completamento task e decisione durevole `DEC-047`.
+- Comandi eseguiti:
+  - `cd backend && .\mvnw.cmd test "-Dtest=LeaveRequestAdministrationControllerTests,HrmBackendApplicationTests,DevPlatformAdminBootstrapTests,PermissionCodeTests"`
+  - `cd backend && .\mvnw.cmd test`
+- Esiti reali:
+  - suite backend mirata: `BUILD SUCCESS`, `86` test eseguiti, `0` failure, `0` error, `0` skipped;
+  - suite backend completa: `BUILD SUCCESS`, `343` test eseguiti, `0` failure, `0` error, `0` skipped.
+- Verifiche funzionali confermate:
+  - nessuna lista admin paginata o endpoint `form-options` introdotti;
+  - nessun workflow `approve/reject` o integrazione `HolidayCalendar` introdotti;
+  - `POST` usa `DRAFT` quando `status=null`;
+  - `POST` e `PUT` accettano solo `DRAFT` e `SUBMITTED`;
+  - `DELETE` non cancella fisicamente il record e imposta `LeaveRequestStatus.CANCELLED`;
+  - i record in stato `APPROVED`, `REJECTED` o `CANCELLED` risultano non editabili;
+  - tenant caller bloccato sul cross-tenant, platform caller ammesso secondo permessi;
+  - OpenAPI espone i nuovi path admin LeaveRequest.
+- Limiti/note:
+  - `DELETE` mantiene la semantica REST esterna ma internamente rappresenta un cancel logico; la UI successiva dovra presentarlo come annullamento e non come eliminazione fisica;
+  - restano fuori scope lookup dedicati, lista amministrativa server-side, workflow approvativo, saldo ferie/permessi e integrazione calendario;
+  - nei log Maven restano warning ambiente non bloccanti gia noti: Mockito/ByteBuddy dynamic agent e rumore shell residuale `'D' n’est pas reconnu...`.
+- Stato finale: PASS
+
 ### TASK-066.7 follow-up - Device detail layout and label flow refinement
 
 - Data: 2026-05-16

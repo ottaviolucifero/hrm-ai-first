@@ -5743,7 +5743,7 @@ Fuori scope:
 
 #### TASK-068.3 - Backend LeaveRequest administration CRUD
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Backend
 
@@ -5753,8 +5753,9 @@ Introdurre API amministrative CRUD per LeaveRequest, separate dalla lista ammini
 
 Scope:
 
-- API admin per create/update;
-- delete o cancel secondo modello dominio esistente;
+- API admin `GET /api/admin/leave-requests/{id}` per detail amministrativo;
+- API admin `POST /api/admin/leave-requests` e `PUT /api/admin/leave-requests/{id}`;
+- `DELETE /api/admin/leave-requests/{id}` come cancel logico via `LeaveRequestStatus.CANCELLED`;
 - validazioni stato/data/dipendente/tipo richiesta;
 - DTO request/response necessari;
 - RBAC/authorities coerenti con `TENANT.LEAVE_REQUEST.*` e, se applicabile, `PLATFORM.LEAVE_REQUEST.*`;
@@ -6106,6 +6107,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.82 | 2026-05-17 | `TASK-068.3` completato lato backend con nuove API amministrative `GET/POST/PUT/DELETE` sotto `/api/admin/leave-requests`, DTO espliciti, validazioni tenant/employee/type/date/status, `DELETE` riallineato a cancel logico via `LeaveRequestStatus.CANCELLED`, RBAC `TENANT|PLATFORM.LEAVE_REQUEST.*`, decisione durevole documentata in `DEC-047` e test Maven reali verdi. |
 | 2.81 | 2026-05-17 | Backlog `TASK-068` riallineato dopo la validazione della lista LeaveRequest: `TASK-068.4` ora richiede il lookup reale `LeaveRequestType` via `/api/master-data/hr-business/leave-request-types` per form admin e futuro filtro lista, inserito `TASK-068.5 - Shared advanced filters component` e rinumerati dettaglio/workflow/self-service/calendario/QA a `TASK-068.6`..`TASK-068.10`; nessuna modifica codice o decisione architetturale. |
 | 2.78 | 2026-05-17 | `TASK-068.2` completato lato frontend con lista amministrativa LeaveRequest read-only su `/api/core-hr/leave-requests`, filtri e paginazione client-side foundation, route `/admin/leave-requests`, visibility `LEAVE_REQUEST`, i18n `it` / `fr` / `en`, nessuna action column in assenza di route dettaglio reale e test/build frontend verdi. |
 | 2.77 | 2026-05-17 | Riorganizzati i subtask `TASK-068`: `TASK-068.2` resta sola lista amministrativa read/list senza CRUD, inseriti `TASK-068.3` backend LeaveRequest administration CRUD e `TASK-068.4` UI LeaveRequest administration CRUD, rinumerati dettaglio/workflow/self-service/calendario/QA a `TASK-068.5`..`TASK-068.9`; nessuna modifica codice o decisione architetturale. |
