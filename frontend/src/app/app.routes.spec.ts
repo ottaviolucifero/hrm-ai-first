@@ -54,6 +54,17 @@ describe('app routes', () => {
       requiredAction: 'view'
     });
   });
+
+  it('registers leave request administration routes with leave request permissions', () => {
+    const rootChildren = findChildren(routes, '');
+    const adminChildren = findChildren(rootChildren, 'admin');
+    const leaveRequestsRoute = findRoute(adminChildren, 'leave-requests');
+
+    expect(leaveRequestsRoute?.data).toEqual({
+      permissionModule: 'leave-requests',
+      requiredAction: 'view'
+    });
+  });
 });
 
 function findChildren(routeList: readonly Route[], path: string): readonly Route[] {

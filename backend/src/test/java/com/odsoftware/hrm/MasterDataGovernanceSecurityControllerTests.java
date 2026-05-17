@@ -163,6 +163,14 @@ class MasterDataGovernanceSecurityControllerTests {
 
 	@Test
 	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
+	void masterDataGovernanceSecurityPermissionsCatalogIncludesLeaveRequestPermissions() throws Exception {
+		mockMvc.perform(get("/api/master-data/governance-security/permissions?search=TENANT.LEAVE_REQUEST.READ"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[?(@.code=='TENANT.LEAVE_REQUEST.READ')]").exists());
+	}
+
+	@Test
+	@WithMockUser(authorities = "TENANT.MASTER_DATA.MANAGE")
 	void masterDataGovernanceSecurityListsNewestRecordsFirstByDefault() throws Exception {
 		saveRole("TASK0465_ROLE_A", "Task 0465 Role A");
 		Thread.sleep(20L);

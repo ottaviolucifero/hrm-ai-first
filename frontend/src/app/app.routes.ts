@@ -13,6 +13,7 @@ import { DeviceAdministrationFormComponent } from './features/device-administrat
 import { HolidayCalendarAdministrationComponent } from './features/holiday-calendar-administration/holiday-calendar-administration.component';
 import { HolidayCalendarAdministrationDetailComponent } from './features/holiday-calendar-administration/holiday-calendar-administration-detail.component';
 import { HolidayCalendarAdministrationFormComponent } from './features/holiday-calendar-administration/holiday-calendar-administration-form.component';
+import { LeaveRequestAdministrationComponent } from './features/leave-request-administration/leave-request-administration.component';
 import { MasterDataAdminComponent } from './features/master-data/master-data-admin.component';
 import { RoleAdministrationComponent } from './features/role-administration/role-administration.component';
 import { RolePermissionMatrixComponent } from './features/role-permissions/role-permission-matrix.component';
@@ -172,6 +173,15 @@ export const routes: Routes = [
             canActivate: [permissionGuard],
             data: {
               permissionModule: 'devices',
+              requiredAction: 'view'
+            }
+          },
+          {
+            path: 'leave-requests',
+            component: LeaveRequestAdministrationComponent,
+            canActivate: [permissionGuard],
+            data: {
+              permissionModule: 'leave-requests',
               requiredAction: 'view'
             }
           },

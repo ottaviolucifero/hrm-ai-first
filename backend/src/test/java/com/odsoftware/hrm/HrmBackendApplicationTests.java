@@ -411,6 +411,7 @@ class HrmBackendApplicationTests {
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.DEVICE, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.DEVICE, PermissionAction.DELETE),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.HOLIDAY_CALENDAR, PermissionAction.READ),
+						PermissionCode.of(PermissionScope.TENANT, PermissionResource.LEAVE_REQUEST, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.PAYROLL_DOCUMENT, PermissionAction.READ),
 						PermissionCode.of(PermissionScope.TENANT, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE),
 						PermissionCode.of(PermissionScope.PLATFORM, PermissionResource.COMPANY_PROFILE, PermissionAction.DELETE))
@@ -512,6 +513,10 @@ class HrmBackendApplicationTests {
 						"TENANT.HOLIDAY_CALENDAR.CREATE",
 						"TENANT.HOLIDAY_CALENDAR.UPDATE",
 						"TENANT.HOLIDAY_CALENDAR.DELETE",
+						"TENANT.LEAVE_REQUEST.READ",
+						"TENANT.LEAVE_REQUEST.CREATE",
+						"TENANT.LEAVE_REQUEST.UPDATE",
+						"TENANT.LEAVE_REQUEST.DELETE",
 						"TENANT.DEVICE.READ",
 						"TENANT.DEVICE.CREATE",
 						"TENANT.DEVICE.UPDATE",

@@ -70,6 +70,17 @@ describe('permissionGuard', () => {
 
     expect(result).toBe(true);
   });
+
+  it('allows navigation for leave request routes when leave request view permission is available', async () => {
+    await configureTestBed(['TENANT.LEAVE_REQUEST.READ']);
+
+    const result = await runGuard({
+      permissionModule: 'leave-requests',
+      requiredAction: 'view'
+    });
+
+    expect(result).toBe(true);
+  });
 });
 
 async function configureTestBed(permissions: readonly string[]) {
