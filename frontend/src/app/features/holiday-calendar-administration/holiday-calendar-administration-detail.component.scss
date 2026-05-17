@@ -1,0 +1,179 @@
+.holiday-calendar-detail-page {
+  background: #f5f7fb;
+  border-radius: 1rem;
+  display: block;
+}
+
+.holiday-calendar-detail-layout {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.holiday-calendar-detail-page-header {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.holiday-calendar-detail-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.holiday-calendar-detail-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.holiday-calendar-detail-subtitle,
+.holiday-calendar-detail-state {
+  color: var(--color-text-muted, #64748b);
+}
+
+.holiday-calendar-detail-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.holiday-calendar-detail-card {
+  align-content: start;
+  background: #ffffff;
+  border: 1px solid #dbe4f0;
+  border-radius: 1rem;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+  display: grid;
+  grid-template-rows: auto minmax(0, auto);
+  overflow: hidden;
+}
+
+.holiday-calendar-detail-card-wide {
+  grid-column: 1 / -1;
+}
+
+.holiday-calendar-detail-card-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e6edf5;
+}
+
+.holiday-calendar-detail-card-heading {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.holiday-calendar-detail-card-icon {
+  align-items: center;
+  background: #eef4ff;
+  border-radius: 0.8rem;
+  color: #2080f0;
+  display: inline-flex;
+  font-size: 1rem;
+  height: 2.25rem;
+  justify-content: center;
+  width: 2.25rem;
+}
+
+.holiday-calendar-detail-card-body {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1.1rem 1.25rem 1.25rem;
+}
+
+.holiday-calendar-detail-card-title {
+  color: var(--color-text-default, #0f172a);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.holiday-calendar-detail-card-subtitle {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.82rem;
+  margin: 0.2rem 0 0;
+}
+
+.holiday-calendar-detail-fields {
+  display: grid;
+  gap: 0.95rem;
+  margin: 0;
+}
+
+.holiday-calendar-detail-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.holiday-calendar-detail-field dt {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.holiday-calendar-detail-field dd {
+  color: var(--color-text-default, #0f172a);
+  font-size: 0.96rem;
+  font-weight: 600;
+  line-height: 1.45;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.holiday-calendar-detail-badge {
+  align-items: center;
+  border: 1px solid var(--color-border, #d0d7e2);
+  border-radius: 999px;
+  color: var(--color-text-muted, #64748b);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.65rem;
+}
+
+.holiday-calendar-detail-badge-valid {
+  background: #ecfdf3;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.holiday-calendar-detail-badge-inactive {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+.holiday-calendar-detail-state {
+  background: #ffffff;
+  border: 1px solid #dbe4f0;
+  border-radius: 1rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  padding: 1.25rem;
+}
+
+.holiday-calendar-detail-state-error {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.holiday-calendar-holidays-table-shell {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+@media (max-width: 960px) {
+  .holiday-calendar-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .holiday-calendar-detail-card-wide {
+    grid-column: auto;
+  }
+}

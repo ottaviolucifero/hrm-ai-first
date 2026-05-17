@@ -28,6 +28,22 @@ describe('app routes', () => {
       requiredAction: 'view'
     });
   });
+
+  it('registers holiday calendar routes with holiday calendar permissions', () => {
+    const rootChildren = findChildren(routes, '');
+    const adminChildren = findChildren(rootChildren, 'admin');
+    const holidayCalendarsRoute = findRoute(adminChildren, 'holiday-calendars');
+    const holidayCalendarsDetailRoute = findRoute(adminChildren, 'holiday-calendars/:id');
+
+    expect(holidayCalendarsRoute?.data).toEqual({
+      permissionModule: 'holiday-calendars',
+      requiredAction: 'view'
+    });
+    expect(holidayCalendarsDetailRoute?.data).toEqual({
+      permissionModule: 'holiday-calendars',
+      requiredAction: 'view'
+    });
+  });
 });
 
 function findChildren(routeList: readonly Route[], path: string): readonly Route[] {

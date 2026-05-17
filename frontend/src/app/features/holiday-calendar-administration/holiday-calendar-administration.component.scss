@@ -1,0 +1,105 @@
+.holiday-calendar-page {
+  display: block;
+}
+
+.holiday-calendar-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.holiday-calendar-page-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.holiday-calendar-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.holiday-calendar-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.holiday-calendar-subtitle,
+.holiday-calendar-list-meta {
+  color: var(--color-text-muted, #64748b);
+}
+
+.holiday-calendar-list-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border, #e9ecef);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.holiday-calendar-list-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border, #e9ecef);
+  background: var(--color-background, #ffffff);
+}
+
+.holiday-calendar-list-heading {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.holiday-calendar-list-meta-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.holiday-calendar-record-count {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+}
+
+.holiday-calendar-table-search {
+  display: grid;
+  gap: 0.35rem;
+  min-width: min(100%, 18rem);
+}
+
+.holiday-calendar-search-label {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.holiday-calendar-search-input {
+  min-height: 2.375rem;
+}
+
+@media (max-width: 960px) {
+  .holiday-calendar-page-header,
+  .holiday-calendar-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .holiday-calendar-table-search {
+    min-width: 0;
+  }
+
+  .holiday-calendar-list-toolbar {
+    padding: 1rem;
+  }
+}
