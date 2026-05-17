@@ -1,8 +1,12 @@
 package com.odsoftware.hrm.entity.calendar;
 
 import com.odsoftware.hrm.entity.master.Area;
+import com.odsoftware.hrm.entity.core.CompanyProfile;
+import com.odsoftware.hrm.entity.core.Tenant;
 import com.odsoftware.hrm.entity.master.Country;
 import com.odsoftware.hrm.entity.master.Region;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +19,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -25,11 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(
-		name = "holiday_calendars",
-		uniqueConstraints = {
-				@UniqueConstraint(name = "uk_holiday_calendars_country_year", columnNames = {"country_id", "calendar_year"})
-		})
+@Table(name = "holiday_calendars")
 public class HolidayCalendar {
 
 	@Id
@@ -53,6 +52,28 @@ public class HolidayCalendar {
 	@NotNull
 	@Column(name = "calendar_year", nullable = false)
 	private Integer year;
+
+	@NotNull
+	@Enumerated(EnumType.STRING)
+	@Column(name = "scope", nullable = false, length = 50)
+	private HolidayCalendarScope scope = HolidayCalendarScope.GLOBAL;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tenant_id")
+	private Tenant tenant;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "company_profile_id")
+	private CompanyProfile companyProfile;
+
+	@Column(name = "global_scope_key", length = 50)
+	private String globalScopeKey;
+
+	@Column(name = "tenant_scope_id")
+	private UUID tenantScopeId;
+
+	@Column(name = "company_profile_scope_id")
+	private UUID companyProfileScopeId;
 
 	@NotBlank
 	@Size(max = 255)
@@ -80,11 +101,16 @@ public class HolidayCalendar {
 		if (this.active == null) {
 			this.active = true;
 		}
+		if (this.scope == null) {
+			this.scope = HolidayCalendarScope.GLOBAL;
+		}
+		synchronizeScopeKeys();
 	}
 
 	@PreUpdate
 	void preUpdate() {
 		this.updatedAt = OffsetDateTime.now();
+		synchronizeScopeKeys();
 	}
 
 	public UUID getId() {
@@ -123,6 +149,30 @@ public class HolidayCalendar {
 		this.year = year;
 	}
 
+	public HolidayCalendarScope getScope() {
+		return scope;
+	}
+
+	public void setScope(HolidayCalendarScope scope) {
+		this.scope = scope;
+	}
+
+	public Tenant getTenant() {
+		return tenant;
+	}
+
+	public void setTenant(Tenant tenant) {
+		this.tenant = tenant;
+	}
+
+	public CompanyProfile getCompanyProfile() {
+		return companyProfile;
+	}
+
+	public void setCompanyProfile(CompanyProfile companyProfile) {
+		this.companyProfile = companyProfile;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -149,5 +199,28 @@ public class HolidayCalendar {
 
 	public OffsetDateTime getUpdatedAt() {
 		return updatedAt;
+	}
+
+	private void synchronizeScopeKeys() {
+		if (this.scope == null) {
+			this.scope = HolidayCalendarScope.GLOBAL;
+		}
+		switch (this.scope) {
+			case GLOBAL -> {
+				this.globalScopeKey = HolidayCalendarScope.GLOBAL.name();
+				this.tenantScopeId = null;
+				this.companyProfileScopeId = null;
+			}
+			case TENANT -> {
+				this.globalScopeKey = null;
+				this.tenantScopeId = this.tenant != null ? this.tenant.getId() : null;
+				this.companyProfileScopeId = null;
+			}
+			case COMPANY_PROFILE -> {
+				this.globalScopeKey = null;
+				this.tenantScopeId = null;
+				this.companyProfileScopeId = this.companyProfile != null ? this.companyProfile.getId() : null;
+			}
+		}
 	}
 }

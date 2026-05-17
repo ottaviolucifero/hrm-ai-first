@@ -35,4 +35,13 @@ public interface HolidayRepository extends JpaRepository<Holiday, UUID> {
 			  and holiday.endDate >= :startDate
 			""")
 	boolean existsOverlappingHolidayExcludingId(UUID holidayCalendarId, UUID holidayId, LocalDate startDate, LocalDate endDate);
+
+	@Query("""
+			select case when count(holiday) > 0 then true else false end
+			from Holiday holiday
+			where holiday.holidayCalendar.id = :holidayCalendarId
+			  and holiday.startDate <= :date
+			  and holiday.endDate >= :date
+			""")
+	boolean existsByHolidayCalendarIdAndDate(UUID holidayCalendarId, LocalDate date);
 }

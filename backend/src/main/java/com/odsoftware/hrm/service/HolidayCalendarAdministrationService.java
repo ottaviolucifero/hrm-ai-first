@@ -12,12 +12,17 @@ import com.odsoftware.hrm.dto.holidaycalendaradministration.HolidayCalendarAdmin
 import com.odsoftware.hrm.dto.masterdata.MasterDataPageResponse;
 import com.odsoftware.hrm.entity.calendar.Holiday;
 import com.odsoftware.hrm.entity.calendar.HolidayCalendar;
+import com.odsoftware.hrm.entity.calendar.HolidayCalendarScope;
+import com.odsoftware.hrm.entity.core.CompanyProfile;
+import com.odsoftware.hrm.entity.core.Tenant;
 import com.odsoftware.hrm.entity.master.Country;
 import com.odsoftware.hrm.exception.InvalidRequestException;
 import com.odsoftware.hrm.exception.ResourceConflictException;
 import com.odsoftware.hrm.exception.ResourceNotFoundException;
 import com.odsoftware.hrm.repository.calendar.HolidayCalendarRepository;
 import com.odsoftware.hrm.repository.calendar.HolidayRepository;
+import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
+import com.odsoftware.hrm.repository.core.TenantRepository;
 import com.odsoftware.hrm.repository.master.CountryRepository;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
@@ -37,14 +42,20 @@ public class HolidayCalendarAdministrationService {
 	private final HolidayCalendarRepository holidayCalendarRepository;
 	private final HolidayRepository holidayRepository;
 	private final CountryRepository countryRepository;
+	private final TenantRepository tenantRepository;
+	private final CompanyProfileRepository companyProfileRepository;
 
 	public HolidayCalendarAdministrationService(
 			HolidayCalendarRepository holidayCalendarRepository,
 			HolidayRepository holidayRepository,
-			CountryRepository countryRepository) {
+			CountryRepository countryRepository,
+			TenantRepository tenantRepository,
+			CompanyProfileRepository companyProfileRepository) {
 		this.holidayCalendarRepository = holidayCalendarRepository;
 		this.holidayRepository = holidayRepository;
 		this.countryRepository = countryRepository;
+		this.tenantRepository = tenantRepository;
+		this.companyProfileRepository = companyProfileRepository;
 	}
 
 	public MasterDataPageResponse<HolidayCalendarAdministrationCalendarListItemResponse> findHolidayCalendars(
@@ -83,12 +94,16 @@ public class HolidayCalendarAdministrationService {
 			HolidayCalendarAdministrationCalendarCreateRequest request) {
 		Country country = findCountry(request.countryId());
 		validateYear(request.year());
-		assertCountryYearUnique(country.getId(), request.year(), null);
+		HolidayCalendarContext context = resolveCalendarContext(request.scope(), request.tenantId(), request.companyProfileId());
+		assertCalendarUnique(context, country.getId(), request.year(), null);
 
 		HolidayCalendar holidayCalendar = new HolidayCalendar();
 		holidayCalendar.setCountry(country);
 		holidayCalendar.setYear(request.year());
 		holidayCalendar.setName(cleanRequired(request.name(), "Holiday calendar name is required"));
+		holidayCalendar.setScope(context.scope());
+		holidayCalendar.setTenant(context.tenant());
+		holidayCalendar.setCompanyProfile(context.companyProfile());
 		holidayCalendar.setActive(true);
 		return toCalendarDetailResponse(holidayCalendarRepository.saveAndFlush(holidayCalendar));
 	}
@@ -100,11 +115,15 @@ public class HolidayCalendarAdministrationService {
 		HolidayCalendar holidayCalendar = findHolidayCalendar(calendarId);
 		Country country = findCountry(request.countryId());
 		validateYear(request.year());
-		assertCountryYearUnique(country.getId(), request.year(), calendarId);
+		HolidayCalendarContext context = resolveCalendarContext(request.scope(), request.tenantId(), request.companyProfileId());
+		assertCalendarUnique(context, country.getId(), request.year(), calendarId);
 
 		holidayCalendar.setCountry(country);
 		holidayCalendar.setYear(request.year());
 		holidayCalendar.setName(cleanRequired(request.name(), "Holiday calendar name is required"));
+		holidayCalendar.setScope(context.scope());
+		holidayCalendar.setTenant(context.tenant());
+		holidayCalendar.setCompanyProfile(context.companyProfile());
 		return toCalendarDetailResponse(holidayCalendarRepository.saveAndFlush(holidayCalendar));
 	}
 
@@ -176,7 +195,11 @@ public class HolidayCalendarAdministrationService {
 				search,
 				"name",
 				"country.isoCode",
-				"country.name");
+				"country.name",
+				"tenant.code",
+				"tenant.name",
+				"companyProfile.code",
+				"companyProfile.tradeName");
 		return (root, query, criteriaBuilder) -> {
 			query.distinct(true);
 			Predicate predicate = criteriaBuilder.conjunction();
@@ -215,6 +238,22 @@ public class HolidayCalendarAdministrationService {
 				.orElseThrow(() -> new ResourceNotFoundException("Country not found: " + countryId));
 	}
 
+	private Tenant findTenant(UUID tenantId) {
+		if (tenantId == null) {
+			throw new InvalidRequestException("Tenant is required");
+		}
+		return tenantRepository.findById(tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Tenant not found: " + tenantId));
+	}
+
+	private CompanyProfile findCompanyProfile(UUID companyProfileId) {
+		if (companyProfileId == null) {
+			throw new InvalidRequestException("Company profile is required");
+		}
+		return companyProfileRepository.findById(companyProfileId)
+				.orElseThrow(() -> new ResourceNotFoundException("Company profile not found: " + companyProfileId));
+	}
+
 	private void validateYear(Integer year) {
 		if (year == null) {
 			throw new InvalidRequestException("Year is required");
@@ -224,13 +263,65 @@ public class HolidayCalendarAdministrationService {
 		}
 	}
 
-	private void assertCountryYearUnique(UUID countryId, Integer year, UUID calendarId) {
-		boolean exists = calendarId == null
-				? holidayCalendarRepository.existsByCountry_IdAndYear(countryId, year)
-				: holidayCalendarRepository.existsByCountry_IdAndYearAndIdNot(countryId, year, calendarId);
+	private void assertCalendarUnique(HolidayCalendarContext context, UUID countryId, Integer year, UUID calendarId) {
+		boolean exists = switch (context.scope()) {
+			case GLOBAL -> calendarId == null
+					? holidayCalendarRepository.existsByScopeAndCountry_IdAndYear(HolidayCalendarScope.GLOBAL, countryId, year)
+					: holidayCalendarRepository.existsByScopeAndCountry_IdAndYearAndIdNot(HolidayCalendarScope.GLOBAL, countryId, year, calendarId);
+			case TENANT -> calendarId == null
+					? holidayCalendarRepository.existsByTenant_IdAndCompanyProfileIsNullAndCountry_IdAndYear(
+							context.tenant().getId(),
+							countryId,
+							year)
+					: holidayCalendarRepository.existsByTenant_IdAndCompanyProfileIsNullAndCountry_IdAndYearAndIdNot(
+							context.tenant().getId(),
+							countryId,
+							year,
+							calendarId);
+			case COMPANY_PROFILE -> calendarId == null
+					? holidayCalendarRepository.existsByCompanyProfile_IdAndCountry_IdAndYear(
+							context.companyProfile().getId(),
+							countryId,
+							year)
+					: holidayCalendarRepository.existsByCompanyProfile_IdAndCountry_IdAndYearAndIdNot(
+							context.companyProfile().getId(),
+							countryId,
+							year,
+							calendarId);
+		};
 		if (exists) {
-			throw new ResourceConflictException("Holiday calendar already exists for country and year");
+			throw new ResourceConflictException("Holiday calendar already exists for scope, country and year");
 		}
+	}
+
+	private HolidayCalendarContext resolveCalendarContext(
+			HolidayCalendarScope requestedScope,
+			UUID tenantId,
+			UUID companyProfileId) {
+		HolidayCalendarScope scope = requestedScope == null ? HolidayCalendarScope.GLOBAL : requestedScope;
+		return switch (scope) {
+			case GLOBAL -> {
+				if (tenantId != null || companyProfileId != null) {
+					throw new InvalidRequestException("Global holiday calendar cannot reference tenant or company profile");
+				}
+				yield new HolidayCalendarContext(HolidayCalendarScope.GLOBAL, null, null);
+			}
+			case TENANT -> {
+				Tenant tenant = findTenant(tenantId);
+				if (companyProfileId != null) {
+					throw new InvalidRequestException("Tenant holiday calendar cannot reference company profile");
+				}
+				yield new HolidayCalendarContext(HolidayCalendarScope.TENANT, tenant, null);
+			}
+			case COMPANY_PROFILE -> {
+				Tenant tenant = findTenant(tenantId);
+				CompanyProfile companyProfile = findCompanyProfile(companyProfileId);
+				if (!tenant.getId().equals(companyProfile.getTenant().getId())) {
+					throw new InvalidRequestException("Company profile does not belong to tenant: " + companyProfileId);
+				}
+				yield new HolidayCalendarContext(HolidayCalendarScope.COMPANY_PROFILE, tenant, companyProfile);
+			}
+		};
 	}
 
 	private void validateHolidayRequest(HolidayCalendar holidayCalendar, LocalDate startDate, LocalDate endDate, UUID holidayId) {
@@ -282,6 +373,9 @@ public class HolidayCalendarAdministrationService {
 				toCountryReference(holidayCalendar.getCountry()),
 				holidayCalendar.getYear(),
 				holidayCalendar.getName(),
+				holidayCalendar.getScope(),
+				toTenantReference(holidayCalendar.getTenant()),
+				toCompanyProfileReference(holidayCalendar.getCompanyProfile()),
 				holidayCalendar.getActive(),
 				holidayCalendar.getCreatedAt(),
 				holidayCalendar.getUpdatedAt());
@@ -293,6 +387,9 @@ public class HolidayCalendarAdministrationService {
 				toCountryReference(holidayCalendar.getCountry()),
 				holidayCalendar.getYear(),
 				holidayCalendar.getName(),
+				holidayCalendar.getScope(),
+				toTenantReference(holidayCalendar.getTenant()),
+				toCompanyProfileReference(holidayCalendar.getCompanyProfile()),
 				holidayCalendar.getActive(),
 				holidayCalendar.getCreatedAt(),
 				holidayCalendar.getUpdatedAt());
@@ -329,6 +426,23 @@ public class HolidayCalendarAdministrationService {
 		return new HolidayCalendarAdministrationReferenceResponse(country.getId(), country.getIsoCode(), country.getName());
 	}
 
+	private HolidayCalendarAdministrationReferenceResponse toTenantReference(Tenant tenant) {
+		if (tenant == null) {
+			return null;
+		}
+		return new HolidayCalendarAdministrationReferenceResponse(tenant.getId(), tenant.getCode(), tenant.getName());
+	}
+
+	private HolidayCalendarAdministrationReferenceResponse toCompanyProfileReference(CompanyProfile companyProfile) {
+		if (companyProfile == null) {
+			return null;
+		}
+		return new HolidayCalendarAdministrationReferenceResponse(
+				companyProfile.getId(),
+				companyProfile.getCode(),
+				companyProfile.getTradeName());
+	}
+
 	private String cleanRequired(String value, String message) {
 		String cleaned = clean(value);
 		if (cleaned == null) {
@@ -343,5 +457,11 @@ public class HolidayCalendarAdministrationService {
 		}
 		String cleaned = value.trim();
 		return cleaned.isEmpty() ? null : cleaned;
+	}
+
+	private record HolidayCalendarContext(
+			HolidayCalendarScope scope,
+			Tenant tenant,
+			CompanyProfile companyProfile) {
 	}
 }

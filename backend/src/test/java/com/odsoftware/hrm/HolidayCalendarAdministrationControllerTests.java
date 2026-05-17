@@ -2,11 +2,14 @@ package com.odsoftware.hrm;
 
 import com.odsoftware.hrm.entity.calendar.Holiday;
 import com.odsoftware.hrm.entity.calendar.HolidayCalendar;
+import com.odsoftware.hrm.entity.calendar.HolidayCalendarScope;
 import com.odsoftware.hrm.entity.calendar.HolidayGenerationRule;
 import com.odsoftware.hrm.entity.calendar.HolidayType;
+import com.odsoftware.hrm.entity.core.CompanyProfile;
 import com.odsoftware.hrm.entity.core.Tenant;
 import com.odsoftware.hrm.entity.identity.UserAccount;
 import com.odsoftware.hrm.entity.master.Country;
+import com.odsoftware.hrm.repository.core.CompanyProfileRepository;
 import com.odsoftware.hrm.entity.master.Permission;
 import com.odsoftware.hrm.entity.master.Role;
 import com.odsoftware.hrm.entity.rbac.RolePermission;
@@ -83,6 +86,9 @@ class HolidayCalendarAdministrationControllerTests {
 	private TenantRepository tenantRepository;
 
 	@Autowired
+	private CompanyProfileRepository companyProfileRepository;
+
+	@Autowired
 	private HolidayCalendarRepository holidayCalendarRepository;
 
 	@Autowired
@@ -124,6 +130,7 @@ class HolidayCalendarAdministrationControllerTests {
 				.andExpect(jsonPath("$.country.id").value(ITALY_COUNTRY_ID.toString()))
 				.andExpect(jsonPath("$.year").value(2026))
 				.andExpect(jsonPath("$.name").value("Tunisia 2026"))
+				.andExpect(jsonPath("$.scope").value("GLOBAL"))
 				.andExpect(jsonPath("$.active").value(true))
 				.andReturn();
 
@@ -163,7 +170,41 @@ class HolidayCalendarAdministrationControllerTests {
 		mockMvc.perform(postJson("/api/admin/holiday-calendars", calendarRequest(ITALY_COUNTRY_ID, 2026, "Duplicate Calendar"))
 						.with(holidayTenantCaller()))
 				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.message").value("Holiday calendar already exists for country and year"));
+				.andExpect(jsonPath("$.message").value("Holiday calendar already exists for scope, country and year"));
+	}
+
+	@Test
+	@WithMockUser
+	void holidayCalendarAdministrationCreatesTenantScopedCalendar() throws Exception {
+		mockMvc.perform(postJson(
+						"/api/admin/holiday-calendars",
+						calendarRequest(ITALY_COUNTRY_ID, 2027, "Tenant Italy 2027", "TENANT", FOUNDATION_TENANT_ID, null))
+						.with(holidayTenantCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.scope").value("TENANT"))
+				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.companyProfile").doesNotExist());
+	}
+
+	@Test
+	@WithMockUser
+	void holidayCalendarAdministrationCreatesCompanyProfileScopedCalendar() throws Exception {
+		CompanyProfile companyProfile = companyProfileRepository.findById(UUID.fromString("80000000-0000-0000-0000-000000000001")).orElseThrow();
+
+		mockMvc.perform(postJson(
+						"/api/admin/holiday-calendars",
+						calendarRequest(
+								ITALY_COUNTRY_ID,
+								2028,
+								"Company Italy 2028",
+								"COMPANY_PROFILE",
+								FOUNDATION_TENANT_ID,
+								companyProfile.getId()))
+						.with(holidayTenantCaller()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.scope").value("COMPANY_PROFILE"))
+				.andExpect(jsonPath("$.tenant.id").value(FOUNDATION_TENANT_ID.toString()))
+				.andExpect(jsonPath("$.companyProfile.id").value(companyProfile.getId().toString()));
 	}
 
 	@Test
@@ -359,10 +400,29 @@ class HolidayCalendarAdministrationControllerTests {
 	}
 
 	private Map<String, Object> calendarRequest(UUID countryId, Integer year, String name) {
+		return calendarRequest(countryId, year, name, null, null, null);
+	}
+
+	private Map<String, Object> calendarRequest(
+			UUID countryId,
+			Integer year,
+			String name,
+			String scope,
+			UUID tenantId,
+			UUID companyProfileId) {
 		Map<String, Object> request = new LinkedHashMap<>();
 		request.put("countryId", countryId);
 		request.put("year", year);
 		request.put("name", name);
+		if (scope != null) {
+			request.put("scope", scope);
+		}
+		if (tenantId != null) {
+			request.put("tenantId", tenantId);
+		}
+		if (companyProfileId != null) {
+			request.put("companyProfileId", companyProfileId);
+		}
 		return request;
 	}
 
@@ -383,6 +443,7 @@ class HolidayCalendarAdministrationControllerTests {
 		holidayCalendar.setCountry(country);
 		holidayCalendar.setYear(year);
 		holidayCalendar.setName(name);
+		holidayCalendar.setScope(HolidayCalendarScope.GLOBAL);
 		holidayCalendar.setActive(true);
 		return holidayCalendarRepository.saveAndFlush(holidayCalendar);
 	}
