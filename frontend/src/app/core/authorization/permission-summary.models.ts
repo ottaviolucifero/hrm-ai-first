@@ -1,10 +1,26 @@
 export type PermissionAction = 'view' | 'create' | 'update' | 'delete';
 
-export type PermissionModuleId = 'master-data' | 'tenants' | 'company-profiles' | 'roles' | 'permissions' | 'users' | 'devices';
+export type PermissionModuleId =
+  | 'master-data'
+  | 'tenants'
+  | 'company-profiles'
+  | 'roles'
+  | 'permissions'
+  | 'users'
+  | 'devices'
+  | 'holiday-calendars';
 
 export type PermissionScopeCode = 'PLATFORM' | 'TENANT';
 
-export type PermissionResourceCode = 'TENANT' | 'COMPANY_PROFILE' | 'MASTER_DATA' | 'ROLE' | 'PERMISSION' | 'USER' | 'DEVICE';
+export type PermissionResourceCode =
+  | 'TENANT'
+  | 'COMPANY_PROFILE'
+  | 'MASTER_DATA'
+  | 'ROLE'
+  | 'PERMISSION'
+  | 'USER'
+  | 'DEVICE'
+  | 'HOLIDAY_CALENDAR';
 
 export type PermissionCodeAction = 'READ' | 'VIEW' | 'CREATE' | 'UPDATE' | 'DELETE' | 'MANAGE';
 
@@ -30,7 +46,8 @@ export const MODULE_PERMISSION_RESOURCE_MAP: Record<PermissionModuleId, Permissi
   roles: 'ROLE',
   permissions: 'PERMISSION',
   users: 'USER',
-  devices: 'DEVICE'
+  devices: 'DEVICE',
+  'holiday-calendars': 'HOLIDAY_CALENDAR'
 };
 
 export const FROZEN_MODULE_PERMISSION_SUMMARY: ModulePermissionSummary = Object.freeze({
@@ -53,5 +70,6 @@ export function isPermissionModuleId(value: unknown): value is PermissionModuleI
     || value === 'roles'
     || value === 'permissions'
     || value === 'users'
-    || value === 'devices';
+    || value === 'devices'
+    || value === 'holiday-calendars';
 }

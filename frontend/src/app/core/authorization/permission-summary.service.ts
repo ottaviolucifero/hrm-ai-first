@@ -142,7 +142,8 @@ export class PermissionSummaryService {
       || value === 'ROLE'
       || value === 'PERMISSION'
       || value === 'USER'
-      || value === 'DEVICE';
+      || value === 'DEVICE'
+      || value === 'HOLIDAY_CALENDAR';
   }
 
   private isPermissionCodeAction(value: string): value is PermissionCodeAction {

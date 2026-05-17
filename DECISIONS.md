@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 1.46
+Versione: 1.47
 Ultimo aggiornamento: 2026-05-17
 Stato: Attivo
 
@@ -1824,7 +1824,7 @@ Impatto:
 
 `TASK-067` governa la numerazione attiva del blocco Holiday Calendar senza riuso della numerazione storica gia completata `TASK-019` e `TASK-020`.
 
-I task `TASK-067.2`, `TASK-067.3`, `TASK-067.5` e `TASK-067.6` dovranno rispettare questa decisione e mantenere fuori scope Leave Request, calcolo ferie/assenze, payroll, turni, calendari per singolo dipendente, assegnazione calendario a sede/dipartimento/dipendente, generazione automatica Aid, import/export massivo e API esterne.
+I task `TASK-067.2`, `TASK-067.3`, `TASK-067.5`, `TASK-067.6`, `TASK-067.7` e `TASK-067.8` dovranno rispettare questa decisione e mantenere fuori scope Leave Request, calcolo ferie/assenze, payroll, turni, calendari per singolo dipendente, assegnazione calendario a sede/dipartimento/dipendente, generazione automatica Aid, import/export massivo e API esterne.
 
 ---
 
@@ -1867,6 +1867,8 @@ Il progetto formalizza `git worktree` come raccomandazione operativa durevole pe
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 1.48 | 2026-05-17 | Riallineati i riferimenti backlog di `DEC-045` dopo l inserimento di `TASK-067.6` per il CRUD frontend del calendario: `TASK-067.7` copre la gestione festivita e `TASK-067.8` la QA finale, senza modifiche alla decisione di dominio. |
+| 1.47 | 2026-05-17 | Riallineata DEC-045 allo split frontend Holiday Calendar: `TASK-067.5` copre lista/dettaglio base, `TASK-067.6` la gestione festivita e `TASK-067.7` la QA finale, senza modifiche alla decisione di dominio. |
 | 1.46 | 2026-05-17 | Aggiunta DEC-046 per formalizzare `git worktree` come workflow locale consigliato per sviluppo parallelo multi-agent su branch/worktree dedicati, con divieto di modifiche concorrenti sulla stessa working copy e rinvio della documentazione operativa di dettaglio a `TASK-067.4`. |
 | 1.45 | 2026-05-17 | DEC-045 riallineata alla decisione di scope Holiday Calendar: `HolidayCalendar` evolve a `Country + Year + Scope` con `GLOBAL` / `TENANT` / `COMPANY_PROFILE`, `BusinessDayService` risolve con priorita `COMPANY_PROFILE > TENANT > GLOBAL`, rifiuta `companyProfileId` fuori tenant e mantiene fallback finale weekend-only senza combinare calendari di scope diversi nello stesso contesto/anno. |
 | 1.44 | 2026-05-16 | Estesa DEC-045 con le regole durevoli di `BusinessDayService`: weekend sabato/domenica, fallback weekend-only se manca un calendario attivo `Country + Year`, conteggio intervalli inclusivo, prossimo giorno lavorativo strettamente successivo e addizione giorni lavorativi con start date esclusa per valori positivi. |

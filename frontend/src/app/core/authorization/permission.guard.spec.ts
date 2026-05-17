@@ -59,6 +59,17 @@ describe('permissionGuard', () => {
 
     expect(result).toBe(true);
   });
+
+  it('allows navigation for holiday calendar routes when holiday calendar view permission is available', async () => {
+    await configureTestBed(['TENANT.HOLIDAY_CALENDAR.READ']);
+
+    const result = await runGuard({
+      permissionModule: 'holiday-calendars',
+      requiredAction: 'view'
+    });
+
+    expect(result).toBe(true);
+  });
 });
 
 async function configureTestBed(permissions: readonly string[]) {

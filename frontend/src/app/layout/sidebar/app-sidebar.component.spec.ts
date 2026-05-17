@@ -29,6 +29,7 @@ describe('AppSidebarComponent', () => {
               permissions: [
                 'TENANT.MASTER_DATA.READ',
                 'TENANT.DEVICE.READ',
+                'TENANT.HOLIDAY_CALENDAR.READ',
                 'PLATFORM.TENANT.READ',
                 'TENANT.COMPANY_PROFILE.READ',
                 'TENANT.ROLE.READ',
@@ -45,6 +46,7 @@ describe('AppSidebarComponent', () => {
             path: 'admin',
             children: [
               { path: 'devices', component: DummyRouteComponent },
+              { path: 'holiday-calendars', component: DummyRouteComponent },
               { path: 'tenants', component: DummyRouteComponent },
               { path: 'company-profiles', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },
@@ -181,6 +183,7 @@ describe('AppSidebarComponent', () => {
             path: 'admin',
             children: [
               { path: 'devices', component: DummyRouteComponent },
+              { path: 'holiday-calendars', component: DummyRouteComponent },
               { path: 'tenants', component: DummyRouteComponent },
               { path: 'company-profiles', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },

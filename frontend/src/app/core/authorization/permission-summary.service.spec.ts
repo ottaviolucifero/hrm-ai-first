@@ -124,6 +124,26 @@ describe('PermissionSummaryService', () => {
     expect(summary.isFrozen).toBe(false);
   });
 
+  it('supports holiday calendar administration permissions', () => {
+    const summary = service.summaryForModule({
+      id: 'user-1',
+      tenantId: 'tenant-1',
+      email: 'qa@example.com',
+      userType: 'TENANT_ADMIN',
+      permissions: [
+        'TENANT.HOLIDAY_CALENDAR.READ',
+        'TENANT.HOLIDAY_CALENDAR.UPDATE'
+      ]
+    }, 'holiday-calendars');
+
+    expect(summary.canView).toBe(true);
+    expect(summary.canCreate).toBe(false);
+    expect(summary.canUpdate).toBe(true);
+    expect(summary.canDelete).toBe(false);
+    expect(summary.hasAnyPermission).toBe(true);
+    expect(summary.isFrozen).toBe(false);
+  });
+
   it('ignores USER_TYPE authorities and invalid codes', () => {
     const summary = service.summaryForModule({
       id: 'user-1',

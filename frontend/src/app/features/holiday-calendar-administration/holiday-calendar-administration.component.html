@@ -1,0 +1,57 @@
+<section class="kt-container-fixed py-4 holiday-calendar-page" aria-labelledby="holiday-calendar-title">
+  <div class="holiday-calendar-layout">
+    <header class="holiday-calendar-page-header">
+      <div class="holiday-calendar-heading">
+        <span class="holiday-calendar-eyebrow">{{ i18n.t('nav.holidayCalendar') }}</span>
+        <h1 id="holiday-calendar-title" class="text-xl font-semibold text-mono">
+          {{ i18n.t('holidayCalendar.title') }}
+        </h1>
+        <p class="holiday-calendar-subtitle">{{ i18n.t('holidayCalendar.subtitle') }}</p>
+      </div>
+    </header>
+
+    <section class="kt-card holiday-calendar-list-card" aria-labelledby="holiday-calendar-list-title">
+      <div class="holiday-calendar-list-toolbar">
+        <div class="holiday-calendar-list-heading">
+          <h2 id="holiday-calendar-list-title" class="holiday-calendar-list-title">
+            {{ i18n.t('holidayCalendar.list.title') }}
+          </h2>
+          <div class="holiday-calendar-list-meta-row">
+            <p class="holiday-calendar-list-meta">{{ i18n.t('holidayCalendar.list.subtitle') }}</p>
+            <span class="holiday-calendar-record-count">
+              {{ pageData().totalElements }} {{ i18n.t('dataTable.pagination.results') }}
+            </span>
+          </div>
+        </div>
+
+        <label class="holiday-calendar-table-search">
+          <span class="holiday-calendar-search-label">{{ i18n.t('holidayCalendar.searchLabel') }}</span>
+          <input
+            class="kt-input holiday-calendar-search-input"
+            type="search"
+            [disabled]="loading()"
+            [value]="searchInput()"
+            [placeholder]="i18n.t('holidayCalendar.searchPlaceholder')"
+            (input)="updateSearch($event)" />
+        </label>
+      </div>
+
+      <app-data-table
+        [columns]="columns()"
+        [rows]="rows()"
+        [rowActions]="rowActions()"
+        [actionsColumnSticky]="'right'"
+        [pageData]="pageData()"
+        [pageSizeOptions]="pageSizeOptions"
+        [loading]="loading()"
+        [hasError]="hasError()"
+        [errorMessageKey]="'holidayCalendar.errors.load'"
+        [emptyMessageKey]="tableEmptyMessageKey()"
+        (rowAction)="handleRowAction($event)"
+        (previousPage)="goToPreviousPage()"
+        (nextPage)="goToNextPage()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="updatePageSize($event)" />
+    </section>
+  </div>
+</section>

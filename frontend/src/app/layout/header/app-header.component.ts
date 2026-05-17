@@ -45,6 +45,10 @@ export class AppHeaderComponent {
       return 'nav.devices';
     }
 
+    if (normalizedPath.startsWith('/admin/holiday-calendars')) {
+      return 'nav.holidayCalendar';
+    }
+
     if (normalizedPath.startsWith('/master-data')) {
       return 'nav.masterData';
     }

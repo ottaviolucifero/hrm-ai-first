@@ -50,7 +50,9 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
       },
       {
         id: 'hr-holidays',
-        titleKey: 'nav.holidayCalendar'
+        titleKey: 'nav.holidayCalendar',
+        route: '/admin/holiday-calendars',
+        permissionModule: 'holiday-calendars'
       }
     ]
   },
@@ -489,7 +491,16 @@ export class AppSidebarComponent {
         next: (user) => {
           this.userPermissionState.set({
             modules: new Set(
-              (['master-data', 'tenants', 'company-profiles', 'roles', 'permissions', 'users', 'devices'] as const)
+              ([
+                'master-data',
+                'tenants',
+                'company-profiles',
+                'roles',
+                'permissions',
+                'users',
+                'devices',
+                'holiday-calendars'
+              ] as const)
                 .filter((moduleId) => this.permissionSummaryService.hasAnyPermission(user, moduleId))
             )
           });

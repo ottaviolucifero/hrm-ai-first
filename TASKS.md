@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.70
+Versione: 2.71
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -5418,19 +5418,18 @@ Vincoli:
 
 #### TASK-067.5 - Frontend Holiday Calendar UI foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend
 
 Obiettivo:
 
 - implementare lista calendari;
-- implementare form calendario;
 - implementare dettaglio calendario;
-- implementare tabella festivita;
-- implementare form/modal festivita con `startDate` / `endDate`;
-- mostrare tipo `FIXED` / `MOBILE`;
+- implementare navigazione al dettaglio calendario;
+- mostrare i dati principali del calendario;
 - gestire stato attivo/disattivo;
+- mostrare una tabella festivita read-only se le API gia lo consentono;
 - aggiungere i18n `it` / `fr` / `en`;
 - riusare componenti shared esistenti;
 - riusare pattern admin gia consolidati;
@@ -5443,7 +5442,91 @@ Vincoli:
 - non creare componenti paralleli se esiste un componente shared idoneo;
 - rispettare permessi/visibility frontend come UX, lasciando la sicurezza reale al backend.
 
-#### TASK-067.6 - QA Holiday Calendar
+Fuori scope:
+
+- creazione/modifica festivita;
+- form/modal festivita;
+- gestione avanzata calendario;
+- Leave Request.
+
+#### TASK-067.6 - Frontend Holiday Calendar calendar management
+
+Stato: TODO
+
+Tipo: Frontend
+
+Obiettivo:
+
+- implementare form creazione Holiday Calendar;
+- implementare form modifica Holiday Calendar;
+- implementare eliminazione Holiday Calendar se supportata dalle API approvate da `TASK-067.2`;
+- gestire campi calendario:
+  - `name`;
+  - `country`;
+  - `year`;
+  - `scope`;
+  - `tenant`;
+  - `companyProfile`;
+  - `active` se previsto;
+- aggiungere validazioni base coerenti con backend;
+- aggiungere i18n `it` / `fr` / `en`;
+- riusare componenti shared esistenti;
+- riusare pattern admin gia consolidati;
+- non introdurre redesign globale.
+
+Componenti shared da considerare:
+
+- `AppInputComponent` per `name` / `year` dove idoneo;
+- `LookupSelectComponent` per `country`, `tenant`, `companyProfile` e `scope` se gestito come lookup/opzione;
+- `AppButtonComponent` per azioni form;
+- `DetailActionBarComponent` per azioni dettaglio/form se coerente con pattern esistente;
+- `ConfirmDialogComponent` per `delete`;
+- `NotificationService` per feedback;
+- `PermissionSummaryService` / `AuthService` per visibility frontend;
+- `I18nService` per tutti i testi.
+
+Vincoli:
+
+- usare solo API backend approvate da `TASK-067.2`;
+- non anticipare Leave Request;
+- non implementare gestione festivita in questo task;
+- non creare componenti paralleli se esiste un componente shared idoneo;
+- non modificare backend;
+- non introdurre nuove librerie UI;
+- rispettare permessi/visibility frontend come UX, lasciando la sicurezza reale al backend.
+
+Fuori scope:
+
+- creazione/modifica/eliminazione festivita;
+- form/modal festivita;
+- BusinessDayService UI;
+- Leave Request;
+- viste calendaristiche mensili/annuali;
+- import/export.
+
+#### TASK-067.7 - Frontend Holiday Calendar holidays management
+
+Stato: TODO
+
+Tipo: Frontend
+
+Obiettivo:
+
+- implementare form/modal festivita;
+- supportare `startDate` / `endDate`;
+- mostrare e gestire tipo `FIXED` / `MOBILE`;
+- permettere creazione/modifica/eliminazione festivita se supportato dalle API `TASK-067.2`;
+- gestire `active/inactive` festivita se previsto;
+- aggiungere i18n `it` / `fr` / `en`;
+- riusare pattern admin, modal e form esistenti.
+
+Vincoli:
+
+- usare solo API backend approvate da `TASK-067.2`;
+- non anticipare Leave Request;
+- non creare componenti paralleli se esiste un componente shared idoneo.
+
+#### TASK-067.8 - QA Holiday Calendar
 
 Stato: TODO
 
@@ -5525,6 +5608,9 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.73 | 2026-05-17 | Inserito `TASK-067.6 - Frontend Holiday Calendar calendar management` per il CRUD del calendario; rinumerati `TASK-067.6` holidays management a `TASK-067.7` e `TASK-067.7` QA Holiday Calendar a `TASK-067.8`, senza modifiche applicative. |
+| 2.72 | 2026-05-17 | `TASK-067.5` completato lato frontend con lista admin Holiday Calendar, dettaglio base read-only, azioni `activate` / `deactivate`, tabella festivita read-only, i18n `it` / `fr` / `en`, visibility UX su permessi e build/test frontend verdi senza introdurre form o CRUD festivita. |
+| 2.71 | 2026-05-17 | `TASK-067.5` ristretto alla UI foundation frontend di lista/dettaglio base Holiday Calendar; inserito `TASK-067.6` per la gestione frontend delle festivita e rinumerato il task QA Holiday Calendar da `TASK-067.6` a `TASK-067.7`. |
 | 2.70 | 2026-05-17 | Inserito `TASK-067.4 - Git worktree workflow foundation` come task documentale `TODO` per workflow locale multi-agent su branch/worktree dedicati; slittati `TASK-067.4` Holiday Calendar UI a `TASK-067.5` e `TASK-067.5` QA a `TASK-067.6`, con riferimenti e numerazione del blocco riallineati. |
 | 2.69 | 2026-05-17 | Pulizia documentale sezione `TASK-067`: rimossi gli alias operativi obsoleti dai sottotask `TASK-067.1`..`TASK-067.5`, confermati `TASK-067.2` e `TASK-067.3` come `DONE` e riallineata la descrizione del blocco al modello scoped `Country + Year + Scope` gia approvato. |
 | 2.68 | 2026-05-17 | TASK-067.3 riallineato alla decisione di dominio scoped Holiday Calendar: `HolidayCalendar` esteso con scope `GLOBAL` / `TENANT` / `COMPANY_PROFILE`, migration Flyway `V40`/`V41`, risoluzione `BusinessDayService` `COMPANY_PROFILE > TENANT > GLOBAL > weekend-only`, validazioni tenant/company profile ownership, regressione backend completa Maven verde e nessuna modifica frontend/RBAC. |

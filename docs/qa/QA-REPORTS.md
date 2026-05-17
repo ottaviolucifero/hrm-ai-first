@@ -3848,6 +3848,77 @@ Nota operativa:
   - durante i comandi Maven compare il rumore ambiente noto (`'D' n’est pas reconnu...`) non bloccante; i run finali terminano con `BUILD SUCCESS`
 - Stato finale: PASS
 
+### TASK-067.5 - Frontend Holiday Calendar UI foundation
+
+- Data: 2026-05-17
+- Branch: `task-067-5-holiday-calendar-ui-foundation`
+- Task: TASK-067.5 - Frontend Holiday Calendar UI foundation - lista e dettaglio base
+- Agente/Modello usato:
+  - Modello consigliato da prompt: GPT-5.5
+  - Sviluppo: Codex nel contesto corrente con skill locale `angular-developer`
+  - QA/regressione: validazione reale frontend Angular
+- Aree/file verificati:
+  - feature `frontend/src/app/features/holiday-calendar-administration/*`
+  - routing `frontend/src/app/app.routes.ts`
+  - authorization/visibility `frontend/src/app/core/authorization/permission-summary.models.ts`, `permission-summary.service.ts`, `permission.guard.spec.ts`
+  - layout/navigation `frontend/src/app/layout/sidebar/app-sidebar.component.ts`, `frontend/src/app/layout/header/app-header.component.ts`
+  - i18n `frontend/src/app/core/i18n/i18n.messages.ts`
+  - test frontend dedicati e spec di integrazione route/sidebar/header/permission
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale (`2.41 MB`, +`406.50 kB`) e warning CommonJS preesistente su `qrcode`
+  - `cd frontend && npm.cmd test -- --watch=false` -> OK, 49 file test passed, 386 test passed
+- Verifiche funzionali:
+  - lista admin Holiday Calendar disponibile su route `/admin/holiday-calendars` con `DataTableComponent`
+  - colonne lista esposte: `name`, `country.name`, `year`, `scope`, `tenant.name`, `companyProfile.name`, `active`, `updatedAt`
+  - apertura dettaglio su `/admin/holiday-calendars/:id` con `DetailActionBarComponent` read-only
+  - dettaglio base mostra sezioni read-only identita e contesto/stato con pattern `<dl><dt><dd>`
+  - toggle `activate` / `deactivate` disponibile solo come UX frontend coerente con permessi e con conferma via `ConfirmDialogComponent`
+  - tabella festivita read-only nel dettaglio renderizzata con `DataTableComponent`
+  - colonne festivita esposte: `name`, `startDate`, `endDate`, `type`, `generationRule`, `description`, `updatedAt`
+  - i18n aggiunto in `it` / `fr` / `en` senza testi hardcoded nei template/componenti della feature
+  - nessun form create/edit, nessun CRUD festivita, nessuna modifica backend
+- Validazione manuale:
+  - eseguita validazione tecnica non interattiva su build/test e smoke del bundle frontend
+  - checklist UI richiesta (apertura lista/dettaglio, stati loading/error/empty, active/inactive, tabella festivita) coperta da component spec e integration spec
+  - validazione browser interattiva finale resta consigliata in ambiente locale utente
+- Limiti/note:
+  - in TASK-067.5 la tabella festivita e strettamente read-only: nessun bottone `add/edit/delete`
+  - la paginazione della lista calendari usa l'API paginata; la tabella festivita usa paginazione locale client-side perche l'endpoint holidays restituisce una lista
+  - il warning CommonJS `qrcode` e il warning bundle budget sono preesistenti e non introdotti dal task
+- Stato finale: PASS
+
+### TASK-067.5 - UI polish post manual test
+
+- Data: 2026-05-17
+- Branch: `task-067-5-holiday-calendar-ui-foundation`
+- Task: TASK-067.5 - UI polish post manual test
+- Agente/Modello usato:
+  - Modello consigliato da prompt: GPT-5.5
+  - Sviluppo: Codex nel contesto corrente
+  - QA/regressione: validazione reale frontend Angular
+- Aree/file verificati:
+  - `frontend/src/app/features/holiday-calendar-administration/holiday-calendar-administration.component.*`
+  - `frontend/src/app/features/holiday-calendar-administration/holiday-calendar-administration-detail.component.*`
+  - `frontend/src/app/core/i18n/i18n.messages.ts`
+  - `frontend/src/app/layout/header/app-header.component.spec.ts`
+- Comandi eseguiti:
+  - `cd frontend && npm.cmd run build` -> OK con warning noto budget iniziale (`2.41 MB`, +`406.09 kB`) e warning CommonJS preesistente su `qrcode`
+  - `cd frontend && npm.cmd test` -> KO iniziale per 2 spec con aspettative obsolete (`Aggiorna` intercettato dal titolo colonna `Aggiornato` e header title ancora senza accento); corrette le attese di test senza modificare la UI
+  - `cd frontend && npm.cmd test -- --watch=false` -> OK, 49 file test passed, 387 test passed
+  - `cd frontend && npm.cmd run build` -> OK finale con stessi warning noti preesistenti
+- Verifiche richieste dal fix:
+  - rimozione pulsante `Aggiorna` dalla lista
+  - correzione label italiana `Festività` e testi Holiday Calendar collegati
+  - bottone `Disattiva` del detail riallineato a stile neutro/outline
+  - wrapper locale della tabella festivita corretto per evitare taglio a destra senza modifiche globali a `DataTableComponent`
+- Validazione manuale:
+  - verifiche tecniche eseguite su markup/stili locali della feature e su spec aggiornati
+  - non e stata eseguita una sessione browser interattiva completa in questa run; la checklist manuale resta raccomandata sul branch corrente
+- Limiti/note:
+  - nessuna modifica backend, nessuna nuova azione CRUD festivita, nessuna modifica globale a `DataTableComponent` o `DetailActionBarComponent`
+  - i warning build su bundle budget e `qrcode` restano preesistenti
+- Stato finale: PASS
+
 ### UI Refinement - Device assignment history cards (3-column responsive compact layout)
 
 - Data: 2026-05-16

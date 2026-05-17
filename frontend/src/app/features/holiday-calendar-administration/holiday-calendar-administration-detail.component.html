@@ -1,0 +1,126 @@
+<section class="kt-container-fixed py-4 holiday-calendar-detail-page" aria-labelledby="holiday-calendar-detail-title">
+  <div class="holiday-calendar-detail-layout">
+    <header class="holiday-calendar-detail-page-header">
+      <div class="holiday-calendar-detail-heading">
+        <span class="holiday-calendar-detail-eyebrow">{{ i18n.t('nav.holidayCalendar') }}</span>
+        <h1 id="holiday-calendar-detail-title" class="text-xl font-semibold text-mono">{{ detailTitle() }}</h1>
+        <p class="holiday-calendar-detail-subtitle">{{ i18n.t('holidayCalendar.detail.subtitle') }}</p>
+      </div>
+    </header>
+
+    <app-detail-action-bar
+      [ariaLabel]="i18n.t('holidayCalendar.detail.actions')"
+      [backLabel]="i18n.t('holidayCalendar.actions.back')"
+      [secondaryActions]="detailSecondaryActions()"
+      [primaryAction]="detailPrimaryAction()"
+      [destructiveActions]="detailDestructiveActions()"
+      (backPressed)="goBack()"
+      (actionPressed)="handleDetailAction($event)" />
+
+    @if (loading()) {
+      <section class="kt-card holiday-calendar-detail-state" role="status" aria-live="polite">
+        {{ i18n.t('holidayCalendar.detail.loading') }}
+      </section>
+    } @else if (hasError()) {
+      <section class="kt-card holiday-calendar-detail-state holiday-calendar-detail-state-error" role="alert">
+        {{ i18n.t('holidayCalendar.errors.detailLoad') }}
+      </section>
+    } @else if (calendar(); as detail) {
+      <div class="holiday-calendar-detail-grid">
+        <section class="kt-card holiday-calendar-detail-card" aria-labelledby="holiday-calendar-detail-identity">
+          <header class="holiday-calendar-detail-card-header">
+            <div class="holiday-calendar-detail-card-heading">
+              <span class="holiday-calendar-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-calendar"></i>
+              </span>
+              <h2 id="holiday-calendar-detail-identity" class="holiday-calendar-detail-card-title">
+                {{ i18n.t('holidayCalendar.detail.identity') }}
+              </h2>
+            </div>
+          </header>
+          <div class="holiday-calendar-detail-card-body">
+            <dl class="holiday-calendar-detail-fields">
+              @for (field of identityFields(detail); track field.labelKey) {
+                <div class="holiday-calendar-detail-field">
+                  <dt>{{ i18n.t(field.labelKey) }}</dt>
+                  <dd>{{ field.value }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </section>
+
+        <section class="kt-card holiday-calendar-detail-card" aria-labelledby="holiday-calendar-detail-context">
+          <header class="holiday-calendar-detail-card-header">
+            <div class="holiday-calendar-detail-card-heading">
+              <span class="holiday-calendar-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-bank"></i>
+              </span>
+              <h2 id="holiday-calendar-detail-context" class="holiday-calendar-detail-card-title">
+                {{ i18n.t('holidayCalendar.detail.context') }}
+              </h2>
+            </div>
+          </header>
+          <div class="holiday-calendar-detail-card-body">
+            <dl class="holiday-calendar-detail-fields">
+              @for (field of contextFields(detail); track field.labelKey) {
+                <div class="holiday-calendar-detail-field">
+                  <dt>{{ i18n.t(field.labelKey) }}</dt>
+                  <dd>
+                    @if (field.labelKey === 'masterData.columns.active') {
+                      <span [class]="activeBadgeClass(detail)">{{ activeBadgeLabel(detail) }}</span>
+                    } @else {
+                      {{ field.value }}
+                    }
+                  </dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </section>
+
+        <section class="kt-card holiday-calendar-detail-card holiday-calendar-detail-card-wide" aria-labelledby="holiday-calendar-detail-holidays">
+          <header class="holiday-calendar-detail-card-header">
+            <div class="holiday-calendar-detail-card-heading">
+              <span class="holiday-calendar-detail-card-icon" aria-hidden="true">
+                <i class="ki-filled ki-calendar-8"></i>
+              </span>
+              <div>
+                <h2 id="holiday-calendar-detail-holidays" class="holiday-calendar-detail-card-title">
+                  {{ i18n.t('holidayCalendar.holidays.title') }}
+                </h2>
+                <p class="holiday-calendar-detail-card-subtitle">
+                  {{ i18n.t('holidayCalendar.holidays.subtitle') }}
+                </p>
+              </div>
+            </div>
+          </header>
+          <div class="holiday-calendar-detail-card-body">
+            <div class="holiday-calendar-holidays-table-shell">
+              <app-data-table
+                [columns]="holidayColumns()"
+                [rows]="pagedHolidays()"
+                [pageData]="holidaysPageData()"
+                [pageSizeOptions]="holidaysPageSizeOptions"
+                [loading]="holidaysLoading()"
+                [hasError]="holidaysError()"
+                [errorMessageKey]="'holidayCalendar.holidays.errors.load'"
+                [emptyMessageKey]="'holidayCalendar.holidays.empty'"
+                (previousPage)="goToPreviousHolidayPage()"
+                (nextPage)="goToNextHolidayPage()"
+                (pageChange)="goToHolidayPage($event)"
+                (pageSizeChange)="updateHolidayPageSize($event)" />
+            </div>
+          </div>
+        </section>
+      </div>
+
+      @if (pendingConfirmation(); as confirmation) {
+        <app-confirm-dialog
+          [config]="confirmation.config"
+          (confirmed)="confirmPendingAction()"
+          (cancelled)="cancelPendingAction()" />
+      }
+    }
+  </div>
+</section>
