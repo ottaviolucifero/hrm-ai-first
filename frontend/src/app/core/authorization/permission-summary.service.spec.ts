@@ -144,6 +144,25 @@ describe('PermissionSummaryService', () => {
     expect(summary.isFrozen).toBe(false);
   });
 
+  it('supports leave request administration permissions', () => {
+    const summary = service.summaryForModule({
+      id: 'user-1',
+      tenantId: 'tenant-1',
+      email: 'qa@example.com',
+      userType: 'TENANT_ADMIN',
+      permissions: [
+        'TENANT.LEAVE_REQUEST.READ'
+      ]
+    }, 'leave-requests');
+
+    expect(summary.canView).toBe(true);
+    expect(summary.canCreate).toBe(false);
+    expect(summary.canUpdate).toBe(false);
+    expect(summary.canDelete).toBe(false);
+    expect(summary.hasAnyPermission).toBe(true);
+    expect(summary.isFrozen).toBe(false);
+  });
+
   it('ignores USER_TYPE authorities and invalid codes', () => {
     const summary = service.summaryForModule({
       id: 'user-1',

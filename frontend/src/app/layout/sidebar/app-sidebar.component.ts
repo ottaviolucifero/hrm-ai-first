@@ -46,7 +46,9 @@ const SIDEBAR_NAVIGATION: readonly SidebarNavNode[] = [
       },
       {
         id: 'hr-leave',
-        titleKey: 'nav.leaveRequests'
+        titleKey: 'nav.leaveRequests',
+        route: '/admin/leave-requests',
+        permissionModule: 'leave-requests'
       },
       {
         id: 'hr-holidays',
@@ -499,7 +501,8 @@ export class AppSidebarComponent {
                 'permissions',
                 'users',
                 'devices',
-                'holiday-calendars'
+                'holiday-calendars',
+                'leave-requests'
               ] as const)
                 .filter((moduleId) => this.permissionSummaryService.hasAnyPermission(user, moduleId))
             )

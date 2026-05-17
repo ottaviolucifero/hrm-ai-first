@@ -1,0 +1,221 @@
+:host {
+  display: block;
+  font-family: inherit;
+  color: var(--color-mono-900, #1a1d21);
+}
+
+.leave-request-page {
+  display: block;
+}
+
+.leave-request-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.leave-request-page-header {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.leave-request-heading {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.leave-request-eyebrow {
+  color: var(--color-primary, #203070);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+#leave-request-title {
+  margin: 0;
+}
+
+.leave-request-subtitle,
+.leave-request-list-meta {
+  color: var(--color-text-muted, #64748b);
+}
+
+.leave-request-subtitle {
+  margin: 0;
+  max-width: 44rem;
+}
+
+.leave-request-list-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: visible;
+  position: relative;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border, #e9ecef);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.leave-request-list-toolbar {
+  align-items: center;
+  background: var(--color-background, #ffffff);
+  border-bottom: 1px solid var(--color-border, #e9ecef);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+}
+
+.leave-request-list-title {
+  margin: 0;
+}
+
+.leave-request-list-heading {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.leave-request-list-meta-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.leave-request-record-count {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+}
+
+.leave-request-filters-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border, #e9ecef);
+  background: var(--color-muted, #f8f9fa);
+  overflow: visible;
+  position: relative;
+  z-index: 6;
+}
+
+.leave-request-filters {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: start;
+  overflow: visible;
+  position: relative;
+}
+
+.leave-request-filter-item {
+  align-self: start;
+  display: grid;
+  min-width: 0;
+}
+
+.leave-request-filters-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.leave-request-table-search {
+  display: grid;
+  gap: 0.35rem;
+  min-width: min(100%, 18rem);
+}
+
+.leave-request-search-label {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.leave-request-search-input {
+  min-height: 2.375rem;
+}
+
+:host ::ng-deep .leave-request-filters app-lookup-select,
+:host ::ng-deep .leave-request-filters app-date-time-field {
+  display: block;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+:host ::ng-deep .leave-request-filters .lookup-select-field,
+:host ::ng-deep .leave-request-filters .app-date-time-field {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+:host ::ng-deep .leave-request-filters .lookup-select-label,
+:host ::ng-deep .leave-request-filters .app-date-time-label {
+  color: var(--color-secondary-foreground, #4b5563);
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+  min-height: 1.0625rem;
+}
+
+:host ::ng-deep .leave-request-filters .lookup-select-input,
+:host ::ng-deep .leave-request-filters .lookup-select-button,
+:host ::ng-deep .leave-request-filters .app-date-time-control,
+:host ::ng-deep .leave-request-filters .app-date-time-toggle {
+  min-height: 2.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: #fff;
+  color: var(--color-foreground, #111827);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+:host ::ng-deep .leave-request-filters .lookup-select-row,
+:host ::ng-deep .leave-request-filters .lookup-select-control,
+:host ::ng-deep .leave-request-filters .app-date-time-shell {
+  align-items: stretch;
+  display: grid;
+  min-width: 0;
+}
+
+:host ::ng-deep .leave-request-filters .app-date-time-panel,
+:host ::ng-deep .leave-request-filters .lookup-select-panel {
+  z-index: 40;
+}
+
+:host ::ng-deep .leave-request-filters .lookup-select-input:disabled,
+:host ::ng-deep .leave-request-filters .lookup-select-button:disabled,
+:host ::ng-deep .leave-request-filters .app-date-time-control:disabled,
+:host ::ng-deep .leave-request-filters .app-date-time-toggle:disabled {
+  background: var(--color-muted, #f8fafc);
+}
+
+@media (max-width: 960px) {
+  .leave-request-page-header,
+  .leave-request-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .leave-request-table-search {
+    min-width: 0;
+  }
+
+  .leave-request-list-toolbar,
+  .leave-request-filters-panel {
+    padding: 1rem;
+  }
+}

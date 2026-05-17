@@ -1,0 +1,112 @@
+<section class="kt-container-fixed py-4 leave-request-page" aria-labelledby="leave-request-title">
+  <div class="leave-request-layout">
+    <header class="leave-request-page-header">
+      <div class="leave-request-heading">
+        <span class="leave-request-eyebrow">{{ i18n.t('nav.hrOperations') }}</span>
+        <h1 id="leave-request-title" class="text-xl font-semibold text-mono">
+          {{ i18n.t('leaveRequestAdministration.title') }}
+        </h1>
+        <p class="leave-request-subtitle">{{ i18n.t('leaveRequestAdministration.subtitle') }}</p>
+      </div>
+    </header>
+
+    <section class="kt-card leave-request-list-card" aria-labelledby="leave-request-list-title">
+      <div class="leave-request-list-toolbar">
+        <div class="leave-request-list-heading">
+          <h2 id="leave-request-list-title" class="leave-request-list-title">
+            {{ i18n.t('leaveRequestAdministration.list.title') }}
+          </h2>
+          <div class="leave-request-list-meta-row">
+            <p class="leave-request-list-meta">{{ i18n.t('leaveRequestAdministration.list.subtitle') }}</p>
+            <span class="leave-request-record-count">
+              {{ pageData().totalElements }} {{ i18n.t('dataTable.pagination.results') }}
+            </span>
+          </div>
+        </div>
+
+        <label class="leave-request-table-search">
+          <span class="leave-request-search-label">{{ i18n.t('leaveRequestAdministration.searchLabel') }}</span>
+          <input
+            class="kt-input leave-request-search-input"
+            type="search"
+            [disabled]="loading()"
+            [value]="textFilter()"
+            [placeholder]="i18n.t('leaveRequestAdministration.searchPlaceholder')"
+            (input)="updateTextFilterFromEvent($event)" />
+        </label>
+      </div>
+
+      <div class="leave-request-filters-panel">
+        <div class="leave-request-filters">
+          <div class="leave-request-filter-item">
+            <app-lookup-select
+              [label]="i18n.t('leaveRequestAdministration.filters.status')"
+              [placeholder]="i18n.t('leaveRequestAdministration.filters.placeholders.status')"
+              [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
+              [options]="statusOptions()"
+              [clearable]="true"
+              [disabled]="loading()"
+              [ngModel]="statusFilter()"
+              (ngModelChange)="updateStatusFilter($event)" />
+          </div>
+
+          <div class="leave-request-filter-item">
+            <app-lookup-select
+              [label]="i18n.t('leaveRequestAdministration.filters.type')"
+              [placeholder]="i18n.t('leaveRequestAdministration.filters.placeholders.type')"
+              [searchPlaceholder]="i18n.t('lookupSelect.searchPlaceholder')"
+              [options]="typeOptions()"
+              [clearable]="true"
+              [disabled]="loading()"
+              [ngModel]="typeFilter()"
+              (ngModelChange)="updateTypeFilter($event)" />
+          </div>
+
+          <div class="leave-request-filter-item">
+            <app-date-time-field
+              mode="date"
+              [label]="i18n.t('leaveRequestAdministration.filters.periodFrom')"
+              [disabled]="loading()"
+              [ngModel]="periodFrom()"
+              (ngModelChange)="updatePeriodFrom($event)" />
+          </div>
+
+          <div class="leave-request-filter-item">
+            <app-date-time-field
+              mode="date"
+              [label]="i18n.t('leaveRequestAdministration.filters.periodTo')"
+              [disabled]="loading()"
+              [ngModel]="periodTo()"
+              (ngModelChange)="updatePeriodTo($event)" />
+          </div>
+        </div>
+
+        @if (hasActiveFilters()) {
+          <div class="leave-request-filters-actions">
+            <app-button
+              variant="outline"
+              size="sm"
+              icon="ki-filled ki-cross"
+              [label]="i18n.t('leaveRequestAdministration.filters.reset')"
+              [disabled]="loading()"
+              (pressed)="resetFilters()" />
+          </div>
+        }
+      </div>
+
+      <app-data-table
+        [columns]="columns()"
+        [rows]="rows()"
+        [pageData]="pageData()"
+        [pageSizeOptions]="pageSizeOptions"
+        [loading]="loading()"
+        [hasError]="hasError()"
+        [errorMessageKey]="'leaveRequestAdministration.errors.load'"
+        [emptyMessageKey]="tableEmptyMessageKey()"
+        (previousPage)="goToPreviousPage()"
+        (nextPage)="goToNextPage()"
+        (pageChange)="goToPage($event)"
+        (pageSizeChange)="updatePageSize($event)" />
+    </section>
+  </div>
+</section>

@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.76
+Versione: 2.77
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -5542,7 +5542,7 @@ Vincoli QA:
 
 Stato: TODO
 
-Tipo: Frontend / Backlog governance
+Tipo: Frontend / Backend / Backlog governance
 
 Obiettivo:
 
@@ -5561,7 +5561,7 @@ Vincoli:
 - non anticipare Employee UI enterprise oltre ai dati necessari alla lettura delle richieste;
 - non introdurre redesign globale.
 
-#### TASK-068.1 - LeaveRequest UI backlog refinement
+#### TASK-068.1 - LeaveRequest backlog/API refinement
 
 Stato: TODO
 
@@ -5590,9 +5590,10 @@ Gap backend/API da considerare nei subtask successivi:
 
 - endpoint admin paginato/filtrato per lista LeaveRequest;
 - endpoint dettaglio admin con campi completi, inclusi almeno `comments`, `urgentReason`, `createdAt`, `updatedAt` se richiesti dalla UI;
-- endpoint create/update o submit per self-service, se `TASK-068.5` deve salvare richieste reali;
-- endpoint approve/reject/cancel se `TASK-068.4` deve eseguire workflow reale;
-- endpoint o query ottimizzata per range mese/dipendente/stato se `TASK-068.6` deve evitare fetch globale non paginato;
+- endpoint admin create/update e delete/cancel coerente con il dominio, da governare in `TASK-068.3`;
+- endpoint create/update o submit per self-service, se `TASK-068.8` deve salvare richieste reali;
+- endpoint approve/reject/cancel se `TASK-068.7` deve eseguire workflow reale;
+- endpoint o query ottimizzata per range mese/dipendente/stato se `TASK-068.9` deve evitare fetch globale non paginato;
 - eventuale esposizione lookup coerente per employee e leave request type, riusando pattern `app-lookup-select`.
 
 Mappatura stati:
@@ -5607,7 +5608,7 @@ Route frontend candidate:
 
 - `/admin/leave-requests`: lista amministrativa;
 - `/admin/leave-requests/:id`: dettaglio amministrativo;
-- `/admin/leave-requests/new`: solo se viene approvata creazione admin o riuso controllato del form;
+- `/admin/leave-requests/new`: solo dopo API admin CRUD coerenti e nel task UI CRUD dedicato;
 - `/self-service/leave-requests`: eventuale lista self-service utente/dipendente;
 - `/self-service/leave-requests/new`: nuova richiesta self-service, solo con API create disponibili;
 - `/admin/leave-requests/calendar`: vista mensile riepilogo assenze HR/manager;
@@ -5619,7 +5620,7 @@ Lista amministrativa candidata:
 - colonne candidate: dipendente, tipo richiesta, periodo, durata, stato, data richiesta se disponibile, azioni;
 - filtri candidati: stato, tipo richiesta, dipendente/testo, periodo;
 - fonte dati iniziale possibile: Core HR read-only, ma con limite non paginato/non filtrato;
-- azioni riga candidate: view sempre con READ, approve/reject solo su `SUBMITTED` e solo se API/permessi disponibili, edit solo su `DRAFT` e solo se API update disponibili.
+- azioni riga candidate per `TASK-068.2`: view sempre con READ, piu predisposizione visuale non operativa per azioni future se utile; create/edit/delete/cancel/approve/reject restano nei task dedicati e non vanno implementati nella lista se mancano API coerenti.
 
 Dettaglio richiesta candidato:
 
@@ -5685,12 +5686,15 @@ Componenti/pattern da riusare:
 
 Subtask successivi raffinati:
 
-- `TASK-068.2`: lista admin LeaveRequest read/list foundation, con `DataTableComponent`, filtri base e azioni coerenti con READ/stato; dipende almeno da API read-only esistente e, per filtri/paginazione reali, da API admin futura.
-- `TASK-068.3`: dettaglio LeaveRequest, con `DetailActionBar`, blocchi informativi e navigazione back/edit condizionata; dipende da dettaglio read-only esistente, ma campi completi richiedono API detail admin se non disponibili nel DTO Core HR.
-- `TASK-068.4`: workflow approve/reject UI, solo se API operative esistono o vengono introdotte da task backend separato; fuori scope nuove API backend e nuovi permessi granulari.
-- `TASK-068.5`: form self-service nuova richiesta, solo con API create/update/submit disponibili; mezza giornata/orari e saldo ferie restano fuori scope finche non modellati.
-- `TASK-068.6`: griglia mensile assenze, senza librerie esterne, preferendo componenti nostri; dipende da dati LeaveRequest filtrabili per periodo o accetta esplicitamente una foundation limitata.
-- `TASK-068.7`: QA hardening su build/test frontend, browser manuale, i18n, permessi/stati, sidebar/routing e regressioni `DataTableComponent`.
+- `TASK-068.2`: lista admin LeaveRequest read/list foundation, con `DataTableComponent`, filtri base, navigazione al dettaglio e sola predisposizione visuale per future azioni CRUD/workflow; dipende almeno da API read-only esistente e, per filtri/paginazione reali, da API admin futura.
+- `TASK-068.3`: backend LeaveRequest administration CRUD, con API admin create/update e delete/cancel coerente con il dominio, DTO, validazioni, RBAC `TENANT.LEAVE_REQUEST.*` e test backend; nessuna UI.
+- `TASK-068.4`: UI LeaveRequest administration CRUD, con form admin create/edit, azione delete/cancel se supportata, validazioni UI, i18n `it` / `fr` / `en`, componenti shared, lookup reale `LeaveRequestType` e test/build frontend; nessuna nuova API backend.
+- `TASK-068.5`: shared advanced filters component, come pattern/component shared per toolbar con pulsante `Filtri`, pannello espandibile/collassabile e badge filtri attivi, riusabile da LeaveRequest e future admin page.
+- `TASK-068.6`: dettaglio LeaveRequest, con `DetailActionBar`, blocchi informativi e navigazione back/edit condizionata; dipende da dettaglio read-only esistente, ma campi completi richiedono API detail admin se non disponibili nel DTO Core HR.
+- `TASK-068.7`: workflow approve/reject UI, solo se API operative esistono o vengono introdotte da task backend separato; fuori scope nuove API backend e nuovi permessi granulari.
+- `TASK-068.8`: form self-service nuova richiesta, solo con API create/update/submit disponibili; mezza giornata/orari e saldo ferie restano fuori scope finche non modellati.
+- `TASK-068.9`: griglia mensile assenze, senza librerie esterne, preferendo componenti nostri; dipende da dati LeaveRequest filtrabili per periodo o accetta esplicitamente una foundation limitata.
+- `TASK-068.10`: QA hardening su build/test frontend, browser manuale, i18n, permessi/stati, sidebar/routing e regressioni `DataTableComponent`.
 
 Fuori scope:
 
@@ -5698,9 +5702,9 @@ Fuori scope:
 - nuove API backend;
 - modifiche security/RBAC.
 
-#### TASK-068.2 - LeaveRequest administration list foundation
+#### TASK-068.2 - Lista amministrativa LeaveRequest
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend
 
@@ -5710,21 +5714,25 @@ Creare la lista amministrativa delle richieste permesso/assenza.
 
 Scope:
 
-- route admin lista LeaveRequest;
+- pagina admin read/list;
 - uso `DataTableComponent`;
-- colonne: dipendente, tipo richiesta, periodo, durata, stato, data richiesta, azioni;
-- filtri base: stato, tipo richiesta, dipendente/testo, periodo;
+- colonne principali: dipendente, tipo richiesta, periodo, durata, stato, data richiesta;
+- filtri base: dipendente/testo, stato, tipo richiesta, periodo;
+- navigazione al dettaglio solo se esiste una route reale coerente; in assenza la colonna azioni puo essere omessa documentando il limite;
+- predisposizione visuale alle future azioni CRUD/workflow senza introdurre placeholder fake e senza implementare create/edit/delete se mancano API coerenti;
 - loading, error, empty state;
-- azioni riga coerenti con permessi e stato richiesta;
 - i18n `it` / `fr` / `en`;
 - build e test frontend.
 
 Vincoli e dipendenze:
 
 - partire dagli endpoint `GET /api/core-hr/leave-requests` e `GET /api/core-hr/leave-requests/{id}` se non esistono API admin dedicate;
-- non simulare create/update/approve/reject lato frontend;
+- non simulare create/update/delete/cancel/approve/reject lato frontend;
 - se manca API paginata/filtrata, documentare il limite e mantenere filtri client-side solo se sostenibili per la foundation;
-- mappare la visibility frontend su `LEAVE_REQUEST` solo se il task include l'estensione controllata del permission summary.
+- mappare la visibility frontend su `LEAVE_REQUEST` solo se il task include l'estensione controllata del permission summary;
+- se il DTO Core HR non espone `createdAt` / `requestedAt`, mostrare il limite senza inventare dati;
+- il filtro `Tipo richiesta` resta temporaneamente derivato dai dati caricati dalla lista read-only finche non viene introdotto un lookup reale `LeaveRequestType` riusabile;
+- se non esiste ancora una route dettaglio LeaveRequest, non introdurre action bar o colonna azioni operativa.
 
 Fuori scope:
 
@@ -5733,7 +5741,118 @@ Fuori scope:
 - creazione richiesta;
 - calendario assenze.
 
-#### TASK-068.3 - LeaveRequest detail page foundation
+#### TASK-068.3 - Backend LeaveRequest administration CRUD
+
+Stato: TODO
+
+Tipo: Backend
+
+Obiettivo:
+
+Introdurre API amministrative CRUD per LeaveRequest, separate dalla lista amministrativa UI.
+
+Scope:
+
+- API admin per create/update;
+- delete o cancel secondo modello dominio esistente;
+- validazioni stato/data/dipendente/tipo richiesta;
+- DTO request/response necessari;
+- RBAC/authorities coerenti con `TENANT.LEAVE_REQUEST.*` e, se applicabile, `PLATFORM.LEAVE_REQUEST.*`;
+- test backend reali;
+- nessuna UI in questo task.
+
+Vincoli e dipendenze:
+
+- riusare `LeaveRequest`, `LeaveRequestStatus`, `LeaveRequestRepository` e `LeaveRequestType`;
+- non introdurre calcolo saldo ferie/permessi se non gia supportato;
+- non introdurre workflow approve/reject completo salvo endpoint minimi esplicitamente inclusi;
+- mantenere controller thin, DTO espliciti e service layer coerente con i pattern backend admin esistenti.
+
+Fuori scope:
+
+- UI frontend;
+- self-service employee form;
+- calendario assenze;
+- notifiche email;
+- saldo ferie/permessi.
+
+#### TASK-068.4 - UI LeaveRequest administration CRUD
+
+Stato: TODO
+
+Tipo: Frontend
+
+Obiettivo:
+
+Implementare la UI amministrativa CRUD LeaveRequest usando le API admin approvate.
+
+Scope:
+
+- form admin create/edit;
+- azione delete/cancel se supportata dal backend;
+- creare o riusare un `LookupLoadFn` verso `/api/master-data/hr-business/leave-request-types`;
+- usare `app-lookup-select` nei form create/edit per il campo `Tipo richiesta` basandosi su `LeaveRequestType`;
+- riusare lo stesso lookup anche nel filtro `Tipo richiesta` della lista admin, sostituendo la derivazione temporanea dai dati read-only quando il task viene eseguito;
+- non hardcodare valori come ferie/permesso/malattia;
+- usare solo tipologie attive se supportato dall'endpoint/lookup disponibile;
+- validazioni UI;
+- integrazione i18n `it` / `fr` / `en`;
+- riuso componenti shared esistenti;
+- test/build frontend;
+- nessuna nuova API backend in questo task.
+
+Vincoli e dipendenze:
+
+- dipende da `TASK-068.3` o da API admin equivalenti gia disponibili;
+- riusare `app-lookup-select`, `app-date-time-field`, `app-button`, `ConfirmDialogComponent`, `NotificationService` e pattern form admin esistenti;
+- riallineare il filtro `Tipo richiesta` della lista admin alla stessa sorgente `LeaveRequestType` usata dai form, evitando cataloghi locali divergenti;
+- non duplicare componenti shared;
+- non implementare approve/reject o self-service salvo supporto gia previsto da subtask dedicati.
+
+Fuori scope:
+
+- nuove API backend;
+- workflow approve/reject completo;
+- form self-service employee;
+- calendario assenze;
+- refactoring UI generale.
+
+#### TASK-068.5 - Shared advanced filters component
+
+Stato: TODO
+
+Tipo: Frontend / Shared UI
+
+Obiettivo:
+
+Creare un pattern shared riusabile per toolbar con pulsante `Filtri` e pannello filtri avanzati espandibile/collassabile.
+
+Scope:
+
+- componente shared o pattern equivalente per pulsante `Filtri`;
+- pannello espandibile/collassabile non modale;
+- badge/count dei filtri attivi;
+- slot/content projection o pattern equivalente per ospitare controlli filtro;
+- riuso con `app-input`, `app-lookup-select`, `app-date-time-field`, `app-button`;
+- comportamento responsive coerente con le administration page esistenti;
+- i18n `it` / `fr` / `en`;
+- test frontend;
+- prima applicazione opzionale su LeaveRequest solo se coerente con il task; in alternativa foundation shared senza adozione immediata.
+
+Vincoli e dipendenze:
+
+- non implementarlo dentro `TASK-068.2`;
+- preferire un pattern shared riusabile anche da future pagine admin oltre LeaveRequest;
+- evitare redesign della shell o delle toolbar esistenti;
+- mantenere il pannello nello stesso flusso pagina, senza fallback modale nella foundation.
+
+Fuori scope:
+
+- nuove API backend;
+- logica filtri dominio-specifica;
+- refactoring globale delle pagine admin gia rilasciate.
+
+#### TASK-068.6 - LeaveRequest detail page foundation
 
 Stato: TODO
 
@@ -5771,7 +5890,7 @@ Fuori scope:
 - modifica richiesta se non supportata dalle API;
 - calendario assenze.
 
-#### TASK-068.4 - LeaveRequest approve/reject workflow UI foundation
+#### TASK-068.7 - LeaveRequest approve/reject workflow UI foundation
 
 Stato: TODO
 
@@ -5805,7 +5924,7 @@ Fuori scope:
 - notifiche email;
 - deleghe approvative complesse.
 
-#### TASK-068.5 - LeaveRequest employee/self-service request form foundation
+#### TASK-068.8 - LeaveRequest employee/self-service request form foundation
 
 Stato: TODO
 
@@ -5841,7 +5960,7 @@ Fuori scope:
 - workflow approvativo avanzato;
 - modifiche backend.
 
-#### TASK-068.6 - LeaveRequest calendar/absence overview foundation
+#### TASK-068.9 - LeaveRequest calendar/absence overview foundation
 
 Stato: TODO
 
@@ -5899,7 +6018,7 @@ Fuori scope:
 - librerie calendario esterne, salvo decisione tecnica successiva;
 - gestione turni/pianificazione workforce.
 
-#### TASK-068.7 - LeaveRequest QA hardening and documentation
+#### TASK-068.10 - LeaveRequest QA hardening and documentation
 
 Stato: TODO
 
@@ -5987,8 +6106,11 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
-| 2.76 | 2026-05-17 | Raffinato `TASK-068.1` con analisi backend/API LeaveRequest reale: endpoint Core HR solo read-only, stati `DRAFT/SUBMITTED/APPROVED/REJECTED/CANCELLED`, gap su API operative, route candidate, permessi `LEAVE_REQUEST`, componenti shared da riusare e dipendenze/vincoli dei subtask `TASK-068.2`..`TASK-068.7`; nessun task marcato completato e nessuna modifica codice. |
-| 2.75 | 2026-05-17 | Raffinato `TASK-068 - UI LeaveRequest foundation` con subtask `TASK-068.1`..`TASK-068.7`: backlog refinement, lista admin, dettaglio, workflow approve/reject, form self-service, griglia mensile assenze e QA/documentazione; mantenuti TODO e fuori scope codice, nuove API backend e modifiche RBAC. |
+| 2.81 | 2026-05-17 | Backlog `TASK-068` riallineato dopo la validazione della lista LeaveRequest: `TASK-068.4` ora richiede il lookup reale `LeaveRequestType` via `/api/master-data/hr-business/leave-request-types` per form admin e futuro filtro lista, inserito `TASK-068.5 - Shared advanced filters component` e rinumerati dettaglio/workflow/self-service/calendario/QA a `TASK-068.6`..`TASK-068.10`; nessuna modifica codice o decisione architetturale. |
+| 2.78 | 2026-05-17 | `TASK-068.2` completato lato frontend con lista amministrativa LeaveRequest read-only su `/api/core-hr/leave-requests`, filtri e paginazione client-side foundation, route `/admin/leave-requests`, visibility `LEAVE_REQUEST`, i18n `it` / `fr` / `en`, nessuna action column in assenza di route dettaglio reale e test/build frontend verdi. |
+| 2.77 | 2026-05-17 | Riorganizzati i subtask `TASK-068`: `TASK-068.2` resta sola lista amministrativa read/list senza CRUD, inseriti `TASK-068.3` backend LeaveRequest administration CRUD e `TASK-068.4` UI LeaveRequest administration CRUD, rinumerati dettaglio/workflow/self-service/calendario/QA a `TASK-068.5`..`TASK-068.9`; nessuna modifica codice o decisione architetturale. |
+| 2.76 | 2026-05-17 | Raffinato `TASK-068.1` con analisi backend/API LeaveRequest reale: endpoint Core HR solo read-only, stati `DRAFT/SUBMITTED/APPROVED/REJECTED/CANCELLED`, gap su API operative, route candidate, permessi `LEAVE_REQUEST`, componenti shared da riusare e dipendenze/vincoli dei subtask LeaveRequest successivi; nessun task marcato completato e nessuna modifica codice. |
+| 2.75 | 2026-05-17 | Raffinato `TASK-068 - UI LeaveRequest foundation` con prima scomposizione in subtask: backlog refinement, lista admin, dettaglio, workflow approve/reject, form self-service, griglia mensile assenze e QA/documentazione; mantenuti TODO e fuori scope codice, nuove API backend e modifiche RBAC. |
 | 2.74 | 2026-05-17 | `TASK-067.6` completato lato frontend con gestione operativa Holiday Calendar end-to-end: create/edit/delete calendario, attivazione/disattivazione dal dettaglio, CRUD festivita con validazioni, loading/error/empty/saving states, i18n `it` / `fr` / `en` e test frontend verdi; `TASK-067.7` assorbito e marcato `DONE` senza backlog duplicato. |
 | 2.73 | 2026-05-17 | Inserito `TASK-067.6 - Frontend Holiday Calendar calendar management` per il CRUD del calendario; rinumerati `TASK-067.6` holidays management a `TASK-067.7` e `TASK-067.7` QA Holiday Calendar a `TASK-067.8`, senza modifiche applicative. |
 | 2.72 | 2026-05-17 | `TASK-067.5` completato lato frontend con lista admin Holiday Calendar, dettaglio base read-only, azioni `activate` / `deactivate`, tabella festivita read-only, i18n `it` / `fr` / `en`, visibility UX su permessi e build/test frontend verdi senza introdurre form o CRUD festivita. |

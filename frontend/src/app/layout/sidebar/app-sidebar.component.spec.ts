@@ -29,6 +29,7 @@ describe('AppSidebarComponent', () => {
               permissions: [
                 'TENANT.MASTER_DATA.READ',
                 'TENANT.DEVICE.READ',
+                'TENANT.LEAVE_REQUEST.READ',
                 'TENANT.HOLIDAY_CALENDAR.READ',
                 'PLATFORM.TENANT.READ',
                 'TENANT.COMPANY_PROFILE.READ',
@@ -46,6 +47,7 @@ describe('AppSidebarComponent', () => {
             path: 'admin',
             children: [
               { path: 'devices', component: DummyRouteComponent },
+              { path: 'leave-requests', component: DummyRouteComponent },
               { path: 'holiday-calendars', component: DummyRouteComponent },
               { path: 'tenants', component: DummyRouteComponent },
               { path: 'company-profiles', component: DummyRouteComponent },
@@ -80,6 +82,7 @@ describe('AppSidebarComponent', () => {
     expect(compiled.textContent).toContain('Persone');
     expect(compiled.textContent).toContain('Dati di base');
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/devices"]')).toBeTruthy();
+    expect(compiled.querySelector<HTMLAnchorElement>('a[href="/admin/leave-requests"]')).toBeTruthy();
     expect(compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]')).toBeTruthy();
     const masterDataLink = compiled.querySelector<HTMLAnchorElement>('a[href="/master-data"]');
     const companyProfilesLink = compiled.querySelector<HTMLAnchorElement>('a[href="/admin/company-profiles"]');
@@ -183,6 +186,7 @@ describe('AppSidebarComponent', () => {
             path: 'admin',
             children: [
               { path: 'devices', component: DummyRouteComponent },
+              { path: 'leave-requests', component: DummyRouteComponent },
               { path: 'holiday-calendars', component: DummyRouteComponent },
               { path: 'tenants', component: DummyRouteComponent },
               { path: 'company-profiles', component: DummyRouteComponent },

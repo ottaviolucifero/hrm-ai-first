@@ -25,6 +25,7 @@ describe('AppHeaderComponent', () => {
             children: [
               { path: 'devices', component: DummyRouteComponent },
               { path: 'devices/:id', component: DummyRouteComponent },
+              { path: 'leave-requests', component: DummyRouteComponent },
               { path: 'holiday-calendars', component: DummyRouteComponent },
               { path: 'holiday-calendars/:id', component: DummyRouteComponent },
               { path: 'roles', component: DummyRouteComponent },
@@ -132,6 +133,17 @@ describe('AppHeaderComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Calendario festività');
+    expect(fixture.nativeElement.textContent).not.toContain('Home');
+  });
+
+  it('shows the leave requests title for the leave request route', async () => {
+    const fixture = TestBed.createComponent(AppHeaderComponent);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/admin/leave-requests');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Richieste permessi');
     expect(fixture.nativeElement.textContent).not.toContain('Home');
   });
 });

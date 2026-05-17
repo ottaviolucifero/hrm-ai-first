@@ -8,7 +8,8 @@ export type PermissionModuleId =
   | 'permissions'
   | 'users'
   | 'devices'
-  | 'holiday-calendars';
+  | 'holiday-calendars'
+  | 'leave-requests';
 
 export type PermissionScopeCode = 'PLATFORM' | 'TENANT';
 
@@ -20,7 +21,8 @@ export type PermissionResourceCode =
   | 'PERMISSION'
   | 'USER'
   | 'DEVICE'
-  | 'HOLIDAY_CALENDAR';
+  | 'HOLIDAY_CALENDAR'
+  | 'LEAVE_REQUEST';
 
 export type PermissionCodeAction = 'READ' | 'VIEW' | 'CREATE' | 'UPDATE' | 'DELETE' | 'MANAGE';
 
@@ -47,7 +49,8 @@ export const MODULE_PERMISSION_RESOURCE_MAP: Record<PermissionModuleId, Permissi
   permissions: 'PERMISSION',
   users: 'USER',
   devices: 'DEVICE',
-  'holiday-calendars': 'HOLIDAY_CALENDAR'
+  'holiday-calendars': 'HOLIDAY_CALENDAR',
+  'leave-requests': 'LEAVE_REQUEST'
 };
 
 export const FROZEN_MODULE_PERMISSION_SUMMARY: ModulePermissionSummary = Object.freeze({
@@ -71,5 +74,6 @@ export function isPermissionModuleId(value: unknown): value is PermissionModuleI
     || value === 'permissions'
     || value === 'users'
     || value === 'devices'
-    || value === 'holiday-calendars';
+    || value === 'holiday-calendars'
+    || value === 'leave-requests';
 }

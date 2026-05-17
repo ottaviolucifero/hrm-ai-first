@@ -147,6 +147,10 @@ class DevPlatformAdminBootstrapTests {
 				"PLATFORM.DEVICE.CREATE",
 				"PLATFORM.DEVICE.UPDATE",
 				"PLATFORM.DEVICE.DELETE",
+				"PLATFORM.LEAVE_REQUEST.READ",
+				"PLATFORM.LEAVE_REQUEST.CREATE",
+				"PLATFORM.LEAVE_REQUEST.UPDATE",
+				"PLATFORM.LEAVE_REQUEST.DELETE",
 				"PLATFORM.HOLIDAY_CALENDAR.READ",
 				"PLATFORM.HOLIDAY_CALENDAR.CREATE",
 				"PLATFORM.HOLIDAY_CALENDAR.UPDATE",
@@ -181,7 +185,7 @@ class DevPlatformAdminBootstrapTests {
 		verify(passwordEncoder).encode("Secret1!");
 		verify(roleRepository).saveAndFlush(any(Role.class));
 		verify(userAccountRepository).saveAndFlush(any(UserAccount.class));
-		verify(rolePermissionRepository, times(17)).save(any());
+		verify(rolePermissionRepository, times(21)).save(any());
 		verify(userTenantAccessRepository).saveAndFlush(any());
 		verify(userRoleRepository).saveAndFlush(any());
 		verify(userAccountRepository).findByEmailIgnoreCase("ottavio.lucifero@igesa.it");

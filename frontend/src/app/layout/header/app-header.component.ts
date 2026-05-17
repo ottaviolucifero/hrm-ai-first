@@ -45,6 +45,10 @@ export class AppHeaderComponent {
       return 'nav.devices';
     }
 
+    if (normalizedPath.startsWith('/admin/leave-requests')) {
+      return 'nav.leaveRequests';
+    }
+
     if (normalizedPath.startsWith('/admin/holiday-calendars')) {
       return 'nav.holidayCalendar';
     }
