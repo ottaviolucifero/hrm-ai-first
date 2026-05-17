@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.84
+Versione: 2.85
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -5591,9 +5591,9 @@ Gap backend/API da considerare nei subtask successivi:
 - endpoint admin paginato/filtrato per lista LeaveRequest;
 - endpoint dettaglio admin con campi completi, inclusi almeno `comments`, `urgentReason`, `createdAt`, `updatedAt` se richiesti dalla UI;
 - endpoint admin create/update e delete/cancel coerente con il dominio, da governare in `TASK-068.3`;
-- endpoint create/update o submit per self-service, se `TASK-068.8` deve salvare richieste reali;
+- endpoint create/update o submit per self-service, se `TASK-068.9` deve salvare richieste reali;
 - endpoint approve/reject/cancel se `TASK-068.7` deve eseguire workflow reale;
-- endpoint o query ottimizzata per range mese/dipendente/stato se `TASK-068.9` deve evitare fetch globale non paginato;
+- endpoint o query ottimizzata per range mese/dipendente/stato se `TASK-068.10` deve evitare fetch globale non paginato;
 - eventuale esposizione lookup coerente per employee e leave request type, riusando pattern `app-lookup-select`.
 
 Mappatura stati:
@@ -5691,10 +5691,11 @@ Subtask successivi raffinati:
 - `TASK-068.4`: UI LeaveRequest administration CRUD, con form admin create/edit, azione delete/cancel se supportata, validazioni UI, i18n `it` / `fr` / `en`, componenti shared, lookup reale `LeaveRequestType` e test/build frontend; nessuna nuova API backend.
 - `TASK-068.5`: shared advanced filters component, come pattern/component shared per toolbar con pulsante `Filtri`, pannello espandibile/collassabile e badge filtri attivi, riusabile da LeaveRequest e future admin page.
 - `TASK-068.6`: dettaglio LeaveRequest, con `DetailActionBar`, blocchi informativi e navigazione back/edit condizionata; dipende da dettaglio read-only esistente, ma campi completi richiedono API detail admin se non disponibili nel DTO Core HR.
-- `TASK-068.7`: workflow approve/reject UI, solo se API operative esistono o vengono introdotte da task backend separato; fuori scope nuove API backend e nuovi permessi granulari.
-- `TASK-068.8`: form self-service nuova richiesta, solo con API create/update/submit disponibili; mezza giornata/orari e saldo ferie restano fuori scope finche non modellati.
-- `TASK-068.9`: griglia mensile assenze, senza librerie esterne, preferendo componenti nostri; dipende da dati LeaveRequest filtrabili per periodo o accetta esplicitamente una foundation limitata.
-- `TASK-068.10`: QA hardening su build/test frontend, browser manuale, i18n, permessi/stati, sidebar/routing e regressioni `DataTableComponent`.
+- `TASK-068.7`: workflow approve/reject UI, solo se API operative esistono; resta bloccato fino al completamento di `TASK-068.8`; fuori scope nuove API backend e nuovi permessi granulari.
+- `TASK-068.8`: backend LeaveRequest approve/reject workflow endpoints, con transizione `SUBMITTED -> APPROVED/REJECTED`, RBAC baseline `UPDATE/MANAGE`, eventuale nota di rifiuto governata da DTO esplicito e test backend reali; nessuna UI frontend.
+- `TASK-068.9`: form self-service nuova richiesta, solo con API create/update/submit disponibili; mezza giornata/orari e saldo ferie restano fuori scope finche non modellati.
+- `TASK-068.10`: griglia mensile assenze, senza librerie esterne, preferendo componenti nostri; dipende da dati LeaveRequest filtrabili per periodo o accetta esplicitamente una foundation limitata.
+- `TASK-068.11`: QA hardening su build/test frontend, browser manuale, i18n, permessi/stati, sidebar/routing e regressioni `DataTableComponent`.
 
 Fuori scope:
 
@@ -5941,13 +5942,13 @@ Esito:
 - non introdurre pulsanti approve/reject, metodi service, i18n o test frontend fittizi;
 - mantenere il dettaglio LeaveRequest coerente con le API esistenti.
 
-Task backend proposto prima di sbloccare questo step:
+Dipendenza di sblocco:
 
-- `TASK-068.x - Backend LeaveRequest approve/reject workflow endpoints`;
-- scope minimo proposto: endpoint reali dedicati per approve e reject su `/api/admin/leave-requests/{leaveRequestId}/approve` e `/api/admin/leave-requests/{leaveRequestId}/reject`;
-- autorizzazione baseline proposta: `TENANT|PLATFORM.LEAVE_REQUEST.UPDATE` oppure `MANAGE`;
-- request reject con nota solo se il backend decide di supportarla esplicitamente;
-- response proposta: dettaglio aggiornato della richiesta o `204 No Content` con refresh frontend successivo.
+- `TASK-068.8 - Backend LeaveRequest approve/reject workflow endpoints`;
+- il task UI resta bloccato fino al completamento di `TASK-068.8`;
+- baseline autorizzativa attesa: `TENANT|PLATFORM.LEAVE_REQUEST.UPDATE` oppure `MANAGE`;
+- eventuale request reject con nota solo se il backend decide di supportarla esplicitamente;
+- response attesa: dettaglio aggiornato della richiesta oppure `204 No Content` con refresh frontend successivo.
 
 Fuori scope:
 
@@ -5956,7 +5957,50 @@ Fuori scope:
 - notifiche email;
 - deleghe approvative complesse.
 
-#### TASK-068.8 - LeaveRequest employee/self-service request form foundation
+#### TASK-068.8 - Backend LeaveRequest approve/reject workflow endpoints
+
+Stato: TODO
+
+Tipo: Backend
+
+Obiettivo:
+
+Introdurre endpoint backend reali per approvare e rifiutare LeaveRequest amministrative, cosi da sbloccare `TASK-068.7`.
+
+Scope:
+
+- endpoint approve dedicato, ad esempio `POST /api/admin/leave-requests/{leaveRequestId}/approve`;
+- endpoint reject dedicato, ad esempio `POST /api/admin/leave-requests/{leaveRequestId}/reject`;
+- transizioni stato consentite solo da `SUBMITTED`;
+- approve porta a `APPROVED`;
+- reject porta a `REJECTED`;
+- impedire approve/reject su `DRAFT`, `APPROVED`, `REJECTED`, `CANCELLED`;
+- DTO request per reject solo se si decide di supportare rejection note;
+- definire se rejection note e obbligatoria o opzionale;
+- response coerente con il detail admin esistente oppure `204 No Content` con refresh frontend successivo;
+- RBAC baseline `UPDATE` o `MANAGE` su `LEAVE_REQUEST`;
+- test backend reali;
+- nessuna UI frontend.
+
+Vincoli e dipendenze:
+
+- riusare entity, repository, service, DTO e controller LeaveRequest admin esistenti;
+- non introdurre nuovi permessi granulari `APPROVE` / `REJECT`;
+- non modificare il modello RBAC senza decisione dedicata;
+- non introdurre notifiche email;
+- non introdurre workflow multi-step;
+- non introdurre deleghe approvative complesse;
+- non implementare frontend in questo task.
+
+Fuori scope:
+
+- UI approve/reject;
+- self-service request form;
+- calendario assenze;
+- notifiche email;
+- saldo ferie/permessi.
+
+#### TASK-068.9 - LeaveRequest employee/self-service request form foundation
 
 Stato: TODO
 
@@ -5992,7 +6036,7 @@ Fuori scope:
 - workflow approvativo avanzato;
 - modifiche backend.
 
-#### TASK-068.9 - LeaveRequest calendar/absence overview foundation
+#### TASK-068.10 - LeaveRequest calendar/absence overview foundation
 
 Stato: TODO
 
@@ -6050,7 +6094,7 @@ Fuori scope:
 - librerie calendario esterne, salvo decisione tecnica successiva;
 - gestione turni/pianificazione workforce.
 
-#### TASK-068.10 - LeaveRequest QA hardening and documentation
+#### TASK-068.11 - LeaveRequest QA hardening and documentation
 
 Stato: TODO
 
@@ -6138,6 +6182,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.85 | 2026-05-17 | Inserito `TASK-068.8 - Backend LeaveRequest approve/reject workflow endpoints` subito dopo `TASK-068.7` bloccato e slittati i task LeaveRequest successivi: self-service a `TASK-068.9`, calendario assenze a `TASK-068.10` e QA hardening a `TASK-068.11`; aggiornati i riferimenti interni del blocco `TASK-068`, senza modifiche applicative. |
 | 2.84 | 2026-05-17 | `TASK-068.7` marcato `BLOCKED` dopo verifica repository: non esistono endpoint backend reali `approve/reject` per LeaveRequest admin, `DELETE` resta solo `cancel => CANCELLED`; aggiornati task e dipendenza documentale verso futuro task backend separato, senza modifiche frontend/backend. |
 | 2.83 | 2026-05-17 | `TASK-068.6` completato lato frontend con pagina dettaglio dedicata LeaveRequest su route `/admin/leave-requests/:id`, riuso pattern Device detail + `DetailActionBar`, card informative coerenti, stato `CANCELLED` sempre consultabile con notice read-only, nessuna azione `approve/reject/cancel`, i18n `it` / `fr` / `en` e test/build frontend reali verdi. |
 | 2.82 | 2026-05-17 | `TASK-068.3` completato lato backend con nuove API amministrative `GET/POST/PUT/DELETE` sotto `/api/admin/leave-requests`, DTO espliciti, validazioni tenant/employee/type/date/status, `DELETE` riallineato a cancel logico via `LeaveRequestStatus.CANCELLED`, RBAC `TENANT|PLATFORM.LEAVE_REQUEST.*`, decisione durevole documentata in `DEC-047` e test Maven reali verdi. |
