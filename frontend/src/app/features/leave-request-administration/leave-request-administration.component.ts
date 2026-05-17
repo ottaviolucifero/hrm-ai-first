@@ -12,6 +12,7 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { AppButtonComponent } from '../../shared/components/button/app-button.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { AppDateTimeFieldComponent } from '../../shared/components/date-time-field/app-date-time-field.component';
+import { FilterPanelComponent } from '../../shared/components/filter-panel/filter-panel.component';
 import { LookupSelectComponent } from '../../shared/components/lookup-select/lookup-select.component';
 import { NotificationService } from '../../shared/feedback/notification.service';
 import { LookupOption } from '../../shared/lookup/lookup.models';
@@ -60,6 +61,7 @@ function isMutableStatus(status: LeaveRequestAdministrationStatus): boolean {
     AppButtonComponent,
     AppDateTimeFieldComponent,
     DataTableComponent,
+    FilterPanelComponent,
     LookupSelectComponent
   ],
   templateUrl: './leave-request-administration.component.html',
@@ -194,6 +196,31 @@ export class LeaveRequestAdministrationComponent {
     || this.periodFrom().trim().length > 0
     || this.periodTo().trim().length > 0
   );
+  protected readonly activeFilterCount = computed(() => {
+    let count = 0;
+
+    if (this.textFilter().trim().length > 0) {
+      count += 1;
+    }
+
+    if (this.statusFilter().trim().length > 0) {
+      count += 1;
+    }
+
+    if (this.typeFilter().trim().length > 0) {
+      count += 1;
+    }
+
+    if (this.periodFrom().trim().length > 0) {
+      count += 1;
+    }
+
+    if (this.periodTo().trim().length > 0) {
+      count += 1;
+    }
+
+    return count;
+  });
   protected readonly pageData = computed<LeaveRequestAdministrationPage<LeaveRequestAdministrationListItem>>(() => {
     const totalElements = this.filteredRows().length;
     const size = this.pageSize();

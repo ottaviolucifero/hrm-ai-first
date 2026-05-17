@@ -101,17 +101,19 @@
   font-size: 0.875rem;
 }
 
+:host ::ng-deep app-filter-panel {
+  display: block;
+  min-width: 0;
+  overflow: visible;
+  position: relative;
+  z-index: 6;
+}
+
 .leave-request-filters-panel {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--color-border, #e9ecef);
-  background: var(--color-muted, #f8f9fa);
-  overflow: visible;
-  position: relative;
-  z-index: 6;
 }
 
 .leave-request-filters {
@@ -230,8 +232,7 @@
     min-width: 0;
   }
 
-  .leave-request-list-toolbar,
-  .leave-request-filters-panel {
+  .leave-request-list-toolbar {
     padding: 1rem;
   }
 }
