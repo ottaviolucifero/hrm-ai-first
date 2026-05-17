@@ -2,7 +2,7 @@
 
 ## Progetto HRM AI-first
 
-Versione: 2.86
+Versione: 2.87
 Ultimo aggiornamento: 2026-05-17
 Stato: In avanzamento
 
@@ -5690,11 +5690,12 @@ Subtask successivi raffinati:
 - `TASK-068.4`: UI LeaveRequest administration CRUD, con form admin create/edit, azione delete/cancel se supportata, validazioni UI, i18n `it` / `fr` / `en`, componenti shared, lookup reale `LeaveRequestType` e test/build frontend; nessuna nuova API backend.
 - `TASK-068.5`: shared advanced filters component, come pattern/component shared per toolbar con pulsante `Filtri`, pannello espandibile/collassabile e badge filtri attivi, riusabile da LeaveRequest e future admin page.
 - `TASK-068.6`: dettaglio LeaveRequest, con `DetailActionBar`, blocchi informativi e navigazione back/edit condizionata; dipende da dettaglio read-only esistente, ma campi completi richiedono API detail admin se non disponibili nel DTO Core HR.
-- `TASK-068.7`: workflow approve/reject UI, ora tecnicamente sbloccato da `TASK-068.8`; usare solo gli endpoint backend reali approvati e mantenere fuori scope note di rifiuto finche il backend non le supporta esplicitamente.
+- `TASK-068.7`: workflow approve/reject UI completato sul dettaglio admin, usando solo gli endpoint backend reali di `TASK-068.8` e mantenendo fuori scope le rejection note persistenti.
 - `TASK-068.8`: backend LeaveRequest approve/reject workflow endpoints, con transizione `SUBMITTED -> APPROVED/REJECTED`, RBAC baseline `UPDATE/MANAGE`, nessun DTO aggiuntivo e test backend reali; completato.
 - `TASK-068.9`: form self-service nuova richiesta, solo con API create/update/submit disponibili; mezza giornata/orari e saldo ferie restano fuori scope finche non modellati.
 - `TASK-068.10`: griglia mensile assenze, senza librerie esterne, preferendo componenti nostri; dipende da dati LeaveRequest filtrabili per periodo o accetta esplicitamente una foundation limitata.
-- `TASK-068.11`: QA hardening su build/test frontend, browser manuale, i18n, permessi/stati, sidebar/routing e regressioni `DataTableComponent`.
+- `TASK-068.11`: supporto backend/frontend dedicato alla rejection note persistente o obbligatoria, da affrontare senza workaround su `comments`.
+- `TASK-068.12`: QA hardening su build/test frontend, browser manuale, i18n, permessi/stati, sidebar/routing e regressioni `DataTableComponent`.
 
 Fuori scope:
 
@@ -5901,7 +5902,7 @@ Fuori scope:
 
 #### TASK-068.7 - LeaveRequest approve/reject workflow UI foundation
 
-Stato: TODO
+Stato: DONE
 
 Tipo: Frontend
 
@@ -5911,11 +5912,11 @@ Introdurre le azioni manager/admin per approvare o rifiutare richieste.
 
 Scope:
 
-- pulsanti Approva/Rifiuta su dettaglio e/o lista;
+- pulsanti Approva/Rifiuta solo nel dettaglio admin;
 - visibilita azioni basata su permessi e stato;
 - modale conferma;
-- nota per rifiuto obbligatoria o opzionale secondo API disponibile;
-- chiamate API reali se disponibili;
+- reject senza nota, coerente con il backend reale corrente;
+- chiamate API reali approve/reject;
 - refresh stato dopo azione;
 - notifica success/error;
 - i18n e test frontend.
@@ -5937,9 +5938,9 @@ Verifica repository aggiornata al 2026-05-17:
 
 Esito:
 
-- task frontend tecnicamente sbloccato;
-- usare solo le API reali esistenti senza mock o mutazioni simulate;
-- mantenere il dettaglio LeaveRequest coerente con gli stati reali `SUBMITTED -> APPROVED/REJECTED`.
+- task frontend completato usando solo le API reali esistenti senza mock o mutazioni simulate;
+- il dettaglio LeaveRequest resta coerente con gli stati reali `SUBMITTED -> APPROVED/REJECTED`;
+- il reject resta senza nota perche il backend non persiste ancora una rejection note.
 
 Dipendenza di sblocco:
 
@@ -5955,6 +5956,21 @@ Fuori scope:
 - workflow multi-step avanzato;
 - notifiche email;
 - deleghe approvative complesse.
+
+Output realizzato:
+
+- aggiunte nel service frontend le chiamate reali `POST /api/admin/leave-requests/{id}/approve` e `POST /api/admin/leave-requests/{id}/reject`, entrambe senza body e con response detail aggiornata;
+- aggiornato il dettaglio admin LeaveRequest con azioni `Approva` e `Rifiuta` solo per richieste `SUBMITTED`;
+- riusati `DetailActionBar`, `ConfirmDialogComponent`, `NotificationService` e il pattern detail esistente senza introdurre nuove API o mock;
+- dopo approve/reject il dettaglio viene aggiornato con la response backend reale e i pulsanti spariscono negli stati finali `APPROVED` / `REJECTED`;
+- aggiornati i test frontend su visibilita azioni, confirm dialog, chiamate endpoint reali e aggiornamento stato UI;
+- allineata la permission summary frontend per trattare `MANAGE` come baseline CRUD del modulo, coerentemente con il contratto backend `UPDATE or MANAGE`.
+
+Validazione:
+
+- eseguito `frontend\\npm.cmd test` con `458` test passati;
+- eseguito `frontend\\npm.cmd run build` con successo;
+- warning build noto: budget iniziale Angular superato e dipendenza `qrcode` CommonJS gia presente fuori scope del task.
 
 #### TASK-068.8 - Backend LeaveRequest approve/reject workflow endpoints
 
@@ -6109,7 +6125,41 @@ Fuori scope:
 - librerie calendario esterne, salvo decisione tecnica successiva;
 - gestione turni/pianificazione workforce.
 
-#### TASK-068.11 - LeaveRequest QA hardening and documentation
+#### TASK-068.11 - LeaveRequest rejection note backend/frontend support
+
+Stato: TODO
+
+Tipo: Backend + Frontend
+
+Obiettivo:
+
+Introdurre supporto reale a motivazione obbligatoria o opzionale per il rifiuto LeaveRequest.
+
+Scope:
+
+- campo persistente rejection note;
+- eventuale `rejectedBy` / `rejectedAt` se coerenti con il modello audit;
+- DTO request reject con nota;
+- validazione backend;
+- response detail aggiornata;
+- UI modale reject con textarea;
+- i18n `it` / `fr` / `en`;
+- test backend/frontend.
+
+Vincoli e dipendenze:
+
+- da fare in task dedicato;
+- non usare `comments` come workaround;
+- decidere obbligatorieta della nota nel task dedicato;
+- mantenere separati il contratto API backend e l adeguamento UI.
+
+Fuori scope:
+
+- workaround su campi esistenti;
+- nuove decisioni RBAC non richieste;
+- funzionalita approvative multi-step.
+
+#### TASK-068.12 - LeaveRequest QA hardening and documentation
 
 Stato: TODO
 
@@ -6197,6 +6247,7 @@ Stato: TODO
 
 | Versione | Data | Descrizione |
 |---|---|---|
+| 2.87 | 2026-05-17 | `TASK-068.7` completato lato frontend con azioni approve/reject solo nel dettaglio admin, confirm dialog shared, endpoint reali `POST /approve` e `POST /reject`, i18n/test/build frontend verdi e nessuna rejection note persistente; inserito inoltre `TASK-068.11` dedicato al futuro supporto rejection note e rinumerato il QA hardening a `TASK-068.12`. |
 | 2.86 | 2026-05-17 | `TASK-068.8` completato lato backend con endpoint reali `POST /approve` e `POST /reject`, transizioni consentite solo `SUBMITTED -> APPROVED/REJECTED`, RBAC baseline `UPDATE/MANAGE`, nessun nuovo DTO o migration e test Maven reali verdi; `TASK-068.7` aggiornato da bloccato a tecnicamente sbloccato ma ancora TODO lato UI. |
 | 2.85 | 2026-05-17 | Inserito `TASK-068.8 - Backend LeaveRequest approve/reject workflow endpoints` subito dopo `TASK-068.7` bloccato e slittati i task LeaveRequest successivi: self-service a `TASK-068.9`, calendario assenze a `TASK-068.10` e QA hardening a `TASK-068.11`; aggiornati i riferimenti interni del blocco `TASK-068`, senza modifiche applicative. |
 | 2.84 | 2026-05-17 | `TASK-068.7` marcato `BLOCKED` dopo verifica repository: non esistono endpoint backend reali `approve/reject` per LeaveRequest admin, `DELETE` resta solo `cancel => CANCELLED`; aggiornati task e dipendenza documentale verso futuro task backend separato, senza modifiche frontend/backend. |

@@ -95,6 +95,26 @@ describe('LeaveRequestAdministrationService', () => {
     request.flush({});
   });
 
+  it('posts to approve without a request body and returns updated detail', () => {
+    service.approveLeaveRequest('leave-1').subscribe();
+
+    const request = httpTestingController.expectOne('/api/admin/leave-requests/leave-1/approve');
+
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toBeNull();
+    request.flush({});
+  });
+
+  it('posts to reject without a request body and returns updated detail', () => {
+    service.rejectLeaveRequest('leave-1').subscribe();
+
+    const request = httpTestingController.expectOne('/api/admin/leave-requests/leave-1/reject');
+
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toBeNull();
+    request.flush({});
+  });
+
   it('calls delete on the admin endpoint to cancel a leave request', () => {
     service.cancelLeaveRequest('leave-1').subscribe();
 
