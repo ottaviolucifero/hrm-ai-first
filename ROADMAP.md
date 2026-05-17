@@ -162,7 +162,7 @@ Definire le fasi operative per sviluppare il MVP della piattaforma HRM.
 - TASK-067.5 completato: frontend Holiday Calendar UI foundation con lista admin, navigazione al dettaglio, dettaglio base read-only, toggle `active/inactive`, tabella festivita read-only, i18n `it` / `fr` / `en`, riuso pattern Device Administration e test frontend verdi.
 - `TASK-067.6` completato lato frontend con gestione Holiday Calendar end-to-end, includendo anche il perimetro holidays management inizialmente previsto per `TASK-067.7`.
 - Prossimi passi operativi: `TASK-067.4` Git worktree workflow foundation come follow-up documentale e `TASK-067.8` QA Holiday Calendar come prossimo step di validazione dedicata.
-- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068` UI disciplinary governance, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI LeaveRequest foundation, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
+- Sequenza backlog successiva aggiornata: `TASK-067.4` Git worktree workflow foundation, `TASK-067.8` QA Holiday Calendar, poi `TASK-068` UI LeaveRequest foundation, `TASK-069` UI PayrollDocument foundation, `TASK-070` UI disciplinary governance, `TASK-071` Audit UI / compliance explorer, `TASK-072` Security Admin UI completion/hardening, `TASK-073` UI Employee management enterprise
 - Follow-up gia pianificati: tenant switching runtime, impersonation runtime e hardening authorization su future API protette non ancora mappate
 
 ---
